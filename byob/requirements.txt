@@ -1,0 +1,14 @@
+mss
+numpy
+twilio
+requests
+colorama
+pycrypto
+pyinstaller
+pycryptodome
+opencv-python
+wmi
+pyHook
+pywin32
+pythoncom
+pyxhook
