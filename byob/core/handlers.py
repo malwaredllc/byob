@@ -71,6 +71,7 @@ class SessionHandler(socketserver.StreamRequestHandler):
     """ 
     Session handler for TCP Server that handles
     incoming connections from new sessions
+    
     """
 
     def _kill(self):
@@ -80,7 +81,12 @@ class SessionHandler(socketserver.StreamRequestHandler):
         self.server._active.set()
         self.server.run()
 
-    def _info(self):
+    def client_info(self):
+        """
+        Get information about the client host machine
+        to identify the session
+        
+        """
         header_size = struct.calcsize("L")
         header      = self.connection.recv(header_size)
         msg_size    = struct.unpack(">L", header)[0]
@@ -98,6 +104,7 @@ class SessionHandler(socketserver.StreamRequestHandler):
     def status(self):
         """ 
         Check the status and duration of the session
+        
         """
         c = time.time() - float(self._created)
         data=['{} days'.format(int(c / 86400.0)) if int(c / 86400.0) else str(),
@@ -133,7 +140,8 @@ class SessionHandler(socketserver.StreamRequestHandler):
 
     def handle(self):
         """ 
-        Run a reverse TCP shell
+        Handle an incoming connection that is sending a
+        reverse TCP shell back to the server
 
         """
         self._prompt    = None
@@ -141,7 +149,7 @@ class SessionHandler(socketserver.StreamRequestHandler):
         self._created   = time.time()
         self.id         = id
         self.key        = security.diffiehellman(self.connection)
-        self.info       = self._info()
+        self.info       = self.session_info()
         while True:
             try:
                 if self._active.wait():

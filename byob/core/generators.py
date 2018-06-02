@@ -18,6 +18,11 @@ import util
 import security
 
 # globals
+__Template_main  = """
+if __name__ == '__main__':
+    _{0} = {1}({2})
+    """
+
 __Template_plist = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -147,7 +152,7 @@ def snippet(template='main', function='main', *args, **kwargs):
     `Templates`
         - main:  
                 if __name__ == '__main__':
-                     function(*args, **kwargs)   
+                     _function = Function(*args, **kwargs)   
 
     `Required`
     :param str template:    name of template
@@ -158,10 +163,11 @@ def snippet(template='main', function='main', *args, **kwargs):
     :param dict kwargs:     keyword arguments
 
     Returns code snippet as a string
+    
     """
     def main():
         options = ', '.join(args) + str(', '.join(str("{}={}".format(k, v) if bool(v.count('{') > 0 and v.count('{') > 0) else "{}='{}'".format(k,v)) for k,v in kwargs.items()) if len(kwargs) else '')
-        return "\nif __name__ == '__main__':\n\t{0} = {1}({2})\n\t".format('_{}'.format(function), function, options)
+        return __Template_main.format(function.lower(), function, options)
     if template in locals():
         return locals()[template]()
     else:
@@ -177,6 +183,7 @@ def exe(filename, icon=None):
     :param str filename:    target filename
 
     Returns output filename as a string
+    
     """
     try:
         filename = os.path.join(tempfile.gettempdir(), os.path.basename(filename))

