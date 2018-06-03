@@ -366,8 +366,8 @@ class Payload():
         `Optional`
         :param str command:      name of a command or module
 
-	"""
-	if not name:
+        """
+        if not name:
             try:
                 return help(self)
             except Exception as e:
@@ -439,8 +439,8 @@ class Payload():
         """ 
         Stop a running job
 
-	`Required`
-	:param str target:    name of job to stop
+    `Required`
+    :param str target:    name of job to stop
         """
         try:
             if target in self.handlers:
@@ -458,10 +458,10 @@ class Payload():
         """ 
         Show value of an attribute
 
-	`Required`
-	:param str attribute:    payload attribute to show
+    `Required`
+    :param str attribute:    payload attribute to show
 
-	Returns attribute(s) as a dictionary (JSON) object
+    Returns attribute(s) as a dictionary (JSON) object
         """
         try:
             attribute = str(attribute)
@@ -1132,7 +1132,7 @@ class Payload():
             return True
         else:
             if self.flags.connection.wait(timeout=1.0):
-		if 'encrypt_aes' in globals() and callable(globals()['encrypt_aes']) and any([i for i in globals().copy() if 'Crypto' in i]):
+                if 'encrypt_aes' in globals() and callable(globals()['encrypt_aes']) and any([i for i in globals().copy() if 'Crypto' in i]):
                     data = struct.pack('!L', 1) + globals()['encrypt_aes'](json.dumps(task), self.key)
                 else:
                     data = struct.pack('!L', 0) + self.encrypt(json.dumps(task), self.key)

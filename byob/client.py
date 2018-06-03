@@ -257,6 +257,8 @@ def run(options):
         with file(path, 'w') as fp:
             fp.write(payload)
         url = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path.strip(os.getcwd())))
+        s   = urllib2.urlparse.urlsplit(url)
+        url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment))
 
     util.display("\t[+]", color='green', style='bright', end='')
     util.display("Upload Complete", color='reset', style='bright')

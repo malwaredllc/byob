@@ -9,12 +9,9 @@ import imp
 import json
 import base64
 import urllib
+import StringIO
 import threading
 import collections
-try:
-    from cStringIO import StringIO
-except:
-    from StringIO import StringIO
 
 # utilities
 try:
@@ -27,7 +24,7 @@ except ImportError:
 # globals
 packages  = []
 platforms = ['win32','linux2','darwin']
-_buffer   = StringIO()
+_buffer   = StringIO.StringIO()
 _workers  = {}
 _abort    = False
 

