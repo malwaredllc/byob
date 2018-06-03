@@ -1,74 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-'Build Your Own Botnet'
-
-def _get_modules():
-    modules = {}
-    for name in __all__:
-        try:
-	    exec "import {}".format(name) in globals()
-	    modules[name] = globals()[name]
-        except Exception as e:
-            __logger__.error(str(e))
-    return modules
-
-def _get_logger():
-    import logging
-    logging.basicConfig(level=logging.ERROR, handler=logging.StreamHandler())
-    return logging.getLogger(__name__)
-
-def _get_root():
-    import os
-    base = __file__ if __file__ else os.getcwd()
-    __logger__.debug("Finding root directory for: {}".format(base))
-    if isinstance(base, list):
-	if not len(base):
-	    return
-	base = base[0]
-    if isinstance(base, str):
-	if not len(base):
-	   return
-	base = os.path.normpath(os.path.abspath(base))
-	if not os.path.exists(base):
-	    __logger__.debug("Target '{}' does not exist".format(base))
-	    return
-    if base.count('byob') in (1,2):
-	root = os.sep.join(base.split(os.sep)[:2 + base.split(os.sep).index('byob')])
-	while True:
-	    if os.path.basename(root) == 'byob' and root.count('byob') == 2:
-		break
-	    root = os.path.join(root, 'byob')
-	return root
-    else:
-	if os.path.isdir(base) and 'byob' in os.listdir(base):
-	    root = os.path.join(base, 'byob')
-	    if root.count('byob') == 1:
-		root = os.path.join(root, 'byob')
-	    return root
-    for cwd, dirs, _ in os.walk('/'):
-	if cwd.count('byob') == 2 and os.path.basename(cwd) == 'byob':
-	    return os.path.abspath(cwd)
-	elif cwd.count('byob') == 1 and os.path.basename(cwd) == 'byob' and 'byob' in dirs:
-	    return os.path.join(os.path.abspath(cwd), 'byob')
-
-def _get_all(target=None):
-    import os
-    modules = []
-    target  = __root__ if not target else os.path.join(__root__, target)
-    if os.path.isdir(target):
-        for i in os.listdir(target):
-	    module = os.path.join(target, i)
-            if os.path.isfile(module):
-		name, filetype = os.path.splitext(module)
-	        if filetype == '.py' and os.path.basename(name) != '__init__':
-		    if 'byob' in name:
-			modules.append(os.path.basename(name))
-            elif os.path.isdir(module) and '__init__.py' in os.listdir(module):
-                if 'byob' in module:
-		    modules.append(os.path.basename(module))
-    return modules
-
-__doc__         = """ 
+""" 
 
 88                                  88
 88                                  88
@@ -194,11 +126,8 @@ MODULES - byob.modules
     process, and execute it directly
 
 """
+__all__         = ['escalate', 'keylogger', 'outlook', 'packetsniffer', 'persistence', 'phone', 'portscanner', 'process', 'ransom', 'screenshot', 'webcam']
 __version__     = '0.1.4'
 __license__     = 'GPLv3'
 __author__      = 'Daniel Vega-Myhre'
 __github__      = 'https://github.com/colental/byob'
-__logger__      = _get_logger()
-__root__ 	= _get_root()
-__all__ 	= _get_all(__name__)
-__modules__     = _get_modules()

@@ -13,6 +13,10 @@ import threading
 import contextlib
 
 # main
+if '__logger' not in globals():
+    logging.basicConfig(level=logging.DEBUG if bool('--debug' in sys.argv) else logging.ERROR, handler=logging.StreamHandler()) 
+    __logger = logging.getLogger(__name__)
+
 class RemoteImporter():
     """ 
     A remote importer object which can be added to `sys.meta_path`
@@ -20,7 +24,6 @@ class RemoteImporter():
     remotely from the server.
     
     """
-    global _debugger
 
     def __init__(self, modules, base_url='http://localhost:8000'):
         """ 
@@ -34,13 +37,13 @@ class RemoteImporter():
         :param bool verbose:     enable/disable verbose output  
 
         """
-        self.base_url     = base_url + '/'
+        self.base_url     = base_url + ('/' if not base_url.endswith('/') else '')
         self.non_source   = False
         self.module_names = []
         self._fetch_names(modules, base_url)
-
+        
     def _fetch_names(self, modules, base_url):
-        _debugger.info('[*] URL is %s' % base_url)
+        globals()['__logger'].info('[*] URL is %s' % base_url)
         base  = urllib2.urlparse.urlsplit(base_url).path.strip('/').replace('/','.')
         if base in modules:
             names = [line.rpartition('</a>')[0].rpartition('>')[2].strip('/') for line in urllib2.urlopen(base_url).read().splitlines() if 'href' in line if '</a>' in line if '__init__.py' not in line]
@@ -49,7 +52,7 @@ class RemoteImporter():
                 if ext in ('.py','.pyc'):
                     module = '.'.join((base, name)) if base else name
                     if module not in self.module_names:
-                        _debugger.info("[+] Adding %s to module names" % module)
+                        globals()['__logger'].info("[+] Adding %s to module names" % module)
                         self.module_names.append(module)
                 elif not len(ext):
                     t = threading.Thread(target=self._fetch_names, args=(modules, '/'.join((base_url, n))))
@@ -58,20 +61,20 @@ class RemoteImporter():
 
     def _fetch_compiled(self, url) :
         module_src = None
-        try :
+        try:
             module_compiled = urllib2.urlopen(url + 'c').read()
-            try :
+            try:
                 module_src = marshal.loads(module_compiled[8:])
                 return module_src
             except ValueError :
                 pass
-            try :
+            try:
                 module_src = marshal.loads(module_compiled[12:])
                 return module_src
             except ValueError :
                 pass
         except IOError as e:
-            _debugger.debug("[-] No compiled version ('.pyc') for '%s' module found!" % url.split('/')[-1])
+            globals()['__logger'].debug("[-] No compiled version ('.pyc') for '%s' module found!" % url.split('/')[-1])
         return module_src
 
     def find_module(self, fullname, path=None):
@@ -85,25 +88,25 @@ class RemoteImporter():
         :param str path:        remote path to search
 
         """
-        _debugger.debug("[!] Searching for %s" % fullname)
-        _debugger.debug("[!] Path is %s" % path)
+        globals()['__logger'].debug("[!] Searching for %s" % fullname)
+        globals()['__logger'].debug("[!] Path is %s" % path)
         module_names = list(self.module_names) + [str(_).split('.')[0] for _ in self.module_names]
         if str(fullname).split('.')[0] not in module_names:
-            _debugger.debug("[-] Not found!")
+            globals()['__logger'].debug("[-] Not found!")
             return None
-        _debugger.debug("[@] Checking if built-in >")
+        globals()['__logger'].debug("[@] Checking if built-in >")
         try:
             loader = imp.find_module(fullname, path)
             if loader:
                 return None
-                _debugger.info("[-] Found locally!")
+                globals()['__logger'].info("[-] Found locally!")
         except ImportError:
             pass
-        _debugger.debug("[@] Checking if it is name repetition >")
+        globals()['__logger'].debug("[@] Checking if it is name repetition >")
         if fullname.split('.').count(fullname.split('.')[-1]) > 1:
-            _debugger.info("[-] Found locally!")
+            globals()['__logger'].info("[-] Found locally!")
             return None
-        _debugger.info("[*] Module/Package '%s' can be loaded!" % fullname)
+        globals()['__logger'].info("[*] Module/Package '%s' can be loaded!" % fullname)
         return self
 
     def load_module(self, name):
@@ -117,14 +120,14 @@ class RemoteImporter():
 
         """
         imp.acquire_lock()
-        _debugger.info("[+] Loading %s" % name)
+        globals()['__logger'].info("[+] Loading %s" % name)
         if name in sys.modules:
-            _debugger.debug('[+] Module "%s" already loaded!' % name)
+            globals()['__logger'].debug('[+] Module "%s" already loaded!' % name)
             imp.release_lock()
             return sys.modules[name]
         if name.split('.')[-1] in sys.modules:
             imp.release_lock()
-            _debugger.info('[+] Module "%s" loaded as a top level module!' % name)
+            globals()['__logger'].info('[+] Module "%s" loaded as a top level module!' % name)
             return sys.modules[name.split('.')[-1]]
         module_url  = self.base_url + '%s.py' % name.replace('.', '/')
         package_url = self.base_url + '%s/__init__.py' % name.replace('.', '/')
@@ -132,7 +135,7 @@ class RemoteImporter():
         final_url   = None
         final_src   = None
         try:
-            _debugger.info("[+] Trying to import as package from: '%s'" % package_url)
+            globals()['__logger'].info("[+] Trying to import as package from: '%s'" % package_url)
             package_src = None
             if self.non_source:
                 package_src = self._fetch_compiled(package_url)
@@ -142,10 +145,10 @@ class RemoteImporter():
             final_url = package_url
         except IOError as e:
             package_src = None
-            _debugger.info("[-] '%s' is not a package:" % name)
+            globals()['__logger'].info("[-] '%s' is not a package:" % name)
         if final_src == None:
             try:
-                _debugger.info("[+] Trying to import as module from: '%s'" % module_url)
+                globals()['__logger'].info("[+] Trying to import as module from: '%s'" % module_url)
                 module_src = None
                 if self.non_source :
                     module_src = self._fetch_compiled(module_url)
@@ -155,10 +158,10 @@ class RemoteImporter():
                 final_url = module_url
             except IOError as e:
                 module_src = None
-                _debugger.debug("[!] '%s' not found in HTTP repository. Moving to next Finder." % name)
+                globals()['__logger'].debug("[!] '%s' not found in HTTP repository. Moving to next Finder." % name)
                 imp.release_lock()
                 return None
-        _debugger.info("[+] Importing '%s'" % name)
+        globals()['__logger'].info("[+] Importing '%s'" % name)
         mod = imp.new_module(name)
         mod.__loader__ = self
         mod.__file__   = final_url
@@ -167,20 +170,26 @@ class RemoteImporter():
         else:
             mod.__package__ = name.split('.')[0]
         mod.__path__ = ['/'.join(mod.__file__.split('/')[:-1]) + '/']
-        _debugger.debug("[+] Ready to execute '%s' code" % name)
+        globals()['__logger'].debug("[+] Ready to execute '%s' code" % name)
         exec final_src in mod.__dict__
         sys.modules[name] = mod
-        _debugger.info("[+] '%s' imported succesfully!" % name)
+        globals()['__logger'].info("[+] '%s' imported succesfully!" % name)
         imp.release_lock()
         return mod
 
 @contextlib.contextmanager
-def remote_repo(base_url='http://localhost:8000/'):
+def remote_repo(modules, base_url='http://localhost:8000/'):
     """ 
     Context manager object to add a Remote Importer object 
     to `sys.meta_path`, enabling direct remote imports,
     then remove the instance from `sys.meta_path`
-    
+
+    `Requires`
+    :param list modules:    list of packages/modules to import
+
+    `Optional`
+    :param str base_url:    base URL of server hosting modules
+
     """
     remote_importer = RemoteImporter(base_url)
     sys.meta_path.append(remote_importer)
@@ -194,7 +203,7 @@ def remote_import(modules, base_url='http://localhost:8000'):
     Use a remote_repo object to remotely import 
     packages/modules from the server directly
     into the currently running process without
-    touching the disk
+    writing anything to the disk
 
     `Requires`
     :param list modules:    list of packages/modules to import
@@ -203,26 +212,25 @@ def remote_import(modules, base_url='http://localhost:8000'):
     :param str base_url:    base URL of server hosting modules
 
     """
-    global _debugger
     if not base_url.startswith('http'):
         raise ValueError("argument 'base_url' must start with http:// or https://")
-    with remote_repo(base_url):
+    with remote_repo(modules, base_url):
         for module in modules:
             try:
                 exec "import %s" % module in globals()
             except ImportError as e:
-                _debugger.debug(e)
+                __logger.error(e)
     return {module: globals().get(module) for module in modules}
 
-def github_import(user, repo, branch='master', modules=None, commit=None):
+def github_import(user, repo, branch='master', module=None, commit=None):
     """ 
     Use a github_repo object to remotely import 
     packages/modules from the server directly
     into the currently running process without
-    touching the disk
+    writing anything to the disk
 
     `Requires`
-    :param str user:        github username
+    :param str user:        github user
     :param str repo:        github repository name
 
     `Optional`
@@ -231,20 +239,19 @@ def github_import(user, repo, branch='master', modules=None, commit=None):
     :param str commit:      github repository commit
 
     """
-    global _debugger
-    if username == None or repo == None:
-        raise Exception("arguments 'username' and 'repo' are required")
+    if not user or not repo:
+        raise Exception("arguments 'user' and 'repo' are required")
     if commit and branch:
         raise Exception("arguments 'branch' and 'commit' are mutually exclusive")
     if commit:
         branch = commit
-    if not modules:
-        modules = [repo]
-    base_url = 'https://raw.githubusercontent.com/{user}/{repo}/{branch}/'.format(user=username, repo=repo, branch=branch)
-    with remote_repo(base_url):
-        for module in modules:
+    if not module:
+        module = [repo]
+    base_url = 'https://raw.githubusercontent.com/{user}/{repo}/{branch}/'.format(user=user, repo=repo, branch=branch)
+    with remote_repo(module, base_url):
+        for name in module:
             try:
-                exec "import %s" % module in globals()
-                return globals()[module]
+                exec "import %s" % name in globals()
+                return globals()[name]
             except ImportError as e:
-                _debugger.debug(e)
+                __logger.error(e)
