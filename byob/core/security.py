@@ -13,10 +13,7 @@ import socket
 import urllib
 import logging
 import tempfile
-try:
-    from cStringIO import StringIO
-except:
-    from StringIO import StringIO
+import StringIO
 
 # packages
 try:
@@ -24,8 +21,6 @@ try:
     import Crypto.Cipher.AES
     import Crypto.Hash.HMAC
     import Crypto.Hash.SHA256
-    import Crypto.PublicKey.RSA
-    import Crypto.Cipher.PKCS1_OAEP
 except ImportError:
     pass
 
@@ -85,7 +80,7 @@ def decrypt_aes(ciphertext, key, padding=chr(0)):
     Returns decrypted plaintext as string
     
     """
-    data = StringIO(base64.b64decode(data))
+    data = StringIO.StringIO(base64.b64decode(data))
     nonce, tag, ciphertext = [ data.read(x) for x in (Crypto.Cipher.AES.block_size - 1, Crypto.Cipher.AES.block_size, -1) ]
     cipher = Crypto.Cipher.AES.new(key, Crypto.Cipher.AES.MODE_OCB, nonce)
     return cipher.decrypt_and_verify(ciphertext, tag)

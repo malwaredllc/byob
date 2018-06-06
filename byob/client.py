@@ -168,7 +168,7 @@ def progress_update(input, output, task=None):
     """
     diff = round(float(100.0 * float(float(len(output))/float(len(input)) - 1.0)))
     __load__.clear()
-    util.display("\t[+]", color='green', style='bright', end=',')
+    util.display("    [+]", color='green', style='bright', end=',')
     util.display(" ".join([task if task else "", "Complete" if len(str(task).split()) <= 1 else ""]), color='reset', style='bright')
     util.display("\t({:,} bytes {} to {:,} bytes ({}% {})".format(len(input), 'increased' if len(output) > len(input) else 'reduced', len(output), diff, 'larger' if len(output) > len(input) else 'smaller').ljust(80 - len("[+] ")), style='dim', color='reset')
     __load__.set()
@@ -219,7 +219,7 @@ def run(options):
 		elif len(line.split()) > 3:
 		    if line.split()[0] == 'from' and line.split()[1] != '__future__' and line.split()[2] == 'import':
 			imports.add(line.strip())
-    util.display("\t[+]", color='green', style='bright', end=',')
+    util.display("    [+]", color='green', style='bright', end=',')
     util.display("{} Imports Complete".format(len(list(imports))), color='reset', style='dim')
                  
     # payload
@@ -260,7 +260,7 @@ def run(options):
         s   = urllib2.urlparse.urlsplit(url)
         url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment))
 
-    util.display("\t[+]", color='green', style='bright', end='')
+    util.display("    [+]", color='green', style='bright', end='')
     util.display("Upload Complete", color='reset', style='bright')
     util.display("\t\t(hosting payload at: {}".format(url), color='reset', style='dim')
 
@@ -289,7 +289,7 @@ def run(options):
         client += '.py'
     with file(client, 'w') as fp:
         fp.write(stager)
-    util.display("    (saved to file: {})".format(os.path.abspath(client)).ljust(80 - len("\t[+]")), style='dim', color='reset')
+    util.display("    (saved to file: {})".format(os.path.abspath(client)).ljust(80 - len("    [+]")), style='dim', color='reset')
 
     # dropper
     if options.compile:
@@ -301,7 +301,7 @@ def run(options):
             output = generators.exe(options, client)
             progress_update(stager, open(output, 'rb').read(), task='Compiled Standalone Executable')
             client = output
-        util.display( "    (saved to file: {})".format(os.path.abspath(client)).ljust(80 - len("\t[+]")), style='dim', color='reset')
+        util.display( "    (saved to file: {})".format(os.path.abspath(client)).ljust(80 - len("    [+]")), style='dim', color='reset')
     __load__.clear()
     return client
 

