@@ -191,7 +191,7 @@ def run(options):
     # modules
     util.display("[>]", color='yellow', style='bright', end=',')
     util.display('Modules', color='reset', style='bright')
-    modules = ['core/importer.py','core/util.py','core/security.py','core/payload.py']
+    modules = ['core/remoteimport.py','core/util.py','core/security.py','core/payload.py']
     for m in modules:
         util.display('\tadding {}...'.format(os.path.splitext(m)[0].replace('/','.')), color='reset', style='dim')
     if len(options.modules):

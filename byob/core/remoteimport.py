@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-'Remote Importer (Build Your Own Botnet)'
+'Remote Import (Build Your Own Botnet)'
 
 # standard library
 import imp
@@ -9,15 +9,13 @@ import logging
 import urllib2
 import contextlib
 
-# globals
-logging.basicConfig(level=logging.WARN, format="%(message)s")
-logger     = logging.getLogger(__name__)
+# main
+
 RELOAD     = False
 
-# main
 class RemoteImporter(object):
     """ 
-    The class that implements the Importer API. Contains the "find_module" and "load_module" methods.
+    The class that implements the remote import API. Contains the "find_module" and "load_module" methods.
     The 'modules' parameter is a list, with the names of the modules/packages that can be imported from the given URL.
     The 'base_url' parameter is a string containing the URL where the repository/directory is served through HTTP/S
 

