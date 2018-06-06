@@ -3,7 +3,6 @@
 """ 
 Command & Control (Build Your Own Botnet)
 
-
 88                                  88
 88                                  88
 88                                  88
@@ -14,8 +13,6 @@ Command & Control (Build Your Own Botnet)
 8Y"Ybbd8"'      Y88'     `"YbbdP"'  8Y"Ybbd8"'
                 d8'
                d8'
-
-Command & Control Server (Build Your Own Botnet)
 
 """
 

@@ -55,7 +55,7 @@ CORE - byob.core
      - AES-256 in CBC mode with HMAC-SHA256 authentication (requires: PyCrypto)
      - XOR-128 (no packages required - uses only builtin python keywords)
 
-  Importer - byob.core.importer
+  RemoteImport - byob.core.remoteimport
     enables clients to remotely import any package/module/script from the server
     by requesting the code from the server, loading the code in-memory, where
     it can be directly imported into the currently running process, without
