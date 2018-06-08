@@ -1,4 +1,4 @@
-#!/usr/bin/python
+﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
 """ 
 
@@ -126,7 +126,7 @@ MODULES - byob.modules
     process, and execute it directly
 
 """
-__all__         = ['database','generators','handlers','importer','payload','stager','screenshot','webcam','util']
+__all__         = ['database','generators','handlers','remoteimport','payload','security','stager','util']
 __version__     = '0.1.4'
 __license__     = 'GPLv3'
 __author__      = 'Daniel Vega-Myhre'

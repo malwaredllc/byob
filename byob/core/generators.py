@@ -100,7 +100,7 @@ def compress(input):
     Returns compressed output as a string
 
     """
-    return "#!/usr/bin/env python\n# -*- coding: utf-8 -*-\nimport zlib,base64,marshal;exec(marshal.loads(zlib.decompress(base64.b64decode({}))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps(compile(input, '', 'exec')), 9))))
+    return "import zlib,base64,marshal;exec(marshal.loads(zlib.decompress(base64.b64decode({}))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps(compile(input, '', 'exec')), 9))))
 
 def obfuscate(input):
     """ 
@@ -120,7 +120,7 @@ def obfuscate(input):
     name = os.path.join(tempfile.gettempdir(), temp.name)
     obfs = subprocess.Popen('pyminifier -o {} --obfuscate-classes --obfuscate-functions --obfuscate-variables --obfuscate-builtins --replacement-length=1 {}'.format(name, name), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
     obfs.wait()
-    output = open(name, 'r').read().strip('# Created by pyminifier (https://github.com/liftoff/pyminifier)')
+    output = open(name, 'r').read().replace('# Created by pyminifier (https://github.com/liftoff/pyminifier)', '')
     os.remove(name)
     return output
 

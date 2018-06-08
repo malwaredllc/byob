@@ -7,7 +7,7 @@ import logging
 import contextlib
 
 # main
-logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
+logging.basicConfig(level=logging.INFO, handler=logging.StreamHandler())
 __logger__   = logging.getLogger(__name__)
 __verbose__  = True
 
@@ -522,8 +522,7 @@ def spinner(flag):
     """
     import sys, itertools, threading
     spinner = itertools.cycle(['-', '/', '|', '\\'])
-    while True:
-        flag.wait()
+    while not flag.is_set():
         sys.stdout.write(next(spinner))
         sys.stdout.flush()
         flag.wait(0.2)

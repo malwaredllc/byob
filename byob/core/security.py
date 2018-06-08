@@ -62,7 +62,7 @@ def encrypt_aes(plaintext, key, padding=chr(0)):
 
     """
     cipher = Crypto.Cipher.AES.new(key, Crypto.Cipher.AES.MODE_OCB)
-    ciphertext, tag = cipher.encrypt_and_digest(data)
+    ciphertext, tag = cipher.encrypt_and_digest(plaintext)
     output = b''.join((cipher.nonce, tag, ciphertext))
     return base64.b64encode(output)
 
@@ -80,7 +80,7 @@ def decrypt_aes(ciphertext, key, padding=chr(0)):
     Returns decrypted plaintext as string
     
     """
-    data = StringIO.StringIO(base64.b64decode(data))
+    data = StringIO.StringIO(base64.b64decode(ciphertext))
     nonce, tag, ciphertext = [ data.read(x) for x in (Crypto.Cipher.AES.block_size - 1, Crypto.Cipher.AES.block_size, -1) ]
     cipher = Crypto.Cipher.AES.new(key, Crypto.Cipher.AES.MODE_OCB, nonce)
     return cipher.decrypt_and_verify(ciphertext, tag)
@@ -141,17 +141,17 @@ def decrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr
     vector  = blocks[0]
     result  = []
     for block in blocks[1:]:
-        v0, v1 = struct.unpack("!2L", block)
-        k = struct.unpack("!4L", key[:key_size])
+        v0, v1  = struct.unpack("!2L", block)
+        k0     = struct.unpack("!4L", key[:key_size])
         delta, mask = 0x9e3779b9L, 0xffffffffL
-        sum = (delta * num_rounds) & mask
+        sum     = (delta * num_rounds) & mask
         for round in range(num_rounds):
-            v1 = (v1 - (((v0 << 4 ^ v0 >> 5) + v0) ^ (sum + k[sum >> 11 & 3]))) & mask
+            v1  = (v1 - (((v0 << 4 ^ v0 >> 5) + v0) ^ (sum + k0[sum >> 11 & 3]))) & mask
             sum = (sum - delta) & mask
-            v0 = (v0 - (((v1 << 4 ^ v1 >> 5) + v1) ^ (sum + k[sum & 3]))) & mask
-        decode = struct.pack("!2L", v0, v1)
-        output = str().join(chr(ord(x) ^ ord(y)) for x, y in zip(vector, decode))
-        vector = block
+            v0  = (v0 - (((v1 << 4 ^ v1 >> 5) + v1) ^ (sum + k0[sum & 3]))) & mask
+        decode  = struct.pack("!2L", v0, v1)
+        output  = str().join(chr(ord(x) ^ ord(y)) for x, y in zip(vector, decode))
+        vector  = block
         result.append(output)
     return str().join(result).rstrip(padding)
 
