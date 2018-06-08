@@ -61,12 +61,12 @@ __Template_plist = """<?xml version="1.0" encoding="UTF-8"?>
 """
 
 __Template_spec = """# -*- mode: python -*-
-block_cipher = pyi_crypto.PyiBlockCipher(key={0})
-a = Analysis([{1}],
-             pathex=[{2}],
+block_cipher = pyi_crypto.PyiBlockCipher(key={key})
+a = Analysis([{basename}],
+             pathex=[{path}],
              binaries=[],
              datas=[],
-             hiddenimports={3},
+             hiddenimports={imports},
              hookspath=[],
              runtime_hooks=[],
              excludes=['site'],
@@ -80,12 +80,12 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name={4},
+          name={name},
           debug=False,
           strip=False,
           upx=False,
           runtime_tmpdir=None,
-          console=False, icon={5})
+          console=False, icon={icon})
 """
 
 
@@ -189,31 +189,29 @@ def exe(filename, icon=None):
     Returns output filename as a string
     
     """
-    try:
-        filename = os.path.join(tempfile.gettempdir(), os.path.basename(filename))
-        pyname   = os.path.basename(filename)
-        name     = os.path.splitext(pyname)[0]
-        dist     = os.path.abspath('.')
-        key      = util.variable(16)
-        icon     = icon if os.path.isfile(icon) else None
-        pkgs     = list(set([i.strip().split()[1] for i in open(filename).read().splitlines() if len(i.strip().split()) if i.strip().split()[0] == 'import'] + [i.strip().split()[1] for i in open(filename,'r').read().splitlines() if len(i.strip().split()) if i.strip().split()[0] == 'import' if len(str(i.strip().split()[1])) < 35]))
-        spec     = __Template_spec.replace('[HIDDEN_IMPORTS]', str(pkgs)).replace('[ICON_PATH]', icon).replace('[PY_FILE]', pyname).replace('[DIST_PATH]', dist).replace('[NAME]', name).replace('[128_BIT_KEY]', key)
-        fspec    = os.path.join(dist, name + '.spec')
-        with file(fspec, 'w') as fp:
-            fp.write(fspec)
-        try:
-            pyinst = subprocess.check_output('where PyInstaller' if os.name == 'nt' else 'which PyInstaller', shell=True).strip().rstrip()
-        except:
-            raise Exception("missing package 'PyInstaller' is required to compile .py into a standalone executable binary")
-        make = subprocess.Popen('{} -m {} {}'.format(sys.executable, pyinst, fspec), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
-        make.wait()
-        if not make.returncode == 0:
-            raise Exception("failed to compile executable: {}".format(str().join((make.communicate()))))
-        exe   = os.path.join((dist, 'dist', name, '.exe' if os.name == 'nt' else ''))
-        build = map(util.delete, (filename, fspec, os.path.join(dist, 'build')))
-        return exe
-    except Exception as e:
-        util.__logger__.error('Method {} returned error: {}'.format(exe.func_name, str(e)))
+    basename = os.path.basename(filename)
+    name     = os.path.splitext(basename)[0]
+    path     = os.path.splitdrive(os.path.abspath('.'))[1].replace('\\','/')
+    key      = str().join([random.choice([chr(i) for i in range(48,91) + range(97,123)]) for _ in range(16)])
+    imports  = [i.strip().split()[1].split(';')[0].split(',') for i in open(filename).read().splitlines() if len(i.strip().split()) if i.strip().split()[0] == 'import']
+    for _ in imports:
+        if isinstance(_, list):
+            __ = imports.pop(imports.index(_))
+            for ___ in __:
+                imports.append(___)
+    imports  = list(set(imports))
+    spec     = __Template_spec.format(key=repr(key), basename=repr(basename), path=repr(path), imports=imports, name=repr(name), icon=repr(icon))
+    fspec    = os.path.join(path, name + '.spec')
+    with file(fspec, 'w') as fp:
+        fp.write(spec)
+    process  = subprocess.Popen('{} -m PyInstaller {}'.format(sys.executable, fspec), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+    process.wait()
+    if not process.returncode == 0:
+        raise Exception("failed to compile executable: {}".format(str().join((process.communicate()))))
+    output   = os.path.join((path, 'dist', name + str('.exe' if os.name == 'nt' else '')))
+    move     = os.popen('{} dist/{} {}'.format('move' if os.name == 'nt' else 'mv', os.path.basename(output), os.path.basename(output))).read()
+    delete   = map(util.delete, (filename, fspec, os.path.join(path, 'build'), os.path.join(path, 'dist')))
+    return output
 
 def app(filename, icon=None):
     """ 
@@ -226,7 +224,6 @@ def app(filename, icon=None):
     Returns output filename as a string
     """
     try:
-        iconFile        = icon if os.path.isfile(icon) else None
         version         = '%d.%d.%d' % (random.randint(0,3), random.randint(0,6), random.randint(1, 9))
         baseName        = os.path.basename(filename)
         bundleName      = os.path.splitext(baseName)[0]
@@ -236,7 +233,7 @@ def app(filename, icon=None):
         distPath        = os.path.join(basePath, 'MacOS')
         rsrcPath        = os.path.join(basePath, 'Resources')
         plistPath       = os.path.join(rsrcPath, 'Info.plist')
-        iconPath        = os.path.basename(iconFile)
+        iconPath        = os.path.basename(icon)
         executable      = os.path.join(distPath, filename)
         bundleVersion   = '%s %s'  % (bundleName, version)
         bundleIdentity  = 'com.%s' % bundleName

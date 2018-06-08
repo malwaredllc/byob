@@ -4,7 +4,6 @@
 
 # standard library
 import logging
-import contextlib
 
 # main
 logging.basicConfig(level=logging.INFO, handler=logging.StreamHandler())
@@ -50,23 +49,6 @@ def is_compatible(platforms=['win32','linux2','darwin'], module=None):
         return True
     log("module {} is not yet compatible with {} platforms".format(module if module else '', sys.platform))
     return False
-
-@contextlib.contextmanager
-def remote_repo(modules, base_url='http://localhost:8000/'):
-    """ 
-    Context manager object to add a new Importer instance
-    to `sys.meta_path`, enabling direct remote imports,
-    then remove the instance from `sys.meta_path`
-
-    """
-    import sys
-    import importer
-    remote_importer = importer.RemoteImporter(modules, base_url)
-    sys.meta_path.append(remote_importer)
-    yield
-    for importer in sys.meta_path:
-        if importer.base_url[:-1] == base_url:
-            sys.meta_path.remove(importer)
 
 def platform():
     """ 
@@ -451,7 +433,6 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
     import os
     import time
     import ftplib
-    
     if host and user and password:
         path  = ''
         local = time.ctime().split()
@@ -502,7 +483,9 @@ def threaded(function):
     :param function:    function/method to run in a thread
 
     """
-    import time, threading, functools
+    import time
+    import threading
+    import functools
     @functools.wraps(function)
     def _threaded(*args, **kwargs):
         t = threading.Thread(target=function, args=args, kwargs=kwargs, name=time.time())
@@ -520,7 +503,9 @@ def spinner(flag):
     :param flag:   threading.Event object
 
     """
-    import sys, itertools, threading
+    import sys
+    import itertools
+    import threading
     spinner = itertools.cycle(['-', '/', '|', '\\'])
     while not flag.is_set():
         sys.stdout.write(next(spinner))

