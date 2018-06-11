@@ -20,7 +20,7 @@ class Database(sqlite3.Connection):
     sessions & tasks handled by byob.server.Server instances
 
     """
-    __init_database = """BEGIN TRANSACTION;
+    __create_table = """BEGIN TRANSACTION;
 CREATE TABLE IF NOT EXISTS tbl_sessions (
     id serial,
     uid varchar(32) NOT NULL,
@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS tbl_sessions (
 );
 COMMIT;
 """
+
     def __init__(self, database=':memory:'):
         """ 
         Create new Sqlite3 Conection instance and setup the BYOB database
@@ -48,12 +49,12 @@ COMMIT;
 
         """
         super(Database, self).__init__(database)
-	self.row_factory   = sqlite3.Row
-	self.text_factory  = str
-	self._database 	   = os.path.abspath(database)
-	self._tasks 	   = ['escalate','keylogger','outlook','packetsniffer','persistence','phone','portscan','process','ransom','screenshot','webcam']
-	self._tbl_sessions = 'tbl_sessions'
-	self.execute_file(sql=self.__init_database, returns=False, display=False)
+        self.row_factory = sqlite3.Row
+        self.text_factory = str
+        self._database = database
+        self._tasks = ['escalate','keylogger','outlook','packetsniffer','persistence','phone','portscan','process','ransom','screenshot','webcam']
+        self._tbl_sessions = 'tbl_sessions'
+        self.execute_file(sql=self.__create_table, returns=False, display=False)
 
     def _display(self, data, indent=4):
         if isinstance(data, dict):
@@ -105,23 +106,22 @@ COMMIT;
                 i = data.pop('id',None)
                 util.display(str(i).rjust(indent-1), color='reset', style='bright') if i else None
                 self._display(data, indent+2)
-
             else:
                 util.display(str(data.encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=''))
                 util.display(v.encode(), color=c, style='dim')
 
     def _client_sessions(self, uid):
-        for i in self.execute('select sessions from {} where uid=:uid'.format(self._tbl_sessions), {"uid": uid}).fetchone():
+        for i in self.execute('select sessions from {} where uid=:uid'.format(self._tbl_sessions), {"uid": uid}):
             if isinstance(i, int):
                 return i + 1
 
     def _count_sessions(self):
-        for i in self.execute('select count(*) from {}'.format(self._tbl_sessions)).fetchone():
+        for i in self.execute('select count(*) from {}'.format(self._tbl_sessions)):
             if isinstance(i, int):
                 return i + 1
 
     def debug(self, output):
-	""" 
+        """ 
         Print debugging output to console
         """
         util.__logger__.debug(str(output))
@@ -133,10 +133,10 @@ COMMIT;
         util.__logger__.error(str(output))
 
     def exists(self, uid):
-	""" 
-	Check if a client exists in the database
-	"""
-	return bool(len(self.execute("select * from {} where uid=:uid".format(self._tbl_sessions), {"uid": info['uid']}).fetchone()))
+    	""" 
+    	Check if a client exists in the database
+    	"""
+    	return bool(len([_ for _ in self.execute("select * from {} where uid=:uid".format(self._tbl_sessions), {"uid": uid})]))
 
     def update_status(self, session, online):
         """ 
@@ -170,7 +170,7 @@ COMMIT;
         :param bool display:    display output
 
         """
-	statement = "select * from {}" if verbose else "select id, public_ip, uid, last_online from {}"
+        statement = "select * from {}" if verbose else "select id, public_ip, uid, last_online from {}"
         rows = self.execute(statement.format(self._tbl_sessions))
         return [{k:v for k,v in zip([row[0] for row in rows.description], client)} for client in rows.fetchall()]
 
@@ -202,23 +202,24 @@ COMMIT;
         Returns the session information as a dictionary (JSON) object
         """
         if isinstance(info, dict):
-	    if 'uid' not in info:
-                info['id']      = self._count_sessions()
-                info['uid']     = md5.new(info['public_ip'] + info['mac_address']).hexdigest()
-		info['joined']  = datetime.datetime.now()
-	    info['online']      = 1
-	    info['sessions']    = self._client_sessions(info['uid'])
-	    info['last_online'] = datetime.datetime.now()
-            if self._exists(info['uid']):
-	        self.execute_query("update {} set online=:online, sessions=:sessions, last_online=:last_online".format(self._tbl_sessions), params=info, returns=False)
-	    else:
-		self.execute_query("insert into {} ({}) values (:{})".format(self._tbl_sessions, ','.join(info.keys()), ',:'.join(info.keys())), params=info, returns=False, display=False)
-		self.execute_query("create table '{}' (id serial, uid varchar(32), task text, result text, issued DATETIME, completed DATETIME)".format(info['uid']), returns=False, display=False)
-	    for row in self.execute("select * from {} where uid=:uid".format(self._tbl_sessions), {"uid": info['uid']}).fetchone():
-		if isinstance(row, dict):
-		    info = row
+            if 'id' not in info:
+                info['id'] = self._count_sessions()
+            if 'uid' not in info:
+                info['uid'] = md5.new(info['public_ip'] + info['mac_address']).hexdigest()
+                info['joined'] = datetime.datetime.now()
+            info['online'] = 1
+            info['sessions'] = self._client_sessions(info['uid'])
+            info['last_online'] = datetime.datetime.now()
+            if self.exists(info['uid']):
+                self.execute_query("update {} set online=:online, sessions=:sessions, last_online=:last_online".format(self._tbl_sessions), params=info, returns=False)
+            else:
+        	    self.execute_query("insert into {} ({}) values (:{})".format(self._tbl_sessions, ','.join(info.keys()), ',:'.join(info.keys())), params=info, returns=False, display=False)
+        	    self.execute_query("create table '{}' (id serial, uid varchar(32), task text, result text, issued DATETIME, completed DATETIME)".format(info['uid']), returns=False, display=False)
+            for row in self.execute("select * from {} where uid=:uid".format(self._tbl_sessions), {"uid": info['uid']}).fetchone():
+        	    if isinstance(row, dict):
+        	        info = row
             self.commit()
-	    return info
+            return info
         else:
             self.error("Error: invalid input type received from server (expected '{}', receieved '{}')".format(dict, type(info)))
 
@@ -226,36 +227,29 @@ COMMIT;
         """ 
         Adds issued tasks to the database and updates completed tasks with results
 
-        `Required`
-        :param dict task:
-          :required attributes:
-            :attr str client:          client ID assigned by server
-            :attr str task:            task assigned by server
-
-          :optional attributes:
-            :attr str uid:             task ID assigned by server
-            :attr str result:          task result completed by client
-            :attr datetime issued:     time task was issued by server
-            :attr datetime completed:  time task was completed by client
+        `Task`
+        :attr str client:          client ID assigned by server
+        :attr str task:            task assigned by server
+        :attr str uid:             task ID assigned by server
+        :attr str result:          task result completed by client
+        :attr datetime issued:     time task was issued by server
+        :attr datetime completed:  time task was completed by client
 
         Returns task assigned by database as a dictionary (JSON) object
 
-	"""
-        try:
-            if isinstance(task, dict):
-                if 'uid' not in task:
-		    task['uid']    = md5.new(task['session'] + task['task'] + datetime.datetime.now().ctime()).hexdigest()
-		    task['issued'] = datetime.datetime.now()
-                    self.execute_query('insert into {} values (:uid, :task, :issued)'.format(task['uid']), params={"uid": task['uid'],  "task": task['task'], "issued": task['issued']}, returns=False)
-		else:
-		    task['completed'] = datetime.datetime.now()
-		    self.execute_query('update {} set result=:result, completed=:completed where uid=:uid'.format(task['uid']), params={"result": task['result'], "completed": task['completed'], "uid": task['uid']}, returns=False)
-		self.commit()
-		return task
+        """
+        if isinstance(task, dict):
+            if 'uid' not in task:
+                task['uid'] = md5.new(task['session'] + task['task'] + datetime.datetime.now().ctime()).hexdigest()
+                task['issued'] = datetime.datetime.now()
+                self.execute_query('insert into {} values (:uid, :task, :issued)'.format(task['uid']), params={"uid": task['uid'],  "task": task['task'], "issued": task['issued']}, returns=False)
             else:
-                self.debug("{} error: invalid input type (expected {}, received {})".format(self.handle_task.func_name, dict, type(task)))
-        except Exception as e:
-            self.error("{} error: {}".format(self.handle_task.func_name, str(e)))
+                task['completed'] = datetime.datetime.now()
+                self.execute_query('update {} set result=:result, completed=:completed where uid=:uid'.format(task['uid']), params={"result": task['result'], "completed": task['completed'], "uid": task['uid']}, returns=False)
+            self.commit()
+            return task
+        else:
+            self.debug("{} error: invalid input type (expected {}, received {})".format(self.handle_task.func_name, dict, type(task)))
 
     def execute_query(self, stmt, params={}, returns=True, display=False):
         """ 
@@ -264,21 +258,21 @@ COMMIT;
         `Required`
         :param str sql:         SQL expression to query the database with
 
-	`Optional`
-	:param dict params:     dictionary of statement paramaters
-	:param bool returns: 	returns output if True
+    	`Optional`
+    	:param dict params:     dictionary of statement paramaters
+    	:param bool returns: 	returns output if True
         :param bool display:    display output from database if True
 
         Returns a list of output rows formatted as dictionary (JSON) objects
 
         """
         result = []
-	for row in self.execute(stmt, params):
+        for row in self.execute(stmt, params):
             result.append(row)
             if display:
                 self._display(row)
-	if returns:
-	    return result
+	    if returns:
+	        return result
 
     def execute_file(self, filename=None, sql=None, returns=True, display=False):
         """ 
@@ -286,30 +280,30 @@ COMMIT;
 
         `Optional`
         :param str filename: 	name of the SQL batch file to execute
-	:param bool returns:    returns output from database if True
-	:param bool display: 	display output from database if True
+    	:param bool returns:    returns output from database if True
+    	:param bool display: 	display output from database if True
 
         Returns a list of output rows formatted as dictionary (JSON) objects
 
         """
         try:
             result = []
-	    if isinstance(filename, str):
+            if isinstance(filename, str):
                 assert os.path.isfile(filename), "keyword argument 'filename' must be a valid filename"
                 with open(filename) as stmts:
                     for line in self.executescript(stmts.read()):
                         result.append(line)
                         if display:
                             self._display(line)
-	    elif isinstance(sql, str):
-		for line in self.executescript(sql):
-		    result.append(line)
-		    if display:
-			self._display(line)
-	    else:
-		raise Exception("missing required keyword argument 'filename' or 'sql'")
-	    self.commit()
-	    if returns:
+            elif isinstance(sql, str):
+            	for line in self.executescript(sql):
+            	    result.append(line)
+            	    if display:
+            		    self._display(line)
+            else:
+                raise Exception("missing required keyword argument 'filename' or 'sql'")
+            self.commit()
+            if returns:
                 return result
         except Exception as e:
             self.error("{} error: {}".format(self.execute_file.func_name, str(e)))

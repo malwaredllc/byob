@@ -113,7 +113,7 @@ def administrator():
     """
     import os
     import ctypes
-    return bool(ctypes.windll.shell32.IsUserAnAdmin() if os.name is 'nt' else os.getuid() == 0)
+    return bool(ctypes.windll.shell32.IsUserAnAdmin() if os.name == 'nt' else os.getuid() == 0)
 
 def ipv4(address):
     """ 
@@ -271,7 +271,7 @@ def png(image):
     fileh.seek(0)
     return fileh
 
-def delete(filename):
+def delete(target):
     """ 
     Tries to delete file via multiple methods, if necessary
 
@@ -280,12 +280,11 @@ def delete(filename):
 
     """
     import os
-    if os.path.isfile(filename):
-        target = filename
+    if os.path.isfile(target):
         try:
             os.chmod(target, 777)
         except: pass
-        if os.name is 'nt':
+        if os.name == 'nt':
             try:
                 _ = os.popen('attrib -h -s -r %s' % target).read()
             except: pass
@@ -293,11 +292,11 @@ def delete(filename):
             os.remove(target)
         except: pass
         try:
-            _ = os.popen(bytes('del /f /q %s' % target if os.name is 'nt' else 'rm -f %s' % target)).read()
+            _ = os.popen(bytes('del /f /q %s' % target if os.name == 'nt' else 'rm -f %s' % target)).read()
         except: pass
     elif os.path.isdir(target):
         try:
-            _ = os.popen(bytes('rmdir /s /q %s' % target if os.name is 'nt' else 'rm -f %s' % target)).read()
+            _ = os.popen(bytes('rmdir /s /q %s' % target if os.name == 'nt' else 'rm -f %s' % target)).read()
         except: pass
     else:
         pass

