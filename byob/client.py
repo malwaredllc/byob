@@ -274,7 +274,7 @@ def run(options):
         path = os.path.join(os.path.abspath(dirname), var + '.py' )
         with file(path, 'w') as fp:
             fp.write(payload)
-        s = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path.strip(os.getcwd())))
+        s = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path.strip(os.path.join(os.getcwd(), 'modules'))))
         s = urllib2.urlparse.urlsplit(s)
         url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
         if url.endswith('.p'):
@@ -313,7 +313,7 @@ def run(options):
         path2 = os.path.join(os.path.abspath(dirname2), var + '.py' )
         with file(path2, 'w') as fp:
             fp.write(stager)
-        s2 = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path2.strip(os.getcwd())))
+        s2 = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path2.strip(os.path.join(os.getcwd(), 'modules'))))
         s2 = urllib2.urlparse.urlsplit(s2)
         url2 = urllib2.urlparse.urlunsplit((s2.scheme, s2.netloc, os.path.normpath(s2.path), s2.query, s2.fragment)).replace('\\','/')
         if url2.endswith('.p'):

