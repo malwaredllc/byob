@@ -142,48 +142,15 @@ class RemoteImporter(object):
             __logger__.debug("[-] No compiled version ('.pyc') for '%s' module found!" % url.split('/')[-1])
         return module_src
 
-
-@contextlib.contextmanager
-def remote_repo(modules, base_url='http://localhost:8000/'):
-    ''' 
-    Context Manager that provides remote import functionality through a URL.
-    The parameters are the same as the RemoteImporter class contructor.
-    '''
-    importer = add_remote_repo(modules, base_url)
-    yield
-    remove_remote_repo(base_url)
-
-def add_remote_repo(modules, base_url='http://localhost:8000/'):
-    ''' 
-    Function that creates and adds to the 'sys.meta_path' an RemoteImporter object.
-    The parameters are the same as the RemoteImporter class contructor.
-    '''
-    importer = RemoteImporter(modules, base_url)
-    sys.meta_path.insert(0, importer)
-    return importer
-
-def remove_remote_repo(base_url):
-    ''' 
-    Function that removes from the 'sys.meta_path' an RemoteImporter object given its HTTP/S URL.
-    '''
-    for importer in sys.meta_path:
-        try:
-            if importer.base_url.startswith(base_url):  # an extra '/' is always added
-                sys.meta_path.remove(importer)
-                return True
-        except AttributeError as e:
-            pass
-    return False
-
 def __create_github_url(username, repo, branch='master'):
-    ''' 
+    """ 
     Creates the HTTPS URL that points to the raw contents of a github repository.
-    '''
+    """
     github_raw_url = 'https://raw.githubusercontent.com/{user}/{repo}/{branch}/'
     return github_raw_url.format(user=username, repo=repo, branch=branch)
 
 def _add_git_repo(url_builder, username=None, repo=None, module=None, branch=None, commit=None):
-    ''' 
+    """ 
     Function that creates and adds to the 'sys.meta_path' an RemoteImporter object equipped with a URL of a Online Git server.
     The 'url_builder' parameter is a function that accepts the username, repo and branch/commit, and creates a HTTP/S URL of a Git server.
     The 'username' parameter defines the Github username which is the repository's owner.
@@ -191,7 +158,7 @@ def _add_git_repo(url_builder, username=None, repo=None, module=None, branch=Non
     The 'module' parameter is optional and is a list containing the modules/packages that are available in the chosen Github repository.
     If it is not provided, it defaults to the repositories name, as it is common that the a Python repository at "github.com/someuser/somereponame" contains a module/package of "somereponame".
     The 'branch' and 'commit' parameters cannot be both populated at the same call. They specify the branch (last commit) or specific commit, that should be served.
-    '''
+    """
     if username == None or repo == None:
         raise Error("'username' and 'repo' parameters cannot be None")
     if commit and branch:
@@ -207,23 +174,53 @@ def _add_git_repo(url_builder, username=None, repo=None, module=None, branch=Non
     url = url_builder(username, repo, branch)
     return add_remote_repo(module, url)
 
+def add_remote_repo(modules, base_url='http://localhost:8000/'):
+    """ 
+    Function that creates and adds to the 'sys.meta_path' an RemoteImporter object.
+    The parameters are the same as the RemoteImporter class contructor.
+    """
+    importer = RemoteImporter(modules, base_url)
+    sys.meta_path.insert(0, importer)
+    return importer
+
+def remove_remote_repo(base_url):
+    """ 
+    Function that removes from the 'sys.meta_path' an RemoteImporter object given its HTTP/S URL.
+    """
+    for importer in sys.meta_path:
+        try:
+            if importer.base_url.startswith(base_url):  # an extra '/' is always added
+                sys.meta_path.remove(importer)
+                return True
+        except AttributeError as e:
+            pass
+    return False
+
+@contextlib.contextmanager
+def remote_repo(modules, base_url='http://localhost:8000/'):
+    """ 
+    Context Manager that provides remote import functionality through a URL.
+    The parameters are the same as the RemoteImporter class contructor.
+    """
+    importer = add_remote_repo(modules, base_url)
+    yield
+    remove_remote_repo(base_url)
 
 @contextlib.contextmanager
 def github_repo(username=None, repo=None, module=None, branch=None, commit=None):
-    ''' 
+    """ 
     Context Manager that provides import functionality from Github repositories through HTTPS.
     The parameters are the same as the '_add_git_repo' function. No 'url_builder' function is needed.
-    '''
+    """
     importer = _add_git_repo(__create_github_url,
         username, repo, module=module, branch=branch, commit=commit)
     yield
     remove_remote_repo(importer.base_url)
 
-
-def load(module_name, url = 'http://localhost:8000/'):
-    ''' 
+def load(module_name, url='http://localhost:8000/'):
+    """ 
     Loads a module on demand and returns it as a module object without polluting the Namespace.
-    '''
+    """
     importer = RemoteImporter([module_name], url)
     loader = importer.find_module(module_name)
     if loader != None:

@@ -18,7 +18,7 @@ def log(info):
     if __verbose__:
         __logger__.debug(str(info))
 
-def imports(packages, module=None):
+def imports(packages, target=None):
     """ 
     Attempt to import each package into the module specified
 
@@ -29,11 +29,18 @@ def imports(packages, module=None):
     :param str module:      target module name 
 
     """
+    if not target:
+        target = globals()
+    else:
+        if not hasattr(target, '__dict__'):
+            target = globals()
+        else:
+            target = target.__dict__
     for package in packages:
         try:
-            exec "import {}".format(package) in globals()
+            exec "import {}".format(package) in target
         except ImportError:
-            log(str().join(("missing package '{}' is required".format(package), " for module '{}'".format(module) if module else "")))
+            log(str().join(("missing package '{}' is required".format(package), " for module '{}'".format(target) if target else "")))
 
 def is_compatible(platforms=['win32','linux2','darwin'], module=None):
     """ 

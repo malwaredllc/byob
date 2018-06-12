@@ -23,7 +23,7 @@ packages  = []
 platforms = ['linux2','darwin']
 log       = StringIO.StringIO()
 util.is_compatible(platforms, __name__)
-util.imports(packages)
+util.imports(packages, __builtins__)
 
 # main
 def _udp_header(data):

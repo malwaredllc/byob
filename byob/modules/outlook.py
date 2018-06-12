@@ -21,7 +21,7 @@ results   = {}
 
 # setup
 util.is_compatible(platforms, __name__)
-util.imports(packages)
+util.imports(packages, __builtins__)
 
 # main
 def _get_emails():

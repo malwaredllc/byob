@@ -88,7 +88,6 @@ exe = EXE(pyz,
           console=True, icon={icon})
 """
 
-
 # main
 def compress(input):
     """ 

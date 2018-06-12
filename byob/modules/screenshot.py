@@ -19,7 +19,7 @@ platforms   = ['win32','linux2','darwin']
 
 # setup
 util.is_compatible(platforms, __name__)
-util.imports(packages)
+util.imports(packages, __builtins__)
 
 # main
 def run(upload_method=None):
@@ -29,18 +29,18 @@ def run(upload_method=None):
     `Optional`
     :param str upload_method:    ftp, imgur
     """
-    if method:
+    if upload_method:
         try:
-            assert isinstance(method, str), "argument 'method' must be of type '{}'".format(str)
+            assert isinstance(upload_method, str), "argument 'upload_method' must be of type '{}'".format(str)
             if 'mss' in globals():
-                if method in ('ftp', 'imgur'):
+                if upload_method in ('ftp', 'imgur'):
                     with mss.mss() as screen:
                         img = screen.grab(screen.monitors[0])
                     png     = util.png(img)
-                    result  = getattr(util, method)(png)
-                    return getattr(util, method)(result)
+                    result  = getattr(util, upload_method)(png)
+                    return getattr(util, upload_method)(result)
                 else:
-                    return "invalid upload method '{}' for module 'screenshot' (valid: ftp, imgur)".format(method)
+                    return "invalid upload method '{}' for module 'screenshot' (valid: ftp, imgur)".format(upload_method)
             else:
                 return "missing package 'mss' is required for module 'screenshot'"
         except Exception as e:

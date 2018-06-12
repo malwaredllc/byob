@@ -21,7 +21,7 @@ platforms = ['win32','linux2','darwin']
 
 # setup
 util.is_compatible(platforms, __name__)
-util.imports(packages)
+util.imports(packages, __builtins__)
 
 # templates
 __Template_wmi = """$filter = ([wmiclass]"\\\\.\\root\\subscription:__EventFilter").CreateInstance()
