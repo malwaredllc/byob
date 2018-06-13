@@ -27,17 +27,9 @@ The library contains 5 main parts:
    *subpackage of 6 core modules used by the command & control server  and client generator*
 
    - `byob.core.util`: *miscellaneous utility functions that are used by many modules*
-   - `byob.core.handlers`: *request handlers which can be paired with the base Server class to form 
-     2 different types of server instances which the C2 runs in parallel with
-     the main server instance*
-     - `byob.core.handlers.RequestHandler`: handles requests for files in the byob.remote package
-     - `byob.core.handlers.TaskHandler`: tracks issued tasks & stores completed tasks in database
-
-   - `byob.core.security`: *module containing the Diffie-Hellman Internet Key Exchange (RFC 2741)
-     method for securing a shared secret key even over insecure networks,
-     as well as encryption & decryption methods for 3 different modes to
-     ensure secure communication no matter what*
-
+   - `byob.core.handlers`: *base server class and various request handler classes* 
+   - `byob.core.security`: 
+     - __RFC-2741__ Diffie-Hellman Internet Key Exchange (secure encryption key even over monitored networks)
      - __AES-256__ in authenticated OCB mode (*requirements*: `PyCrypto` & `pycryptodome`) 
      - __AES-256__ in CBC mode with HMAC-SHA256 authentication (*requirements*: `PyCrypto`)
      - __XOR-128__ stream cipher that uses only builtin python keywords (*requirements*: none)
