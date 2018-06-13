@@ -38,14 +38,14 @@ The library contains 4 main parts:
 
    *subpackage containing 11 post-exploitation modules for clients to import remotely*
 
-   - `byob.modules.keylogger`: *logs the user’s keystrokes & the window name entered*
-   - `byob.modules.screenshot`: *take a screenshot of current user’s desktop*
-   - `byob.modules.webcam`: *view a live stream or capture image/video from the webcam*
-   - `byob.modules.ransom`: *encrypt files & generate random BTC wallet for ransom payment*
-   - `byob.modules.outlook`: *read/search/upload emails from the local Outlook client*
-   - `byob.modules.packetsniffer`: *run a packet sniffer on the host network & upload .pcap file*
-   - `byob.modules.persistence`: *establish persistence on the host machine using 5 different methods*
-   - `byob.modules.phone`: *read/search/upload text messages from the client smartphone*
-   - `byob.modules.escalate`: *attempt UAC bypass to gain unauthorized administrator privileges*
-   - `byob.modules.portscanner`: *scan the local network for other online devices & open ports*
-   - `byob.modules.process`: *list/search/kill/monitor currently running processes on the host*
+   - `byob.modules.keylogger`: logs the user’s keystrokes & the window name entered
+   - `byob.modules.screenshot`: take a screenshot of current user’s desktop
+   - `byob.modules.webcam`: view a live stream or capture image/video from the webcam
+   - `byob.modules.ransom`: encrypt files & generate random BTC wallet for ransom payment
+   - `byob.modules.outlook`: read/search/upload emails from the local Outlook client
+   - `byob.modules.packetsniffer`: run a packet sniffer on the host network & upload .pcap file
+   - `byob.modules.persistence`: establish persistence on the host machine using 5 different methods
+   - `byob.modules.phone`: read/search/upload text messages from the client smartphone
+   - `byob.modules.escalate`: attempt UAC bypass to gain unauthorized administrator privileges
+   - `byob.modules.portscanner`: scan the local network for other online devices & open ports
+   - `byob.modules.process`: list/search/kill/monitor currently running processes on the host
