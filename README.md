@@ -49,7 +49,7 @@ The library contains 4 main parts:
     given to complete templates of varying size and complexity, and then output
     the code snippets generated as raw text*
 
-3) `byob.modules`: *package containing 11 post-exploitation modules that the server hosts online
+4) `byob.modules`: *package containing 11 post-exploitation modules that the server hosts online
     for clients to import remotely*
 
    1) `byob.modules.keylogger`: *logs the user’s keystrokes & the window name entered*
