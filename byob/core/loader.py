@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-'Remote Import (Build Your Own Botnet)'
+'Module Loader (Build Your Own Botnet)'
 
 # standard library
 import imp
