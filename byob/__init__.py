@@ -128,7 +128,7 @@ byob.modules
     droppers to load & execute on target host machines
 
 """
-__all__         = ['core','client','modules','server']
+__all__         = ['core','generator','modules','server']
 __version__     = '0.1.5'
 __license__     = 'GPLv3'
 __author__      = 'Daniel Vega-Myhre'
