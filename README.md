@@ -18,16 +18,15 @@ The library contains 4 main parts:
   to each client, storing results of each client's completed tasks, as well
   as hosting the byob.remote package online for clients to access remotely*
 
-3) `byob.core`: *supackage containing the core modules used by the command & control server
-   and the client generator*
-   - `byob.core.util`: *miscellaneous utility functions that are used by many modules*
-   - `byob.core.handlers`: *request handlers which can be paired with the base Server class to form 
+3) `byob.core`: *subpackage of 6 core modules used by the command & control server  and client generator*
+   1) `byob.core.util`: *miscellaneous utility functions that are used by many modules*
+   2) `byob.core.handlers`: *request handlers which can be paired with the base Server class to form 
      2 different types of server instances which the C2 runs in parallel with
      the main server instance*
-     - __RequestHandler__: handles requests for files in the byob.remote package
-     - __TaskHandler__: tracks issued tasks & stores completed tasks in database
+     - `byob.core.handlers.RequestHandler`: handles requests for files in the byob.remote package
+     - `byob.core.handlers.TaskHandler`: tracks issued tasks & stores completed tasks in database
 
-   - `byob.core.security`: *module containing the Diffie-Hellman Internet Key Exchange (RFC 2741)
+   3) `byob.core.security`: *module containing the Diffie-Hellman Internet Key Exchange (RFC 2741)
      method for securing a shared secret key even over insecure networks,
      as well as encryption & decryption methods for 3 different modes to
      ensure secure communication no matter what*
@@ -36,21 +35,20 @@ The library contains 4 main parts:
      - __AES-256__ in CBC mode with HMAC-SHA256 authentication (*requirements*: `PyCrypto`)
      - __XOR-128__ stream cipher that uses only builtin python keywords (*requirements*: none)
 
-   - `byob.core.loader`: *enables clients to remotely import any package/module/script from the server
+   4) `byob.core.loader`: *enables clients to remotely import any package/module/script from the server
      by requesting the code from the server, loading the code in-memory, where
      it can be directly imported into the currently running process, without 
      writing anything to the disk (not even temporary files - zero IO system calls)*
 
-   - `byob.core.payload`: *reverse TCP shell designed to remotely import post-exploitation modules from
+   5) `byob.core.payload`: *reverse TCP shell designed to remotely import post-exploitation modules from
      server, along with any packages/dependencies), complete tasks issued by
      the server, and handles connections & communication at the socket-level*
 
-   - `byob.core.generators`: *module containing functions which all generate code by using the arguments
+   6) `byob.core.generators`: *module containing functions which all generate code by using the arguments
      given to complete templates of varying size and complexity, and then output
      the code snippets generated as raw text*
 
-4) `byob.modules`: *package containing 11 post-exploitation modules that the server hosts online
-    for clients to import remotely*
+4) `byob.modules`: *subpackage containing 11 post-exploitation modules for clients to import remotely*
 
    1) `byob.modules.keylogger`: *logs the user’s keystrokes & the window name entered*
    2) `byob.modules.screenshot`: *take a screenshot of current user’s desktop*
