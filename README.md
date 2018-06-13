@@ -11,91 +11,116 @@ The library contains 4 main parts:
 
 `byob.client`
 
-generates unique, virtually undetectable droppers with staged payloads
+*generates unique, virtually undetectable droppers with staged payloads
 and a number of optional features can be added via intuitive command-line
-arguments (`client.py -h/--help` for detailed usage information)
+arguments* (`client.py -h/--help` for detailed usage information)
 
 `byob.server`
 
-console based command & control server with a persistent database for
+*console based command & control server with a persistent database for
 managing the client's reverse TCP shell sessions, tracking tasks issued
 to each client, storing results of each client's completed tasks, as well
-as hosting the byob.remote package online for clients to access remotely
+as hosting the byob.remote package online for clients to access remotely*
 
-- `byob.core`: supackage containing the core modules used by the server
-  - `byob.core.util`: miscellaneous utility functions that are used by many modules
-  - `byob.core.handlers`: request handlers which can be paired with the base Server class to
-     form 2 different types of server instances which the C2 runs in paralll with the main server
-    - `byob.core.handlers.RequestHandler`: handles requests for files in the byob.remote package
-    - `byob.core.handlers.TaskHandler`: tracks issued tasks & stores completed tasks in database
+`byob.core`
 
-  - `byob.core.security`: module containing the Diffie-Hellman Internet Key Exchange (RFC 2741)
-    method for securing a shared secret key even over insecure networks,
-    as well as encryption & decryption methods for 2 different modes to
-    ensure secure communication no matter what
-     - AES-256 in authenticated OCB mode (requires: PyCrypto & pycryptodome)
-     - AES-256 in CBC mode with HMAC-SHA256 authentication (requires: PyCrypto)
-     - XOR-128 (no packages required - uses only builtin python keywords)
+*supackage containing the core modules used by the server*
 
-  byob.core.loader
-    enables clients to remotely import any package/module/script from the server
-    by requesting the code from the server, loading the code in-memory, where
-    it can be directly imported into the currently running process, without
-    writing anything to the disk (not even temporary files - zero IO system calls)
+`byob.core.util`
 
-  byob.core.payload
-    reverse TCP shell designed to remotely import post-exploitation modules from
-    server, along with any packages/dependencies), complete tasks issued by
-    the server, and handles connections & communication at the socket-level
+*miscellaneous utility functions that are used by many modules*
 
-  byob.core.generators
-    module containing functions which all generate code by using the arguments
-    given to complete templates of varying size and complexity, and then output
-    the code snippets generated as raw text
+`byob.core.handlers`
 
-byob.modules
-  add any scripts/modules you want to run on target machines to this directory.
-  While the server is online, clients will automatically be able to
-  remotely import them into the currently running process without writing anything
-  to the disk, and use them directly without installation.
+*request handlers which can be paired with the base Server class to form 
+2 different types of server instances which the C2 runs in parallel with
+the main server instance*
 
-  byob.modules.keylogger
-    logs the user’s keystrokes & the window name entered
+__RequestHandler__: handles requests for files in the byob.remote package
+__TaskHandler__: tracks issued tasks & stores completed tasks in database
 
-  byob.modules.screenshot
-    take a screenshot of current user’s desktop
+`byob.core.security` 
 
-  byob.modules.webcam
-    view a live stream or capture image/video from the webcam
+*module containing the Diffie-Hellman Internet Key Exchange (RFC 2741)
+method for securing a shared secret key even over insecure networks,
+as well as encryption & decryption methods for 2 different modes to
+ensure secure communication no matter what*
 
-  byob.modules.ransom
-    encrypt files & generate random BTC wallet for ransom payment
+- __AES-256__ in authenticated OCB mode (*requirements*: `PyCrypto` & `pycryptodome`)
+- __AES-256__ in CBC mode with HMAC-SHA256 authentication (*requirements*: `PyCrypto`)
+- __XOR-128__ stream cipher that uses only builtin python keywords (*requirements*: none)
 
-  byob.modules.outlook
-    read/search/upload emails from the local Outlook client
+`byob.core.loader`
+ 
+*enables clients to remotely import any package/module/script from the server
+by requesting the code from the server, loading the code in-memory, where
+it can be directly imported into the currently running process, without
+writing anything to the disk (not even temporary files - zero IO system calls)*
 
-  byob.modules.packetsniffer
-    run a packet sniffer on the host network & upload .pcap file
+`byob.core.payload`
 
-  byob.modules.persistence
-    establish persistence on the host machine using multiple methods
-     - launch agent   (Mac OS X)
-     - scheduled task (Windows)
-     - startup file   (Windows)
-     - registry key   (Windows)
-     - crontab job    (Linux)
+*reverse TCP shell designed to remotely import post-exploitation modules from
+server, along with any packages/dependencies), complete tasks issued by
+the server, and handles connections & communication at the socket-level*
 
-  byob.modules.phone
-    read/search/upload text messages from the client smartphone
+`byob.core.generators`
 
-  byob.modules.escalate
-    (Windows) attempt UAC bypass to gain unauthorized administrator privileges
+*module containing functions which all generate code by using the arguments
+given to complete templates of varying size and complexity, and then output
+the code snippets generated as raw text*
 
-  byob.modules.portscanner
-    scan the local network for other online devices & open ports
+`byob.modules`
+ 
+*package containing 12 post-exploitation modules that the server hosts online
+for clients to import remotely*
 
-  byob.modules.process
-    list/search/kill/monitor currently running processes on the host
+`byob.modules.keylogger`
+
+*logs the user’s keystrokes & the window name entered*
+
+`byob.modules.screenshot`
+
+*take a screenshot of current user’s desktop*
+
+`byob.modules.webcam`
+
+*view a live stream or capture image/video from the webcam*
+
+`byob.modules.ransom`
+
+*encrypt files & generate random BTC wallet for ransom payment*
+
+`byob.modules.outlook`
+
+*read/search/upload emails from the local Outlook client*
+
+`byob.modules.packetsniffer`
+
+*run a packet sniffer on the host network & upload .pcap file*
+
+`byob.modules.persistence`
+
+*establish persistence on the host machine using multiple methods*
+
+- launch agent   (*Mac OS X*)
+- scheduled task (*Windows*)
+- startup file   (*Windows*)
+- registry key   (*Windows*)
+- crontab job    (*Linux*)
+
+`byob.modules.phone`
+
+*read/search/upload text messages from the client smartphone*
+
+`byob.modules.escalate`
+ 
+*attempt UAC bypass to gain unauthorized administrator privileges*
+
+`byob.modules.portscanner`
+scan the local network for other online devices & open ports
+
+`byob.modules.process`
+list/search/kill/monitor currently running processes on the host
 
   byob.modules.payloads
     package containing the payloads created by client generator that are being
