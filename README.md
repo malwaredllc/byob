@@ -7,7 +7,7 @@ developers looking to roll-up their sleeves and get some hands-on experience
 defending networks against a simulated botnet roll-out with realistic droppers
 that will test the limits of your capacity to defend your network
 
-The library contains 3 main parts:
+The library contains 4 main parts:
 
 1) `byob.client`: *generates unique, virtually undetectable droppers with staged payloads
   and a number of optional features can be added via intuitive command-line
@@ -49,28 +49,28 @@ The library contains 3 main parts:
     given to complete templates of varying size and complexity, and then output
     the code snippets generated as raw text*
 
-- `byob.modules`: *package containing 12 post-exploitation modules that the server hosts online
+3) `byob.modules`: *package containing 11 post-exploitation modules that the server hosts online
     for clients to import remotely*
 
-  1) `byob.modules.keylogger`: *logs the user’s keystrokes & the window name entered*
-  2) `byob.modules.screenshot`: *take a screenshot of current user’s desktop*
-  3) `byob.modules.webcam`: *view a live stream or capture image/video from the webcam*
-  4) `byob.modules.ransom`: *encrypt files & generate random BTC wallet for ransom payment*
-  5) `byob.modules.outlook`: *read/search/upload emails from the local Outlook client*
-  6) `byob.modules.packetsniffer`: *run a packet sniffer on the host network & upload .pcap file*
-  7) `byob.modules.persistence`: *establish persistence on the host machine using 5 different methods*
-    - launch agent   (*Mac OS X*)
-    - scheduled task (*Windows*)
-    - startup file   (*Windows*)
-    - registry key   (*Windows*)
-    - crontab job    (*Linux*)
-  - `byob.modules.phone`: *read/search/upload text messages from the client smartphone*
-  - `byob.modules.escalate`: *attempt UAC bypass to gain unauthorized administrator privileges*
-  - `byob.modules.portscanner`: *scan the local network for other online devices & open ports*
-  - `byob.modules.process`: *list/search/kill/monitor currently running processes on the host*
-  - `byob.modules.payloads`: *package containing the payloads created by client generator that 
-     are hosted locally by the server (rather than uploaded to Pastebin to be hosted there 
-     anonymously) for the client stagers to load & execute on the target host machines*
-  - `byob.modules.stagers`: *directory containing the stagers created by the client generator 
-     which are hosted locally by the server (rather than uploaded to Pastebin to be hosted there 
-     anonymously) for the client droppers to load & execute on target host machines*
+   1) `byob.modules.keylogger`: *logs the user’s keystrokes & the window name entered*
+   2) `byob.modules.screenshot`: *take a screenshot of current user’s desktop*
+   3) `byob.modules.webcam`: *view a live stream or capture image/video from the webcam*
+   4) `byob.modules.ransom`: *encrypt files & generate random BTC wallet for ransom payment*
+   5) `byob.modules.outlook`: *read/search/upload emails from the local Outlook client*
+   6) `byob.modules.packetsniffer`: *run a packet sniffer on the host network & upload .pcap file*
+   7) `byob.modules.persistence`: *establish persistence on the host machine using 5 different methods*
+      - launch agent   (*Mac OS X*)
+      - scheduled task (*Windows*)
+      - startup file   (*Windows*)
+      - registry key   (*Windows*)
+      - crontab job    (*Linux*)
+   9) `byob.modules.phone`: *read/search/upload text messages from the client smartphone*
+   10) `byob.modules.escalate`: *attempt UAC bypass to gain unauthorized administrator privileges*
+   11) `byob.modules.portscanner`: *scan the local network for other online devices & open ports*
+   12) `byob.modules.process`: *list/search/kill/monitor currently running processes on the host*
+       - `byob.modules.payloads`: *package containing the payloads created by client generator that 
+         are hosted locally by the server (rather than uploaded to Pastebin to be hosted there 
+         anonymously) for the client stagers to load & execute on the target host machines*
+       - `byob.modules.stagers`: *directory containing the stagers created by the client generator 
+         which are hosted locally by the server (rather than uploaded to Pastebin to be hosted there 
+         anonymously) for the client droppers to load & execute on target host machines*
