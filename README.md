@@ -28,11 +28,7 @@ The library contains 5 main parts:
 
    - `byob.core.util`: *miscellaneous utility functions that are used by many modules*
    - `byob.core.handlers`: *base server class and various request handler classes* 
-   - `byob.core.security`: 
-     - __RFC-2741__ Diffie-Hellman Internet Key Exchange (secure encryption key even over monitored networks)
-     - __AES-256__ in authenticated OCB mode (*requirements*: `PyCrypto` & `pycryptodome`) 
-     - __AES-256__ in CBC mode with HMAC-SHA256 authentication (*requirements*: `PyCrypto`)
-     - __XOR-128__ stream cipher that uses only builtin python keywords (*requirements*: none)
+   - `byob.core.security`: *Diffie-Hellman Internet Key Exchange (RFC 2741) and 3 different types of encryption*
    - `byob.core.loader`: *enables clients to remotely import any package/module/script from the server*
    - `byob.core.payload`: *reverse TCP shell designed to remotely import dependencies, packages & modules*
    - `byob.core.generators`: *functions which all dynamically generate code for the client generator*
