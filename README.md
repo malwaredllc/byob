@@ -7,33 +7,34 @@ of the sophisticated malware that infects millions of devices every year and spa
 modern botnets, in order to improve their ability to develop counter-measures against 
 these threats
 
-The library contains 5 main parts:
+The library contains 4 main parts:
 
-1) __byob.generator__
+### Generator
 
    *generates unique, virtually undetectable droppers with staged payloads
    and a number of optional features can be added via intuitive command-line
-   arguments* (`client.py -h/--help` for detailed usage information)
+   arguments* (`generator.py -h/--help` for detailed usage information)
 
-2) __byob.server__
+### Server
 
    *console based command & control server with a persistent database for
    managing the client's reverse TCP shell sessions, tracking tasks issued
    to each client, storing results of each client's completed tasks, as well
    as hosting the byob.remote package online for clients to access remotely*
+   (`server.py -h/--help` for detailed usage information)
 
-3) __byob.core__
+### Core
 
    *subpackage of 6 core modules used by the command & control server  and client generator*
 
-   - `byob.core.util`: *miscellaneous utility functions that are used by many modules*
-   - `byob.core.handlers`: *base server class and various request handler classes* 
-   - `byob.core.security`: *Diffie-Hellman Internet Key Exchange (RFC 2741) and 3 different types of encryption*
-   - `byob.core.loader`: *enables clients to remotely import any package/module/script from the server*
-   - `byob.core.payload`: *reverse TCP shell designed to remotely import dependencies, packages & modules*
-   - `byob.core.generators`: *functions which all dynamically generate code for the client generator*
+   - `byob.core.util`: miscellaneous utility functions that are used by many modules
+   - `byob.core.handlers`: base server class and various request handler classes
+   - `byob.core.security`: Diffie-Hellman Internet Key Exchange (RFC 2741) and 3 different types of encryption
+   - `byob.core.loader`: enables clients to remotely import any package/module/script from the server
+   - `byob.core.payload`: reverse TCP shell designed to remotely import dependencies, packages & modules
+   - `byob.core.generators`: functions which all dynamically generate code for the client generator
 
-4) __byob.modules__
+### Modules
 
    *subpackage containing 11 post-exploitation modules for clients to import remotely*
 
@@ -53,8 +54,3 @@ The library contains 5 main parts:
    - `byob.modules.escalate`: *attempt UAC bypass to gain unauthorized administrator privileges*
    - `byob.modules.portscanner`: *scan the local network for other online devices & open ports*
    - `byob.modules.process`: *list/search/kill/monitor currently running processes on the host*
-
-5) __byob.trojans__
-   
-   *package containing the are hosted locally by the server (rather than uploaded to Pastebin to be hosted there 
-   anonymously) for the client stagers to load & execute on the target host machines*
