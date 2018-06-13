@@ -11,7 +11,7 @@ The library contains 5 main parts:
 
 1) __byob.generator__
 
-  *generates unique, virtually undetectable droppers with staged payloads
+   *generates unique, virtually undetectable droppers with staged payloads
    and a number of optional features can be added via intuitive command-line
    arguments* (`client.py -h/--help` for detailed usage information)
 
