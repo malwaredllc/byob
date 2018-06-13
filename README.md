@@ -9,16 +9,14 @@ that will test the limits of your capacity to defend your network
 
 The library contains 4 main parts:
 
-`byob.client`
-*generates unique, virtually undetectable droppers with staged payloads
-and a number of optional features can be added via intuitive command-line
-arguments* (`client.py -h/--help` for detailed usage information)
+- `byob.client`: *generates unique, virtually undetectable droppers with staged payloads
+  and a number of optional features can be added via intuitive command-line
+  arguments* (`client.py -h/--help` for detailed usage information)
 
-`byob.server`
-*console based command & control server with a persistent database for
-managing the client's reverse TCP shell sessions, tracking tasks issued
-to each client, storing results of each client's completed tasks, as well
-as hosting the byob.remote package online for clients to access remotely*
+- `byob.server`: *console based command & control server with a persistent database for
+  managing the client's reverse TCP shell sessions, tracking tasks issued
+  to each client, storing results of each client's completed tasks, as well
+  as hosting the byob.remote package online for clients to access remotely*
 
 - `byob.core`: *supackage containing the core modules used by the server*
   - `byob.core.util`: *miscellaneous utility functions that are used by many modules*
