@@ -33,19 +33,9 @@ The library contains 5 main parts:
      - __AES-256__ in authenticated OCB mode (*requirements*: `PyCrypto` & `pycryptodome`) 
      - __AES-256__ in CBC mode with HMAC-SHA256 authentication (*requirements*: `PyCrypto`)
      - __XOR-128__ stream cipher that uses only builtin python keywords (*requirements*: none)
-
-   - `byob.core.loader`: *enables clients to remotely import any package/module/script from the server
-     by requesting the code from the server, loading the code in-memory, where
-     it can be directly imported into the currently running process, without 
-     writing anything to the disk (not even temporary files - zero IO system calls)*
-
-   - `byob.core.payload`: *reverse TCP shell designed to remotely import post-exploitation modules from
-     server, along with any packages/dependencies), complete tasks issued by
-     the server, and handles connections & communication at the socket-level*
-
-   - `byob.core.generators`: *module containing functions which all generate code by using the arguments
-     given to complete templates of varying size and complexity, and then output
-     the code snippets generated as raw text*
+   - `byob.core.loader`: *enables clients to remotely import any package/module/script from the server*
+   - `byob.core.payload`: *reverse TCP shell designed to remotely import dependencies, packages & modules*
+   - `byob.core.generators`: *functions which all dynamically generate code for the client generator*
 
 4) __byob.modules__
 
