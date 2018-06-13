@@ -1,17 +1,6 @@
 # BYOB (Build Your Own Botnet)
 [![license](https://img.shields.io/badge/license-brightgreen)](https://github.com/colental/byob/master/LICENSE)
 
-88                                  88
-88                                  88
-88                                  88
-88,dPPYba,  8b       d8  ,adPPYba,  88,dPPYba,
-88P'    "8a `8b     d8' a8"     "8a 88P'    "8a
-88       d8  `8b   d8'  8b       d8 88       d8
-88b,   ,a8"   `8b,d8'   "8a,   ,a8" 88b,   ,a8"
-8Y"Ybbd8"'      Y88'     `"YbbdP"'  8Y"Ybbd8"'
-                d8'
-               d8'
-
 BYOB is an open-source project that provides a library of packages
 and modules which provide a basic framework for security researchers and
 developers looking to roll-up their sleeves and get some hands-on experience
