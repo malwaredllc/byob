@@ -24,11 +24,11 @@ duration and enabling long-term reconnaissance
 Streamlined console interface for controlling client host machines remotely via 
 reverse TCP shells which provide direct terminal access to the client host machines
 
-# Generator
+## Generator
 
-`usage: generator.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
-                     [--encrypt] [--obfuscate] [--compress] [--compile]
-                     host port [module [module ...]]`
+    usage: generator.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
+                        [--encrypt] [--obfuscate] [--compress] [--compile]
+                        host port [module [module ...]]
 
 *Generate unique, fully-undetectable clients with staged payloads and the following features:*
 
