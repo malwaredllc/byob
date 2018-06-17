@@ -9,12 +9,6 @@ these threats
 
 The library contains 4 main parts:
 
-### Generator
-
-   *Generates unique, virtually undetectable droppers with staged payloads
-   and a number of optional features can be added via intuitive command-line
-   arguments* (`generator.py -h/--help` for detailed usage information)
-
 ### Server
 
    *Console based command & control server with a persistent database for
@@ -22,6 +16,12 @@ The library contains 4 main parts:
    to each client, storing results of each client's completed tasks, as well
    as hosting the byob.remote package online for clients to access remotely*
    (`server.py -h/--help` for detailed usage information)
+
+### Generator
+
+   *Generates unique, virtually undetectable droppers with staged payloads
+   and a number of optional features can be added via intuitive command-line
+   arguments* (`generator.py -h/--help` for detailed usage information)
 
 ### Core
 
