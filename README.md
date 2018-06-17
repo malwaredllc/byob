@@ -26,33 +26,11 @@ reverse TCP shells which provide direct terminal access to the client host machi
 
 # Generator
 
-    usage: generator.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
-                         [--encrypt] [--obfuscate] [--compress] [--compile]
-                         host port [modules [modules ...]]
+`usage: generator.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
+                     [--encrypt] [--obfuscate] [--compress] [--compile]
+                     host port [module [module ...]]`
 
-    positional arguments:
-      host            server IP address
-      port            server port number
-      modules         modules to remotely import at run-time
-
-    optional arguments:
-      -h, --help      show this help message and exit
-      -v, --version   show program's version number and exit
-      --name NAME     output file name
-      --icon ICON     icon image file name
-      --pastebin API  upload & host payload on pastebin
-      --encrypt       encrypt payload and embed key in stager
-      --obfuscate     obfuscate names of classes, functions & variables
-      --compress      zip-compress into a self-executing python script
-      --exe           compile into a standalone executable
-      --app           bundle into standalone application
-
-*Generates unique, virtually undetectable droppers with staged payloads
-based on a reverse TCP shell that can run any number of other scripts/modules
-on the target host machine without including them in the payload itself and
-without installing any dependencies can remotely import any scripts/modules
-from the server directly into the currently running process without writing
-anything to the disk*
+*Generate unique, fully-undetectable clients with staged payloads and the following features:*
 
 ### Remote Imports
 
