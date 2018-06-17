@@ -10,6 +10,7 @@ these threats
 The library contains 4 main parts:
 
 # Server   
+[![server](https://img.shields.io/badge/byob-server-red.svg)](https://github.com/colental/byob/blob/master/byob/server.py)
 
 *Command & control server with the following features:*
 
