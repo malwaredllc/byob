@@ -23,7 +23,6 @@ __doc__ = '''
 '''
 
 # standard library
-import __builtin__
 import os
 import sys
 import json
@@ -37,15 +36,14 @@ import subprocess
 import collections
 import SimpleHTTPServer
 
+# packages
+import SocketServer
+
 # modules
 import util
 
-# packages
-packages = ['SocketServer']
-util.imports(packages, __builtin__)
-
-
-class Server(__builtin__.SocketServer.ThreadingTCPServer):
+# main
+class Server(SocketServer.ThreadingTCPServer):
 
     """ 
     Base server which can be combined with handlers from byob.core.handlers
@@ -67,7 +65,7 @@ class Server(__builtin__.SocketServer.ThreadingTCPServer):
         Returns a byob.server.Server instance
         
         """
-        __builtin__.SocketServer.ThreadingTCPServer.__init__(self, (host, port), handler)
+        SocketServer.ThreadingTCPServer.__init__(self, (host, port), handler)
         if os.path.isdir(root):
             os.chdir(root)
 
@@ -87,7 +85,7 @@ class Server(__builtin__.SocketServer.ThreadingTCPServer):
                 break
 
 
-class TaskHandler(__builtin__.SocketServer.StreamRequestHandler):
+class TaskHandler(SocketServer.StreamRequestHandler):
     """ 
     Task handler for the C2 server that handles
     incoming tasks from clients operating in 

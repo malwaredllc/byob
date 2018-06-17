@@ -133,3 +133,10 @@ __version__     = '0.1.5'
 __license__     = 'GPLv3'
 __author__      = 'Daniel Vega-Myhre'
 __github__      = 'https://github.com/colental/byob'
+
+def main():
+    for module in __all__:
+        exec "from . import {}".format(module)
+
+if __name__ == '__main__':
+    main()

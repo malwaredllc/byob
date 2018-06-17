@@ -6,7 +6,7 @@
 import logging
 
 # main
-logging.basicConfig(level=logging.INFO, handler=logging.StreamHandler())
+logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
 __logger__   = logging.getLogger(__name__)
 __verbose__  = True
 
@@ -23,22 +23,18 @@ def imports(packages, target=None):
     Attempt to import each package into the module specified
 
     `Required`
-    :param list packages:   list of packages to import
+    :param list packages: list of packages to import
 
     `Optional`
-    :param str module:      target module name 
+    :param object target: target object to import into 
 
     """
-    if not target:
-        target = globals()
-    else:
-        if not hasattr(target, '__dict__'):
-            target = globals()
-        else:
-            target = target.__dict__
+    target = globals()
+    if target and hasattr(target, '__dict__'):
+        target = module.__dict__
     for package in packages:
         try:
-            exec "import {}".format(package) in target
+            exec("import {}".format(package), target)
         except ImportError:
             log(str().join(("missing package '{}' is required".format(package), " for module '{}'".format(target) if target else "")))
 

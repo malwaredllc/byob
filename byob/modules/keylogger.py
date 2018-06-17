@@ -26,10 +26,6 @@ max_size  = 4000
 log       = StringIO.StringIO()
 results   = {}
 
-# setup
-util.is_compatible(platforms, __name__)
-util.imports(packages, __builtins__)
-
 # main
 def _event(event):
     try:

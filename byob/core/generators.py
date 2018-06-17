@@ -19,7 +19,6 @@ import util
 import security
 
 # globals
-
 __Template_main  = """
 if __name__ == '__main__':
     _{0} = {1}({2})
