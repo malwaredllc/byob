@@ -44,7 +44,7 @@ The library contains 4 main parts:
    10) `byob.modules.portscanner`: scan the local network for other online devices & open ports
    11) `byob.modules.process`: list/search/kill/monitor currently running processes on the host
 
-### Core Framework
+### Framework Core
 
    1) `byob.core.util`: miscellaneous utility functions that are used by many modules
    2) `byob.core.handlers`: base server class and various request handler classes
