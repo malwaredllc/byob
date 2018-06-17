@@ -23,15 +23,6 @@ The library contains 4 main parts:
    and a number of optional features can be added via intuitive command-line
    arguments* (`generator.py -h/--help` for detailed usage information)
 
-   **`byob.core`**
-
-   1) `byob.core.util`: miscellaneous utility functions that are used by many modules
-   2) `byob.core.handlers`: base server class and various request handler classes
-   3) `byob.core.security`: Diffie-Hellman Internet Key Exchange (RFC 2741) and 3 different types of encryption
-   4) `byob.core.loader`: enables clients to remotely import any package/module/script from the server
-   5) `byob.core.payload`: reverse TCP shell designed to remotely import dependencies, packages & modules
-   6) `byob.core.generators`: functions which all dynamically generate code for the client generator
-
    **`byob.modules`**
 
    1) `byob.modules.keylogger`: logs the user’s keystrokes & the window name entered
@@ -45,3 +36,13 @@ The library contains 4 main parts:
    9) `byob.modules.escalate`: attempt UAC bypass to gain unauthorized administrator privileges
    10) `byob.modules.portscanner`: scan the local network for other online devices & open ports
    11) `byob.modules.process`: list/search/kill/monitor currently running processes on the host
+
+   **`byob.core`**
+
+   1) `byob.core.util`: miscellaneous utility functions that are used by many modules
+   2) `byob.core.handlers`: base server class and various request handler classes
+   3) `byob.core.security`: Diffie-Hellman Internet Key Exchange (RFC 2741) and 3 different types of encryption
+   4) `byob.core.loader`: enables clients to remotely import any package/module/script from the server
+   5) `byob.core.payload`: reverse TCP shell designed to remotely import dependencies, packages & modules
+   6) `byob.core.generators`: functions which all dynamically generate code for the client generator
+
