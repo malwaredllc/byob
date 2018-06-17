@@ -1,5 +1,5 @@
 # BYOB (Build Your Own Botnet)
-[![license](https://img.shields.io/badge/license-GPL-green.svg)](https://github.com/colental/byob/blob/master/LICENSE)
+[![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/colental/byob/blob/master/LICENSE)
 
 BYOB is an open-source project that provides a framework for security researchers 
 and developers to build and operate a basic botnet to deepen their understanding
@@ -9,8 +9,10 @@ these threats
 
 The library contains 4 main parts:
 
-# Server
+## Server
 [![server](https://img.shields.io/badge/byob-server-blue.svg)](https://github.com/colental/byob/blob/master/byob/server.py)
+
+`usage: server.py [-h] [-v] [--host HOST] [--port PORT] [--database DATABASE]`
 
 *Command & control server with the following features:*
 
@@ -26,12 +28,11 @@ Streamlined console interface for controlling client host machines remotely via
 reverse TCP shells which provide direct terminal access to the client host machines
 
 ## Generator
-
 [![generator](https://img.shields.io/badge/byob-generator-blue.svg)](https://github.com/colental/byob/blob/master/byob/generator.py)
 
-    usage: generator.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
-                        [--encrypt] [--obfuscate] [--compress] [--compile]
-                        host port [module [module ...]]
+`usage: generator.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
+                     [--encrypt] [--obfuscate] [--compress] [--compile]
+                     host port [module [module ...]]`
 
 *Generate unique, fully-undetectable clients with staged payloads and the following features:*
 
