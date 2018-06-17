@@ -25,8 +25,6 @@ The library contains 4 main parts:
 
    **`byob.core`**
 
-   *subpackage of 6 core modules used by the command & control server  and client generator*
-
    1) `byob.core.util`: miscellaneous utility functions that are used by many modules
    2) `byob.core.handlers`: base server class and various request handler classes
    3) `byob.core.security`: Diffie-Hellman Internet Key Exchange (RFC 2741) and 3 different types of encryption
@@ -35,8 +33,6 @@ The library contains 4 main parts:
    6) `byob.core.generators`: functions which all dynamically generate code for the client generator
 
    **`byob.modules`**
-
-   *subpackage containing 11 post-exploitation modules for clients to import remotely*
 
    1) `byob.modules.keylogger`: logs the user’s keystrokes & the window name entered
    2) `byob.modules.screenshot`: take a screenshot of current user’s desktop
