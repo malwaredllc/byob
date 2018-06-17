@@ -99,7 +99,7 @@ By default, clients will abort execution if a virtual machine or sandbox is dete
 
 ### Usage 
 
-`usage: generators.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
+    usage: generators.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
                          [--encrypt] [--obfuscate] [--compress] [--compile]
                          host port [modules [modules ...]]
 
