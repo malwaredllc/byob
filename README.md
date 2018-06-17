@@ -15,7 +15,8 @@ The library contains 4 main parts:
    managing the client's reverse TCP shell sessions, tracking tasks issued
    to each client, storing results of each client's completed tasks, as well
    as hosting the byob.remote package online for clients to access remotely*
-   (`server.py -h/--help` for detailed usage information)
+
+   `server.py -h/--help` for detailed usage information
 
    **`byob.generator`**
 
@@ -25,7 +26,8 @@ The library contains 4 main parts:
    without installing any dependencies can remotely import any scripts/modules
    from the server directly into the currently running process without writing
    anything to the disk*
-   (`generator.py -h/--help` for detailed usage information)
+
+   `generator.py -h/--help` for detailed usage information
 
    **`byob.modules`**
 
