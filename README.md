@@ -9,29 +9,23 @@ these threats
 
 The library contains 4 main parts:
 
-### Server
-   
    **`byob.server`**
    
-   *Console based command & control server with a persistent database for
+   *console based command & control server with a persistent database for
    managing the client's reverse TCP shell sessions, tracking tasks issued
    to each client, storing results of each client's completed tasks, as well
    as hosting the byob.remote package online for clients to access remotely*
    (`server.py -h/--help` for detailed usage information)
 
-### Generator
+   **`byob.generator`**
 
-   `byob.generator`
-
-   *Generates unique, virtually undetectable droppers with staged payloads
+   *generates unique, virtually undetectable droppers with staged payloads
    and a number of optional features can be added via intuitive command-line
    arguments* (`generator.py -h/--help` for detailed usage information)
 
-### Core
+   **`byob.core`**
 
-   `byob.core`
-
-   *Subpackage of 6 core modules used by the command & control server  and client generator*
+   *subpackage of 6 core modules used by the command & control server  and client generator*
 
    1) `byob.core.util`: miscellaneous utility functions that are used by many modules
    2) `byob.core.handlers`: base server class and various request handler classes
@@ -40,11 +34,9 @@ The library contains 4 main parts:
    5) `byob.core.payload`: reverse TCP shell designed to remotely import dependencies, packages & modules
    6) `byob.core.generators`: functions which all dynamically generate code for the client generator
 
-### Modules
+   **`byob.modules`**
 
-   `byob.modules`
-
-   *Subpackage containing 11 post-exploitation modules for clients to import remotely*
+   *subpackage containing 11 post-exploitation modules for clients to import remotely*
 
    1) `byob.modules.keylogger`: logs the user’s keystrokes & the window name entered
    2) `byob.modules.screenshot`: take a screenshot of current user’s desktop
