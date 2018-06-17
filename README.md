@@ -16,15 +16,11 @@ The library contains 4 main parts:
 
 *Command & control server with the following features:*
 
-### Persistent SQLite Database
-
-Lightweight database that stores identifying information about client host machines, 
+- __Persistent SQLite Database__: lightweight database that stores identifying information about client host machines, 
 allowing reverse TCP shell sessions to persist through disconnections of arbitrary
 duration and enabling long-term reconnaissance 
 
-### Console-Based User-Interface
-
-Streamlined console interface for controlling client host machines remotely via 
+- __Console-Based User-Interface__: streamlined console interface for controlling client host machines remotely via 
 reverse TCP shells which provide direct terminal access to the client host machines
 
 ## Generator
@@ -36,72 +32,48 @@ reverse TCP shells which provide direct terminal access to the client host machi
 
 *Generate unique, fully-undetectable clients with staged payloads and the following features:*
 
-### Remote Imports
-
-Remotely import third-party packages from the server without writing them 
+- __Remote Imports__: remotely import third-party packages from the server without writing them 
 to the disk or downloading/installing them
 
-### Nothing Written To The Disk 
-
-Clients never write anything to the disk - not even temporary files (zero IO
+- __Nothing Written To The Disk__: clients never write anything to the disk - not even temporary files (zero IO
 system calls are made) because remote imports allow arbitrary code to be 
 dynamically loaded into memory and directly imported into the currently running 
 process
 
-### Zero Dependencies (Not Even Python Itself)
-
-Client runs with just the python standard library, remotely imports any non-standard
+- __Zero Dependencies (Not Even Python Itself)__: client runs with just the python standard library, remotely imports any non-standard
 packages/modules from the server, and can be compiled with a standalone python 
 interpreter into a portable binary executable formatted for any platform/architecture,
 allowing it to run on anything, even when Python itself is missing on the target host
 
-### Add New Features With Just 1 Click 
-
-Any python script, module, or package you to copy to the `./byob/modules/` directory
+- __Add New Features With Just 1 Click__: any python script, module, or package you to copy to the `./byob/modules/` directory
 automatically becomes remotely importable & directly usable by every client while 
 your command & control server is running
 
-### Write Your Own Modules
-
-A basic module template is provided in `./byob/modules/` directory to make writing
+- __Write Your Own Modules__: a basic module template is provided in `./byob/modules/` directory to make writing
 your own modules a straight-forward, hassle-free process
 
-### Run Unlimited Modules Without Bloating File Size
-
-Use remote imports to add unlimited features without adding a single byte to the
+- __Run Unlimited Modules Without Bloating File Size__: use remote imports to add unlimited features without adding a single byte to the
 client's file size 
 
-### Fully Updatable
-
-Each client will periodically check the server for new content available for
+- __Fully Updatable__: each client will periodically check the server for new content available for
 remote import, and will dynamically update its in-memory resources
 if anything has been added/removed
 
-### Platform Independent
-
-Everything is written in Python (a platform-agnostic language) and the clients
+- __Platform Independent__: everything is written in Python (a platform-agnostic language) and the clients
 generated can optionally be compiled into portable executable (*Windows*) or
 bundled into an standalone application (*macOS*)
 
-### Bypass Firewalls
-
-Clients connect to the command & control server via reverse TCP connections, which
+- __Bypass Firewalls__: clients connect to the command & control server via reverse TCP connections, which
 will bypass most firewalls because the default filter configurations primarily
 block incoming connections
 
-### Counter-Measure Against Antivirus
-
-Avoids being analyzed by antivirus by blocking processes with names of known antivirus
+- __Counter-Measure Against Antivirus__: avoids being analyzed by antivirus by blocking processes with names of known antivirus
 products from spawning
 
-### Encrypt Payloads To Prevent Analysis
-
-The main client payload is encrypted with a random 256-bit key which exists solely
+- __Encrypt Payloads To Prevent Analysis__: the main client payload is encrypted with a random 256-bit key which exists solely
 in the payload stager which is generated along with it
 
-### Prevent Reverse-Engineering
-
-By default, clients will abort execution if a virtual machine or sandbox is detected
+- __Prevent Reverse-Engineering__: by default, clients will abort execution if a virtual machine or sandbox is detected
 
 ## Modules
 [![modules](https://img.shields.io/badge/byob-modules-blue.svg)](https://github.com/colental/byob/blob/master/byob/modules)
