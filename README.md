@@ -11,7 +11,7 @@ The library contains 4 main parts:
 
 ### Server
    
-   `byob.server`
+   **`byob.server`**
    
    *Console based command & control server with a persistent database for
    managing the client's reverse TCP shell sessions, tracking tasks issued
