@@ -26,7 +26,33 @@ reverse TCP shells which provide direct terminal access to the client host machi
 
 # Generator
 
-*Generate clients with the following features:*
+    usage: generator.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
+                         [--encrypt] [--obfuscate] [--compress] [--compile]
+                         host port [modules [modules ...]]
+
+    positional arguments:
+      host            server IP address
+      port            server port number
+      modules         modules to remotely import at run-time
+
+    optional arguments:
+      -h, --help      show this help message and exit
+      -v, --version   show program's version number and exit
+      --name NAME     output file name
+      --icon ICON     icon image file name
+      --pastebin API  upload & host payload on pastebin
+      --encrypt       encrypt payload and embed key in stager
+      --obfuscate     obfuscate names of classes, functions & variables
+      --compress      zip-compress into a self-executing python script
+      --exe           compile into a standalone executable
+      --app           bundle into standalone application
+
+*Generates unique, virtually undetectable droppers with staged payloads
+based on a reverse TCP shell that can run any number of other scripts/modules
+on the target host machine without including them in the payload itself and
+without installing any dependencies can remotely import any scripts/modules
+from the server directly into the currently running process without writing
+anything to the disk*
 
 ### Remote Imports
 
@@ -94,39 +120,6 @@ in the payload stager which is generated along with it
 ### Prevent Reverse-Engineering
 
 By default, clients will abort execution if a virtual machine or sandbox is detected
-
-
-### Usage 
-
-    usage: generators.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
-                         [--encrypt] [--obfuscate] [--compress] [--compile]
-                         host port [modules [modules ...]]
-
-    positional arguments:
-      host            server IP address
-      port            server port number
-      modules         modules to remotely import at run-time
-
-    optional arguments:
-      -h, --help      show this help message and exit
-      -v, --version   show program's version number and exit
-      --name NAME     output file name
-      --icon ICON     icon image file name
-      --pastebin API  upload & host payload on pastebin
-      --encrypt       encrypt payload and embed key in stager
-      --obfuscate     obfuscate names of classes, functions & variables
-      --compress      zip-compress into a self-executing python script
-      --exe           compile into a standalone executable
-      --app           bundle into standalone application`
-
-   *Generates unique, virtually undetectable droppers with staged payloads
-   based on a reverse TCP shell that can run any number of other scripts/modules
-   on the target host machine without including them in the payload itself and
-   without installing any dependencies can remotely import any scripts/modules
-   from the server directly into the currently running process without writing
-   anything to the disk*
-
-   `generator.py -h/--help` for detailed usage information
 
 ### Post-Exploitation Modules
 

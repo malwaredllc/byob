@@ -102,7 +102,7 @@ def main():
     """ 
     Parse command-line arguments and run the generator
 
-    usage: generators.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
+    usage: generator.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
                          [--encrypt] [--obfuscate] [--compress] [--compile]
                          host port [modules [modules ...]]
 
