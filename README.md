@@ -9,7 +9,7 @@ these threats
 
 The library contains 4 main parts:
 
-## Server   
+# Server   
 
 *Command & control server with the following features:*
 
@@ -24,7 +24,7 @@ duration and enabling long-term reconnaissance
 Streamlined console interface for controlling client host machines remotely via 
 reverse TCP shells which provide direct terminal access to the client host machines
 
-## Generator
+# Generator
 
 *Generate clients with the following features:*
 
