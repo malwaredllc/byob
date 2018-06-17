@@ -11,7 +11,7 @@ The library contains 4 main parts:
 
    **`byob.server`**
    
-   *console based command & control server with a persistent database for
+   *Console based command & control server with a persistent database for
    managing the client's reverse TCP shell sessions, tracking tasks issued
    to each client, storing results of each client's completed tasks, as well
    as hosting the byob.remote package online for clients to access remotely*
@@ -19,9 +19,13 @@ The library contains 4 main parts:
 
    **`byob.generator`**
 
-   *generates unique, virtually undetectable droppers with staged payloads
-   and a number of optional features can be added via intuitive command-line
-   arguments* (`generator.py -h/--help` for detailed usage information)
+   *Generates unique, virtually undetectable droppers with staged payloads
+   based on a reverse TCP shell that can run any number of other scripts/modules
+   on the target host machine without including them in the payload itself and
+   without installing any dependencies can remotely import any scripts/modules
+   from the server directly into the currently running process without writing
+   anything to the disk*
+   (`generator.py -h/--help` for detailed usage information)
 
    **`byob.modules`**
 
