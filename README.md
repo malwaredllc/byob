@@ -9,8 +9,8 @@ these threats
 
 The library contains 4 main parts:
 
-   **`byob.server`**
-   
+## Command & Control Server   
+
    *Console based command & control server with a persistent database for
    managing the client's reverse TCP shell sessions, tracking tasks issued
    to each client, storing results of each client's completed tasks, as well
@@ -18,7 +18,8 @@ The library contains 4 main parts:
 
    `server.py -h/--help` for detailed usage information
 
-   **`byob.generator`**
+
+## Client Generator
 
    *Generates unique, virtually undetectable droppers with staged payloads
    based on a reverse TCP shell that can run any number of other scripts/modules
@@ -29,7 +30,7 @@ The library contains 4 main parts:
 
    `generator.py -h/--help` for detailed usage information
 
-   **`byob.modules`**
+## Post-Exploitation Modules
 
    1) `byob.modules.keylogger`: logs the user’s keystrokes & the window name entered
    2) `byob.modules.screenshot`: take a screenshot of current user’s desktop
@@ -43,7 +44,7 @@ The library contains 4 main parts:
    10) `byob.modules.portscanner`: scan the local network for other online devices & open ports
    11) `byob.modules.process`: list/search/kill/monitor currently running processes on the host
 
-   **`byob.core`**
+## Core Framework
 
    1) `byob.core.util`: miscellaneous utility functions that are used by many modules
    2) `byob.core.handlers`: base server class and various request handler classes
