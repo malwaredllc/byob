@@ -19,11 +19,10 @@ Lightweight database that stores identifying information about client host machi
 allowing reverse TCP shell sessions to persist through disconnections of arbitrary
 duration and enabling long-term reconnaissance 
 
-### Streamlined user-interface for controlling clients
-    with reverse TCP shells which provide direct terminal access to the client host machines, as well
-    as handling session authentication & management, serving up any scripts/modules/packages requested
-    by clients to remotely import them, issuing tasks assigned by the user to any/all clients, handling
-    incoming completed tasks from clients
+### Console-Based User-Interface
+
+Streamlined console interface for controlling client host machines remotely via 
+reverse TCP shells which provide direct terminal access to the client host machines
 
 ## Generator
 
