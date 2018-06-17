@@ -103,26 +103,32 @@ in the payload stager which is generated along with it
 
 By default, clients will abort execution if a virtual machine or sandbox is detected
 
-### Post-Exploitation Modules
+## Modules
+[![modules](https://img.shields.io/badge/byob-modules-blue.svg)](https://github.com/colental/byob/blob/master/byob/modules)
 
-   1) `byob.modules.keylogger`: logs the user’s keystrokes & the window name entered
-   2) `byob.modules.screenshot`: take a screenshot of current user’s desktop
-   3) `byob.modules.webcam`: view a live stream or capture image/video from the webcam
-   4) `byob.modules.ransom`: encrypt files & generate random BTC wallet for ransom payment
-   5) `byob.modules.outlook`: read/search/upload emails from the local Outlook client
-   6) `byob.modules.packetsniffer`: run a packet sniffer on the host network & upload .pcap file
-   7) `byob.modules.persistence`: establish persistence on the host machine using 5 different methods
-   8) `byob.modules.phone`: read/search/upload text messages from the client smartphone
-   9) `byob.modules.escalate`: attempt UAC bypass to gain unauthorized administrator privileges
-   10) `byob.modules.portscanner`: scan the local network for other online devices & open ports
-   11) `byob.modules.process`: list/search/kill/monitor currently running processes on the host
+*11 post-exploitation modules that are remotely importable by clients*
 
-### Framework Core
+1) `byob.modules.keylogger`: logs the user’s keystrokes & the window name entered
+2) `byob.modules.screenshot`: take a screenshot of current user’s desktop
+3) `byob.modules.webcam`: view a live stream or capture image/video from the webcam
+4) `byob.modules.ransom`: encrypt files & generate random BTC wallet for ransom payment
+5) `byob.modules.outlook`: read/search/upload emails from the local Outlook client
+6) `byob.modules.packetsniffer`: run a packet sniffer on the host network & upload .pcap file
+7) `byob.modules.persistence`: establish persistence on the host machine using 5 different methods
+8) `byob.modules.phone`: read/search/upload text messages from the client smartphone
+9) `byob.modules.escalate`: attempt UAC bypass to gain unauthorized administrator privileges
+10) `byob.modules.portscanner`: scan the local network for other online devices & open ports
+11) `byob.modules.process`: list/search/kill/monitor currently running processes on the host
 
-   1) `byob.core.util`: miscellaneous utility functions that are used by many modules
-   2) `byob.core.handlers`: base server class and various request handler classes
-   3) `byob.core.security`: Diffie-Hellman Internet Key Exchange (RFC 2741) and 3 different types of encryption
-   4) `byob.core.loader`: enables clients to remotely import any package/module/script from the server
-   5) `byob.core.payload`: reverse TCP shell designed to remotely import dependencies, packages & modules
-   6) `byob.core.generators`: functions which all dynamically generate code for the client generator
+## Core
+[![core](https://img.shields.io/badge/byob-core-blue.svg)](https://github.com/colental/byob/blob/master/byob/core)
+
+*6 core framework modules used by the generator and the server*
+
+1) `byob.core.util`: miscellaneous utility functions that are used by many modules
+2) `byob.core.handlers`: base server class and various request handler classes
+3) `byob.core.security`: Diffie-Hellman Internet Key Exchange (RFC 2741) and 3 different types of encryption
+4) `byob.core.loader`: enables clients to remotely import any package/module/script from the server
+5) `byob.core.payload`: reverse TCP shell designed to remotely import dependencies, packages & modules
+6) `byob.core.generators`: functions which all dynamically generate code for the client generator
 
