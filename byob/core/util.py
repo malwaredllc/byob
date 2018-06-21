@@ -26,7 +26,7 @@ def imports(packages, target=None):
     module = globals()
     if isinstance(packages, str):
         packages = [packages]
-    if isinstance(target, dict)
+    if isinstance(target, dict):
         module = target
     elif hasattr(target, '__dict__'):
         module = target.__dict__
