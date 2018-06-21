@@ -25,7 +25,7 @@ duration and enabling long-term reconnaissance
 
 - __Client-Server Architecture__: all python packages/modules installed locally are automatically made available for clients 
 to remotely import without writing them to the disk of the target machines, allowing clients to use modules which require
- packages not installed on any client host machines
+packages not installed on the target machines
 
 ## Client
 [![client](https://img.shields.io/badge/byob-client-blue.svg)](https://github.com/colental/byob/blob/master/byob/client.py)
