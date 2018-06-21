@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 'Utilities (Build Your Own Backdoor)'
 
+# main
 def log(info, level='debug'):
     """ 
     Log output to the console (if verbose output is enabled)
@@ -48,7 +49,7 @@ def is_compatible(platforms=['win32','linux2','darwin'], module=None):
     import sys
     if sys.platform in platforms:
         return True
-    log("module {} is not yet compatible with {} platforms".format(module if module else '', sys.platform))
+    log("module {} is not yet compatible with {} platforms".format(module if module else '', sys.platform), level='warn')
     return False
 
 def platform():
@@ -162,7 +163,6 @@ def post(url, headers={}, data={}, as_json=False):
     :param bool json:     return JSON formatted output
 
     """
-    output = ''
     try:
         import requests
         req = requests.post(url, headers=headers, data=data)
@@ -372,8 +372,7 @@ def color():
     """
     try:
         import random
-        import colorama
-        return random.choice(filter(str.isupper, dir(colorama.Fore)))
+        return random.choice(['BLACK', 'BLUE', 'CYAN', 'GREEN', 'LIGHTBLACK_EX', 'LIGHTBLUE_EX', 'LIGHTCYAN_EX', 'LIGHTGREEN_EX', 'LIGHTMAGENTA_EX', 'LIGHTRED_EX', 'LIGHTWHITE_EX', 'LIGHTYELLOW_EX', 'MAGENTA', 'RED', 'RESET', 'WHITE', 'YELLOW'])
     except Exception as e:
         log("{} error: {}".format(color.func_name, str(e)))
 

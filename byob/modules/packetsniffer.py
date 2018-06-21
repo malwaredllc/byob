@@ -32,8 +32,6 @@ and optionally upload them to Pastebin or to a remote FTP server
 # setup
 if util.is_compatible(platforms, __name__):
     util.imports(packages, globals())
-else:
-    sys.exit()
 
 # main
 def _udp_header(data):

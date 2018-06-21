@@ -27,8 +27,6 @@ Interact with the Outlook email client application on the client host machine
 # setup
 if util.is_compatible(platforms, __name__):
     util.imports(packages, __builtins__)
-else:
-    sys.exit()
 
 # main
 def _get_emails():

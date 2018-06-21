@@ -26,9 +26,7 @@ context on the client host machine
 
 # setup
 if util.is_compatible(platforms, __name__):
-    util.imports(packages, globals())
-else:
-    sys.exit()
+     util.imports(packages, globals())
 
 # main
 def run(filename):
@@ -40,7 +38,7 @@ def run(filename):
     """
     try:
         if isintance(target, str) and os.path.isfile(target):
-            if bool(ctypes.windll.shell32.IsUserAnAdmin() if os.name is 'nt' else os.getuid() == 0):
+            if bool(ctypes.windll.shell32.IsUserAnAdmin() if os.name == 'nt' else os.getuid() == 0):
                 return "Current user has administrator privileges"
             else:
                 if os.name == 'nt':
