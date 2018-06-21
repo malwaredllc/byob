@@ -107,7 +107,7 @@ class TaskHandler(SocketServer.StreamRequestHandler):
             msg = self.connection.recv(msg_size)
             while len(msg) < msg_size:
                 msg += self.connection.recv(msg_size - len(msg))
-            session = self.server._get_client_by_connection(self.connection)
+            session = self.server._get_session_by_connection(self.connection)
             task = pickle.loads(security.decrypt_aes(msg, session.key))
             if isinstance(task, logging.LogRecord):
                 self.server.database.handle_task(task.__dict__)
@@ -135,13 +135,13 @@ def main():
     
     options = parser.parse_args()
 
-    module_root = os.path.abspath('modules')
+    local_modules = os.path.abspath('modules')
     for i in sys.path:
         if os.path.isdir(i) and os.path.basename(i) == 'site-packages':
-            package_root = os.path.abspath(i)
+            site_packages = os.path.abspath(i)
 
-    module_handler = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=module_root, shell=True)
-    package_handler = Server(host=options.host, port=options.port + 2, root=package_root)
+    module_handler = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=local_modules, shell=True)
+    package_handler = Server(host=options.host, port=options.port + 2, root=site_packages)
     package_handler.serve_until_stopped()
 
 if __name__ == "__main__":

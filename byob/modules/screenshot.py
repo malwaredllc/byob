@@ -25,6 +25,12 @@ Capture a screenshot on the client and optionally upload anonymously to
 Imgur or to a remote FTP server (default: save image on local host machine)
 """
 
+# setup
+if util.is_compatible(platforms, __name__):
+    util.imports(packages, globals())
+else:
+    sys.exit()
+
 # main
 def run(upload_method=None):
     """ 

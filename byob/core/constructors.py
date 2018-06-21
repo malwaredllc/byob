@@ -81,11 +81,11 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           name={name},
-          debug=False,
+          debug=True,
           strip=False,
           upx=False,
           runtime_tmpdir=None,
-          console=True, icon={icon})
+          console=False, icon={icon})
 """
 
 # main
@@ -123,24 +123,6 @@ def obfuscate(input):
     os.remove(name)
     return output
 
-def encrypt(input, key):
-    """ 
-    Encrypt output with XOR stream cipher
-    and 128-bit key
-
-    `Requires`
-    :param str input:    input code to encrypt
-    :param str key:      128-bit encryption key
-                         (may be base64-encoded)
-
-    Returns encrypted output as a string
-    
-    """
-    try:
-        key = base64.b64decode(key)
-    except TypeError: pass
-    return security.encrypt_xor(input, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0))
-
 def variable(length=6):
     """ 
     Generate a random alphanumeric variable name of given length
@@ -153,13 +135,15 @@ def variable(length=6):
     """
     return random.choice([chr(n) for n in range(97,123)]) + str().join(random.choice([chr(n) for n in range(97,123)] + [chr(i) for i in range(48,58)] + [chr(i) for i in range(48,58)] + [chr(z) for z in range(65,91)]) for x in range(int(length)-1))
 
-def snippet(template='main', function='main', *args, **kwargs):
+def main(function, *args, **kwargs):
     """ 
-    Generate a output snippet using the given template
+    Generate a simple code snippet to initialize a script
+
+    if __name__ == "__main__":
+        _function = Function(*args, **kwargs)
 
     `Required`
-    :param str template:    name of template
-    :param str function:    function name to use
+    :param str funciton:    function name
 
     `Optional`
     :param tuple args:      positional arguments
@@ -168,13 +152,8 @@ def snippet(template='main', function='main', *args, **kwargs):
     Returns code snippet as a string
     
     """
-    def main():
-        options = ', '.join(args) + str(', '.join(str("{}={}".format(k, v) if bool(v.count('{') > 0 and v.count('{') > 0) else "{}='{}'".format(k,v)) for k,v in kwargs.items()) if len(kwargs) else '')
-        return __Template_main.format(function.lower(), function, options)
-    if template in locals():
-        return locals()[template]()
-    else:
-        raise ValueError("invalid argument 'template' (valid: main)")
+    options = ', '.join(args) + str(', '.join(str("{}={}".format(k, v) if bool(v.count('{') > 0 and v.count('{') > 0) else "{}='{}'".format(k,v)) for k,v in kwargs.items()) if len(kwargs) else '')
+    return __Template_main.format(function.lower(), function, options)
 
 def exe(filename, icon=None, hidden=None):
     """ 

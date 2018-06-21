@@ -23,17 +23,23 @@ exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/mas
 sys.modules['util'] = util
 
 # globals
-packages  = []
+packages = []
 platforms = ['win32','linux2','darwin']
-ports     = json.loads(urllib.urlopen('https://pastebin.com/raw/WxK7eUSd').read())
-tasks     = Queue.Queue()
-threads   = {}
-targets   = []
-results   = {}
+results = {}
+threads = {}
+targets = []
+ports = json.loads(urllib.urlopen('https://pastebin.com/raw/WxK7eUSd').read())
+tasks = Queue.Queue()
+usage = 'portscanner [target]'
+desciription = """
+Portscan a target host IP address or subnet
+"""
 
 # setup
-util.is_compatible(platforms, __name__)
-util.imports(packages, __builtins__)
+if util.is_compatible(platforms, __name__):
+    util.imports(packages, globals())
+else:
+    sys.exit()
 
 # main
 def _ping(host):
@@ -111,7 +117,7 @@ def run(target='192.168.1.1', subnet=False, ports=[21,22,23,25,80,110,111,135,13
         if globals()['tasks'].qsize():
             for i in range(1, int((globals()['tasks'].qsize() / 100) if globals()['tasks'].qsize() >= 100 else 1)):
                 threads['portscan-%d' % i] = _threader(globals()['tasks'])
-            if globals()['results'] and len(globals()['results']):
+            if len(globals()['results']):
                 return dict({k: globals()['results'][k] for k in sorted(globals()['results'].keys()) if k in globals()['targets']})
             else:
                 return "Target(s) offline"

