@@ -16,12 +16,12 @@ The library contains 4 main parts:
 
 *Command & control server with the following features:*
 
-- __Persistent SQLite Database__: lightweight database that stores identifying information about client host machines, 
-allowing reverse TCP shell sessions to persist through disconnections of arbitrary
-duration and enabling long-term reconnaissance 
-
 - __Console-Based User-Interface__: streamlined console interface for controlling client host machines remotely via 
 reverse TCP shells which provide direct terminal access to the client host machines
+
+- __Persistent SQLite Database__: lightweight database that stores identifying information about client host machines,
+allowing reverse TCP shell sessions to persist through disconnections of arbitrary
+duration and enabling long-term reconnaissance
 
 ## Generator
 [![generator](https://img.shields.io/badge/byob-generator-blue.svg)](https://github.com/colental/byob/blob/master/byob/generator.py)
