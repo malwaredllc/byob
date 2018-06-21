@@ -23,10 +23,10 @@ reverse TCP shells which provide direct terminal access to the client host machi
 allowing reverse TCP shell sessions to persist through disconnections of arbitrary
 duration and enabling long-term reconnaissance
 
-## Generator
-[![generator](https://img.shields.io/badge/byob-generator-blue.svg)](https://github.com/colental/byob/blob/master/byob/generator.py)
+## Client
+[![client](https://img.shields.io/badge/byob-client-blue.svg)](https://github.com/colental/byob/blob/master/byob/generator.py)
 
-`usage: generator.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
+`usage: client.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
                      [--encrypt] [--obfuscate] [--compress] [--compile]
                      host port [module [module ...]]`
 
