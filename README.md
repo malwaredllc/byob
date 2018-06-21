@@ -14,23 +14,27 @@ The library contains 4 main parts:
 
 `usage: server.py [-h] [-v] [--host HOST] [--port PORT] [--database DATABASE]`
 
-*Command & control server with the following features:*
+*Command & control server with persistent database and console*
 
-- __Console-Based User-Interface__: streamlined console interface for controlling client host machines remotely via 
+- __Console-Based User-Interface__: streamlined console interface for controlling client host machines remotely via
 reverse TCP shells which provide direct terminal access to the client host machines
 
 - __Persistent SQLite Database__: lightweight database that stores identifying information about client host machines,
 allowing reverse TCP shell sessions to persist through disconnections of arbitrary
 duration and enabling long-term reconnaissance
 
+- __Client-Server Architecture__: all python packages/modules installed locally are automatically made available for clients 
+to remotely import without writing them to the disk of the target machines, allowing clients to use modules which require
+ packages not installed on any client host machines
+
 ## Client
-[![client](https://img.shields.io/badge/byob-client-blue.svg)](https://github.com/colental/byob/blob/master/byob/generator.py)
+[![client](https://img.shields.io/badge/byob-client-blue.svg)](https://github.com/colental/byob/blob/master/byob/client.py)
 
 `usage: client.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
                      [--encrypt] [--obfuscate] [--compress] [--compile]
                      host port [module [module ...]]`
 
-*Generate unique, fully-undetectable clients with staged payloads and the following features:*
+*Generate fully-undetectable clients with staged payloads, remote imports, and unlimited modules*
 
 - __Remote Imports__: remotely import third-party packages from the server without writing them 
 to the disk or downloading/installing them
