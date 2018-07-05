@@ -102,8 +102,9 @@ in the payload stager which is generated along with it
 *6 core framework modules used by the generator and the server*
 
 1) __Utilities__ (`byob.core.util`): miscellaneous utility functions that are used by many modules
-2) __Handlers__ (`byob.core.handlers`): base server class and various request handler classes
+2) __Handlers__ (`byob.core.handlers`): request handlers for receiving results of completed tasks from clients
 3) __Security__ (`byob.core.security`): Diffie-Hellman IKE & 3 encryption modes (AES-256-OCB, AES-256-CBC, XOR-128)
-4) __Loader__ (`byob.core.loader`): enables clients to remotely import any package/module/script from the server
-5) __Payload__ (`byob.core.payload`): reverse TCP shell designed to remotely import dependencies, packages & modules
-6) __Generators__ (`byob.core.generators`): functions which all dynamically generate code for the client generator
+4) __Loaders__ (`byob.core.loaders`): remotely import any package/module/scripts from the server
+5) __Payloads__ (`byob.core.payloads`): reverse TCP shell designed to remotely import dependencies, packages & modules
+6) __Stagers__ (`byob.core.stagers`): generate unique payload stagers to prevent analysis & detection   
+7) __Generators__ (`byob.core.generators`): functions which all dynamically generate code for the client generator
