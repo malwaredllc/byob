@@ -330,7 +330,7 @@ def _stager(options, **kwargs):
     assert 'url' in kwargs, "missing keyword argument 'url'"
     assert 'key' in kwargs, "missing keyword argument 'key'"
     assert 'var' in kwargs, "missing keyword argument 'var'"
-    stager = open('core/stager.py', 'r').read() + generators.main('run', url=kwargs['url'], key=kwargs['key'])
+    stager = open('core/stager.pys', 'r').read() + generators.main('run', url=kwargs['url'], key=kwargs['key'])
     if not os.path.isdir('modules/stagers'):
         try:
             os.mkdir('modules/stagers')
