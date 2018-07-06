@@ -108,3 +108,4 @@ in the payload stager which is generated along with it
 5) __Payloads__ (`byob.core.payloads`): reverse TCP shell designed to remotely import dependencies, packages & modules
 6) __Stagers__ (`byob.core.stagers`): generate unique payload stagers to prevent analysis & detection   
 7) __Generators__ (`byob.core.generators`): functions which all dynamically generate code for the client generator
+8) __Database__ (`byob.core.database`): handles interaction between command & control server and the SQLite database

