@@ -669,7 +669,7 @@ class C2():
 
     def run(self):
         """ 
-        Run a shell on local host
+        Run C2 server administration terminal
 
         """
         self._active.set()
