@@ -1,6 +1,6 @@
 # BYOB (Build Your Own Botnet)
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/colental/byob/blob/master/LICENSE)
-[version](https://img.shields.io/badge/version-0.1.5-lightgrey.svg)
+[![version](https://img.shields.io/badge/version-0.1.5-lightgrey.svg)]
 
 __Disclaimer__: This project should be used for authorized testing or educational purposes only.
 
