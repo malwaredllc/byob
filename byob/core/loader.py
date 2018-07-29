@@ -17,8 +17,8 @@ def log(info, level='debug'):
 # main
 class RemoteImporter(object):
     """ 
-    The class that implements the remote import API. Contains the "find_module" and "load_module" methods.
-    The 'modules' parameter is a list, with the names of the modules/packages that can be imported from the given URL.
+    The class that implements the remote import API. 
+    :param list modules: list of module/package names to make available for remote import
     :param str base_url: URL of directory/repository of modules being served through HTTPS
 
     """
@@ -31,13 +31,13 @@ class RemoteImporter(object):
 
     def find_module(self, fullname, path=None):
         log(level='debug', info= "FINDER=================")
-        log(level='debug', info= "[!] Searching %s" % fullname)
-        log(level='debug', info= "[!] Path is %s" % path)
-        log(level='info', info= "[@] Checking if in declared remote module names >")
+        log(level='debug', info= "Searching: %s" % fullname)
+        log(level='debug', info= "Path: %s" % path)
+        log(level='info', info= "Checking if in declared remote module names...")
         if fullname.split('.')[0] not in self.module_names + list(set([_.split('.')[0] for _ in self.module_names])):
             log(level='info', info= "[-] Not found!")
             return None
-        log(level='info', info= "[@] Checking if built-in >")
+        log(level='info', info= "Checking if built-in....")
         try:
             loader = imp.find_module(fullname, path)
             if loader:
@@ -45,18 +45,18 @@ class RemoteImporter(object):
                 return None
         except ImportError:
             pass
-        log(level='info', info= "[@] Checking if it is name repetition >")
+        log(level='info', info= "Checking if it is name repetition... ")
         if fullname.split('.').count(fullname.split('.')[-1]) > 1:
             log(level='info', info= "[-] Found locally!")
             return None
-        log(level='info', info= "[*]Module/Package '%s' can be loaded!" % fullname)
+        log(level='info', info= "[+] Module/Package '%s' can be loaded!" % fullname)
         return self
 
 
     def load_module(self, name):
         imp.acquire_lock()
         log(level='debug', info= "LOADER=================")
-        log(level='debug', info= "[+] Loading %s" % name)
+        log(level='debug', info= "Loading %s..." % name)
         if name in sys.modules and not self.reload:
             log(level='info', info= '[+] Module "%s" already loaded!' % name)
             imp.release_lock()
@@ -71,7 +71,7 @@ class RemoteImporter(object):
         final_url = None
         final_src = None
         try:
-            log(level='debug', info= "[+] Trying to import as package from: '%s'" % package_url)
+            log(level='debug', info= "Trying to import '%s' as package from: '%s'" % (name, package_url))
             package_src = None
             if self.non_source:
                 package_src = self.__fetch_compiled(package_url)
@@ -84,7 +84,7 @@ class RemoteImporter(object):
             log(level='info', info= "[-] '%s' is not a package:" % name)
         if final_src == None:
             try:
-                log(level='debug', info= "[+] Trying to import as module from: '%s'" % module_url)
+                log(level='debug', info= "[+] Trying to import '%s' as module from: '%s'" % (name, module_url))
                 module_src = None
                 if self.non_source:
                     module_src = self.__fetch_compiled(module_url)
@@ -95,7 +95,7 @@ class RemoteImporter(object):
             except IOError as e:
                 module_src = None
                 log(level='info', info= "[-] '%s' is not a module:" % name)
-                __logger__.warning("[!] '%s' not found in HTTP repository. Moving to next Finder." % name)
+                __logger__.warning("'%s' not found in HTTP repository." % name)
                 imp.release_lock()
                 return None
         log(level='debug', info= "[+] Importing '%s'" % name)

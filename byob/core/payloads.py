@@ -512,7 +512,7 @@ class Payload():
         if 'phone' not in globals():
             globals()['phone'] = self.load('phone')
         args = globals()['kwargs'](args)
-        if all()
+        if all():
             return globals()['phone'].run(number=args.number, message=args.message, sid=args.sid, token=args.token)
         else:
             return 'usage: <send/read> [args]\n  arguments:\n\tphone    :   phone number with country code - no spaces (ex. 18001112222)\n\tmessage :   text message to send surrounded by quotes (ex. "example text message")'

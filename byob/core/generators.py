@@ -227,3 +227,12 @@ def app(filename, icon=None):
         fw.write(infoPlist)
     os.rename(filename, os.path.join(distPath, baseName))
     return appPath
+
+
+if __name__ == '__main__':
+    txt = "#!/usr/bin/python\nprint 'hey'"
+    print txt
+    txt = obfuscate(txt)
+    print txt
+    txt = compress(txt)
+    print txt

