@@ -10,6 +10,16 @@ of the sophisticated malware that infects millions of devices every year and spa
 modern botnets, in order to improve their ability to develop counter-measures against 
 these threats.
 
+__TO DO__:
+
+*Contributors welcome! Feel free to issue pull-requests with any new features or improvements you have come up with!*
+
+1) Transport Types - add support for more transport types (HTTP/S, DNS, etc.)
+2) Improve Phone/SMS module - add spreading ability via emails/text-messages when a contacts list is found on the target host
+3) Improve Outlook/Email module - add spreading ability via emails/text-messages when a contacts list is found on the target host
+4) Improve Ransom module - add methods for using a Bitcoin exchange API for generating temporary wallet addresses that are unique to the target host, expire after a given number of hours without receiving payment, and which notify the C2 server (maybe via webhooks?) when payment is received or the wallet expires
+5) __Code Improvement__  - *code clean-up and improvement*
+
 The library contains 4 main parts:
 
 ## Server

