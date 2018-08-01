@@ -17,7 +17,7 @@ import StringIO
 
 # packages
 try:
-    import Crypto.Util
+    import Crypto.Util.number
     import Crypto.Cipher.AES
     import Crypto.Hash.HMAC
     import Crypto.Hash.SHA256
