@@ -10,16 +10,6 @@ of the sophisticated malware that infects millions of devices every year and spa
 modern botnets, in order to improve their ability to develop counter-measures against 
 these threats.
 
-__TO DO__:
-
-*Contributors welcome! Feel free to issue pull-requests with any new features or improvements you have come up with!*
-
-1) Transport Types - add support for more transport types (HTTP/S, DNS, etc.)
-2) Improve Phone/SMS module - add spreading ability via emails/text-messages when a contacts list is found on the target host
-3) Improve Outlook/Email module - add spreading ability via emails/text-messages when a contacts list is found on the target host
-4) Improve Ransom module - add methods for using a Bitcoin exchange API for generating temporary wallet addresses that are unique to the target host, expire after a given number of hours without receiving payment, and which notify the C2 server (maybe via webhooks?) when payment is received or the wallet expires
-5) __Code Improvement__  - *code clean-up and improvement*
-
 The library contains 4 main parts:
 
 ## Server
@@ -122,3 +112,20 @@ in the payload stager which is generated along with it
 6) __Stagers__ (`byob.core.stagers`): generate unique payload stagers to prevent analysis & detection   
 7) __Generators__ (`byob.core.generators`): functions which all dynamically generate code for the client generator
 8) __Database__ (`byob.core.database`): handles interaction between command & control server and the SQLite database
+
+
+### To Do
+
+*Contributors welcome! Feel free to issue pull-requests with any new features or improvements you have come up with!*
+
+1) __Remote Import Encryption__ - encryption for data streams of packages/modules being remotely imported (to maintain confidentiality/authenticity/integrity and prevent any remote code execution vulnerabilities arising from deserialization)
+2) __Transport Types__ - add support for more transport types (HTTP/S, DNS, etc.)
+3) __Improve Phone/SMS module__ - add spreading ability via emails/text-messages when a contacts list is found on the target host
+4) __Improve Outlook/Email module__ - add spreading ability via emails/text-messages when a contacts list is found on the target host
+5) __Improve Ransom module__ - add methods for using a Bitcoin exchange API for generating temporary wallet addresses that are unique to the target host, expire after a given number of hours without receiving payment, and which notify the C2 server (maybe via webhooks?) when payment is received or the wallet expires
+6) __BUG FIXES__ - fix any bugs/issues
+
+### Contact 
+
+__Email__: info@malwared.com
+__Twitter__: [![twitter](https://img.shields.io/twitter/url/)]

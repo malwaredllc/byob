@@ -20,7 +20,18 @@ class Database(sqlite3.Connection):
     sessions & tasks handled by byob.server.Server instances
 
     """
-    __create_table = """BEGIN TRANSACTION;
+    _tbl_tasks = """BEGIN TRANSACTION;
+CREATE TABLE IF NOT EXISTS '{}' (
+    id serial, 
+    uid varchar(32) NOT NULL, 
+    task text DEFAULT NULL, 
+    result text DEFAULT NULL, 
+    issued DATETIME DEFAULT NULL, 
+    completed DATETIME DEFAULT NULL
+);
+COMMIT;
+"""
+    _tbl_sessions = """BEGIN TRANSACTION;
 CREATE TABLE IF NOT EXISTS tbl_sessions (
     id serial,
     uid varchar(32) NOT NULL,
@@ -53,8 +64,7 @@ COMMIT;
         self.text_factory = str
         self._database = database
         self._tasks = ['escalate','keylogger','outlook','packetsniffer','persistence','phone','portscan','process','ransom','screenshot','webcam']
-        self._tbl_sessions = 'tbl_sessions'
-        self.execute_file(sql=self.__create_table, returns=False, display=False)
+        self.execute_file(sql=self._tbl_sessions, returns=False, display=False)
 
     def _display(self, data, indent=4):
         if isinstance(data, dict):
@@ -111,37 +121,42 @@ COMMIT;
                 util.display(v.encode(), color=c, style='dim')
 
     def _client_sessions(self, uid):
-        for i in self.execute('select sessions from {} where uid=:uid'.format(self._tbl_sessions), {"uid": uid}):
+        for i in self.execute('select sessions from tbl_sessions where uid=:uid', {"uid": uid}):
             if isinstance(i, int):
-                return i + 1
+                s = i + 1
+                break
         else:
-            return 1
+            s = 1
+        return s
 
 
     def _count_sessions(self):
-        for i in self.execute('select count(*) from {}'.format(self._tbl_sessions)):
+        for i in self.execute('select count(*) from tbl_sessions'):
             if isinstance(i, int):
-                return i + 1
+                s = i + 1
+                break
         else:
-            return 1
+            s = 1
+        return s
 
     def debug(self, output):
         """ 
         Print debugging output to console
         """
-        util.__logger__.debug(str(output))
+        util.log(str(output), level='debug')
 
     def error(self, output):
         """ 
         Print error output to console
         """
-        util.__logger__.error(str(output))
+        util.log(str(output), level='error')
 
     def exists(self, uid):
     	""" 
     	Check if a client exists in the database
     	"""
-    	return bool(len([_ for _ in self.execute("select * from {} where uid=:uid".format(self._tbl_sessions), {"uid": uid})]))
+    	result = bool(len([_ for _ in self.execute("select * from tbl_sessions where uid=:uid", {"uid": uid})]))
+        return result
 
     def update_status(self, session, online):
         """ 
@@ -175,8 +190,8 @@ COMMIT;
         :param bool display:    display output
 
         """
-        sql = "select * from {}" if verbose else "select id, public_ip, uid, last_online from {}"
-        statement = self.execute(sql.format(self._tbl_sessions))
+        sql = "select * from tbl_sessions" if verbose else "select id, public_ip, uid, last_online from tbl_sessions"
+        statement = self.execute(sql)
         columns = [_[0] for _ in statement.description]
         return [{k:v for k,v in zip(columns, rows)} for rows in statement.fetchall()]
 
@@ -208,25 +223,32 @@ COMMIT;
         Returns the session information as a dictionary (JSON) object
         """
         if isinstance(info, dict):
+
             if not info.get('id'):
                 info['id'] = self._count_sessions()
+
             if not info.get('uid'):
                 info['uid'] = md5.new(info['public_ip'] + info['mac_address']).hexdigest()
                 info['joined'] = datetime.datetime.now()
+
             info['online'] = 1
             info['sessions'] = self._client_sessions(info['uid'])
             info['last_online'] = datetime.datetime.now()
-            if self.exists(info['uid']):
-                self.execute_query("update {} set online=:online, sessions=:sessions, last_online=:last_online where uid=:uid".format(self._tbl_sessions), params=info, returns=False)
+
+            if not self.exists(info['uid']):
+        	    self.execute_query("insert into tbl_sessions ({}) values (:{})".format(','.join(info.keys()), ',:'.join(info.keys())), params=info, returns=False, display=False)
+        	    self.execute_file(sql=self._tbl_tasks.format(info['uid']), returns=False, display=False)
             else:
-        	    self.execute_query("insert into {} ({}) values (:{})".format(self._tbl_sessions, ','.join(info.keys()), ',:'.join(info.keys())), params=info, returns=False, display=False)
-        	    self.execute_query("create table '{}' (id serial, uid varchar(32), task text, result text, issued DATETIME, completed DATETIME)".format(info['uid']), returns=False, display=False)
-            for row in self.execute("select * from {} where uid=:uid".format(self._tbl_sessions), info):
+                self.execute_query("update tbl_sessions set online=:online, sessions=:sessions, last_online=:last_online where uid=:uid", params=info, returns=False, display=False)
+
+            for row in self.execute("select * from tbl_sessions where uid=:uid", info):
         	    if isinstance(row, dict):
         	        info = row
                     break
+
             self.commit()
             return info
+
         else:
             self.error("Error: invalid input type received from server (expected '{}', receieved '{}')".format(dict, type(info)))
 
@@ -249,10 +271,10 @@ COMMIT;
             if 'uid' not in task:
                 task['uid'] = md5.new(task['session'] + task['task'] + datetime.datetime.now().ctime()).hexdigest()
                 task['issued'] = datetime.datetime.now()
-                self.execute_query('insert into {} values (:uid, :task, :issued)'.format(task['uid']), params={"uid": task['uid'],  "task": task['task'], "issued": task['issued']}, returns=False)
+                self.execute_query('insert into {} values (:uid, :task, :issued)'.format(task['session']), params={"uid": task['uid'],  "task": task['task'], "issued": task['issued']}, returns=False)
             else:
                 task['completed'] = datetime.datetime.now()
-                self.execute_query('update {} set result=:result, completed=:completed where uid=:uid'.format(task['uid']), params={"result": task['result'], "completed": task['completed'], "uid": task['uid']}, returns=False)
+                self.execute_query('update {} set result=:result, completed=:completed where uid=:uid'.format(task['session']), params={"result": task['result'], "completed": task['completed'], "uid": task['uid']}, returns=False)
             self.commit()
             return task
         else:

