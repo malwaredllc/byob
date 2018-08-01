@@ -125,7 +125,6 @@ in the payload stager which is generated along with it
 5) __Improve Ransom module__ - add methods for using a Bitcoin exchange API for generating temporary wallet addresses that are unique to the target host, expire after a given number of hours without receiving payment, and which notify the C2 server (maybe via webhooks?) when payment is received or the wallet expires
 6) __BUG FIXES__ - fix any bugs/issues
 
-### Contact 
-
-__Email__: info@malwared.com
-__Twitter__: [![twitter](https://img.shields.io/twitter/url/)]
+### Contact
+__Email__: danielvegamyhre@gmail.com
+__Twitter__: [![twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/malwared)
