@@ -459,14 +459,15 @@ class C2():
         :param int id:   session ID
         
         """
-        print
+        lock = self.current_session._lock if self.current_session else self._lock
         tasks = self.database.get_tasks()
         if id:
             session = self._get_session_by_id(id)
             if session:
                 tasks = self.database.get_tasks(session.info.get('uid'))
-        self.database._display(tasks)        
-        print
+        with lock:
+            self.database._display(tasks)        
+            print
 
     def task_broadcast(self, command):
         """ 
