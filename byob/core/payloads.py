@@ -89,7 +89,7 @@ class Payload():
         self.info = self._get_info()
 
     def _get_flags(self):
-        return collections.namedtuple('flag', ('connection','prompt'))(threading.Event(), threading.Event(), threading.Event())
+        return collections.namedtuple('flag', ('connection','prompt'))(threading.Event(), threading.Event())
 
     def _get_command(self, cmd):
         if bool(hasattr(self, cmd) and hasattr(getattr(self, cmd), 'command') and getattr(getattr(self, cmd),'command')):

@@ -347,7 +347,7 @@ class C2():
 
         """
         with self._lock:
-            util.display('\n')
+            print
             if isinstance(info, dict):
                 if len(info):
                     self._print(info)
@@ -363,6 +363,7 @@ class C2():
                     util.display(str(info), color=self._text_color, style=self._text_style)
             else:
                 util.log("{} error: invalid data type '{}'".format(self.display.func_name, type(info)))
+            print
 
     def query(self, statement):
         """ 
@@ -458,11 +459,14 @@ class C2():
         :param int id:   session ID
         
         """
+        print
+        tasks = self.database.get_tasks()
         if id:
             session = self._get_session_by_id(id)
             if session:
-                return self.database.get_tasks(session.info.get('uid'))
-        return self.database.get_tasks()
+                tasks = self.database.get_tasks(session.info.get('uid'))
+        self.database._display(tasks)        
+        print
 
     def task_broadcast(self, command):
         """ 
@@ -850,7 +854,7 @@ class Session(threading.Thread):
                             result = globals()['c2'].commands[cmd]['method'](action) if len(action) else globals()['c2'].commands[cmd]['method']()
                             if result:
                                 task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
-                                globals()['c2'].display(result)
+                                globals()['c2'].display(result.encode())
                                 globals()['c2'].database.handle_task(task)
                             continue
                         else:
@@ -858,7 +862,7 @@ class Session(threading.Thread):
                             self.send_task(task)
                     elif 'result' in task:
                         if task.get('result') and task.get('result') != 'None':
-                            globals()['c2'].display(task.get('result'))
+                            globals()['c2'].display(task.get('result').encode())
                             globals()['c2'].database.handle_task(task)
                     else:
                         if self._abort:

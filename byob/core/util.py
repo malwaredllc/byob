@@ -358,6 +358,7 @@ def display(output, color=None, style=None, end='\n', event=None, lock=None):
     """
     import colorama
     colorama.init()
+    output = str(output)
     _color = ''
     if color:
         _color = getattr(colorama.Fore, color.upper())
