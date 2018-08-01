@@ -65,7 +65,7 @@ except ImportError:
 def main():
     parser = argparse.ArgumentParser(
         prog='server.py',
-        version='0.1.4',
+        version='0.1.5',
         description="Command & Control Server (Build Your Own Botnet)")
 
     parser.add_argument(

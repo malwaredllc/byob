@@ -62,7 +62,7 @@ def threaded(function):
 
 # main
 _abort = False
-_debug = True
+_debug = '--debug' in sys.argv
 
 class Payload():
     """ 
