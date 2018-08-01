@@ -209,10 +209,10 @@ COMMIT;
         """
         tasks = []
         if session:
-            tasks.append(self.execute_query("select * from tbl_tasks where session={}".format(session), returns=True, display=display))
+            tasks.append(self.execute_query("select * from tbl_tasks where session={}".format(session), returns=True, display=False))
         else:
             for row in self.get_sessions():
-                tasks.append(self.execute_query("select * from tbl_tasks", returns=True, display=display))
+                tasks.append(self.execute_query("select * from tbl_tasks", returns=True, display=False))
         return tasks
 
     def handle_session(self, info):
