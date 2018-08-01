@@ -126,5 +126,7 @@ in the payload stager which is generated along with it
 6) __BUG FIXES__ - fix any bugs/issues
 
 ### Contact
+
 __Email__: danielvegamyhre@gmail.com
+
 __Twitter__: [![twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/malwared)
