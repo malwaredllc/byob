@@ -312,7 +312,7 @@ class C2():
             globals()['module_handler'].terminate()
             for session in self.sessions.values():
                 session._active.set()
-                session.send_task('mode passive')
+                session.send_task('passive')
         globals()['__abort'] = True
         self._active.clear()
         _ = os.popen("taskkill /pid {} /f".format(os.getpid()) if os.name == 'nt' else "kill -9 {}".format(os.getpid())).read()
@@ -461,11 +461,8 @@ class C2():
         """
         lock = self.current_session._lock if self.current_session else self._lock
         tasks = self.database.get_tasks()
-        if id:
-            session = self._get_session_by_id(id)
-            if session:
-                tasks = self.database.get_tasks(session.info.get('uid'))
         with lock:
+            print
             self.database._display(tasks)        
             print
 

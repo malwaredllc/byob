@@ -69,10 +69,12 @@ COMMIT;
         self.execute_file(sql=self._tbl_tasks, returns=False, display=False)
 
     def _display(self, data, indent=4):
+        c = globals().get('_color')
+
         if isinstance(data, dict):
             i = data.pop('id', None)
-            c = globals().get('_color')
             util.display(str(i).rjust(indent-3), color='reset', style='bright') if i else None
+
             for k,v in data.items():
                 if isinstance(v, unicode):
                     try:
@@ -80,7 +82,8 @@ COMMIT;
                         self._display(j, indent+2)
                     except:
                         util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
-                        util.display(str(v).encode(), color=c, style='dim')
+                        util.display(str(v).encode().replace('\n',' ')[:40], color=c, style='dim')
+
                 elif isinstance(v, list):
                     for i in v:
                         if isinstance(v, dict):
@@ -88,9 +91,11 @@ COMMIT;
                             self._display(v, indent+2)
                         else:
                             util.display(str(i).ljust(4  * indent).center(5 * indent))
+
                 elif isinstance(v, dict):
                     util.display(str(k).ljust(4  * indent).center(5 * indent))
                     self._display(v, indent+1)
+
                 elif isinstance(v, int):
                     if v in (0,1):
                         util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
@@ -98,9 +103,11 @@ COMMIT;
                     else:
                         util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
                         util.display(str(v).encode(), color=c, style='dim')
+
                 else:
                     util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
                     util.display(str(v).encode(), color=c, style='dim')
+
         elif isinstance(data, list):
             for row in data:
                 if isinstance(row, dict):
@@ -112,8 +119,10 @@ COMMIT;
             try:
                 data = dict(data)
             except: pass
+
             if isinstance(data, collections.OrderedDict):
                 data = dict(data)
+
             if isinstance(data, dict):
                 i = data.pop('id',None)
                 util.display(str(i).rjust(indent-1), color='reset', style='bright') if i else None
@@ -130,7 +139,6 @@ COMMIT;
         else:
             s = 1
         return s
-
 
     def _count_sessions(self):
         for i in self.execute('select count(*) from tbl_sessions'):
@@ -183,7 +191,7 @@ COMMIT;
         except Exception as e:
             self.error("{} error: {}".format(self.update_status.func_name, str(e)))
 
-    def get_sessions(self, verbose=False, display=False):
+    def get_sessions(self, verbose=False):
         """ 
         Fetch sessions from database
 
@@ -192,12 +200,12 @@ COMMIT;
         :param bool display:    display output
 
         """
-        sql = "select * from tbl_sessions" if verbose else "select id, public_ip, uid, last_online from tbl_sessions"
+        sql = "select * from tbl_sessions" if verbose else "select id, public_ip, uid, platform from tbl_sessions"
         statement = self.execute(sql)
         columns = [_[0] for _ in statement.description]
         return [{k:v for k,v in zip(columns, rows)} for rows in statement.fetchall()]
 
-    def get_tasks(self, session=None, display=True):
+    def get_tasks(self):
         """ 
         Fetch tasks from database
 
@@ -207,13 +215,10 @@ COMMIT;
 
         Returns tasks as dictionary (JSON) object
         """
-        tasks = []
-        if session:
-            tasks.append(self.execute_query("select * from tbl_tasks where session={}".format(session), returns=True, display=False))
-        else:
-            for row in self.get_sessions():
-                tasks.append(self.execute_query("select * from tbl_tasks", returns=True, display=False))
-        return tasks
+        sql = "select * from tbl_tasks"
+        statement = self.execute(sql)
+        columns = [_[0] for _ in statement.description]
+        return [{k:v for k,v in zip(columns, rows)} for rows in statement.fetchall()]
 
     def handle_session(self, info):
         """ 
@@ -278,8 +283,11 @@ COMMIT;
                 task['completed'] = datetime.datetime.now()
                 self.execute_query('update tbl_tasks set result=:result, completed=:completed where uid=:uid', params={"result": task['result'], "completed": task['completed'], "uid": task['uid']}, returns=False)
                 task['completed'] = task['completed'].ctime()
+
             self.commit()
+
             return task
+
         else:
             self.debug("{} error: invalid input type (expected {}, received {})".format(self.handle_task.func_name, dict, type(task)))
 
@@ -303,7 +311,9 @@ COMMIT;
             result.append(row)
             if display:
                 self._display(row)
+
         self.commit()
+
         if returns:
             return result
 
@@ -323,20 +333,26 @@ COMMIT;
             result = []
             if isinstance(filename, str):
                 assert os.path.isfile(filename), "keyword argument 'filename' must be a valid filename"
+
                 with open(filename) as stmts:
                     for line in self.executescript(stmts.read()):
                         result.append(line)
                         if display:
                             self._display(line)
+
             elif isinstance(sql, str):
             	for line in self.executescript(sql):
             	    result.append(line)
             	    if display:
             		    self._display(line)
+
             else:
                 raise Exception("missing required keyword argument 'filename' or 'sql'")
+
             self.commit()
+
             if returns:
                 return result
+
         except Exception as e:
             self.error("{} error: {}".format(self.execute_file.func_name, str(e)))
