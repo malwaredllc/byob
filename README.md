@@ -129,4 +129,4 @@ in the payload stager which is generated along with it
 
 __Email__: danielvegamyhre@gmail.com
 
-__Twitter__: [![twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/malwared)
+__Twitter__: [![twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/malwared1)
