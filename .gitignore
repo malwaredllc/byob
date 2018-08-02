@@ -1,0 +1,3 @@
+*.pyc
+byob/modules/payloads/
+byob/modules/stagers/
