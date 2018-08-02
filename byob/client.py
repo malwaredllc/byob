@@ -310,7 +310,7 @@ def _payload(options, **kwargs):
 
     if options.pastebin:
         assert options.pastebin, "missing argument 'pastebin' required for option 'pastebin'"
-        url = util.pastebin(payload, api_dev_key=options.pastebin)
+        url = util.pastebin(payload, options.pastebin)
     else:
         dirs = ['modules/payloads','byob/modules/payloads','byob/byob/modules/payloads']
         dirname = '.'
