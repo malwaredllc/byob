@@ -8,7 +8,15 @@ BYOB is an open-source project that provides a framework for security researcher
 and developers to build and operate a basic botnet to deepen their understanding
 of the sophisticated malware that infects millions of devices every year and spawns
 modern botnets, in order to improve their ability to develop counter-measures against 
-these threats.
+these threats. 
+
+It is designed to allow developers to easily implement their own code and add cool new
+features *without* having to write a **RAT** (Remote Administration Tool) or a
+**C2** (Command & Control server) from scratch.
+
+The RAT works like a gun with infinite bullets; any number of files can be remotely 
+loaded into memory from the C2 and executed on the target machine - all without writing
+anything to the disk.
 
 The library contains 4 main parts:
 
