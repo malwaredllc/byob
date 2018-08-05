@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-'Utilities (Build Your Own Backdoor)'
+'Utilities (Build Your Own Botnet)'
 
 _debug = False
 
