@@ -38,7 +38,7 @@ def environment():
 def run(url=None, key=None):
     if url:
         if environment():
-            if __debug:
+            if '--debug' in sys.argv:
                 if raw_input("Virtual machine detected. Abort? (y/n): ").startswith('y'):
                     sys.exit(0)
             else:
