@@ -99,7 +99,7 @@ def compress(input):
     Returns compressed output as a string
 
     """
-    return "import zlib,base64,marshal;exec(marshal.loads(zlib.decompress(base64.b64decode({}))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps(compile(input, '', 'exec')), 9))))
+    return "import zlib,base64,marshal;exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps(compile(input, '', 'exec')), 9))))
 
 def obfuscate(input):
     """ 
@@ -117,7 +117,7 @@ def obfuscate(input):
     temp.file.write(input)
     temp.file.close()
     name = os.path.join(tempfile.gettempdir(), temp.name)
-    obfs = subprocess.Popen('pyminifier -o {} --obfuscate-classes --obfuscate-functions --obfuscate-variables --obfuscate-builtins --replacement-length=1 {}'.format(name, name), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+    obfs = subprocess.Popen('pyminifier -o {} --obfuscate-classes --obfuscate-variables --replacement-length=1 {}'.format(name, name), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
     obfs.wait()
     output = open(name, 'r').read().replace('# Created by pyminifier (https://github.com/liftoff/pyminifier)', '')
     os.remove(name)
@@ -188,7 +188,7 @@ def exe(filename, icon=None, hidden=None):
     process = subprocess.Popen('{} -m PyInstaller {}'.format(sys.executable, fspec), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
     while True:
         try:
-            line = process.stdout.readline().rstrip()
+            line = process.stderr.readline().rstrip()
         except: break
         if line: util.display(line, color='reset', style='dim')
         if 'EXE' in line and 'complete' in line: break
@@ -228,11 +228,3 @@ def app(filename, icon=None):
     os.rename(filename, os.path.join(distPath, baseName))
     return appPath
 
-
-if __name__ == '__main__':
-    txt = "#!/usr/bin/python\nprint 'hey'"
-    print txt
-    txt = obfuscate(txt)
-    print txt
-    txt = compress(txt)
-    print txt
