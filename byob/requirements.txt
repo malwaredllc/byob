@@ -9,4 +9,5 @@ requests==2.18.4
 PyInstaller==3.3.1
 pycryptodome==3.6.1
 opencv-python==3.4.1.15
+pyHook==1.5.1;sys.platform=='win32'
 pypiwin32==223;sys.platform=='win32'
