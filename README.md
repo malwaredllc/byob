@@ -133,6 +133,6 @@ in the payload stager which is generated along with it
 
 ### Contact
 
-__Email__: danielvegamyhre@gmail.com
+__Email__: security@malwared.com
 
-__Twitter__: [![twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/malwared1)
+__Twitter__: [![twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/malwaredllc)
