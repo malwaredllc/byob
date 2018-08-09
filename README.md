@@ -1,4 +1,4 @@
-![logo](http://malwared.com/wp-includes/uploads/2013/10/circuitboard_reverse_tiny-03.png)
+![logo](http://malwared.com/wp-content/uploads/2013/10/circuitboard_reverse_tiny-03.png)
 # BYOB (Build Your Own Botnet)
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/colental/byob/blob/master/LICENSE)
 [![version](https://img.shields.io/badge/version-0.1.5-lightgrey.svg)](https://github.com/colental/byob)
