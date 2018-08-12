@@ -17,10 +17,10 @@ import StringIO
 
 # packages
 try:
-    import Crypto.Util.number
-    import Crypto.Cipher.AES
-    import Crypto.Hash.HMAC
-    import Crypto.Hash.SHA256
+    import Cryptodome.Util.number
+    import Cryptodome.Cipher.AES
+    import Cryptodome.Hash.HMAC
+    import Cryptodome.Hash.SHA256
 except ImportError:
     pass
 
@@ -38,12 +38,12 @@ def diffiehellman(connection):
     if isinstance(connection, socket.socket):
         g  = 2
         p  = 0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF
-        a  = Crypto.Util.number.bytes_to_long(os.urandom(32))
+        a  = Cryptodome.Util.number.bytes_to_long(os.urandom(32))
         xA = pow(g, a, p)
-        connection.send(Crypto.Util.number.long_to_bytes(xA))
-        xB = Crypto.Util.number.bytes_to_long(connection.recv(256))
+        connection.send(Cryptodome.Util.number.long_to_bytes(xA))
+        xB = Cryptodome.Util.number.bytes_to_long(connection.recv(256))
         x  = pow(xB, a, p)
-        return Crypto.Hash.SHA256.new(Crypto.Util.number.long_to_bytes(x)).digest()
+        return Cryptodome.Hash.SHA256.new(Cryptodome.Util.number.long_to_bytes(x)).digest()
     else:
         raise TypeError("argument 'connection' must be type '{}'".format(socket.socket))
 
@@ -61,7 +61,7 @@ def encrypt_aes(plaintext, key, padding=chr(0)):
     Returns encrypted ciphertext as base64-encoded string
 
     """
-    cipher = Crypto.Cipher.AES.new(key, Crypto.Cipher.AES.MODE_OCB)
+    cipher = Cryptodome.Cipher.AES.new(key, Cryptodome.Cipher.AES.MODE_OCB)
     ciphertext, tag = cipher.encrypt_and_digest(plaintext)
     output = b''.join((cipher.nonce, tag, ciphertext))
     return base64.b64encode(output)
@@ -81,8 +81,8 @@ def decrypt_aes(ciphertext, key, padding=chr(0)):
     
     """
     data = StringIO.StringIO(base64.b64decode(ciphertext))
-    nonce, tag, ciphertext = [ data.read(x) for x in (Crypto.Cipher.AES.block_size - 1, Crypto.Cipher.AES.block_size, -1) ]
-    cipher = Crypto.Cipher.AES.new(key, Crypto.Cipher.AES.MODE_OCB, nonce)
+    nonce, tag, ciphertext = [ data.read(x) for x in (Cryptodome.Cipher.AES.block_size - 1, Cryptodome.Cipher.AES.block_size, -1) ]
+    cipher = Cryptodome.Cipher.AES.new(key, Cryptodome.Cipher.AES.MODE_OCB, nonce)
     return cipher.decrypt_and_verify(ciphertext, tag)
 
 def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
