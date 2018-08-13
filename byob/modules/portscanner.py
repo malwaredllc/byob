@@ -18,9 +18,7 @@ import subprocess
 import collections
 
 # utilities
-util = imp.new_module('util')
-exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py').read(), 'https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py', 'exec') in util.__dict__
-sys.modules['util'] = util
+import core.util as util
 
 # globals
 packages = []
@@ -32,12 +30,8 @@ ports = json.loads(urllib.urlopen('https://pastebin.com/raw/WxK7eUSd').read())
 tasks = Queue.Queue()
 usage = 'portscanner [target]'
 desciription = """
-Portscan a target host IP address or subnet
+Scan a target IP/subnet for open ports and grab any service banners
 """
-
-# setup
-if util.is_compatible(platforms, __name__):
-    util.imports(packages, globals())
 
 # main
 def _ping(host):

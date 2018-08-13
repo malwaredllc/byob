@@ -9,7 +9,7 @@ import logging
 import urllib2
 import contextlib
 
-def log(info, level='debug'):
+def log(info='', level='debug'):
     logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
     logger = logging.getLogger(__name__)
     getattr(logger, level)(str(info)) if hasattr(logger, level) else logger.debug(str(info))
@@ -81,7 +81,7 @@ class RemoteImporter(object):
             final_url = package_url
         except IOError as e:
             package_src = None
-            log(level='info', info= "[-] '%s' is not a package:" % name)
+            log(level='info', info= "[-] '%s' is not a package (%s)" % (name, str(e)))
         if final_src == None:
             try:
                 log(level='debug', info= "[+] Trying to import '%s' as module from: '%s'" % (name, module_url))
@@ -94,8 +94,7 @@ class RemoteImporter(object):
                 final_url = module_url
             except IOError as e:
                 module_src = None
-                log(level='info', info= "[-] '%s' is not a module:" % name)
-                __logger__.warning("'%s' not found in HTTP repository." % name)
+                log(level='info', info= "[-] '%s' is not a module (%s)" % (name, str(e)))
                 imp.release_lock()
                 return None
         log(level='debug', info= "[+] Importing '%s'" % name)

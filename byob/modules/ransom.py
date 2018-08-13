@@ -12,10 +12,14 @@ import base64
 import urllib
 import threading
 
+# packages
+import Crypto.PublicKey.RSA
+import Crypto.Cipher.PKCS1_OAEP
+if sys.platform == 'win32':
+    import _winreg
+
 # utilities
-util = imp.new_module('util')
-exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py').read(), 'https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py', 'exec') in util.__dict__
-sys.modules['util'] = util
+import core.util as util
 
 # globals
 packages = ['_winreg','Cryptodome.PublicKey.RSA','Cryptodome.Cipher.PKCS1_OAEP']

