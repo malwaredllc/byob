@@ -1,3 +1,4 @@
+![logo](http://malwared.com/wp-content/uploads/2018/08/circuitboard_reverse_350px-300x300.png)
 # BYOB (Build Your Own Botnet)
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/colental/byob/blob/master/LICENSE)
 [![version](https://img.shields.io/badge/version-0.1.5-lightgrey.svg)](https://github.com/colental/byob)
@@ -132,6 +133,6 @@ in the payload stager which is generated along with it
 
 ### Contact
 
-__Email__: danielvegamyhre@gmail.com
+__Email__: security@malwared.com
 
-__Twitter__: [![twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/malwared1)
+__Twitter__: [![twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/malwaredllc)

