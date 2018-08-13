@@ -155,10 +155,10 @@ def main(function, *args, **kwargs):
     options = ', '.join(args) + str(', '.join(str("{}={}".format(k, v) if bool(v.count('{') > 0 and v.count('{') > 0) else "{}='{}'".format(k,v)) for k,v in kwargs.items()) if len(kwargs) else '')
     return __Template_main.format(function.lower(), function, options)
 
-def exe(filename, icon=None, hidden=None):
+def freeze(filename, icon=None, hidden=None):
     """ 
-    Compile the Python stager file into a standalone executable
-    with a built-in Python interpreter
+    Compile a Python file into a standalone executable
+    binary with a built-in Python interpreter
 
     `Required`
     :param str icon:        icon image filename

