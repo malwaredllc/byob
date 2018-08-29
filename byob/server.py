@@ -746,9 +746,9 @@ class C2():
                         util.display(str(session.id), color='white', style='normal')
                         util.display("    Started:", color='white', style='bright', end=',')
                         util.display(time.ctime(session._created) + "\n", color='white', style='normal')
+                        self.sessions[int(session.id)] = session
+                        self._count += 1
                     session.info = info
-                    self.sessions[int(session.id)] = session
-                    self._count += 1
             else:
                 util.display("\n\n[-]", color='red', style='bright', end=',')
                 util.display("Failed Connection:", color='white', style='bright', end=',')
