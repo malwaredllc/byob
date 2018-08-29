@@ -141,13 +141,7 @@ COMMIT;
         return s
 
     def _count_sessions(self):
-        for i in self.execute('select count(*) from tbl_sessions'):
-            if isinstance(i, int):
-                s = i + 1
-                break
-        else:
-            s = 1
-        return s
+        return len(self.get_sessions(verbose=False))
 
     def debug(self, output):
         """ 
@@ -232,7 +226,7 @@ COMMIT;
         if isinstance(info, dict):
 
             if not info.get('id'):
-                info['id'] = self._count_sessions()
+                info['id'] = (self._count_sessions() + 1)
 
             if not info.get('uid'):
                 info['uid'] = md5.new(info['public_ip'] + info['mac_address']).hexdigest()
@@ -242,8 +236,10 @@ COMMIT;
             info['sessions'] = self._client_sessions(info['uid'])
             info['last_online'] = datetime.datetime.now()
 
+            newclient = False
             if not self.exists(info['uid']):
-        	    self.execute_query("insert into tbl_sessions ({}) values (:{})".format(','.join(info.keys()), ',:'.join(info.keys())), params=info, returns=False, display=False)
+                newclient = True
+                self.execute_query("insert into tbl_sessions ({}) values (:{})".format(','.join(info.keys()), ',:'.join(info.keys())), params=info, returns=False, display=False)                
             else:
                 self.execute_query("update tbl_sessions set online=:online, sessions=:sessions, last_online=:last_online where uid=:uid", params=info, returns=False, display=False)
 
@@ -251,6 +247,9 @@ COMMIT;
         	    if isinstance(row, dict):
         	        info = row
                     break
+
+            if newclient:
+                info['new'] = True
 
             self.commit()
             return info
