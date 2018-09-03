@@ -27,7 +27,6 @@ import contextlib
 import collections
 import logging.handlers
 
-from .util import clear_system_logs
 
 def log(info, level='debug'):
     logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
