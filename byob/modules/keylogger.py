@@ -12,6 +12,8 @@ import StringIO
 import threading
 import collections
 
+from . import util
+
 # globals
 abort = False
 command = True
