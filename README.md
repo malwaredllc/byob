@@ -91,7 +91,7 @@ in the payload stager which is generated along with it
 ## Modules
 [![modules](https://img.shields.io/badge/byob-modules-blue.svg)](https://github.com/colental/byob/blob/master/byob/modules)
 
-*11 post-exploitation modules that are remotely importable by clients*
+*Post-exploitation modules that are remotely importable by clients*
 
 1) __Keylogger__ (`byob.modules.keylogger`): logs the user’s keystrokes & the window name entered
 2) __Screenshot__ (`byob.modules.screenshot`): take a screenshot of current user’s desktop
@@ -108,7 +108,7 @@ in the payload stager which is generated along with it
 ## Core
 [![core](https://img.shields.io/badge/byob-core-blue.svg)](https://github.com/colental/byob/blob/master/byob/core)
 
-*6 core framework modules used by the generator and the server*
+*Core framework modules used by the generator and the server*
 
 1) __Utilities__ (`byob.core.util`): miscellaneous utility functions that are used by many modules
 2) __Security__ (`byob.core.security`): Diffie-Hellman IKE & 3 encryption modes (AES-256-OCB, AES-256-CBC, XOR-128)
