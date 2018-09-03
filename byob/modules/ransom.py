@@ -14,9 +14,8 @@ import urllib
 import threading
 
 # packages
-import Crypto.PublicKey.RSA
-import Crypto.Cipher.PKCS1_OAEP
-import Cryptodome
+import Cryptodome.PublicKey.RSA
+import Cryptodome.Cipher.PKCS1_OAEP
 if sys.platform == 'win32':
     import _winreg
 
