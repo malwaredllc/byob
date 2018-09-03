@@ -138,9 +138,9 @@ def __create_github_url(username, repo, branch='master'):
 
 def _add_git_repo(url_builder, username=None, repo=None, module=None, branch=None, commit=None):
     if username == None or repo == None:
-        raise Error("'username' and 'repo' parameters cannot be None")
+        raise Exception("'username' and 'repo' parameters cannot be None")
     if commit and branch:
-        raise Error("'branch' and 'commit' parameters cannot be both set!")
+        raise Exception("'branch' and 'commit' parameters cannot be both set!")
     if commit:
         branch = commit
     if not branch:

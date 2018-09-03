@@ -32,11 +32,12 @@ as a link to a funny image/video on Imgur/YouTUbe sent from a friend
 def run(message=None, number=None, sid=None, token=None):
     try:
         if 'twilio' in globals():
+            global twilio
             phone_number = '+{}'.format(str().join([i for i in str(number) if str(i).isdigit()]))
             cli = twilio.rest.Client(sid, token)
             msg = cli.api.account.messages.create(to=phone_number, from_=phone, body=message)
             return "SUCCESS: text message sent to {}".format(phone_number)
-	    else:
+        else:
             raise ImportError("missing package 'twilio' is required for module 'phone'")
     except Exception as e:
         return "{} error: {}".format(run.func_name, str(e))

