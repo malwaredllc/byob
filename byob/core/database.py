@@ -225,9 +225,6 @@ COMMIT;
         """
         if isinstance(info, dict):
 
-            if not info.get('id'):
-                info['id'] = (self._count_sessions() + 1)
-
             if not info.get('uid'):
                 info['uid'] = md5.new(info['public_ip'] + info['mac_address']).hexdigest()
                 info['joined'] = datetime.datetime.now()
