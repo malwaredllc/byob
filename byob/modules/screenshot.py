@@ -30,6 +30,7 @@ def run():
     try:
         with mss.mss() as screen:
             img = screen.grab(screen.monitors[0])
-        return base64.b64encode(img)
+        data = util.png(img)
+        return base64.b64encode(data)
     except Exception as e:
         util.log("{} error: {}".format(run.func_name, str(e)))
