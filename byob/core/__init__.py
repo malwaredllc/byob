@@ -126,7 +126,7 @@ byob.modules
     droppers to load & execute on target host machines
 
 """
-__all__         = ['database','generators','loader','payloads','security','stagers','util']
+__all__         = ['database','generators','loader','handler','payloads','security','stagers','util']
 __version__     = '0.1.5'
 __license__     = 'GPLv3'
 __author__      = 'Daniel Vega-Myhre'
