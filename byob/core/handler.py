@@ -14,26 +14,35 @@ import util
 
 
 class Handler(BaseHTTPRequestHandler):
+	""" 
+	HTTP POST request handler for clients uploading
+	captured images/data to the server
 
+	"""
 	def _set_headers(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
+		self.send_response(200)
+		self.send_header('Content-type', 'text/html')
+		self.end_headers()
 
 	def do_POST(self):
-        self._set_headers()
-        self.data_string = self.rfile.read(int(self.headers['Content-Length']))
-        self.send_response(200)
-        self.end_headers()
-        data = json.loads(self.data_string)
-        fname = 'data/{}'.format(str().join([random.choice(string.lowercase + string.digits) for _ in range(3)]))
-        if 'png' in data.keys():
-        	data = base64.b64decode(data.get('png'))
-	        fname += '.png'
-        else:
-        	data = base64.b64decode(data.get('data'))
-    	with file(fname, 'wb') as fp:
-    		fp.write(data)
+		""" 
+		Handle incoming HTTP POST request
+
+		"""
+		self._set_headers()
+		self.data_string = self.rfile.read(int(self.headers['Content-Length']))
+		self.send_response(200)
+		self.end_headers()
+		data = json.loads(self.data_string)
+		fname = 'data/{}'.format(str().join([random.choice(string.lowercase + string.digits) for _ in range(3)]))
+		if 'png' in data.keys():
+			data = base64.b64decode(data.get('png'))
+			fname += '.png'
+		else:
+			data = base64.b64decode(data.get(data.keys()[0]))
+			fname += '.txt'
+		with file(fname, 'wb') as fp:
+			fp.write(data)
 
 
 def run(server_class=HTTPServer, handler_class=Handler, port=80):
@@ -41,9 +50,8 @@ def run(server_class=HTTPServer, handler_class=Handler, port=80):
 	httpd.serve_forever()
 
 def main():
-	if len(sys.argv) == 2 and sys.argv[1].isdigit():
-		port = int(sys.argv[1])
-		run(port=port)
+	port = int(sys.argv[1])
+	run(port=port)
 
 if __name__ == '__main__':
 	main()
