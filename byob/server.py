@@ -218,10 +218,6 @@ class C2():
                 'method': self.session_webcam,
                 'usage': 'webcam <mode>',
                 'description': 'capture image/video from the webcam of a client device'},
-            'screenshot': {
-                'method': self.session_screenshot,
-                'usage': 'screenshot',
-                'description': 'take a screenshot of the client desktop'},
             'kill' : {
                 'method': self.session_remove,
                 'usage': 'kill <id>',
