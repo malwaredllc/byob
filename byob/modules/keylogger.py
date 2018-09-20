@@ -13,6 +13,13 @@ import threading
 import collections
 
 # packages
+if sys.platform == 'win32':
+    import pyHook
+    import pythoncom
+else:
+    import pyxhook
+
+# utilities
 import util
 
 # globals
