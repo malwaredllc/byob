@@ -162,13 +162,14 @@ def post(url, headers={}, data={}, as_json=False):
 
     `Optional`
     :param dict headers:  HTTP request headers
-    :param dict data:     HTTP request post data
-    :param bool json:     return JSON formatted output
+    :param dict data:     HTTP request POST data
+    :param dict json:     POST data in JSON format
+    :param bool as_json:  return JSON formatted output
 
     """
     try:
         import requests
-        req = requests.post(url, headers=headers, data=data)
+        req = requests.post(url, headers=headers, data=data, json=json)
         output = req.content
         if as_json:
             try:
