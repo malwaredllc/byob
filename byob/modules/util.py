@@ -153,7 +153,7 @@ def status(timestamp):
           '{} seconds'.format(int(c % 60.0)) if int(c % 60.0) else str()]
     return ', '.join([i for i in data if i])
 
-def post(url, headers={}, data={}, as_json=False):
+def post(url, headers={}, data={}, json={}, as_json=False):
     """ 
     Make a HTTP post request and return response
 
