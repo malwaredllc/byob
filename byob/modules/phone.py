@@ -13,7 +13,7 @@ import urllib
 import twilio
 
 # utilities
-import core.util as util
+import util
 
 # globals
 command = True

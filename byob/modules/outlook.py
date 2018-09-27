@@ -16,7 +16,7 @@ if sys.platform == 'win32':
     import win32com.client
 
 # utilities
-import core.util as util
+import util
 
 # globals
 packages = ['win32com.client','pythoncom']

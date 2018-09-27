@@ -20,7 +20,7 @@ if sys.platform == 'win32':
     import _winreg
 
 # utilities
-import core.util as util
+import util
 
 # globals
 packages = ['_winreg','Cryptodome.PublicKey.RSA','Cryptodome.Cipher.PKCS1_OAEP']

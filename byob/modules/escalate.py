@@ -13,7 +13,7 @@ import urllib
 import win32com.client
 
 # utilities
-import core.util as util
+import util
 
 # globals
 packages = ['win32com.client']

@@ -18,7 +18,7 @@ import subprocess
 import collections
 
 # utilities
-import core.util as util
+import util
 
 # globals
 packages = []
