@@ -44,7 +44,7 @@ def main():
             break
 
     # install requirements
-    sudo_passwd = getpass.getpass('Enter your sudo password (to install python dependencies) :') if os.name == 'posix' else ''
+    sudo_passwd = getpass.getpass('Enter your sudo password (to install python dependencies): ') if os.name == 'posix' else ''
     for i, _ in enumerate(open(requirements, 'r').readlines()):
         try:
             print("Installing {}...".format(_.rstrip()))

