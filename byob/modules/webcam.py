@@ -41,7 +41,6 @@ def image(*args, **kwargs):
         if not r:
             util.log(f)
             return "Unable to access webcam"
-        return f
         img = util.png(f)
         return base64.b64encode(img)
     except Exception as e:
