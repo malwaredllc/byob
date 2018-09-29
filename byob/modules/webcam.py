@@ -7,6 +7,7 @@ import os
 import sys
 import imp
 import time
+import base64
 import pickle
 import random
 import socket
@@ -39,7 +40,8 @@ def image(*args, **kwargs):
         if not r:
             util.log(f)
             return "Unable to access webcam"
-        return util.png(f)
+        img = util.png(f)
+        return base64.b64encode(img)
     except Exception as e:
         return '{} error: {}'.format(image.func_name, str(e))
 
