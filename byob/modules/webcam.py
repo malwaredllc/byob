@@ -35,11 +35,13 @@ optionally upload it to Imgur or a remote FTP server
 def image(*args, **kwargs):
     try:
         dev = cv2.VideoCapture(0)
+        time.sleep(0.5)
         r,f = dev.read()
         dev.release()
         if not r:
             util.log(f)
             return "Unable to access webcam"
+        return f
         img = util.png(f)
         return base64.b64encode(img)
     except Exception as e:

