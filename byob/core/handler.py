@@ -34,13 +34,9 @@ class Handler(BaseHTTPRequestHandler):
 		self.send_response(200)
 		self.end_headers()
 		data = json.loads(self.data_string)
-		fname = 'data/{}'.format(str().join([random.choice(string.lowercase + string.digits) for _ in range(3)]))
-		if 'png' in data.keys():
-			data = base64.b64decode(data.get('png'))
-			fname += '.png'
-		else:
-			data = base64.b64decode(data.get(data.keys()[0]))
-			fname += '.txt'
+		ftype = data.keys()[0]
+		fname = 'data/{}.{}'.format(str().join([random.choice(string.lowercase + string.digits) for _ in range(3)]), ftype)
+		data = base64.b64decode(data.get(ftype))
 		with file(fname, 'wb') as fp:
 			fp.write(data)
 
