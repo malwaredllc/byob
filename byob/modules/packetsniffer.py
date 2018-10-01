@@ -148,7 +148,7 @@ def _run():
     try:
         sniffer_socket = socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
         while True:
-            flag.wait():
+            flag.wait()
             try:
                 recv_data = sniffer_socket.recv(2048)
                 recv_data, ip_bool = _eth_header(recv_data)

