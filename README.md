@@ -2,7 +2,7 @@
 # BYOB (Build Your Own Botnet)
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/colental/byob/blob/master/LICENSE)
 [![version](https://img.shields.io/badge/version-0.1.5-lightgrey.svg)](https://github.com/colental/byob)
-[![build](https://img.shields.io/travis/com/malwaredllc/byob/master.svg)](https://travis-ci.com/malwaredllc/byob.svg?branch=master)
+[![build](https://img.shields.io/travis/com/malwaredllc/byob/master.svg?logo=travis)](https://travis-ci.com/malwaredllc/byob.svg?branch=master)
 
 
 __Disclaimer__: This project should be used for authorized testing or educational purposes only.
