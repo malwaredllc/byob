@@ -27,6 +27,13 @@ import contextlib
 import collections
 import logging.handlers
 
+# modules
+try:
+    from util import *
+    from loader import *
+    from security import *
+except ImportError:
+    pass
 
 def log(info, level='debug'):
     logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
