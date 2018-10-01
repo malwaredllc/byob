@@ -17,10 +17,12 @@ import StringIO
 
 # packages
 try:
-    import Cryptodome.Util.number
-    import Cryptodome.Cipher.AES
     import Cryptodome.Hash.HMAC
+    import Cryptodome.Cipher.AES
     import Cryptodome.Hash.SHA256
+    import Cryptodome.Util.number
+    import Cryptodome.PublicKey.RSA
+    import Cryptodome.Cipher.PKCS1_OAEP
 except ImportError:
     pass
 

