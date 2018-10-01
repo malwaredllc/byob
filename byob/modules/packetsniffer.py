@@ -165,7 +165,7 @@ def _run():
             sniffer_socket.close()
         except: pass
     except Exception as e:
-        util.log("{} error: {}".format(packetsniffer.func_name, str(e)))
+        util.log(str(e))
 
 
 def run():
