@@ -2,6 +2,8 @@
 # BYOB (Build Your Own Botnet)
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/colental/byob/blob/master/LICENSE)
 [![version](https://img.shields.io/badge/version-0.1.5-lightgrey.svg)](https://github.com/colental/byob)
+[![build](https://img.shields.io/travis/malwaredllc/byob.svg "Travis build status")](https://travis-ci.com/malwaredllc/byob)
+
 
 __Disclaimer__: This project should be used for authorized testing or educational purposes only.
 
@@ -128,7 +130,9 @@ in the payload stager which is generated along with it
 3) __Improve Phone/SMS module__ - add spreading ability via emails/text-messages when a contacts list is found on the target host
 4) __Improve Outlook/Email module__ - add spreading ability via emails/text-messages when a contacts list is found on the target host
 5) __Improve Ransom module__ - add methods for using a Bitcoin exchange API for generating temporary wallet addresses that are unique to the target host, expire after a given number of hours without receiving payment, and which notify the C2 server (maybe via webhooks?) when payment is received or the wallet expires
-6) __BUG FIXES__ - fix any bugs/issues
+6) __Continuous Integration__ - get our [Travis CI builds](https://travis-ci.com/malwaredllc/byob) to pass
+7) __Support Python 3__ - support both Python 2 and Python 3 in a single codebase
+8) __BUG FIXES__ - fix any bugs/issues
 
 ### Contact
 
