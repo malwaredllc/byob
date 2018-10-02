@@ -102,6 +102,8 @@ packages not installed on the target machines
 7) __Database__ (`byob.core.database`): handles interaction between command & control server and the SQLite database
 8) __Handler__ (`byob.core.handler`): HTTP POST request handler for remote file uploads to the server
 
+________________________________________________________________________________________________
+
 ### To Do
 
 *Contributors welcome! Feel free to issue pull-requests with any new features or improvements you have come up with!*
@@ -113,6 +115,8 @@ packages not installed on the target machines
 5) __Improve Ransom module__ - add methods for using a Bitcoin exchange API for generating temporary wallet addresses that are unique to the target host, expire after a given number of hours without receiving payment, and which notify the C2 server (maybe via webhooks?) when payment is received or the wallet expires
 6) __Support Python 3__ - support both Python 2 and Python 3 in a single codebase
 7) __BUG FIXES__ - fix any bugs/issues
+
+________________________________________________________________________________________________
 
 ### Contact
 
