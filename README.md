@@ -1,7 +1,7 @@
 ![logo](https://malwared.com/wp-content/uploads/2018/09/byob_black-06.png)
 # BYOB (Build Your Own Botnet)
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/colental/byob/blob/master/LICENSE)
-[![version](https://img.shields.io/badge/version-0.1.5-lightgrey.svg)](https://github.com/colental/byob)
+[![version](https://img.shields.io/badge/version-0.2.0-lightgrey.svg)](https://github.com/colental/byob)
 [![build](https://img.shields.io/travis/com/malwaredllc/byob/master.svg)](https://travis-ci.com/malwaredllc/byob.svg?branch=master)
 
 

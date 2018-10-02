@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Core Framework Modules (Build Your Own Botnet)
+"""Build Your Own Botnet
 
 88                                  88
 88                                  88
@@ -39,6 +39,9 @@ byob.core
   byob.core.util
     miscellaneous utility functions that are used by many modules
 
+  byob.core.handler
+    HTTP POST request handler for receiving client file uploads
+
   byob.core.security
     module containing the Diffie-Hellman Internet Key Exchange (RFC 2741)
     method for securing a shared secret key even over insecure networks,
@@ -54,15 +57,10 @@ byob.core
     it can be directly imported into the currently running process, without
     writing anything to the disk (not even temporary files - zero IO system calls)
 
-  byob.core.payloads
+  byob.core.payload
     reverse TCP shell designed to remotely import post-exploitation modules from
     server, along with any packages/dependencies), complete tasks issued by
     the server, and handles connections & communication at the socket-level
-
-  byob.core.stagers
-    payload stager for the main reverse TCP shell payload that checks environment
-    for virtualization before remotely loading payload, decrypting it in-memory, 
-    and then executing it 
 
   byob.core.generators
     module containing functions which all generate code by using the arguments
@@ -126,8 +124,14 @@ byob.modules
     droppers to load & execute on target host machines
 
 """
-__all__         = ['database','generators','loader','handler','payloads','security','stagers','util']
-__version__     = '0.1.5'
-__license__     = 'GPLv3'
-__author__      = 'Daniel Vega-Myhre'
-__github__      = 'https://github.com/colental/byob'
+__all__ = ['database','generators','handler','loader','payloads','security','stagers','util']
+__version__ = '0.2.0'
+__license__ = 'GPLv3'
+__author__ = 'Daniel Vega-Myhre'
+__github__ = 'https://github.com/malwaredllc/byob'
+
+def main():
+    for module in __all__:
+        exec "import {}".format(module)
+
+main()

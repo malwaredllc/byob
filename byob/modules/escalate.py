@@ -10,7 +10,8 @@ import ctypes
 import urllib
 
 # packages
-import win32com.client
+if sys.platform == 'win32':
+    import win32com.client
 
 # utilities
 import util

