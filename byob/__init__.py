@@ -125,7 +125,7 @@ byob.modules
 
 """
 __all__ = ['client','core','modules','server']
-__version__ = '0.2.0'
+__version__ = '0.2'
 __license__ = 'GPLv3'
 __author__ = 'Daniel Vega-Myhre'
 __github__ = 'https://github.com/malwaredllc/byob'

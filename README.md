@@ -1,7 +1,7 @@
 ![logo](https://malwared.com/wp-content/uploads/2018/09/byob_black-06.png)
 # BYOB (Build Your Own Botnet)
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/colental/byob/blob/master/LICENSE)
-[![version](https://img.shields.io/badge/version-0.2.0-lightgrey.svg)](https://github.com/colental/byob)
+[![version](https://img.shields.io/badge/version-0.2-lightgrey.svg)](https://github.com/colental/byob)
 [![build](https://img.shields.io/travis/com/malwaredllc/byob/master.svg)](https://travis-ci.com/malwaredllc/byob.svg?branch=master)
 
 
@@ -119,7 +119,7 @@ in the payload stager which is generated along with it
 5) __Stagers__ (`byob.core.stagers`): generate unique payload stagers to prevent analysis & detection   
 6) __Generators__ (`byob.core.generators`): functions which all dynamically generate code for the client generator
 7) __Database__ (`byob.core.database`): handles interaction between command & control server and the SQLite database
-
+8) __Handler__ (`byob.core.handler`): HTTP POST request handler for remote file uploads to the server
 
 ### To Do
 
