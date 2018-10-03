@@ -37,7 +37,7 @@ class Handler(BaseHTTPRequestHandler):
 		ftype = data.keys()[0]
 		fname = 'data/{}.{}'.format(str().join([random.choice(string.lowercase + string.digits) for _ in range(3)]), ftype)
 		data = base64.b64decode(data.get(ftype))
-		with file(fname, 'wb') as fp:
+		with open(fname, 'wb') as fp:
 			fp.write(data)
 
 
@@ -51,4 +51,3 @@ def main():
 
 if __name__ == '__main__':
 	main()
-
