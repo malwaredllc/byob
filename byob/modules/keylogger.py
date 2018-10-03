@@ -25,7 +25,7 @@ else:
     import pyxhook as hook_manager
 
 # utilities
-from . import util
+import util
 
 # globals
 abort = False
@@ -67,6 +67,7 @@ def _event(event):
     return True
 
 def _run():
+    global abort
     while True:
         hm = hook_manager.HookManager()
         hm.KeyDown = _event
