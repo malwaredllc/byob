@@ -107,7 +107,7 @@ def run(target='192.168.1.1', ports=[21,22,23,25,80,110,111,135,139,443,445,554,
             threads['portscan-%d' % i] = _threader()
         for t in threads:
             threads[t].join()
-        return results[target]
+        return json.dumps(results[target])
     else:
         return "Target offline"
 
