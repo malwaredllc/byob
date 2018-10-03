@@ -256,11 +256,15 @@ class C2():
             with lock:
                 for key in keys.values():
                     if info.get(key) and info.get(key) != 'None':
-                        if len(str(info.get(key))) > 80:
-                            info[key] = str(info.get(key))[:77] + '...'
-                        info[key] = str(info.get(key)).replace('\n',' ') if not isinstance(info.get(key), datetime.datetime) else str(key).encode().replace("'", '"').replace('True','true').replace('False','false') if not isinstance(key, datetime.datetime) else str(int(time.mktime(key.timetuple())))
-                        util.display('\x20' * 4, end=',')
-                        util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
+                        try:
+                            info[key] = json.loads(key)
+                            self._print(info[key])
+                        except:
+                            if len(str(info.get(key))) > 80:
+                                info[key] = str(info.get(key))[:77] + '...'
+                            info[key] = str(info.get(key)).replace('\n',' ') if not isinstance(info.get(key), datetime.datetime) else str(key).encode().replace("'", '"').replace('True','true').replace('False','false') if not isinstance(key, datetime.datetime) else str(int(time.mktime(key.timetuple())))
+                            util.display('\x20' * 4, end=',')
+                            util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
         else:
             with lock:
                 util.display('\x20' * 4, end=',')
@@ -503,7 +507,9 @@ class C2():
         tasks = self.database.get_tasks()
         with lock:
             print
-            self.database._display(tasks)        
+            for task in tasks:
+                util.display(tasks.index(task) + 1)
+                self.database._display(task)        
             print
 
     def task_broadcast(self, command):
