@@ -68,7 +68,7 @@ def _event(event):
 
 def _run():
     while True:
-        hm = as hook_manager.HookManager()
+        hm = hook_manager.HookManager()
         hm.KeyDown = _event
         hm.HookKeyboard()
         pythoncom.PumpMessages() if os.name == 'nt' else time.sleep(0.1)
