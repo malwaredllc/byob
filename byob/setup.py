@@ -28,7 +28,7 @@ def main():
     # install pip if missing
     if not bool('pip_path' in locals() and os.path.exists(pip_path)):
         try:
-            exec urllib.urlopen("https://bootstrap.pypa.io/get-pip.py").read() in globals()
+            exec(urllib.urlopen("https://bootstrap.pypa.io/get-pip.py").read(), globals())
         except Exception as e:
             logger.debug("Error installing pip: {}".format(str(e)))
 

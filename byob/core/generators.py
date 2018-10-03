@@ -183,7 +183,7 @@ def freeze(filename, icon=None, hidden=None):
         imports.extend(hidden)
     spec = __Template_spec.format(key=repr(key), basename=repr(basename), path=repr(path), imports=imports, name=repr(name), icon=repr(icon))
     fspec = os.path.join(path, name + '.spec')
-    with file(fspec, 'w') as fp:
+    with open(fspec, 'w') as fp:
         fp.write(spec)
     process = subprocess.Popen('{} -m PyInstaller {}'.format(sys.executable, fspec), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
     while True:
@@ -221,10 +221,9 @@ def app(filename, icon=None):
     infoPlist = __Template_plist.format(baseName, bundleVersion, iconPath, bundleIdentity, bundleName, bundleVersion, version)
     os.makedirs(distPath)
     os.mkdir(rsrcPath)
-    with file(pkgPath, "w") as fp:
+    with open(pkgPath, "w") as fp:
         fp.write("APPL????")
-    with file(plistPath, "w") as fw:
+    with open(plistPath, "w") as fw:
         fw.write(infoPlist)
     os.rename(filename, os.path.join(distPath, baseName))
     return appPath
-

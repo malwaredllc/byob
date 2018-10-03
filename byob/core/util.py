@@ -36,7 +36,7 @@ def imports(source, target=None):
         module = globals()
     for src in source:
         try:
-            exec "import {}".format(src) in target
+            exec("import {}".format(src), target)
         except ImportError:
             log("missing package '{}' is required".format(source))
 

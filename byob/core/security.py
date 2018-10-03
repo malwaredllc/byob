@@ -112,7 +112,7 @@ def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr
         block   = bytes().join(chr(ord(x) ^ ord(y)) for x, y in zip(vector, block))
         v0, v1  = struct.unpack("!2L", block)
         k       = struct.unpack("!4L", key[:key_size])
-        sum, delta, mask = 0L, 0x9e3779b9L, 0xffffffffL
+        sum, delta, mask = 0, 0x9e3779b9, 0xffffffff
         for round in range(num_rounds):
             v0  = (v0 + (((v1 << 4 ^ v1 >> 5) + v1) ^ (sum + k[sum & 3]))) & mask
             sum = (sum + delta) & mask
@@ -145,7 +145,7 @@ def decrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr
     for block in blocks[1:]:
         v0, v1  = struct.unpack("!2L", block)
         k0     = struct.unpack("!4L", key[:key_size])
-        delta, mask = 0x9e3779b9L, 0xffffffffL
+        delta, mask = 0x9e3779b9, 0xffffffff
         sum     = (delta * num_rounds) & mask
         for round in range(num_rounds):
             v1  = (v1 - (((v0 << 4 ^ v0 >> 5) + v0) ^ (sum + k0[sum >> 11 & 3]))) & mask
@@ -156,4 +156,3 @@ def decrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr
         vector  = block
         result.append(output)
     return str().join(result).rstrip(padding)
-
