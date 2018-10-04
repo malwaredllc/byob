@@ -54,7 +54,7 @@ def main():
         except Exception as e:
             logger.error("Error installing package: {}".format(_))
 
-    for x in xrange(20):
+    for x in range(20):
         if 'pip_install_%d' % x in locals():
             locals()['pip_install_%d' % x].wait()
 

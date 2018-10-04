@@ -156,9 +156,9 @@ COMMIT;
         util.log(str(output), level='error')
 
     def exists(self, uid):
-    	""" 
-    	Check if a client exists in the database
-    	"""
+        """ 
+        Check if a client exists in the database
+        """
         result = bool(len([_ for _ in self.execute("select * from tbl_sessions where uid=:uid", {"uid": uid})]))
         return result
 
