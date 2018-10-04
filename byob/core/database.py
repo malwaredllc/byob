@@ -159,7 +159,7 @@ COMMIT;
     	""" 
     	Check if a client exists in the database
     	"""
-    	result = bool(len([_ for _ in self.execute("select * from tbl_sessions where uid=:uid", {"uid": uid})]))
+        result = bool(len([_ for _ in self.execute("select * from tbl_sessions where uid=:uid", {"uid": uid})]))
         return result
 
     def update_status(self, session, online):

@@ -50,7 +50,7 @@ def main():
             print("Installing {}...".format(_.rstrip()))
             locals()['pip_install_%d' % i] = subprocess.Popen('{} install {}'.format(pip_path if os.name == 'nt' else 'sudo {}'.format(pip_path), _.rstrip()), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
             if i == 0:
-	        locals()['pip_install_%d' % i].communicate(sudo_passwd + '\n')
+                locals()['pip_install_%d' % i].communicate(sudo_passwd + '\n')
         except Exception as e:
             logger.error("Error installing package: {}".format(_))
 
