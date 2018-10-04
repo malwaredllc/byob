@@ -241,8 +241,8 @@ COMMIT;
                 self.execute_query("update tbl_sessions set online=:online, sessions=:sessions, last_online=:last_online where uid=:uid", params=info, returns=False, display=False)
 
             for row in self.execute("select * from tbl_sessions where uid=:uid", info):
-        	    if isinstance(row, dict):
-        	        info = row
+                if isinstance(row, dict):
+                    info = row
                     break
 
             if newclient:
