@@ -16,8 +16,8 @@ def log(info='', level='debug'):
 
 # main
 class RemoteImporter(object):
-    """
-    The class that implements the remote import API.
+    """ 
+    The class that implements the remote import API. 
     :param list modules: list of module/package names to make available for remote import
     :param str base_url: URL of directory/repository of modules being served through HTTPS
 
@@ -153,7 +153,7 @@ def _add_git_repo(url_builder, username=None, repo=None, module=None, branch=Non
     return add_remote_repo(module, url)
 
 def add_remote_repo(modules, base_url='http://localhost:8000/'):
-    """
+    """ 
     Function that creates and adds to the 'sys.meta_path' an RemoteImporter object.
     The parameters are the same as the RemoteImporter class contructor.
     """
@@ -162,7 +162,7 @@ def add_remote_repo(modules, base_url='http://localhost:8000/'):
     return importer
 
 def remove_remote_repo(base_url):
-    """
+    """ 
     Function that removes from the 'sys.meta_path' an RemoteImporter object given its HTTP/S URL.
     """
     for importer in sys.meta_path:
@@ -175,7 +175,7 @@ def remove_remote_repo(base_url):
 
 @contextlib.contextmanager
 def remote_repo(modules, base_url='http://localhost:8000/'):
-    """
+    """ 
     Context Manager that provides remote import functionality through a URL.
     The parameters are the same as the RemoteImporter class contructor.
     """
@@ -185,7 +185,7 @@ def remote_repo(modules, base_url='http://localhost:8000/'):
 
 @contextlib.contextmanager
 def github_repo(username=None, repo=None, module=None, branch=None, commit=None):
-    """
+    """ 
     Context Manager that provides import functionality from Github repositories through HTTPS.
     The parameters are the same as the '_add_git_repo' function. No 'url_builder' function is needed.
     """

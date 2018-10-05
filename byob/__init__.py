@@ -115,7 +115,7 @@ byob.modules
     package containing the payloads created by client generator that are being
     hosted locally by the server (rather than uploaded to Pastebin to be hosted
     there anonymously) for the client stagers to load & execute on the target
-    host machines
+    host machines 
 
   byob.modules.stagers
     package containing payload stagers created by the client generator along
