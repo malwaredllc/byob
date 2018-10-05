@@ -4,15 +4,9 @@
 
 # standard library
 import os
-import sys
-import imp
-import json
 import struct
 import base64
 import socket
-import urllib
-import logging
-import tempfile
 import StringIO
 
 # packages
