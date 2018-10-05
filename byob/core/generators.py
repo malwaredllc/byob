@@ -90,7 +90,7 @@ exe = EXE(pyz,
 
 # main
 def compress(input):
-    """ 
+    """
     Zip-compress output into self-executing script
 
     `Requires`
@@ -102,7 +102,7 @@ def compress(input):
     return "import zlib,base64,marshal;exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps(compile(input, '', 'exec')), 9))))
 
 def obfuscate(input):
-    """ 
+    """
     Obfuscate and minimize memory footprint of output
 
     `Requires`
@@ -124,19 +124,19 @@ def obfuscate(input):
     return output
 
 def variable(length=6):
-    """ 
+    """
     Generate a random alphanumeric variable name of given length
 
     `Optional`
     :param int length:    length of the variable name to generate
 
     Returns variable as a string
-    
+
     """
     return random.choice([chr(n) for n in range(97,123)]) + str().join(random.choice([chr(n) for n in range(97,123)] + [chr(i) for i in range(48,58)] + [chr(i) for i in range(48,58)] + [chr(z) for z in range(65,91)]) for x in range(int(length)-1))
 
 def main(function, *args, **kwargs):
-    """ 
+    """
     Generate a simple code snippet to initialize a script
 
     if __name__ == "__main__":
@@ -150,13 +150,13 @@ def main(function, *args, **kwargs):
     :param dict kwargs:     keyword arguments
 
     Returns code snippet as a string
-    
+
     """
     options = ', '.join(args) + str(', '.join(str("{}={}".format(k, v) if bool(v.count('{') > 0 and v.count('{') > 0) else "{}='{}'".format(k,v)) for k,v in kwargs.items()) if len(kwargs) else '')
     return __Template_main.format(function.lower(), function, options)
 
 def freeze(filename, icon=None, hidden=None):
-    """ 
+    """
     Compile a Python file into a standalone executable
     binary with a built-in Python interpreter
 
@@ -165,7 +165,7 @@ def freeze(filename, icon=None, hidden=None):
     :param str filename:    target filename
 
     Returns output filename as a string
-    
+
     """
     basename = os.path.basename(filename)
     name = os.path.splitext(basename)[0]
@@ -196,7 +196,7 @@ def freeze(filename, icon=None, hidden=None):
     return output
 
 def app(filename, icon=None):
-    """ 
+    """
     Bundle the Python stager file into a Mac OS X application
 
     `Required`

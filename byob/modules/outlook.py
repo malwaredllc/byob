@@ -50,7 +50,7 @@ def _get_emails():
             break
 
 def installed():
-    """ 
+    """
     Check if Outlook is installed on the host machine
     """
     try:
@@ -61,8 +61,8 @@ def installed():
         return False
 
 def search(s):
-    """ 
-    Search the emails in the Outlook inbox 
+    """
+    Search the emails in the Outlook inbox
     """
     pythoncom.CoInitialize()
     outlook = win32com.client.Dispatch('Outlook.Application').GetNameSpace('MAPI')
@@ -74,7 +74,7 @@ def search(s):
     return json.dumps(emails, indent=2)
 
 def count():
-    """ 
+    """
     Count unread emails in Outlook inbox
     """
     if len(globals()['results']):
@@ -87,7 +87,7 @@ def count():
     return "Emails in Outlook inbox: {}".format(result)
 
 def run():
-    """ 
+    """
     Run the Outlook email module
 
     """

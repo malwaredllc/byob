@@ -20,19 +20,19 @@ except NameError:
     unicode = str  # Python 3
 
 class Database(sqlite3.Connection):
-    """ 
+    """
     Builds and manages a persistent Sqlite3 database for the
     sessions & tasks handled by byob.server.Server instances
 
     """
     _tbl_tasks = """BEGIN TRANSACTION;
 CREATE TABLE IF NOT EXISTS tbl_tasks (
-    id serial, 
-    uid varchar(32) NOT NULL, 
+    id serial,
+    uid varchar(32) NOT NULL,
     session varchar(32) NOT NULL,
-    task text DEFAULT NULL, 
-    result text DEFAULT NULL, 
-    issued DATETIME DEFAULT NULL, 
+    task text DEFAULT NULL,
+    result text DEFAULT NULL,
+    issued DATETIME DEFAULT NULL,
     completed DATETIME DEFAULT NULL
 );
 COMMIT;
@@ -58,7 +58,7 @@ COMMIT;
 """
 
     def __init__(self, database=':memory:'):
-        """ 
+        """
         Create new Sqlite3 Conection instance and setup the BYOB database
 
         `Optional`
@@ -149,26 +149,26 @@ COMMIT;
         return len(self.get_sessions(verbose=False))
 
     def debug(self, output):
-        """ 
+        """
         Print debugging output to console
         """
         util.log(str(output), level='debug')
 
     def error(self, output):
-        """ 
+        """
         Print error output to console
         """
         util.log(str(output), level='error')
 
     def exists(self, uid):
-        """ 
+        """
         Check if a client exists in the database
         """
         result = bool(len([_ for _ in self.execute("select * from tbl_sessions where uid=:uid", {"uid": uid})]))
         return result
 
     def update_status(self, session, online):
-        """ 
+        """
         Update session status to online/offline
 
         `Required`
@@ -191,7 +191,7 @@ COMMIT;
             self.error("{} error: {}".format(self.update_status.func_name, str(e)))
 
     def get_sessions(self, verbose=False):
-        """ 
+        """
         Fetch sessions from database
 
         `Optional`
@@ -205,7 +205,7 @@ COMMIT;
         return [{k:v for k,v in zip(columns, rows)} for rows in statement.fetchall()]
 
     def get_tasks(self):
-        """ 
+        """
         Fetch tasks from database
 
         `Optional`
@@ -220,7 +220,7 @@ COMMIT;
         return [{k:v for k,v in zip(columns, rows)} for rows in statement.fetchall()]
 
     def handle_session(self, info):
-        """ 
+        """
         Handle a new/current client by adding/updating database
 
         `Required`
@@ -241,7 +241,7 @@ COMMIT;
             newclient = False
             if not self.exists(info['uid']):
                 newclient = True
-                self.execute_query("insert into tbl_sessions ({}) values (:{})".format(','.join(info.keys()), ',:'.join(info.keys())), params=info, returns=False, display=False)                
+                self.execute_query("insert into tbl_sessions ({}) values (:{})".format(','.join(info.keys()), ',:'.join(info.keys())), params=info, returns=False, display=False)
             else:
                 self.execute_query("update tbl_sessions set online=:online, sessions=:sessions, last_online=:last_online where uid=:uid", params=info, returns=False, display=False)
 
@@ -260,7 +260,7 @@ COMMIT;
             self.error("Error: invalid input type received from server (expected '{}', receieved '{}')".format(dict, type(info)))
 
     def handle_task(self, task):
-        """ 
+        """
         Adds issued tasks to the database and updates completed tasks with results
 
         `Task`
@@ -293,7 +293,7 @@ COMMIT;
             self.debug("{} error: invalid input type (expected {}, received {})".format(self.handle_task.func_name, dict, type(task)))
 
     def execute_query(self, stmt, params={}, returns=True, display=False):
-        """ 
+        """
         Query the database with a SQL statement and return result
 
         `Required`
@@ -319,7 +319,7 @@ COMMIT;
             return result
 
     def execute_file(self, filename=None, sql=None, returns=True, display=False):
-        """ 
+        """
         Execute SQL commands sequentially from a string or file
 
         `Optional`

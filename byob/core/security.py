@@ -28,7 +28,7 @@ except ImportError:
 
 # main
 def diffiehellman(connection):
-    """ 
+    """
     Diffie-Hellman Internet Key Exchange (RFC 2741)
 
     `Requires`
@@ -50,16 +50,16 @@ def diffiehellman(connection):
         raise TypeError("argument 'connection' must be type '{}'".format(socket.socket))
 
 def encrypt_aes(plaintext, key, padding=chr(0)):
-    """ 
+    """
     AES-256-OCB encryption
 
     `Requires`
     :param str plaintext:   plain text/data
-    :param str key:         session encryption key 
+    :param str key:         session encryption key
 
     `Optional`
     :param str padding:     default: (null byte)
-    
+
     Returns encrypted ciphertext as base64-encoded string
 
     """
@@ -69,18 +69,18 @@ def encrypt_aes(plaintext, key, padding=chr(0)):
     return base64.b64encode(output)
 
 def decrypt_aes(ciphertext, key, padding=chr(0)):
-    """ 
+    """
     AES-256-OCB decryption
 
     `Requires`
     :param str ciphertext:  encrypted block of data
-    :param str key:         session encryption key 
+    :param str key:         session encryption key
 
     `Optional`
     :param str padding:     default: (null byte)
 
     Returns decrypted plaintext as string
-    
+
     """
     data = StringIO.StringIO(base64.b64decode(ciphertext))
     nonce, tag, ciphertext = [ data.read(x) for x in (Cryptodome.Cipher.AES.block_size - 1, Cryptodome.Cipher.AES.block_size, -1) ]
@@ -88,7 +88,7 @@ def decrypt_aes(ciphertext, key, padding=chr(0)):
     return cipher.decrypt_and_verify(ciphertext, tag)
 
 def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
-    """ 
+    """
     XOR-128 encryption
 
     `Required`
@@ -122,7 +122,7 @@ def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr
     return base64.b64encode(bytes().join(result))
 
 def decrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
-    """ 
+    """
     XOR-128 encryption
 
     `Required`
