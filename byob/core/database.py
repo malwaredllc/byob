@@ -4,9 +4,9 @@
 
 # standard library
 import os
-import md5
 import json
 import sqlite3
+import hashlib
 import datetime
 import collections
 
@@ -230,7 +230,7 @@ COMMIT;
         if isinstance(info, dict):
 
             if not info.get('uid'):
-                info['uid'] = md5.new(info['public_ip'] + info['mac_address']).hexdigest()
+                info['uid'] = hashlib.md5(info['public_ip'] + info['mac_address']).hexdigest()
                 info['joined'] = datetime.datetime.now()
 
             info['online'] = 1
@@ -275,7 +275,7 @@ COMMIT;
         """
         if isinstance(task, dict):
             if 'uid' not in task:
-                task['uid'] = md5.new(task['session'] + task['task'] + datetime.datetime.now().ctime()).hexdigest()
+                task['uid'] = hashlib.md5(task['session'] + task['task'] + datetime.datetime.now().ctime()).hexdigest()
                 task['issued'] = datetime.datetime.now()
                 self.execute_query('insert into tbl_tasks (uid, session, task, issued) values (:uid, :session, :task, :issued)', params={"uid": task['uid'],  "session": task['session'], "task": task['task'], "issued": task['issued']}, returns=False)
                 task['issued'] = task['issued'].ctime()

