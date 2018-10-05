@@ -14,6 +14,8 @@ install:
   - pip install -r byob/requirements.txt
   - pip install flake8
 before_script:
+  # stop the build if there are any trailing whitespaces
+  - flake8 . --count --select=W291 --show-source --statistics
   # stop the build if there are any unused imports
   - flake8 . --count --select=F401 --show-source --statistics
   # stop the build if there are Python syntax errors or undefined names
