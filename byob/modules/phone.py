@@ -3,17 +3,10 @@
 'Phone SMS Text Message (Build Your Own Botnet)'
 
 # standard library
-import os
-import sys
-import imp
 import Queue
-import urllib
 
 # packages
 import twilio.rest
-
-# utilities
-import util
 
 # globals
 command = True

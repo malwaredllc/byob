@@ -4,10 +4,8 @@
 
 # standard library
 import os
-import imp
 import sys
 import ctypes
-import urllib
 
 # packages
 if sys.platform == 'win32':

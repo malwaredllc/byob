@@ -3,13 +3,9 @@
 'Packet Sniffer (Build Your Own Botnet)'
 
 # standard libarary
-import os
-import sys
-import imp
 import time
 import struct
 import socket
-import urllib
 import binascii
 import StringIO
 import threading

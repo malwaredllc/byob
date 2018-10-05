@@ -6,11 +6,8 @@
 import os
 import sys
 import time
-import Queue
-import urllib
 import StringIO
 import threading
-import collections
 
 try:
     from io import StringIO        # Python 3

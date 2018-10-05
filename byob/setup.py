@@ -9,7 +9,6 @@ def main():
     """
     import os
     import sys
-    import imp
     import urllib
     import logging
     import getpass

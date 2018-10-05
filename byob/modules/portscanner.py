@@ -4,18 +4,11 @@
 
 # standard libarary
 import os
-import sys
-import imp
-import time
 import json
 import Queue
 import socket
-import random
 import urllib
-import argparse
-import threading
 import subprocess
-import collections
 
 # utilities
 import util

@@ -3,12 +3,9 @@
 'Outlook Email (Build Your Own Botnet)'
 
 # standard library
-import os
 import sys
-import imp
 import time
 import json
-import urllib
 import threading
 
 # packages
