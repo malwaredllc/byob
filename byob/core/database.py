@@ -14,6 +14,11 @@ import collections
 # modules
 import util
 
+try:
+    unicode        # Python 2
+except NameError:
+    unicode = str  # Python 3
+
 class Database(sqlite3.Connection):
     """ 
     Builds and manages a persistent Sqlite3 database for the

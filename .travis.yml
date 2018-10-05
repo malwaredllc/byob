@@ -2,8 +2,6 @@ group: travis_latest
 language: python
 cache: pip
 matrix:
-  allow_failures:
-    - python: 3.6
   include:
     - python: 2.7
     #- python: 3.4
