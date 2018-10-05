@@ -11,7 +11,7 @@ from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 
 class Handler(BaseHTTPRequestHandler):
-	""" 
+	"""
 	HTTP POST request handler for clients uploading
 	captured images/data to the server
 
@@ -22,7 +22,7 @@ class Handler(BaseHTTPRequestHandler):
 		self.end_headers()
 
 	def do_POST(self):
-		""" 
+		"""
 		Handle incoming HTTP POST request
 
 		"""

@@ -17,13 +17,13 @@ packages = ['mss','util']
 platforms = ['win32','linux2','darwin']
 usage = 'screenshot [imgur/ftp] [option=value, ...]'
 description = """
-Capture a screenshot on the client and optionally upload anonymously to 
+Capture a screenshot on the client and optionally upload anonymously to
 Imgur or to a remote FTP server (default: save image on local host machine)
 """
 
 # main
 def run():
-    """ 
+    """
     Capture a screenshot
 
     """
