@@ -5,15 +5,11 @@
 # standard library
 import os
 import sys
-import imp
 import md5
-import json
 import time
 import Queue
 import base64
-import urllib
 import StringIO
-import threading
 
 # packages
 import Cryptodome.Cipher.AES

@@ -9,9 +9,6 @@ import base64
 import random
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
-# utilities
-import util
-
 
 class Handler(BaseHTTPRequestHandler):
 	"""

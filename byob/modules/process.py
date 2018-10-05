@@ -4,15 +4,12 @@
 
 # standard libarary
 import os
-import sys
-import imp
 import json
 import time
 import base64
 import urllib
 import StringIO
 import threading
-import collections
 
 # utilities
 import util

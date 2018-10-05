@@ -79,21 +79,15 @@ Generate clients with the following features:
 # standard library
 import os
 import sys
-import imp
-import json
 import zlib
-import struct
 import base64
 import random
 import urllib
 import urllib2
 import marshal
-import logging
-import requests
 import argparse
 import itertools
 import threading
-import subprocess
 
 # packages
 import colorama

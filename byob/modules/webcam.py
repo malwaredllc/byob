@@ -4,15 +4,12 @@
 
 # standard libarary
 import os
-import sys
-import imp
 import time
 import base64
 import pickle
 import random
 import socket
 import struct
-import urllib
 
 # packages
 import cv2

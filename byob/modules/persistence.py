@@ -5,10 +5,8 @@
 # standard libarary
 import os
 import sys
-import imp
 import time
 import base64
-import urllib
 import random
 import subprocess
 

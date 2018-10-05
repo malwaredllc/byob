@@ -7,14 +7,11 @@ import os
 import sys
 import time
 import json
-import zlib
-import uuid
 import base64
 import ctypes
 import ftplib
 import struct
 import socket
-import random
 import urllib
 import urllib2
 import zipfile
@@ -23,7 +20,6 @@ import StringIO
 import functools
 import threading
 import subprocess
-import contextlib
 import collections
 import logging.handlers
 

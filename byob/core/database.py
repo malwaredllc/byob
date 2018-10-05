@@ -4,7 +4,6 @@
 
 # standard library
 import os
-import sys
 import md5
 import json
 import sqlite3

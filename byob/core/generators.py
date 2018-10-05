@@ -5,9 +5,7 @@
 # standard library
 import os
 import sys
-import imp
 import zlib
-import time
 import base64
 import random
 import marshal
@@ -16,7 +14,6 @@ import subprocess
 
 # modules
 import util
-import security
 
 # globals
 __Template_main  = """
