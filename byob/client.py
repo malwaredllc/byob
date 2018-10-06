@@ -304,7 +304,7 @@ def _payload(options, **kwargs):
         util.display("\tEncrypting payload... ".format(kwargs['key']), color='reset', style='normal', end=',')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
-        output = security.encrypt_xor(payload, kwargs['key'])
+        output = security.encrypt_xor(payload, base64.b64decode(kwargs['key']))
         __load__.set()
         _update(payload, output, task='Encryption')
         payload = output
