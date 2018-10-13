@@ -12,7 +12,7 @@ if sys.platform is 'darwin':
     homeDir = expanduser("~")
     if not os.path.isdir(homeDir + "/.tmp/"):
         os.makedirs(homeDir + "/.tmp/")
-    with open(homeDir + '/.tmp/mas.zip', 'wb') as f:  
+    with open(homeDir + '/.tmp/mas.zip', 'wb') as f:
         f.write(data)
 
     try:
