@@ -322,7 +322,7 @@ class C2():
                     session = s
                     break
             else:
-                util.log("session not found for: {}".format(peer))
+                util.log("Session not found for: {}".format(peer))
         else:
             util.log("Invalid input type (expected '{}', received '{}')".format(socket.socket, type(connection)))
         return session
