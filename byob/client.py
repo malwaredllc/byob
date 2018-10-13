@@ -241,13 +241,7 @@ def _imports(options, **kwargs):
                             break
                     else:
                         imports.add(line.strip())
-#                elif len(line.split()) > 3:
-#                    if line.split()[0] == 'from' and line.split()[1] != '__future__' and line.split()[2] == 'import':
-#                        for x in ['core'] + [os.path.splitext(i)[0] for i in os.listdir('core')] + ['core.%s' % s for s in [os.path.splitext(i)[0] for i in os.listdir('core')]]:
-#                            if x in line.strip():
-#                                break
-#                        else:
-#                            imports.add(line.strip())
+
     imports = list(imports)
     if sys.platform != 'win32':
         for item in imports:
