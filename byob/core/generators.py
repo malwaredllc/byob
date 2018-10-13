@@ -167,7 +167,7 @@ def loader(host='127.0.0.1', port=1337, packages=[]):
     """
     base_url = 'http://{}:{}'.format(host, port)
     imports = '\n    import ' + '\n    import '.join(packages)
-    return "with Loader({}, base_url={}):{}".format(repr(packages), repr(base_url), imports)
+    return "with remote_repo({}, base_url={}):{}".format(repr(packages), repr(base_url), imports)
 
 def freeze(filename, icon=None, hidden=None):
     """
