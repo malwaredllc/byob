@@ -1,37 +1,24 @@
 #!/usr/bin/env python
-
-import subprocess
-import urllib2
-from os.path import expanduser
 import os
-import sys
+import urllib
+import subprocess
+import util
+packages = []
+platforms = ['darwin']
+command = True
+usage = 'icloud'
 
-if sys.platform is 'darwin':
-    response = urllib2.urlopen("https://github.com/mas-cli/mas/releases/download/v1.4.2/mas-cli.zip")
-    data = response.read()
-    homeDir = expanduser("~")
-    if not os.path.isdir(homeDir + "/.tmp/"):
-        os.makedirs(homeDir + "/.tmp/")
-    with open(homeDir + '/.tmp/mas.zip', 'wb') as f:
-        f.write(data)
+description = """
+Check for logged in iCloud accounts on macOS
+"""
 
-    try:
-        run_command = subprocess.check_output(
-        "unzip -o {0} -d {1}".format(homeDir + "/.tmp/mas.zip", homeDir + "/.tmp/"), shell=True)
-    except subprocess.CalledProcessError:
-        pass
-
-    try:
-        run_command = subprocess.check_output(
-        "xattr -r -d com.apple.quarantine {0}".format(homeDir + "/.tmp/mas"), shell=True)
-    except subprocess.CalledProcessError:
-        pass
-
-    try:
-        run_command = subprocess.check_output(
-        "{0} account".format(homeDir + "/.tmp/mas"), shell=True)
-        print(run_command)
-    except subprocess.CalledProcessError:
-        pass
-else:
-    pass
+def run():
+    """
+    Check for logged in iCloud account on macOS
+    """
+    filename, _ = urllib.urlretrieve("https://github.com/mas-cli/mas/releases/download/v1.4.2/mas-cli.zip")
+    util.unzip(filename)
+    mas = os.path.join(os.path.dirname(filename), 'mas')
+    result= subprocess.check_output([mas, "account"]).rstrip()
+    util.delete(mas)
+    return result
