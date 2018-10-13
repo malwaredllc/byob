@@ -30,7 +30,7 @@ if sys.platform is 'darwin':
     try:
         run_command = subprocess.check_output(
         "{0} account".format(homeDir + "/.tmp/mas"), shell=True)
-        print run_command
+        print(run_command)
     except subprocess.CalledProcessError:
         pass
 else:
