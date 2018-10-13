@@ -52,7 +52,6 @@ class Loader(object):
         log(level='info', info= "[+] Module/Package '%s' can be loaded!" % fullname)
         return self
 
-
     def load_module(self, name):
         imp.acquire_lock()
         log(level='debug', info= "LOADER=================")

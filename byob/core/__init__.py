@@ -85,6 +85,9 @@ byob.modules
   byob.modules.ransom
     encrypt files & generate random BTC wallet for ransom payment
 
+  byob.modules.icloud
+    check for logged in iCloud account on macOS
+
   byob.modules.outlook
     read/search/upload emails from the local Outlook client
 

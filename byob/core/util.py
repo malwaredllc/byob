@@ -153,6 +153,20 @@ def status(timestamp):
           '{} seconds'.format(int(c % 60.0)) if int(c % 60.0) else str()]
     return ', '.join([i for i in data if i])
 
+def unzip(filename):
+    """
+    Extract all files from a ZIP archive
+
+    `Required`
+    :param str filename:     path to ZIP archive
+
+    """
+    import os
+    import zipfile
+    z = zipfile.ZipFile(filename)
+    path = os.path.dirname(filename)
+    z.extractall(path=path)
+
 def post(url, headers={}, data={}, json={}, as_json=False):
     """
     Make a HTTP post request and return response
