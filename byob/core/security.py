@@ -7,13 +7,13 @@ import os
 import struct
 import base64
 import socket
+import hashlib
 import StringIO
 
 # packages
 try:
     import Cryptodome.Hash.HMAC
     import Cryptodome.Cipher.AES
-    import Cryptodome.Hash.SHA256
     import Cryptodome.Util.number
     import Cryptodome.PublicKey.RSA
     import Cryptodome.Cipher.PKCS1_OAEP
@@ -39,7 +39,7 @@ def diffiehellman(connection):
         connection.send(Cryptodome.Util.number.long_to_bytes(xA))
         xB = Cryptodome.Util.number.bytes_to_long(connection.recv(256))
         x  = pow(xB, a, p)
-        return Cryptodome.Hash.SHA256.new(Cryptodome.Util.number.long_to_bytes(x)).digest()
+        return hashlib.sha256(Cryptodome.Util.number.long_to_bytes(x)).digest()
     else:
         raise TypeError("argument 'connection' must be type '{}'".format(socket.socket))
 
