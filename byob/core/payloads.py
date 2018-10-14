@@ -14,7 +14,6 @@ import struct
 import socket
 import urllib
 import urllib2
-import zipfile
 import logging
 import StringIO
 import functools
