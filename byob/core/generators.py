@@ -114,7 +114,7 @@ def compress(input):
     Returns compressed output as a string
 
     """
-    return "import zlib,base64,marshal;exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps(compile(input, '', 'exec')), 9))))
+    return "import zlib,base64,marshal,json;exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps(compile(input, '', 'exec')), 9))))
 
 def obfuscate(input):
     """
