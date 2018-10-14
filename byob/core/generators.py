@@ -23,17 +23,9 @@ if __name__ == '__main__':
 
 __Template_load = """
 # remotely import dependencies from server
-packages = {packages}
 
-for package in packages:
-    try:
-        exec("import %s" % package, globals())
-        packages.remove(package)
-    except ImportError:
-        pass
-
-with remote_repo(packages, base_url={base_url}):
-    for package in packages:
+with remote_repo({0}, base_url={1}):
+    for package in {2}:
         try:
             exec("import %s" % package, globals())
         except ImportError:
@@ -185,7 +177,7 @@ def loader(host='127.0.0.1', port=1337, packages=[]):
 
     """
     base_url = 'http://{}:{}'.format(host, port)
-    return __Template_load.format(packages=repr(packages), base_url=repr(base_url))
+    return __Template_load.format(repr(packages), repr(base_url), repr(packages))
 
 def freeze(filename, icon=None, hidden=None):
     """
