@@ -791,8 +791,6 @@ class C2():
         self._active.set()
         if 'c2' not in globals()['__threads']:
             globals()['__threads']['c2'] = self.serve_until_stopped()
-        if 'resources' not in globals()['__threads']:
-            globals()['__threads']['resources'] = self.serve_resources()
         while True:
             try:
                 self._active.wait()
