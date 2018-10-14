@@ -850,7 +850,7 @@ class Session(threading.Thread):
         self.id = id
         self.connection = connection
         self.key = security.diffiehellman(self.connection)
-        self.rsa = security.Cryptodome.PublicKey.RSA.generate(2048)
+        self.rsa = security.Crypto.PublicKey.RSA.generate(2048)
         try:
             self.info = self.recv_task()
             self.info['id'] = self.id

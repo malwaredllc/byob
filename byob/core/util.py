@@ -510,4 +510,3 @@ def threaded(function):
         t.start()
         return t
     return _threaded
-

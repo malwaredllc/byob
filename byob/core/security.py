@@ -7,20 +7,63 @@ import os
 import struct
 import base64
 import socket
-import StringIO
 
 # packages
 try:
     import Crypto.Hash.HMAC
     import Crypto.Hash.SHA256
     import Crypto.Cipher.AES
-    import Crypto.Util.number
+    import Crypto.PublicKey.RSA
 except ImportError:
     pass
 
 # main
 def pad(s):
     return s + (Crypto.Cipher.AES.block_size - len(bytes(s)) % Crypto.Cipher.AES.block_size) * chr(0)
+
+def long_to_bytes(n, blocksize=0):
+    """
+    Convert an integer to a byte string.
+
+    `Required`
+    :param long n:      long integer to convert to byte string
+
+    """
+    import struct
+    s = b''
+    n = int(n)
+    while n > 0:
+        s = struct.pack('>I', n & 0xffffffffL) + s
+        n = n >> 32
+    for i in range(len(s)):
+        if s[i] != b'\000'[0]:
+            break
+    else:
+        s = b'\000'
+        i = 0
+    s = s[i:]
+    if blocksize > 0 and len(s) % blocksize:
+        s = (blocksize - len(s) % blocksize) * b'\000' + s
+    return s
+
+def bytes_to_long(s):
+    """
+    Convert a byte string to a long integer (big endian).
+
+    `Required`
+    :param str s:       byte string to convert to long integer
+
+    """
+    import struct
+    acc = 0
+    length = len(s)
+    if length % 4:
+        extra = (4 - length % 4)
+        s = b'\000' * extra + s
+        length = length + extra
+    for i in range(0, length, 4):
+        acc = (acc << 32) + struct.unpack('>I', s[i:i+4])[0]
+    return acc
 
 def diffiehellman(connection):
     """
@@ -35,12 +78,12 @@ def diffiehellman(connection):
     """
     g  = 2
     p  = 0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF
-    a  = Crypto.Util.number.bytes_to_long(os.urandom(32))
+    a  = bytes_to_long(os.urandom(32))
     xA = pow(g, a, p)
-    connection.send(Crypto.Util.number.long_to_bytes(xA))
-    xB = Crypto.Util.number.bytes_to_long(connection.recv(256))
+    connection.send(long_to_bytes(xA))
+    xB = bytes_to_long(connection.recv(256))
     x  = pow(xB, a, p)
-    return Crypto.Hash.SHA256.new(Crypto.Util.number.long_to_bytes(x)).digest()
+    return Crypto.Hash.SHA256.new(long_to_bytes(x)).digest()
 
 def encrypt_aes(plaintext, key):
     """
