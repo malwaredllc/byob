@@ -21,6 +21,15 @@ if __name__ == '__main__':
     _{0} = {1}({2})
     """
 
+__Template_load = """
+for package in {packages}:
+    try:
+        exec("import %s" % package, globals())
+    except ImportError:
+        with remote_repo([package], base_url={base_url}):
+            exec("import %s" % package, globals())
+"""
+
 __Template_plist = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -166,8 +175,7 @@ def loader(host='127.0.0.1', port=1337, packages=[]):
 
     """
     base_url = 'http://{}:{}'.format(host, port)
-    imports = '\n    import ' + '\n    import '.join(packages)
-    return "with remote_repo({}, base_url={}):{}".format(repr(packages), repr(base_url), imports)
+    return __Template_load.format(packages=repr(packages), base_url=repr(base_url))
 
 def freeze(filename, icon=None, hidden=None):
     """
