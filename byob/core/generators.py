@@ -22,12 +22,22 @@ if __name__ == '__main__':
     """
 
 __Template_load = """
-for package in {packages}:
+# remotely import dependencies from server
+packages = {packages}
+
+for package in packages:
     try:
         exec("import %s" % package, globals())
+        packages.remove(package)
     except ImportError:
-        with remote_repo([package], base_url={base_url}):
+        pass
+
+with remote_repo(packages, base_url={base_url}):
+    for package in packages:
+        try:
             exec("import %s" % package, globals())
+        except ImportError:
+            pass
 """
 
 __Template_plist = """<?xml version="1.0" encoding="UTF-8"?>
