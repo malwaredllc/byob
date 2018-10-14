@@ -7,20 +7,21 @@ import os
 import struct
 import base64
 import socket
-import hashlib
 import StringIO
 
 # packages
 try:
-    import Cryptodome.Hash.HMAC
-    import Cryptodome.Cipher.AES
-    import Cryptodome.Util.number
-    import Cryptodome.PublicKey.RSA
-    import Cryptodome.Cipher.PKCS1_OAEP
+    import Crypto.Hash.HMAC
+    import Crypto.Hash.SHA256
+    import Crypto.Cipher.AES
+    import Crypto.Util.number
 except ImportError:
     pass
 
 # main
+def pad(s):
+    return s + (Crypto.Cipher.AES.block_size - len(bytes(s)) % Crypto.Cipher.AES.block_size) * chr(0)
+
 def diffiehellman(connection):
     """
     Diffie-Hellman Internet Key Exchange (RFC 2741)
@@ -30,56 +31,52 @@ def diffiehellman(connection):
 
     Returns the 256-bit binary digest of the SHA256 hash
     of the shared session encryption key
-    """
-    if isinstance(connection, socket.socket):
-        g  = 2
-        p  = 0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF
-        a  = Cryptodome.Util.number.bytes_to_long(os.urandom(32))
-        xA = pow(g, a, p)
-        connection.send(Cryptodome.Util.number.long_to_bytes(xA))
-        xB = Cryptodome.Util.number.bytes_to_long(connection.recv(256))
-        x  = pow(xB, a, p)
-        return hashlib.sha256(Cryptodome.Util.number.long_to_bytes(x)).digest()
-    else:
-        raise TypeError("argument 'connection' must be type '{}'".format(socket.socket))
 
-def encrypt_aes(plaintext, key, padding=chr(0)):
     """
-    AES-256-OCB encryption
+    g  = 2
+    p  = 0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF
+    a  = Crypto.Util.number.bytes_to_long(os.urandom(32))
+    xA = pow(g, a, p)
+    connection.send(Crypto.Util.number.long_to_bytes(xA))
+    xB = Crypto.Util.number.bytes_to_long(connection.recv(256))
+    x  = pow(xB, a, p)
+    return Crypto.Hash.SHA256.new(Crypto.Util.number.long_to_bytes(x)).digest()
+
+def encrypt_aes(plaintext, key):
+    """
+    AES-256-CBC encryption
 
     `Requires`
     :param str plaintext:   plain text/data
     :param str key:         session encryption key
 
-    `Optional`
-    :param str padding:     default: (null byte)
-
-    Returns encrypted ciphertext as base64-encoded string
-
     """
-    cipher = Cryptodome.Cipher.AES.new(key, Cryptodome.Cipher.AES.MODE_OCB)
-    ciphertext, tag = cipher.encrypt_and_digest(plaintext)
-    output = b''.join((cipher.nonce, tag, ciphertext))
-    return base64.b64encode(output)
+    text = pad(plaintext)
+    iv = os.urandom(Crypto.Cipher.AES.block_size)
+    cipher = Crypto.Cipher.AES.new(key[:16], Crypto.Cipher.AES.MODE_CBC, iv)
+    ciphertext = iv + cipher.encrypt(text)
+    hmac_sha256 = Crypto.Hash.HMAC.new(key[16:], msg=ciphertext, digestmod=Crypto.Hash.SHA256).digest()
+    output = base64.b64encode(ciphertext + hmac_sha256)
+    return output
 
-def decrypt_aes(ciphertext, key, padding=chr(0)):
+def decrypt_aes(ciphertext, key):
     """
-    AES-256-OCB decryption
+    AES-256-CBC decryption
 
     `Requires`
     :param str ciphertext:  encrypted block of data
     :param str key:         session encryption key
 
-    `Optional`
-    :param str padding:     default: (null byte)
-
-    Returns decrypted plaintext as string
-
     """
-    data = StringIO.StringIO(base64.b64decode(ciphertext))
-    nonce, tag, ciphertext = [ data.read(x) for x in (Cryptodome.Cipher.AES.block_size - 1, Cryptodome.Cipher.AES.block_size, -1) ]
-    cipher = Cryptodome.Cipher.AES.new(key, Cryptodome.Cipher.AES.MODE_OCB, nonce)
-    return cipher.decrypt_and_verify(ciphertext, tag)
+    ciphertext = base64.b64decode(ciphertext)
+    iv = ciphertext[:Crypto.Cipher.AES.block_size]
+    cipher = Crypto.Cipher.AES.new(key[:16], Crypto.Cipher.AES.MODE_CBC, iv)
+    check_hmac = ciphertext[-Crypto.Hash.SHA256.digest_size:]
+    calc_hmac = Crypto.Hash.HMAC.new(key[16:], msg=ciphertext[:-Crypto.Hash.SHA256.digest_size], digestmod=Crypto.Hash.SHA256).digest()
+    output = cipher.decrypt(ciphertext[len(iv):-Crypto.Hash.SHA256.digest_size])
+    if check_hmac != calc_hmac:
+        log('HMAC-SHA256 hash authentication check failed - transmission may have been compromised')
+    return output.rstrip(chr(0))
 
 def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
     """
