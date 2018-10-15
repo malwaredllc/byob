@@ -6,7 +6,6 @@
 import os
 import struct
 import base64
-import socket
 
 # packages
 try:
