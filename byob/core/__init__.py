@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Build Your Own Botnet
+"""Core Modules (Build Your Own Botnet)
 
 88                                  88
 88                                  88
@@ -122,9 +122,8 @@ byob.modules
     package containing payload stagers created by the client generator along
     with the main payloads, which are hosted locally by the server (rather
     than uploaded to Pastebin to be hosted there anonymously) for the client
-    droppers to load & execute on target host machines
+    droppers to load & execute on target host machines"""
 
-"""
 __all__ = ['database','generators','handler','loader','payloads','security','stagers','util']
 __version__ = '0.2'
 __license__ = 'GPLv3'

