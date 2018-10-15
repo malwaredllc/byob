@@ -121,7 +121,7 @@ def decrypt_aes(ciphertext, key):
     calc_hmac = Crypto.Hash.HMAC.new(key[16:], msg=ciphertext[:-Crypto.Hash.SHA256.digest_size], digestmod=Crypto.Hash.SHA256).digest()
     output = cipher.decrypt(ciphertext[len(iv):-Crypto.Hash.SHA256.digest_size])
     if check_hmac != calc_hmac:
-	if _debug:
+        if _debug:
             print('HMAC-SHA256 hash authentication check failed - transmission may have been compromised')
     return output.rstrip(chr(0))
 
