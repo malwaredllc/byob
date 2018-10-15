@@ -45,11 +45,9 @@ byob.core
   byob.core.security
     module containing the Diffie-Hellman Internet Key Exchange (RFC 2741)
     method for securing a shared secret key even over insecure networks,
-    as well as encryption & decryption methods for 2 different modes to
-    ensure secure communication no matter what
-     - AES-256 in authenticated OCB mode (requires: PyCrypto & pycryptodome)
-     - AES-256 in CBC mode with HMAC-SHA256 authentication (requires: PyCrypto)
-     - XOR-128 (no packages required - uses only builtin python keywords)
+    as well as encryption & decryption methods for 2 different modes:
+     - AES-256-CBC
+     - XOR-128
 
   byob.core.loader
     enables clients to remotely import any package/module/script from the server
@@ -84,6 +82,9 @@ byob.modules
 
   byob.modules.ransom
     encrypt files & generate random BTC wallet for ransom payment
+
+  byob.modules.icloud
+    check for logged in iCloud account on macOS
 
   byob.modules.outlook
     read/search/upload emails from the local Outlook client
