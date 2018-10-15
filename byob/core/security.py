@@ -35,7 +35,7 @@ def long_to_bytes(n, blocksize=0):
     s = b''
     n = int(n)
     while n > 0:
-        s = struct.pack('>I', n & 0xffffffffL) + s
+        s = struct.pack('>I', n & 0xffffffff) + s
         n = n >> 32
     for i in range(len(s)):
         if s[i] != b'\000'[0]:
@@ -113,6 +113,7 @@ def decrypt_aes(ciphertext, key):
     :param str key:         session encryption key
 
     """
+    global _debug
     ciphertext = base64.b64decode(ciphertext)
     iv = ciphertext[:Crypto.Cipher.AES.block_size]
     cipher = Crypto.Cipher.AES.new(key[:16], Crypto.Cipher.AES.MODE_CBC, iv)
@@ -120,7 +121,8 @@ def decrypt_aes(ciphertext, key):
     calc_hmac = Crypto.Hash.HMAC.new(key[16:], msg=ciphertext[:-Crypto.Hash.SHA256.digest_size], digestmod=Crypto.Hash.SHA256).digest()
     output = cipher.decrypt(ciphertext[len(iv):-Crypto.Hash.SHA256.digest_size])
     if check_hmac != calc_hmac:
-        print('HMAC-SHA256 hash authentication check failed - transmission may have been compromised')
+	if _debug:
+            print('HMAC-SHA256 hash authentication check failed - transmission may have been compromised')
     return output.rstrip(chr(0))
 
 def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
