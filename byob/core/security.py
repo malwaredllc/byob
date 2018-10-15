@@ -16,6 +16,9 @@ try:
 except ImportError:
     pass
 
+# globals
+_debug = True
+
 # main
 def pad(s):
     return s + (Crypto.Cipher.AES.block_size - len(bytes(s)) % Crypto.Cipher.AES.block_size) * chr(0)
@@ -117,7 +120,7 @@ def decrypt_aes(ciphertext, key):
     calc_hmac = Crypto.Hash.HMAC.new(key[16:], msg=ciphertext[:-Crypto.Hash.SHA256.digest_size], digestmod=Crypto.Hash.SHA256).digest()
     output = cipher.decrypt(ciphertext[len(iv):-Crypto.Hash.SHA256.digest_size])
     if check_hmac != calc_hmac:
-        log('HMAC-SHA256 hash authentication check failed - transmission may have been compromised')
+        print('HMAC-SHA256 hash authentication check failed - transmission may have been compromised')
     return output.rstrip(chr(0))
 
 def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
