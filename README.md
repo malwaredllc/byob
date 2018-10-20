@@ -1,7 +1,7 @@
 ![logo](https://malwared.com/wp-content/uploads/2018/09/byob_black-06.png)
 # BYOB (Build Your Own Botnet)
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/colental/byob/blob/master/LICENSE)
-[![version](https://img.shields.io/badge/version-0.2-lightgrey.svg)](https://github.com/colental/byob)
+[![version](https://img.shields.io/badge/version-0.3-lightgrey.svg)](https://github.com/colental/byob)
 [![build](https://img.shields.io/travis/com/malwaredllc/byob/master.svg)](https://travis-ci.com/malwaredllc/byob.svg?branch=master)
 
 
@@ -73,6 +73,7 @@ in the payload stager which is generated along with it
 9) __Escalate Privileges__ (`byob.modules.escalate`): attempt UAC bypass to gain unauthorized administrator privileges
 10) __Port Scanner__ (`byob.modules.portscanner`): scan the local network for other online devices & open ports
 11) __Process Control__ (`byob.modules.process`): list/search/kill/monitor currently running processes on the host
+12) __iCloud__ (`byob.modules.icloud`): check for logged in iCloud account on macOS
 
 ## Server
 [![server](https://img.shields.io/badge/byob-server-blue.svg)](https://github.com/colental/byob/blob/master/byob/server.py)
