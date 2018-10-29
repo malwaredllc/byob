@@ -185,7 +185,7 @@ class AES(object):
         result = [ ]
         for i in xrange(0, 4):
             tt = self._Ke[rounds][i]
-            result.append((self.S[(t[ i           ] >> 24) & 0xFF] ^ (tt >> 24)) & 0xFF)
+            result.append((self.S[(t[ i          ] >> 24) & 0xFF] ^ (tt >> 24)) & 0xFF)
             result.append((self.S[(t[(i + s1) % 4] >> 16) & 0xFF] ^ (tt >> 16)) & 0xFF)
             result.append((self.S[(t[(i + s2) % 4] >>  8) & 0xFF] ^ (tt >>  8)) & 0xFF)
             result.append((self.S[ t[(i + s3) % 4]        & 0xFF] ^  tt       ) & 0xFF)
@@ -224,7 +224,7 @@ class AES(object):
         result = [ ]
         for i in xrange(0, 4):
             tt = self._Kd[rounds][i]
-            result.append((self.Si[(t[ i           ] >> 24) & 0xFF] ^ (tt >> 24)) & 0xFF)
+            result.append((self.Si[(t[ i          ] >> 24) & 0xFF] ^ (tt >> 24)) & 0xFF)
             result.append((self.Si[(t[(i + s1) % 4] >> 16) & 0xFF] ^ (tt >> 16)) & 0xFF)
             result.append((self.Si[(t[(i + s2) % 4] >>  8) & 0xFF] ^ (tt >>  8)) & 0xFF)
             result.append((self.Si[ t[(i + s3) % 4]        & 0xFF] ^  tt       ) & 0xFF)
