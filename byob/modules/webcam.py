@@ -81,7 +81,7 @@ def stream(host=None, port=None, retries=5):
             t1 = time.time()
             while True:
                 try:
-                    ret,frame=dev.read()
+                    ret, frame = dev.read()
                     data = pickle.dumps(frame)
                     sock.sendall(struct.pack("L", len(data))+data)
                     time.sleep(0.1)
