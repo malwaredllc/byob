@@ -5,7 +5,6 @@
 import os
 import re
 import sys
-import json
 import time
 import email
 import base64
@@ -13,12 +12,6 @@ import logging
 import smtplib
 import threading
 import mimetypes
-
-try:
-    from urllib.parse import urlencode, quote, unquote
-    from urllib.request import urlopen
-except ImportError:
-    from urllib import urlencode, quote, unquote, urlopen
 
 # globals
 command = True
