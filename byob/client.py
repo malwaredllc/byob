@@ -173,7 +173,7 @@ def main():
     parser.add_argument(
         '-v', '--version',
         action='version',
-        version='0.2',
+        version='0.4',
     )
 
     options = parser.parse_args()

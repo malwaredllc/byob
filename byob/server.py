@@ -114,7 +114,7 @@ def main():
     parser.add_argument(
         '-v', '--version',
         action='version',
-        version='0.3',
+        version='0.4',
     )
 
     modules = os.path.abspath('modules')
