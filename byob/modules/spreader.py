@@ -7,10 +7,8 @@ import re
 import sys
 import time
 import email
-import base64
 import logging
 import smtplib
-import threading
 import mimetypes
 
 # globals
