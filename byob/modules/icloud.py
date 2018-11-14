@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 'iCloud (Build Your Own Botnet)'
 
 # standard library

