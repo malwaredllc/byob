@@ -123,7 +123,7 @@ class Loader(object):
             except ValueError:
                 pass
             try:
-                module_src = marshal.loads(module_compiled[12:])# Strip the .pyc file header of Python 3.3 and onwards (changed .pyc spec)
+                module_src = marshal.loads(module_compiled[12:])  # Strip the .pyc file header of Python 3.3 and onwards (changed .pyc spec)
                 return module_src
             except ValueError:
                 pass

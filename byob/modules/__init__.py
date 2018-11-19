@@ -45,8 +45,8 @@ byob.core
   byob.core.security
     module containing the Diffie-Hellman Internet Key Exchange (RFC 2741)
     method for securing a shared secret key even over insecure networks,
-    as well as encryption & decryption methods for 2 different modes:  
-     - AES-256-CBC                                                          
+    as well as encryption & decryption methods for 2 different modes:
+     - AES-256-CBC
      - XOR-128
 
   byob.core.loader

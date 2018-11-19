@@ -5,17 +5,20 @@
 # standard library
 import os
 import re
-import sys
 import time
 import email
 import logging
 import smtplib
 import mimetypes
 
+try:
+    string_types = (str, unicode)
+except NameError:
+    string_types = (str, )
+
 # globals
 command = True
 platforms = ['win32','darwin','linux2']
-text_type = (str,) if sys.version_info[0] == 3 else (str, unicode)
 GOOGLE_ACCOUNTS_BASE_URL = 'https://accounts.google.com'
 REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
 description = """
@@ -131,7 +134,7 @@ def resolve_addresses(user, useralias, to, cc, bcc):
     return addresses
 
 def make_addr_alias_user(email_addr):
-    if isinstance(email_addr, text_type):
+    if isinstance(email_addr, string_types):
         if "@" not in email_addr:
             email_addr += "@gmail.com"
         return (email_addr, email_addr)
@@ -141,11 +144,11 @@ def make_addr_alias_user(email_addr):
     raise AddressError
 
 def make_addr_alias_target(x, addresses, which):
-    if isinstance(x, text_type):
+    if isinstance(x, string_types):
         addresses["recipients"].append(x)
         addresses[which] = x
     elif isinstance(x, list) or isinstance(x, tuple):
-        if not all([isinstance(k, text_type) for k in x]):
+        if not all([isinstance(k, string_types) for k in x]):
             raise AddressError
         addresses["recipients"].extend(x)
         addresses[which] = "; ".join(x)
@@ -173,9 +176,9 @@ def add_recipients_headers(user, useralias, msg, addresses):
 
 # message
 def prepare_message(user, useralias, addresses, subject, contents, attachments, headers, encoding):
-    if isinstance(contents, text_type):
+    if isinstance(contents, string_types):
         contents = [contents]
-    if isinstance(attachments, text_type):
+    if isinstance(attachments, string_types):
         attachments = [attachments]
 
     if attachments is not None:

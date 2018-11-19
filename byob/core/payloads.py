@@ -498,7 +498,7 @@ class Payload():
     def icloud(self):
         """
         Check for logged in iCloud account on macOS
-        
+
         """
         if 'icloud' not in globals():
             self.load('icloud')
