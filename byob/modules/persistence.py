@@ -242,9 +242,10 @@ def _remove_scheduled_task():
     if _methods['scheduled_task'].established:
         value = _methods['scheduled_task'].result
         try:
-             if subprocess.call('SCHTASKS /DELETE /TN {} /F'.format(value), shell=True) == 0:
-                 return (False, None)
-        except: pass
+            if subprocess.call('SCHTASKS /DELETE /TN {} /F'.format(value), shell=True) == 0:
+                return (False, None)
+        except:
+            pass
     return (_methods['scheduled_task'].established, _methods['scheduled_task'].result)
 
 def _remove_hidden_file():
