@@ -435,7 +435,10 @@ def pastebin(source, api_key):
             info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
             paste = post('https://pastebin.com/api/api_post.php', data=info)
             parts = urllib2.urlparse.urlsplit(paste)
-            return urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
+            result = urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
+            if not result.endswith('/'):
+                result += '/'
+            return result
         except Exception as e:
             log("Upload to Pastebin failed with error: {}".format(e))
     else:
