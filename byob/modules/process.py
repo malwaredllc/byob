@@ -8,8 +8,12 @@ import json
 import time
 import base64
 import urllib
-import StringIO
 import threading
+
+try:
+    from io import StringIO        # Python 3
+except ImportError:
+    from StringIO import StringIO  # Python 2
 
 # utilities
 import util
@@ -21,7 +25,7 @@ usage = 'process <list/search/kill>'
 description = """
 List/search/kill currently running processes on the client host machine
 """
-log = StringIO.StringIO()
+log = StringIO()
 
 # main
 def _monitor(keyword):

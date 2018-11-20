@@ -52,7 +52,6 @@ ADDR_SPEC = LOCAL_PART + r'@' + DOMAIN
 VALID_ADDRESS_REGEXP = '^' + ADDR_SPEC + '$'
 
 # errors
-
 class AddressError(Exception):
     """
     Address was given in an invalid format.
