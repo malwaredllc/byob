@@ -40,4 +40,3 @@ def run(message=None, number=None, sid=None, token=None):
 		return "SUCCESS: text message sent to {}".format(number)
 	except Exception as e:
 		return "{} error: {}".format(run.func_name, str(e))
-

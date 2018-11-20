@@ -242,7 +242,6 @@ class AESModeOfOperationCBC(AES):
 
     """
 
-
     name = "Cipher-Block Chaining (CBC)"
     block_size = 16
 
