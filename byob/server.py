@@ -1021,7 +1021,7 @@ class Session(threading.Thread):
         self.id = id
         self.connection = connection
         self.key = security.diffiehellman(self.connection)
-        self.rsa = None # security.Crypto.PublicKey.RSA.generate(2048)
+        self.rsa = None  # security.Crypto.PublicKey.RSA.generate(2048)
         try:
             self.info = self.recv_task()
             self.info['id'] = self.id
@@ -1124,7 +1124,7 @@ class Session(threading.Thread):
 
         """
         while True:
-#            try:
+            # try:
             if self._active.wait():
                 task = self.recv_task() if not self._prompt else self._prompt
                 if isinstance(task, dict):

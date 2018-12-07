@@ -7,8 +7,12 @@ import time
 import struct
 import socket
 import binascii
-import StringIO
 import threading
+
+try:
+    from io import StringIO        # Python 3
+except ImportError:
+    from StringIO import StringIO  # Python 2
 
 # utilities
 import util
@@ -17,7 +21,7 @@ import util
 packages = []
 platforms = ['linux2','darwin']
 results = {}
-log = StringIO.StringIO()
+log = StringIO()
 flag = threading.Event()
 usage  = 'packetsniffer [mode]'
 desription = """

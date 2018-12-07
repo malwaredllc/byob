@@ -1,5 +1,5 @@
 ![logo](https://malwared.com/wp-content/uploads/2018/09/byob_black-06.png)
-# BYOB (Build Your Own Botnet)
+# BYOB (Build Your Own Botnet) [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=BYOB%20(Build%20Your%20Own%20Botnet)&url=https://github.com/malwaredllc/byob&via=malwaredllc&hashtags=botnet,python,infosec,github)
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/malwaredllc/byob/blob/master/LICENSE)
 [![version](https://img.shields.io/badge/version-0.4-lightgrey.svg)](https://github.com/malwaredllc/byob)
 [![build](https://img.shields.io/travis/com/malwaredllc/byob/master.svg)](https://travis-ci.com/malwaredllc/byob.svg?branch=master)
@@ -7,11 +7,10 @@
 
 __Disclaimer__: This project should be used for authorized testing or educational purposes only.
 
-BYOB is an open-source project that provides a framework for security researchers 
-and developers to build and operate a basic botnet to deepen their understanding
-of the sophisticated malware that infects millions of devices every year and spawns
-modern botnets, in order to improve their ability to develop counter-measures against 
-these threats. 
+BYOB is an open-source project that provides a framework for security researchers and developers 
+to build and operate a basic botnet to deepen their understanding of the sophisticated malware 
+that infects millions of devices every year and spawns modern botnets, in order to improve their 
+ability to develop counter-measures against these threats. 
 
 It is designed to allow developers to easily implement their own code and add cool new
 features *without* having to write a **RAT** (Remote Administration Tool) or a
@@ -19,6 +18,8 @@ features *without* having to write a **RAT** (Remote Administration Tool) or a
 
 *The RAT's key feature is that arbitrary code/files can be remotely loaded into memory
 from the C2 and executed on the target machine without writing anything to the disk.*
+
+Supports Python 2 & 3.
 
 ## Client
 [![client](https://img.shields.io/badge/byob-client-blue.svg)](https://github.com/colental/byob/blob/master/byob/client.py)
@@ -112,12 +113,7 @@ ________________________________________________________________________________
 
 1) __Remote Import Encryption__ - encryption for data streams of packages/modules being remotely imported (to maintain confidentiality/authenticity/integrity and prevent any remote code execution vulnerabilities arising from deserialization)
 2) __Transport Types__ - add support for more transport types (HTTP/S, DNS, etc.)
-3) __Improve Phone/SMS module__ - add spreading ability via emails/text-messages when a contacts list is found on the target host
-4) __Improve Outlook/Email module__ - add spreading ability via emails/text-messages when a contacts list is found on the target host
-5) __Improve Ransom module__ - add methods for using a Bitcoin exchange API for generating temporary wallet addresses that are unique to the target host, expire after a given number of hours without receiving payment, and which notify the C2 server (maybe via webhooks?) when payment is received or the wallet expires
-6) __Support Python 3__ - support both Python 2 and Python 3 in a single codebase
-7) __BUG FIXES__ - fix any bugs/issues
-
+3) __Bug Fixes__ - fix any bugs/issues
 ________________________________________________________________________________________________
 
 ### Contact

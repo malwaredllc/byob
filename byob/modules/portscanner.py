@@ -103,4 +103,3 @@ def run(target='192.168.1.1', ports=[21,22,23,25,80,110,111,135,139,443,445,554,
         return json.dumps(results[target])
     else:
         return "Target offline"
-
