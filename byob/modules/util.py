@@ -262,9 +262,9 @@ def png(image):
     import struct
 
     try:
-        from io import StringIO        # Python 3
-    except ImportError:
         from StringIO import StringIO  # Python 2
+    except ImportError:
+        from io import StringIO        # Python 3
 
     if isinstance(image, numpy.ndarray):
         width, height = (image.shape[1], image.shape[0])
@@ -463,9 +463,9 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
     import ftplib
 
     try:
-        from io import StringIO        # Python 3
-    except ImportError:
         from StringIO import StringIO  # Python 2
+    except ImportError:
+        from io import StringIO        # Python 3
 
     if host and user and password:
         path  = ''

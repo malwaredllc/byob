@@ -46,7 +46,7 @@ def image(*args, **kwargs):
 def video(*args, **kwargs):
     try:
         fpath = os.path.join(os.path.expandvars('%TEMP%'), 'tmp{}.avi'.format(random.randint(1000,9999))) if os.name == 'nt' else os.path.join('/tmp', 'tmp{}.avi'.format(random.randint(1000,9999)))
-        fourcc = cv2.VideoWriter_fourcc(*'DIVX') if os.name is 'nt' else cv2.VideoWriter_fourcc(*'XVID')
+        fourcc = cv2.VideoWriter_fourcc(*'DIVX') if os.name == 'nt' else cv2.VideoWriter_fourcc(*'XVID')
         output = cv2.VideoWriter(fpath, fourcc, 20.0, (640,480))
         length = float(int([i for i in args if bytes(i).isdigit()][0])) if len([i for i in args if bytes(i).isdigit()]) else 5.0
         end = time.time() + length

@@ -11,9 +11,9 @@ import urllib
 import threading
 
 try:
-    from io import StringIO        # Python 3
-except ImportError:
     from StringIO import StringIO  # Python 2
+except ImportError:
+    from io import StringIO        # Python 3
 
 # utilities
 import util
@@ -67,9 +67,9 @@ def list(*args, **kwargs):
     """
     try:
         output  = {}
-        for i in os.popen('tasklist' if os.name is 'nt' else 'ps').read().splitlines()[3:]:
-            pid = i.split()[1 if os.name is 'nt' else 0]
-            exe = i.split()[0 if os.name is 'nt' else -1]
+        for i in os.popen('tasklist' if os.name == 'nt' else 'ps').read().splitlines()[3:]:
+            pid = i.split()[1 if os.name == 'nt' else 0]
+            exe = i.split()[0 if os.name == 'nt' else -1]
             if exe not in output:
                 if len(json.dumps(output)) < 48000:
                     output.update({pid: exe})
@@ -93,9 +93,9 @@ def search(keyword):
         if not isinstance(keyword, str) or not len(keyword):
             return "usage: process search [PID/name]"
         output  = {}
-        for i in os.popen('tasklist' if os.name is 'nt' else 'ps').read().splitlines()[3:]:
-            pid = i.split()[1 if os.name is 'nt' else 0]
-            exe = i.split()[0 if os.name is 'nt' else -1]
+        for i in os.popen('tasklist' if os.name == 'nt' else 'ps').read().splitlines()[3:]:
+            pid = i.split()[1 if os.name == 'nt' else 0]
+            exe = i.split()[0 if os.name == 'nt' else -1]
             if keyword in exe:
                 if len(json.dumps(output)) < 48000:
                     output.update({pid: exe})
@@ -116,18 +116,18 @@ def kill(process_id):
     """
     try:
         output  = {}
-        for i in os.popen('tasklist' if os.name is 'nt' else 'ps').read().splitlines()[3:]:
-            pid = i.split()[1 if os.name is 'nt' else 0]
-            exe = i.split()[0 if os.name is 'nt' else -1]
+        for i in os.popen('tasklist' if os.name == 'nt' else 'ps').read().splitlines()[3:]:
+            pid = i.split()[1 if os.name == 'nt' else 0]
+            exe = i.split()[0 if os.name == 'nt' else -1]
             if str(process_id).isdigit() and int(process_id) == int(pid):
                 try:
-                    _ = os.popen('taskkill /pid %s /f' % pid if os.name is 'nt' else 'kill -9 %s' % pid).read()
+                    _ = os.popen('taskkill /pid %s /f' % pid if os.name == 'nt' else 'kill -9 %s' % pid).read()
                     output.update({process_id: "killed"})
                 except:
                     output.update({process_id: "not found"})
             else:
                 try:
-                    _ = os.popen('taskkill /im %s /f' % exe if os.name is 'nt' else 'kill -9 %s' % exe).read()
+                    _ = os.popen('taskkill /im %s /f' % exe if os.name == 'nt' else 'kill -9 %s' % exe).read()
                     output.update({exe: "killed"})
                 except Exception as e:
                     util.log(e)

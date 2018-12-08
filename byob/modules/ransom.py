@@ -9,7 +9,11 @@ import time
 import Queue
 import base64
 import hashlib
-import StringIO
+
+try:
+    from StringIO import StringIO  # Python 2
+except ImportError:
+    from io import StringIO        # Python 3
 
 # packages
 import Crypto.Cipher.AES
@@ -135,7 +139,7 @@ def decrypt_aes(ciphertext, key, padding=chr(0)):
     Returns decrypted plaintext as string
 
     """
-    data = StringIO.StringIO(base64.b64decode(ciphertext))
+    data = StringIO(base64.b64decode(ciphertext))
     nonce, tag, ciphertext = [ data.read(x) for x in (Crypto.Cipher.AES.block_size - 1, Crypto.Cipher.AES.block_size, -1) ]
     cipher = Crypto.Cipher.AES.new(key, Crypto.Cipher.AES.MODE_OCB, nonce)
     return cipher.decrypt_and_verify(ciphertext, tag)
