@@ -7,7 +7,6 @@ import os
 import json
 import time
 import string
-import base64
 import urllib
 import threading
 
