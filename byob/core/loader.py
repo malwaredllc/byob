@@ -28,6 +28,9 @@ class Loader(object):
         self.base_url = base_url + '/'
         self.non_source = False
         self.reload = False
+        '''
+        self.mod_msg = {}
+        '''
 
     def find_module(self, fullname, path=None):
         log(level='debug', info= "FINDER=================")
@@ -49,10 +52,20 @@ class Loader(object):
         if fullname.split('.').count(fullname.split('.')[-1]) > 1:
             log(level='info', info= "[-] Found locally!")
             return None
+        '''
+        msg = self.__get_source(fullname,path)
+        if msg==None:
+            return None
+        is_package,final_url,source_code=msg
+        self.mod_msg.setdefault(fullname,MsgClass(is_package,final_url,source_code))
+        '''
         log(level='info', info= "[+] Module/Package '%s' can be loaded!" % fullname)
         return self
 
     def load_module(self, name):
+        '''
+        mod_msg=self.mod_msg.get(fullname)
+        '''
         imp.acquire_lock()
         log(level='debug', info= "LOADER=================")
         log(level='debug', info= "Loading %s..." % name)
@@ -111,7 +124,34 @@ class Loader(object):
         log(level='info', info= "[+] '%s' imported succesfully!" % name)
         imp.release_lock()
         return mod
-
+    
+    '''
+    def __get_source(self,fullname,path):
+        url=self.baseurl+"/".join(fullname.split("."))
+        source=None
+        is_package=None
+        
+        # Check if it's a package
+        try:
+            final_url=url+"/__init__.py"
+            source = urllib2.urlopen(final_url).read()
+            is_package=True
+        except Exception as e:
+            log(level='debug', info= "[-] %s!" %e)
+            
+        # A normal module
+        if is_package == None :  
+            try:
+                final_url=url+".py"
+                source = urllib2.urlopen(final_url).read()
+                is_package=False
+            except Exception as e:
+                log(level='debug', info= "[-] %s!" %e)
+                return None
+                
+        return is_package,final_url,source
+    '''
+    
     def __fetch_compiled(self, url):
         import marshal
         module_src = None
