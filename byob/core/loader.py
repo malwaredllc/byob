@@ -101,10 +101,10 @@ class Loader(object):
         mod.__loader__ = self
         mod.__file__ = final_url
         if not package_src:
-            mod.__package__ = name
+            mod.__package__ = name.rpartition('.')[0]
         else:
-            mod.__package__ = name.split('.')[0]
-        mod.__path__ = ['/'.join(mod.__file__.split('/')[:-1]) + '/']
+            mod.__package__ = name
+            mod.__path__ = ['/'.join(mod.__file__.split('/')[:-1]) + '/']
         log(level='debug', info= "[+] Ready to execute '%s' code" % name)
         sys.modules[name] = mod
         exec(final_src, mod.__dict__)
