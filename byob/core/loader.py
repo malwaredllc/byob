@@ -39,8 +39,8 @@ class Loader(object):
             return None
         log(level='info', info= "Checking if built-in....")
         try:
-            loader = imp.find_module(fullname, path)
-            if loader:
+            file, filename, description = imp.find_module(fullname.split('.')[-1], path)
+            if filename:
                 log(level='info', info= "[-] Found locally!")
                 return None
         except ImportError:
