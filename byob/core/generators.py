@@ -26,8 +26,9 @@ template_load = string.Template("""
 # remotely import dependencies from server
 
 packages = ${PACKAGES}
+packages_tmp = ${PACKAGES}
 
-for package in packages:
+for package in packages_tmp:
     try:
         exec("import %s" % package, globals())
         packages.remove(package)
