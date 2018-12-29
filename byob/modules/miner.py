@@ -7,8 +7,6 @@ import sys
 import time
 import json
 import hmac
-import math
-import base64
 import socket
 import struct
 import hashlib
@@ -472,7 +470,7 @@ class Subscription(object):
 
   def set_worker_name(self, worker_name):
     if self._worker_name:
-      raise self.StateException('Already authenticated as %r (requesting %r)' % (self._username, username))
+      raise self.StateException('Already authenticated as {}'.format(self._username))
 
     self._worker_name = worker_name
 
