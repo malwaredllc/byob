@@ -139,7 +139,7 @@ def main():
         exec("import {}".format(module))
 
 __all__ = __get_all()
-__version__ = '0.4'
+__version__ = '0.5'
 __license__ = 'GPLv3'
 __author__ = 'Daniel Vega-Myhre'
 __github__ = 'https://github.com/malwaredllc/byob'
