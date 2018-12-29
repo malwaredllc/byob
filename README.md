@@ -76,6 +76,7 @@ in the payload stager which is generated along with it
 11) __Process Control__ (`byob.modules.process`): list/search/kill/monitor currently running processes on the host
 12) __iCloud__ (`byob.modules.icloud`): check for logged in iCloud account on macOS
 13) __Spreader__ (`byob.modules.spreader`): spread client to other hosts via emails disguised as a plugin update
+14) __Miner__ (`byob.modules.miner`): run a cryptocurrency miner in the background (supports Bitcoin & Litecoin)
 
 ## Server
 [![server](https://img.shields.io/badge/byob-server-blue.svg)](https://github.com/colental/byob/blob/master/byob/server.py)

