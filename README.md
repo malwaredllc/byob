@@ -36,7 +36,7 @@ process
 packages/modules from the server, and can be compiled with a standalone python 
 interpreter into a portable binary executable formatted for any platform/architecture,
 allowing it to run on anything, even when Python itself is missing on the target host
-4) __Add New Features With Just 1 Click__: any python script, module, or package you to copy to the `./byob/modules/` directory
+4) __Add New Features With Just 1 Click__: any python script, module, or package you copy to the `./byob/modules/` directory
 automatically becomes remotely importable & directly usable by every client while 
 your command & control server is running
 5) __Write Your Own Modules__: a basic module template is provided in `./byob/modules/` directory to make writing
@@ -47,8 +47,8 @@ client's file size
 remote import, and will dynamically update its in-memory resources
 if anything has been added/removed
 8) __Platform Independent__: everything is written in Python (a platform-agnostic language) and the clients
-generated can optionally be compiled into portable executable (*Windows*) or
-bundled into an standalone application (*macOS*)
+generated can optionally be compiled into a portable executable (*Windows*) or
+bundled into a standalone application (*macOS*)
 9) __Bypass Firewalls__: clients connect to the command & control server via reverse TCP connections, which
 will bypass most firewalls because the default filter configurations primarily
 block incoming connections
