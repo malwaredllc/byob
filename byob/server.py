@@ -19,6 +19,11 @@ import threading
 import subprocess
 import collections
 
+try:
+    import readline
+except:
+    pass
+
 # modules
 import core.util as util
 import core.database as database
