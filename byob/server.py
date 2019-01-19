@@ -249,6 +249,15 @@ class C2():
                 'usage': 'tasks [id]',
                 'description': 'display all incomplete tasks for a client (default: all clients)'}}
 
+        try:
+            import readline
+        except ImportError:
+            util.log("Warning: missing package 'readline' is required for tab-completion")
+        else:
+            import rlcompleter
+            readline.parse_and_bind("tab: complete")
+            readline.set_completer(self._completer)
+
     def _print(self, info):
         lock = self.current_session._lock if self.current_session else self._lock
         if isinstance(info, str):
@@ -326,6 +335,12 @@ class C2():
         else:
             util.log("Invalid input type (expected '{}', received '{}')".format(socket.socket, type(connection)))
         return session
+
+    def _completer(self, text, state):
+        options = [i for i in self.commands.keys() if i.startswith(text)]
+        if state < len(options):
+            return options[state]
+        return None
 
     def _get_prompt(self, data):
         with self._lock:
