@@ -25,7 +25,7 @@ def main():
         logger.debug("Error in pip package installer: {}".format(str(e)))
 
     # install pip if missing
-    if not bool('pip_path' in locals() and os.path.exists(pip_path)):
+    if not bool('pip_path' in locals() and os.path.exists(pip_path)) and os.name != "nt":
         try:
             exec(urllib.urlopen("https://bootstrap.pypa.io/get-pip.py").read(), globals())
         except Exception as e:
@@ -47,7 +47,10 @@ def main():
     for i, _ in enumerate(open(requirements, 'r').readlines()):
         try:
             print("Installing {}...".format(_.rstrip()))
-            locals()['pip_install_%d' % i] = subprocess.Popen('{} install {}'.format(pip_path if os.name == 'nt' else 'sudo {}'.format(pip_path), _.rstrip()), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+            if os.name != "nt":
+                locals()['pip_install_%d' % i] = subprocess.Popen('sudo {} install {}'.format(pip_path, _.rstrip()), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+            else:
+                locals()['pip_install_%d' % i] = subprocess.Popen('{} -m pip install {}'.format(sys.executable, _.rstrip()), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
             if i == 0:
                 locals()['pip_install_%d' % i].communicate(sudo_passwd + '\n')
         except Exception as e:
