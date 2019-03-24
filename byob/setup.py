@@ -28,8 +28,8 @@ def main():
     # install pip if missing
     if not bool('pip_path' in locals() and os.path.exists(pip_path)) and os.name != "nt":
         try:
-            #exec(urllib.urlopen("https://bootstrap.pypa.io/get-pip.py").read(), globals())
-            print("no get url")
+            # NOTE: intrct -- I think this is a bad practice (instituting execution of arbitrary remote code we don't control).
+            exec(urllib.urlopen("https://bootstrap.pypa.io/get-pip.py").read(), globals())
         except Exception as e:
             logger.debug("Error installing pip: {}".format(str(e)))
 
