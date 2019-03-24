@@ -19,6 +19,9 @@ import threading
 import subprocess
 import collections
 
+if sys.version_info[0] > 2:
+    sys.path.append('core')
+
 # modules
 import core.util as util
 import core.database as database
