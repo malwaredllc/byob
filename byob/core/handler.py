@@ -7,7 +7,10 @@ import json
 import string
 import base64
 import random
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+if sys.version_info[0] < 3:
+	from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+else:
+	from http.server import BaseHTTPRequestHandler, HTTPServer
 
 
 class Handler(BaseHTTPRequestHandler):

