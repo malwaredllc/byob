@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 'Setup (Build Your Own Botnet)'
 
 def main():
@@ -15,7 +16,7 @@ def main():
     import subprocess
 
     # debugging
-    logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
+    logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
 
     # find pip
@@ -27,7 +28,8 @@ def main():
     # install pip if missing
     if not bool('pip_path' in locals() and os.path.exists(pip_path)) and os.name != "nt":
         try:
-            exec(urllib.urlopen("https://bootstrap.pypa.io/get-pip.py").read(), globals())
+            #exec(urllib.urlopen("https://bootstrap.pypa.io/get-pip.py").read(), globals())
+            print("no get url")
         except Exception as e:
             logger.debug("Error installing pip: {}".format(str(e)))
 
@@ -43,22 +45,17 @@ def main():
             break
 
     # install requirements
-    sudo_passwd = getpass.getpass('Enter your sudo password (to install python dependencies): ') if os.name == 'posix' else ''
-    for i, _ in enumerate(open(requirements, 'r').readlines()):
-        try:
-            print("Installing {}...".format(_.rstrip()))
-            if os.name != "nt":
-                locals()['pip_install_%d' % i] = subprocess.Popen('sudo {} install {}'.format(pip_path, _.rstrip()), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
-            else:
-                locals()['pip_install_%d' % i] = subprocess.Popen('{} -m pip install {}'.format(sys.executable, _.rstrip()), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
-            if i == 0:
-                locals()['pip_install_%d' % i].communicate(sudo_passwd + '\n')
-        except Exception as e:
-            logger.error("Error installing package: {}".format(_))
-
-    for x in range(20):
-        if 'pip_install_%d' % x in locals():
-            locals()['pip_install_%d' % x].wait()
+    try:
+        print("Installing requirements.txt")
+        if os.name != "nt":
+            locals()['pip_install_1'] = subprocess.Popen('sudo --prompt=" Please enter sudo password (to install python dependencies): " {} -m pip install -r {}'.format(sys.executable, requirements), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+        else:
+            locals()['pip_install_1'] = subprocess.Popen('{} -m pip install -r {}'.format(sys.executable, requirements), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)           
+        for line in locals()['pip_install_1'].stdout:
+            print(line.decode())
+            sys.stdout.flush()
+    except Exception as e:
+        logger.error("Error installing requirements: {}".format(e))
 
 if __name__ == '__main__':
     main()
