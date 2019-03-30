@@ -12,7 +12,6 @@ import ctypes
 import ftplib
 import struct
 import socket
-import urllib
 import logging
 import functools
 import threading
