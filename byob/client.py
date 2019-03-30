@@ -82,7 +82,6 @@ import sys
 import zlib
 import base64
 import random
-import urllib
 import marshal
 import argparse
 import itertools
