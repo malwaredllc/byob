@@ -12,7 +12,6 @@ def main():
     import sys
     import urllib
     import logging
-    import getpass
     import subprocess
 
     # debugging
