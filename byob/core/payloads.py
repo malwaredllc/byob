@@ -35,7 +35,7 @@ except ImportError:
     pass
 
 def log(info, level='debug'):
-    logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
+    logging.basicConfig(level=logging.DEBUG, handlers=[logging.StreamHandler()])
     logger = logging.getLogger(__name__)
     getattr(logger, level)(str(info)) if hasattr(logger, level) else logger.debug(str(info))
 
