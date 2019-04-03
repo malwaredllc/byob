@@ -6,11 +6,14 @@
 import imp
 import sys
 import logging
-import urllib2
 import contextlib
+if sys.version_info[0] < 3:
+    from urllib2 import urlopen
+else:
+    from urllib.request import urlopen
 
 def log(info='', level='debug'):
-    logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
+    logging.basicConfig(level=logging.DEBUG, handlers=[logging.StreamHandler()])
     logger = logging.getLogger(__name__)
     getattr(logger, level)(str(info)) if hasattr(logger, level) else logger.debug(str(info))
 
@@ -88,7 +91,7 @@ class Loader(object):
             if self.non_source:
                 package_src = self.__fetch_compiled(package_url)
             if package_src == None:
-                package_src = urllib2.urlopen(package_url).read()
+                package_src = urlopen(package_url).read()
             final_src = package_src
             final_url = package_url
         except IOError as e:
@@ -101,7 +104,7 @@ class Loader(object):
                 if self.non_source:
                     module_src = self.__fetch_compiled(module_url)
                 if module_src == None:
-                    module_src = urllib2.urlopen(module_url).read()
+                    module_src = urlopen(module_url).read()
                 final_src = module_src
                 final_url = module_url
             except IOError as e:
@@ -134,7 +137,7 @@ class Loader(object):
         # Check if it's a package
         try:
             final_url=url+"/__init__.py"
-            source = urllib2.urlopen(final_url).read()
+            source = urlopen(final_url).read()
             is_package=True
         except Exception as e:
             log(level='debug', info= "[-] %s!" %e)
@@ -143,7 +146,7 @@ class Loader(object):
         if is_package == None :  
             try:
                 final_url=url+".py"
-                source = urllib2.urlopen(final_url).read()
+                source = urlopen(final_url).read()
                 is_package=False
             except Exception as e:
                 log(level='debug', info= "[-] %s!" %e)
@@ -156,7 +159,7 @@ class Loader(object):
         import marshal
         module_src = None
         try:
-            module_compiled = urllib2.urlopen(url + 'c').read()
+            module_compiled = urlopen(url + 'c').read()
             try:
                 module_src = marshal.loads(module_compiled[8:])
                 return module_src
