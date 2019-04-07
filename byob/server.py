@@ -397,8 +397,8 @@ class C2():
         column1 = 'command <arg>'
         column2 = 'description'
         info = json.loads(info) if info else {command['usage']: command['description'] for command in self.commands.values()}
-        max_key = max(map(len, info.keys() + [column1])) + 2
-        max_val = max(map(len, info.values() + [column2])) + 2
+        max_key = max(map(len, list(info.keys()) + [column1])) + 2
+        max_val = max(map(len, list(info.values()) + [column2])) + 2
         util.display('\n', end=',')
         util.display(column1.center(max_key) + column2.center(max_val), color=self._text_color, style='bright')
         for key in sorted(info):
