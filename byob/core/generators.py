@@ -206,7 +206,7 @@ def freeze(filename, icon=None, hidden=None):
     basename = os.path.basename(filename)
     name = os.path.splitext(basename)[0]
     path = os.path.splitdrive(os.path.abspath('.'))[1].replace('\\','/')
-    key = ''.join([random.choice([chr(i) for i in range(48,91) + range(97,123)]) for _ in range(16)])
+    key = ''.join([random.choice([chr(i) for i in list(range(48,91)) + list(range(97,123))]) for _ in range(16)])
 
     imports = []
     with open(filename) as import_file:
