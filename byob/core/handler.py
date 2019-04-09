@@ -47,6 +47,7 @@ def run(server_class=HTTPServer, handler_class=Handler, port=80):
 
 def main():
 	port = int(sys.argv[1])
+	print("port: {}".format(port))
 	run(port=port)
 
 if __name__ == '__main__':

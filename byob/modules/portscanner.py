@@ -4,10 +4,14 @@
 
 # standard libarary
 import os
+import sys
 import json
 import Queue
 import socket
-import urllib
+if sys.version_info[0] > 2:
+    from urllib.request import urlopen
+else:
+    from urllib import urlopen
 import subprocess
 
 # utilities
@@ -19,7 +23,7 @@ platforms = ['win32','linux2','darwin']
 results = {}
 threads = {}
 targets = []
-ports = json.loads(urllib.urlopen('https://pastebin.com/raw/WxK7eUSd').read())
+ports = json.loads(urlopen('https://pastebin.com/raw/WxK7eUSd').read())
 tasks = Queue.Queue()
 usage = 'portscanner [target]'
 desciription = """

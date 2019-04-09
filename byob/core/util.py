@@ -68,8 +68,12 @@ def public_ip():
     Return public IP address of host machine
 
     """
-    import urllib
-    return urllib.urlopen('http://api.ipify.org').read()
+    import sys
+    if sys.version_info[0] > 2:
+        from urllib.request import urlopen
+    else:
+        from urllib import urlopen
+    return urlopen('http://api.ipify.org').read()
 
 def local_ip():
     """
@@ -191,13 +195,17 @@ def post(url, headers={}, data={}, json={}, as_json=False):
             except: pass
         return output
     except ImportError:
-        import urllib
-        import urllib2
-        data = urllib.urlencode(data)
-        req  = urllib2.Request(str(url), data=data)
+        import sys
+        if sys.version_info[0] > 2:
+            from urllib.request import urlopen,urlencode,Request
+        else:
+            from urllib import urlencode
+            from urllib2 import urlopen,Request
+        data = urlencode(data)
+        req  = Request(str(url), data=data)
         for key, value in headers.items():
             req.headers[key] = value
-        output = urllib2.urlopen(req).read()
+        output = urlopen(req).read()
         if as_json:
             import json
             try:
@@ -429,13 +437,17 @@ def pastebin(source, api_key):
     :param str api_user_key:   Pastebin api_user_key
 
     """
-    import urllib2
+    import sys
+    if sys.version_info[0] > 2:
+        from urllib.parse import urlsplit,urlunsplit
+    else:
+        from urllib2 import urlsplit,urlunsplit
     if isinstance(api_key, str):
         try:
             info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
             paste = post('https://pastebin.com/api/api_post.php', data=info)
-            parts = urllib2.urlparse.urlsplit(paste)
-            result = urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
+            parts = urlsplit(paste)
+            result = urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
             if not result.endswith('/'):
                 result += '/'
             return result
