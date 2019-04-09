@@ -78,7 +78,7 @@ def _scan(target):
     except (socket.error, socket.timeout):
         pass
     except Exception as e:
-        util.log("{} error: {}".format(_scan.func_name, str(e)))
+        util.log("{} error: {}".format(_scan.__name__, str(e)))
 
 def run(target='192.168.1.1', ports=[21,22,23,25,80,110,111,135,139,443,445,554,993,995,1433,1434,3306,3389,8000,8008,8080,8888]):
     """

