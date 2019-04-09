@@ -8,6 +8,7 @@ import os
 import sys
 import time
 import json
+import base64
 import pickle
 import socket
 import struct
@@ -23,6 +24,7 @@ http_serv_mod = "SimpleHTTPServer"
 if sys.version_info[0] > 2:
     http_serv_mod = "http.server"
     sys.path.append('core')
+    sys.path.append('modules')
 
 # modules
 import core.util as util
@@ -886,6 +888,8 @@ class Session(threading.Thread):
         msg = self.connection.recv(msg_size)
         data = security.decrypt_aes(msg, self.key)
         info = json.loads(data)
+        for item in [item for item in info if info[item].startswith("_b64")]:
+            info[item] = base64.decodebytes(info[item].decode('ascii'))
         return info
 
     def status(self):
