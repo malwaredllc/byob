@@ -4,6 +4,7 @@
 
 # standard library
 import os
+import sys
 import copy
 import struct
 import base64
@@ -281,7 +282,8 @@ def pad(s, block_size=16):
     Pad a byte string to proper block size by appending null bytes
 
     """
-    return s + (block_size - len(bytes(s)) % block_size) * chr(0)
+    padding = (block_size - len(bytes(s, 'utf-8')) % block_size) * chr(0) if sys.version_info[0] > 2 else (block_size - len(bytes(s)) % block_size) * chr(0)
+    return s + padding
 
 def long_to_bytes(n, blocksize=0):
     """
@@ -376,7 +378,7 @@ def decrypt_aes(ciphertext, key):
     ciphertext = ciphertext[len(iv):]
     cipher = AESModeOfOperationCBC(key, iv=iv)
     output = b''.join([cipher.decrypt(ciphertext[x:x+AESModeOfOperationCBC.block_size]) for x in xrange(0, len(ciphertext), AESModeOfOperationCBC.block_size)])
-    return output.rstrip(chr(0))
+    return output.rstrip(chr(0).encode())
 
 def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
     """

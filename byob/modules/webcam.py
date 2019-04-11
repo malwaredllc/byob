@@ -41,7 +41,7 @@ def image(*args, **kwargs):
         img = util.png(f)
         return base64.b64encode(img)
     except Exception as e:
-        return '{} error: {}'.format(image.func_name, str(e))
+        return '{} error: {}'.format(image.__name__, str(e))
 
 def video(*args, **kwargs):
     try:
@@ -63,7 +63,7 @@ def video(*args, **kwargs):
         except: pass
         return result
     except Exception as e:
-        return '{} error: {}'.format(video.func_name, str(e))
+        return '{} error: {}'.format(video.__name__, str(e))
 
 def stream(host=None, port=None, retries=5):
     try:
@@ -92,4 +92,4 @@ def stream(host=None, port=None, retries=5):
             dev.release()
             sock.close()
     except Exception as e:
-        return '{} error: {}'.format(stream.func_name, str(e))
+        return '{} error: {}'.format(stream.__name__, str(e))

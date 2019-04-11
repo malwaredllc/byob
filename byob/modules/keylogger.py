@@ -59,7 +59,7 @@ def _event(event):
         else:
             pass
     except Exception as e:
-        util.log('{} error: {}'.format(event.func_name, str(e)))
+        util.log('{} error: {}'.format(event.__name__, str(e)))
     return True
 
 def _run():

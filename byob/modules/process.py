@@ -61,11 +61,11 @@ def _monitor(keyword):
                 if keyword in row:
                     globals()['log'].write(row)
             except Exception as e1:
-                util.log("{} error: {}".format(monitor.func_name, str(e1)))
+                util.log("{} error: {}".format(monitor.__name__, str(e1)))
             if globals()['_abort']:
                 break
     except Exception as e2:
-        util.log("{} error: {}".format(monitor.func_name, str(e2)))
+        util.log("{} error: {}".format(monitor.__name__, str(e2)))
 
 def list(*args, **kwargs):
     """
@@ -86,7 +86,7 @@ def list(*args, **kwargs):
                     break
         return json.dumps(output)
     except Exception as e:
-        util.log("{} error: {}".format(list.func_name, str(e)))
+        util.log("{} error: {}".format(list.__name__, str(e)))
 
 def search(keyword):
     """
@@ -112,7 +112,7 @@ def search(keyword):
                     break
         return json.dumps(output)
     except Exception as e:
-        util.log("{} error: {}".format(search.func_name, str(e)))
+        util.log("{} error: {}".format(search.__name__, str(e)))
 
 def kill(process_id):
     """
@@ -142,7 +142,7 @@ def kill(process_id):
                     util.log(e)
             return json.dumps(output)
     except Exception as e:
-        util.log("{} error: {}".format(kill.func_name, str(e)))
+        util.log("{} error: {}".format(kill.__name__, str(e)))
 
 def monitor(keyword):
     """
@@ -171,4 +171,4 @@ def block(process_name='taskmgr.exe'):
         _ = util.powershell(code)
         return "Process {} blocked".format(process_name)
     except Exception as e:
-        util.log("{} error: {}".format(block.func_name, str(e)))
+        util.log("{} error: {}".format(block.__name__, str(e)))

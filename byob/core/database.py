@@ -132,7 +132,7 @@ COMMIT;
                 util.display(str(i).rjust(indent-1), color='reset', style='bright') if i else None
                 self._display(data, indent+2)
             else:
-                util.display(str(data.encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=','))
+                util.display(data.encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
                 util.display(v.encode(), color=c, style='dim')
 
     def _client_sessions(self, uid):
@@ -187,7 +187,7 @@ COMMIT;
                 elif isinstance(session, int):
                     self.execute_query("UPDATE tbl_sessions SET online=0, last_online=:last_online WHERE id=:uid", params={"uid": session, "last_online": datetime.datetime.now()}, returns=False)
         except Exception as e:
-            self.error("{} error: {}".format(self.update_status.func_name, str(e)))
+            self.error("{} error: {}".format(self.update_status.__name__, str(e)))
 
     def get_sessions(self, verbose=False):
         """
@@ -230,7 +230,8 @@ COMMIT;
         if isinstance(info, dict):
 
             if not info.get('uid'):
-                info['uid'] = hashlib.md5(info['public_ip'] + info['mac_address']).hexdigest()
+                buid = str(info['public_ip'] + info['mac_address']).encode()
+                info['uid'] = hashlib.md5(buid).hexdigest()
                 info['joined'] = datetime.datetime.now()
 
             info['online'] = 1
@@ -275,7 +276,8 @@ COMMIT;
         """
         if isinstance(task, dict):
             if 'uid' not in task:
-                task['uid'] = hashlib.md5(task['session'] + task['task'] + datetime.datetime.now().ctime()).hexdigest()
+                buid = str(task['session'] + task['task'] + datetime.datetime.now().ctime()).encode()
+                task['uid'] = hashlib.md5(buid).hexdigest()
                 task['issued'] = datetime.datetime.now()
                 self.execute_query('insert into tbl_tasks (uid, session, task, issued) values (:uid, :session, :task, :issued)', params={"uid": task['uid'],  "session": task['session'], "task": task['task'], "issued": task['issued']}, returns=False)
                 task['issued'] = task['issued'].ctime()
@@ -289,7 +291,7 @@ COMMIT;
             return task
 
         else:
-            self.debug("{} error: invalid input type (expected {}, received {})".format(self.handle_task.func_name, dict, type(task)))
+            self.debug("{} error: invalid input type (expected {}, received {})".format(self.handle_task.__name__, dict, type(task)))
 
     def execute_query(self, stmt, params={}, returns=True, display=False):
         """
@@ -355,4 +357,4 @@ COMMIT;
                 return result
 
         except Exception as e:
-            self.error("{} error: {}".format(self.execute_file.func_name, str(e)))
+            self.error("{} error: {}".format(self.execute_file.__name__, str(e)))

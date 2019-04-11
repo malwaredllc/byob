@@ -33,4 +33,4 @@ def run():
     data = util.png(img)
     return base64.b64encode(data)
 #    except Exception as e:
-#        util.log("{} error: {}".format(run.func_name, str(e)))
+#        util.log("{} error: {}".format(run.__name__, str(e)))

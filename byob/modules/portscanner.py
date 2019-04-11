@@ -4,10 +4,14 @@
 
 # standard libarary
 import os
+import sys
 import json
 import Queue
 import socket
-import urllib
+if sys.version_info[0] > 2:
+    from urllib.request import urlopen
+else:
+    from urllib import urlopen
 import subprocess
 
 # utilities
@@ -19,7 +23,7 @@ platforms = ['win32','linux2','darwin']
 results = {}
 threads = {}
 targets = []
-ports = json.loads(urllib.urlopen('https://pastebin.com/raw/WxK7eUSd').read())
+ports = json.loads(urlopen('https://pastebin.com/raw/WxK7eUSd').read())
 tasks = Queue.Queue()
 usage = 'portscanner [target]'
 desciription = """
@@ -74,7 +78,7 @@ def _scan(target):
     except (socket.error, socket.timeout):
         pass
     except Exception as e:
-        util.log("{} error: {}".format(_scan.func_name, str(e)))
+        util.log("{} error: {}".format(_scan.__name__, str(e)))
 
 def run(target='192.168.1.1', ports=[21,22,23,25,80,110,111,135,139,443,445,554,993,995,1433,1434,3306,3389,8000,8008,8080,8888]):
     """
