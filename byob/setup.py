@@ -53,7 +53,10 @@ def main():
     try:
         import pip
     except:
-        if not bool('pip_path' in locals() and os.path.exists(pip_path)) and os.name != "nt":
+        # intrct: removing this check -- the import pip failure above should make this check unnecessary, and 
+        #           it actually becomes a problem if someone runs python 2.7.x and 3.x on the same host.
+        #if not bool('pip_path' in locals() and os.path.exists(pip_path)) and 
+        if os.name != "nt":
             try:
                 # NOTE: intrct -- I think this is a bad practice (instituting execution of arbitrary remote code we don't control).
                 if os.getuid() != 0:
