@@ -5,6 +5,7 @@
 # standard library
 import os
 import sys
+import time
 import zlib
 import base64
 import string
@@ -239,9 +240,14 @@ def freeze(filename, icon=None, hidden=None):
     while True:
         try:
             line = process.stderr.readline().rstrip()
-        except: break
-        if line: util.display(line, color='reset', style='dim')
-        if 'EXE' in line and 'complete' in line: break
+        except: 
+            break
+        if line.strip() != None:
+            util.display(line, color='reset', style='dim')
+            line = line.decode('utf-8')
+            if 'EXE' in line and 'complete' in line:
+                break
+        time.sleep(0.25)
     output = os.path.join(path, 'dist', name + str('.exe' if os.name == 'nt' else ''))
     return output
 
