@@ -85,31 +85,31 @@ COMMIT;
                         j = json.loads(v.encode())
                         self._display(j, indent+2)
                     except:
-                        util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
-                        util.display(str(v).encode().replace('\n',' ')[:40], color=c, style='dim')
+                        util.display(str(k).ljust(4  * indent).center(5 * indent).encode(), color=c, style='bright', end=' ')
+                        util.display(str(v).replace('\n',' ')[:40].encode(), color=c, style='dim')
 
                 elif isinstance(v, list):
                     for i in v:
                         if isinstance(v, dict):
-                            util.display(str(k).ljust(4  * indent).center(5 * indent))
+                            util.display(str(k).ljust(4  * indent).center(5 * indent).encode())
                             self._display(v, indent+2)
                         else:
-                            util.display(str(i).ljust(4  * indent).center(5 * indent))
+                            util.display(str(i).ljust(4  * indent).center(5 * indent).encode())
 
                 elif isinstance(v, dict):
-                    util.display(str(k).ljust(4  * indent).center(5 * indent))
+                    util.display(str(k).ljust(4  * indent).center(5 * indent).encode())
                     self._display(v, indent+1)
 
                 elif isinstance(v, int):
                     if v in (0,1):
-                        util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
+                        util.display(str(k).ljust(4  * indent).center(5 * indent).encode(), color=c, style='bright', end=' ')
                         util.display(str(bool(v)).encode(), color=c, style='dim')
                     else:
-                        util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
+                        util.display(str(k).ljust(4  * indent).center(5 * indent).encode(), color=c, style='bright', end=' ')
                         util.display(str(v).encode(), color=c, style='dim')
 
                 else:
-                    util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
+                    util.display(str(k).ljust(4  * indent).center(5 * indent).encode(), color=c, style='bright', end=' ')
                     util.display(str(v).encode(), color=c, style='dim')
 
         elif isinstance(data, list):
@@ -117,7 +117,7 @@ COMMIT;
                 if isinstance(row, dict):
                     self._display(row, indent+2)
                 else:
-                    util.display(str(row).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
+                    util.display(str(row).ljust(4  * indent).center(5 * indent).encode(), color=c, style='bright', end=' ')
                     util.display(str(v).encode(), color=c, style='dim')
         else:
             try:
@@ -129,11 +129,11 @@ COMMIT;
 
             if isinstance(data, dict):
                 i = data.pop('id',None)
-                util.display(str(i).rjust(indent-1), color='reset', style='bright') if i else None
+                util.display(str(i).rjust(indent-1).encode(), color='reset', style='bright') if i else None
                 self._display(data, indent+2)
             else:
-                util.display(data.encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
-                util.display(v.encode(), color=c, style='dim')
+                util.display(data.ljust(4  * indent).center(5 * indent).encode(), color=c, style='bright', end=' ')
+                util.display(str(v).encode(), color=c, style='dim')
 
     def _client_sessions(self, uid):
         for i in self.execute('select sessions from tbl_sessions where uid=:uid', {"uid": uid}):
@@ -201,7 +201,7 @@ COMMIT;
         sql = "select * from tbl_sessions" if verbose else "select id, public_ip, uid, platform from tbl_sessions"
         statement = self.execute(sql)
         columns = [_[0] for _ in statement.description]
-        return [{k:v for k,v in zip(columns, rows)} for rows in statement.fetchall()]
+        return [{k:v for (k,v) in zip(columns, rows)} for rows in statement.fetchall()]
 
     def get_tasks(self):
         """

