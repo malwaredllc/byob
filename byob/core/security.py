@@ -401,6 +401,8 @@ def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr
     data    = data + (int(block_size) - len(data) % int(block_size)) * bytes(padding.encode('utf-8'))
     blocks  = [data[i * block_size:((i + 1) * block_size)] for i in range(len(data) // block_size)]
     vector  = os.urandom(8)
+    if len(key) < key_size:
+        key += bytes(bytes(padding.encode('utf-8')) * (key_size - len(key)))
     result  = [vector]
     for block in blocks:
         if sys.version_info[0] < 3:
@@ -408,8 +410,6 @@ def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr
         else:
             block   = bytes(x ^ y for (x, y) in zip(vector, block))
         v0, v1  = struct.unpack("!2L", block)
-        if len(key) < key_size:
-            key += bytes(bytes(padding.encode('utf-8')) * (key_size - len(key)))
         k       = struct.unpack("!4L", key[:key_size])
         sum, delta, mask = 0, 0x9e3779b9, 0xffffffff
         for round in range(num_rounds):
@@ -440,11 +440,11 @@ def decrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr
     data    = base64.b64decode(data)
     blocks  = [data[i * block_size:((i + 1) * block_size)] for i in range(len(data) // block_size)]
     vector  = blocks[0]
+    if len(key) < key_size:
+        key += bytes(bytes(padding.encode('utf-8')) * (key_size - len(key)))
     result  = []
     for block in blocks[1:]:
         v0, v1  = struct.unpack("!2L", block)
-        if len(key) < key_size:
-            key += bytes(bytes(padding.encode('utf-8')) * (key_size - len(key)))
         k0      = struct.unpack("!4L", key[:key_size])
         delta, mask = 0x9e3779b9, 0xffffffff
         sum     = (delta * num_rounds) & mask
