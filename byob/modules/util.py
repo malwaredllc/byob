@@ -393,14 +393,17 @@ def display(output, color=None, style=None, end='\n', event=None, lock=None):
     """
     import colorama
     colorama.init()
-    output = str(output)
+    if isinstance(output, bytes):
+        output = output.decode('utf-8')
+    else:
+        output = str(output)
     _color = ''
     if color:
         _color = getattr(colorama.Fore, color.upper())
     _style = ''
     if style:
         _style = getattr(colorama.Style, style.upper())
-    exec("print(_color + _style + output){}".format(end))
+    exec("""print(_color + _style + output + colorama.Style.RESET_ALL, end="{}")""".format(end))
 
 def color():
     """
@@ -441,7 +444,9 @@ def pastebin(source, api_key):
     if sys.version_info[0] > 2:
         from urllib.parse import urlsplit,urlunsplit
     else:
-        from urllib2 import urlsplit,urlunsplit
+        from urllib2 import urlparse
+        urlsplit = urlparse.urlsplit
+        urlunsplit = urlparse.urlunsplit
     if isinstance(api_key, str):
         try:
             info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
