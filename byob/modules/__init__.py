@@ -71,6 +71,9 @@ byob.modules
   remotely import them into the currently running process without writing anything
   to the disk, and use them directly without installation.
 
+  byob.modules.miner
+    run a Bitcoin miner in the background
+
   byob.modules.keylogger
     logs the user’s keystrokes & the window name entered
 
@@ -136,7 +139,7 @@ def main():
         exec("import {}".format(module))
 
 __all__ = __get_all()
-__version__ = '0.4'
+__version__ = '0.5'
 __license__ = 'GPLv3'
 __author__ = 'Daniel Vega-Myhre'
 __github__ = 'https://github.com/malwaredllc/byob'

@@ -6,11 +6,14 @@
 import imp
 import sys
 import logging
-import urllib2
 import contextlib
+if sys.version_info[0] < 3:
+    from urllib2 import urlopen
+else:
+    from urllib.request import urlopen
 
 def log(info='', level='debug'):
-    logging.basicConfig(level=logging.DEBUG, handler=logging.StreamHandler())
+    logging.basicConfig(level=logging.DEBUG, handlers=[logging.StreamHandler()])
     logger = logging.getLogger(__name__)
     getattr(logger, level)(str(info)) if hasattr(logger, level) else logger.debug(str(info))
 
@@ -28,6 +31,9 @@ class Loader(object):
         self.base_url = base_url + '/'
         self.non_source = False
         self.reload = False
+        '''
+        self.mod_msg = {}
+        '''
 
     def find_module(self, fullname, path=None):
         log(level='debug', info= "FINDER=================")
@@ -39,8 +45,8 @@ class Loader(object):
             return None
         log(level='info', info= "Checking if built-in....")
         try:
-            loader = imp.find_module(fullname, path)
-            if loader:
+            file, filename, description = imp.find_module(fullname.split('.')[-1], path)
+            if filename:
                 log(level='info', info= "[-] Found locally!")
                 return None
         except ImportError:
@@ -49,10 +55,20 @@ class Loader(object):
         if fullname.split('.').count(fullname.split('.')[-1]) > 1:
             log(level='info', info= "[-] Found locally!")
             return None
+        '''
+        msg = self.__get_source(fullname,path)
+        if msg==None:
+            return None
+        is_package,final_url,source_code=msg
+        self.mod_msg.setdefault(fullname,MsgClass(is_package,final_url,source_code))
+        '''
         log(level='info', info= "[+] Module/Package '%s' can be loaded!" % fullname)
         return self
 
     def load_module(self, name):
+        '''
+        mod_msg=self.mod_msg.get(fullname)
+        '''
         imp.acquire_lock()
         log(level='debug', info= "LOADER=================")
         log(level='debug', info= "Loading %s..." % name)
@@ -75,7 +91,7 @@ class Loader(object):
             if self.non_source:
                 package_src = self.__fetch_compiled(package_url)
             if package_src == None:
-                package_src = urllib2.urlopen(package_url).read()
+                package_src = urlopen(package_url).read()
             final_src = package_src
             final_url = package_url
         except IOError as e:
@@ -88,7 +104,7 @@ class Loader(object):
                 if self.non_source:
                     module_src = self.__fetch_compiled(module_url)
                 if module_src == None:
-                    module_src = urllib2.urlopen(module_url).read()
+                    module_src = urlopen(module_url).read()
                 final_src = module_src
                 final_url = module_url
             except IOError as e:
@@ -101,22 +117,49 @@ class Loader(object):
         mod.__loader__ = self
         mod.__file__ = final_url
         if not package_src:
-            mod.__package__ = name
+            mod.__package__ = name.rpartition('.')[0]
         else:
-            mod.__package__ = name.split('.')[0]
-        mod.__path__ = ['/'.join(mod.__file__.split('/')[:-1]) + '/']
+            mod.__package__ = name
+            mod.__path__ = ['/'.join(mod.__file__.split('/')[:-1]) + '/']
         log(level='debug', info= "[+] Ready to execute '%s' code" % name)
         sys.modules[name] = mod
         exec(final_src, mod.__dict__)
         log(level='info', info= "[+] '%s' imported succesfully!" % name)
         imp.release_lock()
         return mod
-
+    
+    '''
+    def __get_source(self,fullname,path):
+        url=self.baseurl+"/".join(fullname.split("."))
+        source=None
+        is_package=None
+        
+        # Check if it's a package
+        try:
+            final_url=url+"/__init__.py"
+            source = urlopen(final_url).read()
+            is_package=True
+        except Exception as e:
+            log(level='debug', info= "[-] %s!" %e)
+            
+        # A normal module
+        if is_package == None :  
+            try:
+                final_url=url+".py"
+                source = urlopen(final_url).read()
+                is_package=False
+            except Exception as e:
+                log(level='debug', info= "[-] %s!" %e)
+                return None
+                
+        return is_package,final_url,source
+    '''
+    
     def __fetch_compiled(self, url):
         import marshal
         module_src = None
         try:
-            module_compiled = urllib2.urlopen(url + 'c').read()
+            module_compiled = urlopen(url + 'c').read()
             try:
                 module_src = marshal.loads(module_compiled[8:])
                 return module_src

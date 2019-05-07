@@ -9,9 +9,9 @@ import time
 import threading
 
 try:
-    from io import StringIO        # Python 3
-except ImportError:
     from StringIO import StringIO  # Python 2
+except ImportError:
+    from io import StringIO        # Python 3
 
 # packages
 if sys.platform == 'win32':
@@ -59,7 +59,7 @@ def _event(event):
         else:
             pass
     except Exception as e:
-        util.log('{} error: {}'.format(event.func_name, str(e)))
+        util.log('{} error: {}'.format(event.__name__, str(e)))
     return True
 
 def _run():

