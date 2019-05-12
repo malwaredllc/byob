@@ -190,7 +190,13 @@ EOF
             docker build -t "$xc_dockimg:BYOB" -f "./build/$xc_arch_str.Dockerfile" ./build 2> $archoutfile >> $archoutfile &
             while pgrep docker 2>&1 > /dev/null; do if ps aux | grep "docker" | grep "build" 2> /dev/null 1> /dev/null; then sleep 1; else break; fi; done &
             fortheimpatient $! "Setup $xc_dockimg"
-            feedback 1337 "Setup $xc_dockimg successfully"
+            docker image ls "$xc_dockimg:BYOB" | grep BYOB
+            rcCheck=$?
+            if [ $rcCheck -eq 0 ]; then
+                feedback 1337 "Setup $xc_dockimg successfully"
+            else
+                feedback 2 "Setup $xc_dockimg failed. Missing dependency or qemu binfmt map issue."
+            fi
         else
             makeloader=false
             feedback 93 "Architecture $xc_dockimg is not in the supported list."
