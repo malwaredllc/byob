@@ -4,10 +4,8 @@
 
 # standard library
 import os
-import imp
 import sys
 import ctypes
-import urllib
 
 # packages
 if sys.platform == 'win32':
@@ -22,18 +20,18 @@ platforms = ['win32']
 results = {}
 usage = 'escalate'
 description = """
-Attempt UAC bypass to escalate privileges in the current 
+Attempt UAC bypass to escalate privileges in the current
 context on the client host machine
 """
 
 # main
 def run(filename):
-    """ 
+    """
     Attempt to escalate privileges
 
     `Required`
     :param str filename:    filename to run as administrator
-    
+
     """
     try:
         if isinstance(filename, str) and os.path.isfile(filename):

