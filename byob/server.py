@@ -183,7 +183,7 @@ class C2():
 
         """
         self._active = threading.Event()
-        self._count = 1
+        self._count = 0
         self._prompt = None
         self._database = db
         self.current_session = None
@@ -719,6 +719,7 @@ class C2():
         :param int session:   session ID
 
         """
+        print(self.sessions)
         if globals()['debug']:
             util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
         if not str(session).isdigit() or int(session) not in self.sessions:
@@ -758,10 +759,10 @@ class C2():
     @util.threaded
     def serve_until_stopped(self):
         self.database = database.Database(self._database)
-        for session in self.database.get_sessions(verbose=True):
-            self.database.update_status(session.get('uid'), 0)
-            session['online'] = False
-            self.sessions[session.get('id')] = { "info": session, "connection": None }
+        for session_info in self.database.get_sessions(verbose=True):
+            self.database.update_status(session_info.get('uid'), 0)
+            session_info['online'] = False
+#            self.sessions[session_info.get('id')] = { "info": session_info, "connection": None }
             self._count += 1
         while True:
             connection, address = self.socket.accept()
@@ -885,7 +886,6 @@ class Session(threading.Thread):
         except Exception as e:
             print(e)
             self.info = None
-            return
 
     def kill(self):
         """
