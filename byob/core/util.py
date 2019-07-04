@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 'Utilities (Build Your Own Botnet)'
 from __future__ import print_function
+
+import colorama
+colorama.init()
+
 _debug = False
 
 # main
@@ -391,8 +395,6 @@ def display(output, color=None, style=None, end='\\n', event=None, lock=None):
     :param event:         threading.Event object
 
     """
-    import colorama
-    colorama.init()
     if isinstance(output, bytes):
         output = output.decode('utf-8')
     else:
