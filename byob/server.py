@@ -880,9 +880,10 @@ class Session(threading.Thread):
         self.key = security.diffiehellman(self.connection)
         self.rsa = None  # security.Crypto.PublicKey.RSA.generate(2048)
         try:
-            self.info = self.recv_task()
+            self.info = self.client_info()
             self.info['id'] = self.id
         except Exception as e:
+            print(e)
             self.info = None
             return
 
@@ -909,8 +910,9 @@ class Session(threading.Thread):
         msg = self.connection.recv(msg_size)
         data = security.decrypt_aes(msg, self.key)
         info = json.loads(data)
-        for item in [item for item in info if "_b64" in str(info[item])[0:5]]:
-            info[item] = base64.b64decode(bytes(info[item][6:])).decode('ascii')
+        for key, val in info.items():
+            if bytes(val).startswith("_b64"):
+                info[key] = base64.b64decode(bytes(val[6:])).decode('ascii')
         return info
 
     def status(self):
