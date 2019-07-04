@@ -719,7 +719,6 @@ class C2():
         :param int session:   session ID
 
         """
-        print(self.sessions)
         if globals()['debug']:
             util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
         if not str(session).isdigit() or int(session) not in self.sessions:
@@ -884,7 +883,7 @@ class Session(threading.Thread):
             self.info = self.client_info()
             self.info['id'] = self.id
         except Exception as e:
-            print(e)
+            print(bytes(e))
             self.info = None
 
     def kill(self):
