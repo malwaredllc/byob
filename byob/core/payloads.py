@@ -1135,6 +1135,7 @@ class Payload():
                 self.key = self._get_key(self.connection)
                 self.info = self._get_info()
                 log("{} : leaving passive mode.".format(self.run.__name__))
+                self.flags.prompt.set()
             elif self.flags.connection.wait(timeout=1.0):
                 if not self.flags.prompt.is_set():
                     task = self.recv_task()
