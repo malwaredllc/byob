@@ -1,0 +1,3 @@
+arm32v7/debian;/usr/bin/qemu-arm-static
+arm64v8/debian;/usr/bin/qemu-aarch64-static
+i386/debian;/usr/bin/qemu-i386-static
