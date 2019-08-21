@@ -220,7 +220,7 @@ class C2():
                 'usage': 'sessions',
                 'description': 'show active client sessions'},
             'clients' : {
-                'method': self.session_list,
+                'method': self.client_list,
                 'usage': 'clients',
                 'description': 'show all clients that have joined the server'},
             'shell' : {
@@ -676,7 +676,7 @@ class C2():
                 session._active.clear()
                 return self.run()
 
-    def session_list(self, verbose=True):
+    def client_list(self, verbose=True):
         """
         List currently online clients
 
@@ -691,6 +691,20 @@ class C2():
             print()
             sessions = self.database.get_sessions(verbose=verbose)
             self.database._display(sessions)
+            print()
+
+    def session_list(self):
+        """
+        List active sessions
+
+        """
+        if globals()['debug']:
+            util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
+        lock = self.current_session._lock if self.current_session else self._lock
+        with lock:
+            print()
+            for idx, ses in self.sessions.items():
+                self.database._display(ses.info)
             print()
 
     def session_ransom(self, args=None):
@@ -772,15 +786,15 @@ class C2():
                     if info.pop('new', False):
                         util.display("\n\n[+]", color='green', style='bright', end=' ')
                         util.display("New Connection:", color='white', style='bright', end=' ')
-                        util.display(address[0], color='white', style='normal')
-                        util.display("    Session:", color='white', style='bright', end=' ')
-                        util.display(str(session.id), color='white', style='normal')
-                        util.display("    Started:", color='white', style='bright', end=' ')
-                        util.display(time.ctime(session._created), color='white', style='normal')
                         self._count += 1
                     else:
                         util.display("\n\n[+]", color='green', style='bright', end=' ')
-                        util.display("{} reconnected".format(address[0]), color='white', style='bright', end=' ')
+                        util.display("Connection:", color='white', style='bright', end=' ')
+                    util.display(address[0], color='white', style='normal')
+                    util.display("    Session:", color='white', style='bright', end=' ')
+                    util.display(str(session.id), color='white', style='normal')
+                    util.display("    Started:", color='white', style='bright', end=' ')
+                    util.display(time.ctime(session._created), color='white', style='normal')
                     session.info = info
                     self.sessions[int(session.id)] = session
             else:
