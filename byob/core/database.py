@@ -76,14 +76,8 @@ COMMIT;
         c = globals().get('_color')
 
         if isinstance(data, dict):
-            i = data.get('id')
-            util.display(str(i).rjust(indent-3), color='reset', style='bright') if i else None
-
             for k,v in data.items():
-                if k == "id":
-                    pass
-
-                elif isinstance(v, unicode):
+                if isinstance(v, unicode):
                     try:
                         j = json.loads(v.encode())
                         self._display(j, indent+2)
@@ -131,8 +125,6 @@ COMMIT;
                 data = dict(data)
 
             if isinstance(data, dict):
-                i = data.get('id')
-                util.display(str(i).rjust(indent-1).encode(), color='reset', style='bright') if i else None
                 self._display(data, indent+2)
             else:
                 util.display(data.ljust(4  * indent).center(5 * indent).encode(), color=c, style='bright', end=' ')
@@ -201,7 +193,7 @@ COMMIT;
         :param bool display:    display output
 
         """
-        sql = "select * from tbl_sessions" if verbose else "select id, public_ip, uid, platform from tbl_sessions"
+        sql = "select * from tbl_sessions" if verbose else "public_ip, uid, platform from tbl_sessions"
         statement = self.execute(sql)
         columns = [_[0] for _ in statement.description]
         return [{k:v for (k,v) in zip(columns, rows)} for rows in statement.fetchall()]
