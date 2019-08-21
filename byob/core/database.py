@@ -76,11 +76,14 @@ COMMIT;
         c = globals().get('_color')
 
         if isinstance(data, dict):
-            i = data.pop('id', None)
+            i = data.get('id')
             util.display(str(i).rjust(indent-3), color='reset', style='bright') if i else None
 
             for k,v in data.items():
-                if isinstance(v, unicode):
+                if k == "id":
+                    pass
+
+                elif isinstance(v, unicode):
                     try:
                         j = json.loads(v.encode())
                         self._display(j, indent+2)
@@ -128,7 +131,7 @@ COMMIT;
                 data = dict(data)
 
             if isinstance(data, dict):
-                i = data.pop('id',None)
+                i = data.get('id')
                 util.display(str(i).rjust(indent-1).encode(), color='reset', style='bright') if i else None
                 self._display(data, indent+2)
             else:
