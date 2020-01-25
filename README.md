@@ -22,7 +22,7 @@ from the C2 and executed on the target machine without writing anything to the d
 Supports Python 2 & 3.
 
 ## Client
-[![client](https://img.shields.io/badge/byob-client-blue.svg)](https://github.com/colental/byob/blob/master/byob/client.py)
+[![client](https://img.shields.io/badge/byob-client-blue.svg)](https://github.com/colental/byob/blob/master/byob/core/payloads.py)
 
 *Generate fully-undetectable clients with staged payloads, remote imports, and unlimited post-exploitation modules*
 
