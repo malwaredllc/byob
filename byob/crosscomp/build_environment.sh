@@ -143,7 +143,7 @@ venv_setup() {
     feedback 1337 "Virtual environment initialized"
     source pyvenv/bin/activate
     feedback 0 "Starting pip;setuptools upgrade"
-    python -m pip install --upgrade pip setuptools 2> $outfile >> $outfile &
+    python -m pip install --upgrade pip 'setuptools<45.0.0' 2> $outfile >> $outfile &
     fortheimpatient $! "pip;setuptools upgrading"
     feedback 1337 "Python pip;setuptools upgraded"
     python -m pip install -r ../requirements.txt 2> $outfile >> $outfile &
@@ -233,7 +233,7 @@ si_host="\$1"
 si_port="\$2"
 bin_target="\$3"
 if [ "\$bin_target" == "" ]; then bin_target=\$(date +%s); fi
-docker run -it --rm -v $project:/byob $xc_dockimg:BYOB /bin/bash -c "cd /byob; if [ -d crosscomp/pyvenv-$xc_arch_str ] ; then rm -Rf crosscomp/pyvenv-$xc_arch_str; fi; if [ -d modules/payloads ] ; then rm -Rf modules/payloads; fi; if [ -d modules/stagers ] ; then rm -Rf modules/stagers; fi; echo $nixreqs | base64 -d > crosscomp/requirements_b.txt; python3 -m venv crosscomp/pyvenv-$xc_arch_str; source crosscomp/pyvenv-$xc_arch_str/bin/activate; python -m pip install --upgrade pip setuptools; pip install wheel; pip install -r crosscomp/requirements_b.txt; python client.py --freeze --name \${bin_target}.${xc_arch} \$si_host \$si_port; rm -f ./\${bin_target}*; deactivate;"
+docker run -it --rm -v $project:/byob $xc_dockimg:BYOB /bin/bash -c "cd /byob; if [ -d crosscomp/pyvenv-$xc_arch_str ] ; then rm -Rf crosscomp/pyvenv-$xc_arch_str; fi; if [ -d modules/payloads ] ; then rm -Rf modules/payloads; fi; if [ -d modules/stagers ] ; then rm -Rf modules/stagers; fi; echo $nixreqs | base64 -d > crosscomp/requirements_b.txt; python3 -m venv crosscomp/pyvenv-$xc_arch_str; source crosscomp/pyvenv-$xc_arch_str/bin/activate; python -m pip install --upgrade pip 'setuptools<45.0.0'; pip install wheel; pip install -r crosscomp/requirements_b.txt; python client.py --freeze --name \${bin_target}.${xc_arch} \$si_host \$si_port; rm -f ./\${bin_target}*; deactivate;"
 EOF
         chmod u+x "compile_$xc_arch_str.sh"
         fi
