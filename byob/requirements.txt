@@ -7,6 +7,7 @@ colorama==0.4.3;python_version>'3'
 requests==2.22.0;python_version>'3'
 PyInstaller==3.6;python_version>'3'
 pycryptodome==3.9.6;python_version>'3'
+pycrypto==2.6.1;python_version>'3'
 
 mss==3.3.0;python_version<'3'
 WMI==1.4.9;python_version<'3'
