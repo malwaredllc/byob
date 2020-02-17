@@ -896,7 +896,7 @@ class Session(threading.Thread):
             self.info = self.client_info()
             #self.info['id'] = self.id
         except Exception as e:
-            print(bytes(e))
+            print(e)
             self.info = None
 
     def kill(self):
