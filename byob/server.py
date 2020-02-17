@@ -896,7 +896,7 @@ class Session(threading.Thread):
             self.info = self.client_info()
             #self.info['id'] = self.id
         except Exception as e:
-            print(bytes(e))
+            print("Session init exception: " + str(e))
             self.info = None
 
     def kill(self):
@@ -923,8 +923,8 @@ class Session(threading.Thread):
         data = security.decrypt_aes(msg, self.key)
         info = json.loads(data)
         for key, val in info.items():
-            if bytes(val).startswith("_b64"):
-                info[key] = base64.b64decode(bytes(val[6:])).decode('ascii')
+            if str(val).startswith("_b64"):
+                info[key] = base64.b64decode(str(val[6:])).decode('ascii')
         return info
 
     def status(self):
