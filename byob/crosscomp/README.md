@@ -21,6 +21,7 @@ Core requirements are Docker, QEMU, and Python; more granular items are within t
       * And https://github.com/docker-library/official-images#architectures-other-than-amd64
 
 ### Steps
+*Note: the build_environment.sh script is in progress for python3 support. Any help would be appreciated.*
 1. Run the build-environment.sh script with sudo or as root.
     * This will probably take a while.
     * The script will install dependencies, then check and build necessary docker containers
