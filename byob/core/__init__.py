@@ -136,8 +136,8 @@ __license__ = 'GPLv3'
 __author__ = 'Daniel Vega-Myhre'
 __github__ = 'https://github.com/malwaredllc/byob'
 
-def main():
-    for module in __all__:
-        exec("import {}".format(module))
+# def main():
+#     for module in __all__:
+#         exec("import {}".format(module))
 
-main()
+# main()
