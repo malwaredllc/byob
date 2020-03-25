@@ -995,7 +995,6 @@ class Session(threading.Thread):
 
         """
         while True:
-            # try:
             if self._active.wait():
                 task = self.recv_task() if not self._prompt else self._prompt
                 if isinstance(task, dict):
@@ -1029,9 +1028,7 @@ class Session(threading.Thread):
                     elif isinstance(task, int) and task == 0:
                         break
                 self._prompt = None
-#            except Exception as e:
-#                util.log(str(e))
-#                break
+
         time.sleep(1)
         globals()['c2'].session_remove(self.id)
         self._active.clear()

