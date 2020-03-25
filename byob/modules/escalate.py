@@ -45,4 +45,4 @@ def run(filename):
         else:
             return "Error: argument 'filename' must be a valid filename"
     except Exception as e:
-        util.log(str(e))
+        return "{} erorr: {}".format(__name__, str(e))

