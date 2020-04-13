@@ -203,40 +203,40 @@ def freeze(filename, icon=None, hidden=None):
     Returns output filename as a string
 
     """
-    global template_spec
+    # global template_spec
     basename = os.path.basename(filename)
     name = os.path.splitext(basename)[0]
     path = os.path.splitdrive(os.path.abspath('.'))[1].replace('\\','/')
     key = ''.join([random.choice([chr(i) for i in list(range(48,91)) + list(range(97,123))]) for _ in range(16)])
 
-    imports = []
-    with open(filename) as import_file:
-        for potental_import in filter(None, (PI.strip().split() for PI in import_file)):
-            if potental_import[0] == 'import':
-                imports.append(potental_import[1].split(';')[0].split(','))
+    # imports = []
+    # with open(filename) as import_file:
+    #     for potental_import in filter(None, (PI.strip().split() for PI in import_file)):
+    #         if potental_import[0] == 'import':
+    #             imports.append(potental_import[1].split(';')[0].split(','))
 
-    bad_imports = set()
-    bad_imports.add('core')
-    for i in os.listdir('core'):
-        i = os.path.splitext(i)[0]
-        bad_imports.add(i)
-        bad_imports.add('core.%s' % i)
+    # bad_imports = set()
+    # bad_imports.add('core')
+    # for i in os.listdir('core'):
+    #     i = os.path.splitext(i)[0]
+    #     bad_imports.add(i)
+    #     bad_imports.add('core.%s' % i)
 
-    for imported in imports:
-        if isinstance(imported, list):
-            __ = imports.pop(imports.index(imported))
-            for ___ in __:
-                if ___ not in bad_imports:
-                    imports.append(___)
+    # for imported in imports:
+    #     if isinstance(imported, list):
+    #         __ = imports.pop(imports.index(imported))
+    #         for ___ in __:
+    #             if ___ not in bad_imports:
+    #                 imports.append(___)
 
-    imports = list(set(imports))
-    if isinstance(hidden, list):
-        imports.extend(hidden)
-    spec = template_spec.substitute(KEY=repr(key), BASENAME=repr(basename), PATH=repr(path), IMPORTS=imports, NAME=repr(name), ICON=repr(icon))
-    fspec = os.path.join(path, name + '.spec')
-    with open(fspec, 'w') as fp:
-        fp.write(spec)
-    process = subprocess.Popen('{} -m PyInstaller --debug --log-level DEBUG {}'.format(sys.executable, fspec), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+    # imports = list(set(imports))
+    # if isinstance(hidden, list):
+    #     imports.extend(hidden)
+    # spec = template_spec.substitute(KEY=repr(key), BASENAME=repr(basename), PATH=repr(path), IMPORTS=imports, NAME=repr(name), ICON=repr(icon))
+    # fspec = os.path.join(path, name + '.spec')
+    # with open(fspec, 'w') as fp:
+    #     fp.write(spec)
+    process = subprocess.Popen('{0} -m PyInstaller --onefile --key {1} {2}'.format(sys.executable, key, filename), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
     while True:
         try:
             line = process.stderr.readline().rstrip()
