@@ -236,7 +236,7 @@ def freeze(filename, icon=None, hidden=None):
     # fspec = os.path.join(path, name + '.spec')
     # with open(fspec, 'w') as fp:
     #     fp.write(spec)
-    process = subprocess.Popen('{0} -m PyInstaller --onefile --key {1} {2}'.format(sys.executable, key, filename), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+    process = subprocess.Popen('{0} -m PyInstaller --onefile {1}'.format(sys.executable, filename), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
     while True:
         try:
             line = process.stderr.readline().rstrip()
