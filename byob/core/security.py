@@ -377,9 +377,14 @@ def decrypt_aes(ciphertext, key):
     iv = ciphertext[:AESModeOfOperationCBC.block_size]
     ciphertext = ciphertext[len(iv):]
     cipher = AESModeOfOperationCBC(key, iv=iv)
-    output = b''.join([cipher.decrypt(ciphertext[x:x+AESModeOfOperationCBC.block_size]) for x in xrange(0, len(ciphertext), AESModeOfOperationCBC.block_size)])
+    output = b''
+    for x in xrange(0, len(ciphertext), AESModeOfOperationCBC.block_size):
+        try:
+            output += cipher.decrypt(ciphertext[x:x+AESModeOfOperationCBC.block_size])
+        except ValueError:
+            break
     return output.rstrip(chr(0).encode())
-
+    
 def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0)):
     """
     XOR-128 encryption

