@@ -495,7 +495,7 @@ class C2():
         util.display('Exiting...')
         sys.exit(0)
 
-    def help(self, info=None):
+    def help(self, cmd=None):
         """
         Show usage information
 
@@ -505,7 +505,18 @@ class C2():
         """
         column1 = 'command <arg>'
         column2 = 'description'
-        info = json.loads(info) if info else {command['usage']: command['description'] for command in self.commands.values()}
+
+        # if a valid command is specified, display detailed help for it.
+        # otherwise, display help for all commands
+        if cmd:
+            if cmd in self.commands:
+                info = {self.commands[cmd]['usage']: self.commands[cmd]['description']} 
+            else:
+                util.display("'{cmd}' is not a valid command. Type 'help' to see all commands.".format(cmd=cmd))
+                return
+        else:
+            info = {command['usage']: command['description'] for command in self.commands.values()}
+
         max_key = max(map(len, list(info.keys()) + [column1])) + 2
         max_val = max(map(len, list(info.values()) + [column2])) + 2
         util.display('\n', end=' ')
@@ -513,6 +524,7 @@ class C2():
         for key in sorted(info):
             util.display(key.ljust(max_key).center(max_key + 2) + info[key].ljust(max_val).center(max_val + 2), color=self._text_color, style=self._text_style)
         util.display("\n", end=' ')
+
 
     def display(self, info):
         """
