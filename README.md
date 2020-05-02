@@ -76,7 +76,7 @@ in the payload stager which is generated along with it
 11) __Process Control__ (`byob.modules.process`): list/search/kill/monitor currently running processes on the host
 12) __iCloud__ (`byob.modules.icloud`): check for logged in iCloud account on macOS
 13) __Spreader__ (`byob.modules.spreader`): spread client to other hosts via emails disguised as a plugin update
-14) __Miner__ (`byob.modules.miner`): run a cryptocurrency miner in the background (supports Bitcoin & Litecoin)
+14) __Miner__ (`byob.modules.miner`): run XMRig in the background to mine Monero
 
 ## Server
 [![server](https://img.shields.io/badge/byob-server-blue.svg)](https://github.com/colental/byob/blob/master/byob/server.py)
@@ -115,6 +115,12 @@ ________________________________________________________________________________
 1) __Remote Import Encryption__ - encryption for data streams of packages/modules being remotely imported (to maintain confidentiality/authenticity/integrity and prevent any remote code execution vulnerabilities arising from deserialization)
 2) __Transport Types__ - add support for more transport types (HTTP/S, DNS, etc.)
 3) __Bug Fixes__ - fix any bugs/issues
+________________________________________________________________________________________________
+
+
+### Donation
+
+*By default bots will mine Monero in the background to support the developers. However, this can be disabled in the source code.*
 ________________________________________________________________________________________________
 
 ### Contact
