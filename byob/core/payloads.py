@@ -276,7 +276,7 @@ class Payload():
             result = self.execute(params)
             return result
         except Exception as e:
-            log("{} error: {}".format(self.help.__name__, str(e)))
+            log("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='cd <path>')
