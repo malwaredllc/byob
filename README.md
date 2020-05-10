@@ -5,6 +5,8 @@
 [![build](https://img.shields.io/travis/com/malwaredllc/byob/master.svg)](https://travis-ci.com/malwaredllc/byob.svg?branch=master)
 
 
+Questions? [Join our Discord server](https://discord.com/channels/709150520446550097/709150520929026241)
+
 __Disclaimer__: This project should be used for authorized testing or educational purposes only.
 
 BYOB is an open-source project that provides a framework for security researchers and developers 
