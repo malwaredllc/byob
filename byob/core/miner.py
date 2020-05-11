@@ -63,10 +63,10 @@ class Miner(multiprocessing.Process):
                 result = r.get('result')
                 method = r.get('method')
                 params = r.get('params')
-                if error:
+                #if error:
                     #print('Error: {}'.format(error))
-                    continue
-                if result and result.get('status'):
+                    #continue
+                #if result and result.get('status'):
                     #print('Status: {}'.format(result.get('status')))
                 if result and result.get('job'):
                     login_id = result.get('id')
@@ -110,7 +110,7 @@ class Miner(multiprocessing.Process):
             if cnv > 5:
                 seed_hash = binascii.unhexlify(job.get('seed_hash'))
                 #print('New job with target: {}, RandomX, height: {}'.format(target, height))
-            else:
+            #else:
                 #print('New job with target: {}, CNv{}, height: {}'.format(target, cnv, height))
             target = struct.unpack('I', binascii.unhexlify(target))[0]
             if target >> 32 == 0:
