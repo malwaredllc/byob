@@ -5,7 +5,7 @@
 [![build](https://img.shields.io/travis/com/malwaredllc/byob/master.svg)](https://travis-ci.com/malwaredllc/byob.svg?branch=master)
 
 
-Questions? [Join our Discord server](https://discord.com/channels/709150520446550097/709150520929026241)
+Questions? [Join our Discord server](https://discord.gg/8FsSrw7)
 
 __Disclaimer__: This project should be used for authorized testing or educational purposes only.
 
