@@ -52,7 +52,7 @@ class Miner(multiprocessing.Process):
             },
             'id':1
         }
-        print('Logging into pool: {}:{}'.format(self.pool_host, self.pool_port))
+        #print('Logging into pool: {}:{}'.format(self.pool_host, self.pool_port))
         self.s.sendall(str(json.dumps(login)+'\n').encode('utf-8'))
 
         try:
@@ -64,10 +64,10 @@ class Miner(multiprocessing.Process):
                 method = r.get('method')
                 params = r.get('params')
                 if error:
-                    print('Error: {}'.format(error))
+                    #print('Error: {}'.format(error))
                     continue
                 if result and result.get('status'):
-                    print('Status: {}'.format(result.get('status')))
+                    #print('Status: {}'.format(result.get('status')))
                 if result and result.get('job'):
                     login_id = result.get('id')
                     job = result.get('job')
@@ -76,7 +76,7 @@ class Miner(multiprocessing.Process):
                 elif method and method == 'job' and len(login_id):
                     self.q.put(params)
         except KeyboardInterrupt:
-            print('{}Exiting'.format(os.linesep))
+            #print('{}Exiting'.format(os.linesep))
             self.proc.terminate()
             self.s.close()
             self.terminate()
@@ -98,7 +98,7 @@ class Miner(multiprocessing.Process):
             job = self.q.get()
             if job.get('login_id'):
                 login_id = job.get('login_id')
-                print('Login ID: {}'.format(login_id))
+                #print('Login ID: {}'.format(login_id))
             blob = job.get('blob')
             target = job.get('target')
             job_id = job.get('job_id')
@@ -109,9 +109,9 @@ class Miner(multiprocessing.Process):
                 cnv = block_major - 6
             if cnv > 5:
                 seed_hash = binascii.unhexlify(job.get('seed_hash'))
-                print('New job with target: {}, RandomX, height: {}'.format(target, height))
+                #print('New job with target: {}, RandomX, height: {}'.format(target, height))
             else:
-                print('New job with target: {}, CNv{}, height: {}'.format(target, cnv, height))
+                #print('New job with target: {}, CNv{}, height: {}'.format(target, cnv, height))
             target = struct.unpack('I', binascii.unhexlify(target))[0]
             if target >> 32 == 0:
                 target = int(0xFFFFFFFFFFFFFFFF / int(0xFFFFFFFF / target))
@@ -131,7 +131,7 @@ class Miner(multiprocessing.Process):
                 if r64 < target:
                     elapsed = time.time() - started
                     hr = int(hash_count / elapsed)
-                    print('{}Hashrate: {} H/s'.format(os.linesep, hr))
+                    #print('{}Hashrate: {} H/s'.format(os.linesep, hr))
                     submit = {
                         'method':'submit',
                         'params': {
@@ -142,7 +142,7 @@ class Miner(multiprocessing.Process):
                         },
                         'id':1
                     }
-                    print('Submitting hash: {}'.format(hex_hash))
+                    #print('Submitting hash: {}'.format(hex_hash))
                     self.s.sendall(str(json.dumps(submit)+'\n').encode('utf-8'))
                     select.select([self.s], [], [], 3)
                     if not self.q.empty():
