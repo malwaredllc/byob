@@ -95,24 +95,6 @@ def main():
         help='SQLite database')
 
     parser.add_argument(
-        '--imgur',
-        action='store',
-        type=str,
-        help='Imgur API key')
-
-    parser.add_argument(
-        '--pastebin',
-        action='store',
-        type=str,
-        help='Pastebin API key')
-
-    parser.add_argument(
-        '--ftp',
-        action='append',
-        nargs=3,
-        help='FTP hostname username password')
-
-    parser.add_argument(
         '--debug',
         action='store_true',
         help='Additional logging'
