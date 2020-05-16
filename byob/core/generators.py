@@ -191,7 +191,7 @@ def loader(host='127.0.0.1', port=1337, packages=[]):
     base_url = 'http://{}:{}'.format(host, port)
     return template_load.substitute(PACKAGES=repr(packages), BASE_URL=repr(base_url))
 
-def freeze(filename, icon=None, hidden=None):
+def freeze(filename, icon=None, hidden=None, debug=False):
     """
     Compile a Python file into a standalone executable
     binary with a built-in Python interpreter
@@ -236,7 +236,10 @@ def freeze(filename, icon=None, hidden=None):
     # fspec = os.path.join(path, name + '.spec')
     # with open(fspec, 'w') as fp:
     #     fp.write(spec)
-    process = subprocess.Popen('{0} -m PyInstaller -d imports -d bootloader --log-level DEBUG --onefile --hidden-import="pkg_resources.py2_warn" {1}'.format(sys.executable, filename), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+    if debug:
+        process = subprocess.Popen('{0} -m PyInstaller -d imports -d bootloader --log-level DEBUG --onefile --hidden-import="pkg_resources.py2_warn" {1}'.format(sys.executable, filename), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+    else:
+        process = subprocess.Popen('{0} -m PyInstaller --noconsole --onefile --hidden-import="pkg_resources.py2_warn" {1}'.format(sys.executable, filename), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
     while True:
         try:
             line = process.stderr.readline().rstrip()

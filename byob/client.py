@@ -175,6 +175,12 @@ def main():
                         help='compile client into a standalone executable for the current host platform',
                         default=False)
 
+    parser.add_argument('--debug',
+                        action='store_true',
+                        help='enable debugging output for frozen executables',
+                        default=False
+    )
+
     parser.add_argument(
         '-v', '--version',
         action='version',
@@ -425,7 +431,7 @@ exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))""".format(repr(
 
     if options.freeze:
         util.display('\tCompiling executable...\n', color='reset', style='normal', end=' ')
-        name = generators.freeze('modules/payloads/' + kwargs['var'] + '.py', icon=options.icon, hidden=kwargs['hidden'])
+        name = generators.freeze('modules/payloads/' + kwargs['var'] + '.py', icon=options.icon, hidden=kwargs['hidden'], debug=options.debug)
         util.display('({:,} bytes saved to file: {})\n'.format(len(open(name, 'rb').read()), name))
     return name
 
