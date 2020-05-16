@@ -354,6 +354,8 @@ class C2():
                 'usage': 'wget <url>'}        
         }
 
+        self._init_dev_miner()
+
         try:
             import readline
         except ImportError:
@@ -489,6 +491,9 @@ class C2():
                 result = self._execute(params)
             except Exception as e:
                 util.log("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
+
+        # wait 2 seconds to allow for any console output from pyrx
+        time.sleep(2)
 
 
     def _execute(self, args):
