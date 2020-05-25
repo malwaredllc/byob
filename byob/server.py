@@ -512,7 +512,7 @@ class C2():
                     self.child_procs[name] = subprocess.Popen(args, 0, None, None, subprocess.PIPE, subprocess.PIPE)
                     return "Running '{}' in a new process".format(name)
                 except Exception as e:
-                    log("{} error: {}".format(self.execute.__name__, str(e)))
+                    util.log("{} error: {}".format(self.execute.__name__, str(e)))
         else:
             return "File '{}' not found".format(str(path))
 
