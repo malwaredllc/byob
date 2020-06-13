@@ -1,0 +1,3 @@
+[submodule "web-gui/docker-pyinstaller"]
+	path = web-gui/docker-pyinstaller
+	url = https://github.com/cdrx/docker-pyinstaller

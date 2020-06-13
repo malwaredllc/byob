@@ -1,0 +1,169 @@
+{
+  "name": "@jcubic/jquery.terminal",
+  "version": "{{VER}}",
+  "description": "jQuery Terminal Emulator is a plugin for creating command line interpreters in your applications.",
+  "main": "js/jquery.terminal.js",
+  "typings": "js/jquery.terminal.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jcubic/jquery.terminal.git"
+  },
+  "keywords": [
+    "terminal",
+    "emulator",
+    "prompt",
+    "console",
+    "keyboard",
+    "type",
+    "rpc",
+    "input",
+    "ui"
+  ],
+  "scripts": {
+    "test": "make test"
+  },
+  "author": {
+    "name": "Jakub Jankiewicz",
+    "email": "jcubic@onet.pl",
+    "url": "https://jcubic.pl/me"
+  },
+  "contributors": [
+    {
+      "name": "Jakub T. Jankiewicz",
+      "url": "https://jcubic.pl/me"
+    },
+    {
+      "name": "Zuo Qiyang",
+      "url": "http://zuoqy.com"
+    },
+    {
+      "name": "Marcel Link",
+      "url": "https://github.com/ml1nk"
+    },
+    {
+      "name": "Sébastien Warin",
+      "url": "http://sebastien.warin.fr"
+    },
+    {
+      "name": "Christopher John Ryan",
+      "url": "https://github.com/ChrisJohnRyan"
+    },
+    {
+      "name": "Johan",
+      "url": "https://github.com/johanjordaan"
+    },
+    {
+      "name": "Florian Schäfer",
+      "url": "https://github.com/fschaefer"
+    },
+    {
+      "name": "David Refoua",
+      "url": "http://www.Refoua.me"
+    },
+    {
+      "name": "Ishan Ratnapala",
+      "url": "https://github.com/IshanRatnapala"
+    },
+    {
+      "name": "Tomasz Ducin",
+      "url": "http://ducin.it"
+    },
+    {
+      "name": "7twin",
+      "url": "https://7twin.com"
+    },
+    {
+      "name": "Abdelrahman Omran",
+      "url": "https://omranic.com"
+    },
+    {
+      "name": "Anton Vasil'ev",
+      "url": "https://github.com/avdes"
+    },
+    {
+      "name": "finlob",
+      "url": "https://github.com/finlob"
+    },
+    {
+      "name": "Hasan",
+      "url": "https://github.com/JuanPotato"
+    },
+    {
+      "name": "Hraban Luyat",
+      "url": "https://luyat.com"
+    },
+    {
+      "name": "Jarry Shaw",
+      "url": "jarryshaw.me"
+    },
+    {
+      "name": "Jon Steinich",
+      "url": "https://github.com/jsteinich"
+    },
+    {
+      "name": "Martin v. Löwis",
+      "url": "https://github.com/loewis"
+    },
+    {
+      "name": "Mateusz Paprocki",
+      "url": "https://github.com/mattpap"
+    },
+    {
+      "name": "exit1",
+      "url": "https://github.com/exit1"
+    },
+    {
+      "name": "Robert Wikman",
+      "url": "https://github.com/rbw"
+    },
+    {
+      "name": "Steve Phillips",
+      "url": "https://tryingtobeawesome.com/"
+    },
+    {
+      "name": "Yutong Luo",
+      "url": "https://yutongluo.com"
+    },
+    {
+      "name": "coderaiser",
+      "url": "http://coderaiser.github.io"
+    },
+    {
+      "name": "mrkaiser",
+      "url": "https://github.com/mrkaiser"
+    },
+    {
+      "name": "stereobooster",
+      "url": "https://stereobooster.com"
+    },
+    {
+      "name": "Steve Kirkegard",
+      "url": "https://www.linkedin.com/in/steve-kirkegard"
+    },
+    {
+      "name": "Juraj Vitko",
+      "url": "https://github.com/youurayy"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jcubic/jquery.terminal/issues"
+  },
+  "homepage": "https://terminal.jcubic.pl",
+  "dependencies": {
+    "@types/jquery": "3.3.29",
+    "jquery": "~3",
+    "prismjs": "^1.16.0",
+    "wcwidth": "^1.0.1"
+  },
+  "devDependencies": {
+    "coveralls": "^3.0.3",
+    "cssnano": "^4.1.10",
+    "emoji-datasource-twitter": "^4.1.0",
+    "eslint": "^5.16.0",
+    "jest": "^24.8.0",
+    "jsonlint": "^1.6.3",
+    "typescript": "~3.1.6",
+    "uglify-js": "^3.5.12"
+  }
+}

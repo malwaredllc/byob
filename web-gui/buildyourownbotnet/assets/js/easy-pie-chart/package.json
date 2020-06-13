@@ -1,0 +1,65 @@
+{
+  "name": "easy-pie-chart",
+  "description": "Lightweight plugin to render simple, animated and retina optimized pie charts",
+  "keywords": [
+    "pie chart",
+    "chart",
+    "circular progress",
+    "precent",
+    "progress bar"
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/mit-license.php"
+    },
+    {
+      "type": "GPL",
+      "url": "http://www.opensource.org/licenses/gpl-license.php"
+    }
+  ],
+  "version": "2.1.7",
+  "main": "dist/easypiechart.js",
+  "author": {
+    "name": "Robert Fleischmann",
+    "email": "rendro87@gmail.com",
+    "url": "http://robert-fleischmann.de"
+  },
+  "contributors": [{
+    "name": "Moritz",
+    "url": "https://github.com/mrzmyr"
+  }],
+  "scripts": {
+    "test": "grunt karma:ci"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rendro/easy-pie-chart.git"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-concat": "~0.5.1",
+    "grunt-banner": "~0.4.0",
+    "grunt-contrib-clean": "~0.6.0",
+    "grunt-contrib-uglify": "~0.9.1",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-contrib-less": "~1.0.1",
+    "grunt-contrib-jshint": "~0.11.2",
+    "karma-script-launcher": "~0.1.0",
+    "karma-firefox-launcher": "~0.1.4",
+    "karma-chrome-launcher": "~0.1.8",
+    "karma-html2js-preprocessor": "~0.1.0",
+    "karma-jasmine": "~0.3.5",
+    "karma-requirejs": "~0.2.2",
+    "karma-coffee-preprocessor": "~0.2.1",
+    "karma-phantomjs-launcher": "~0.1.4",
+    "karma": "~0.12.31",
+    "grunt-karma": "~0.10.1",
+    "grunt-umd": "~2.3.3",
+    "requirejs": "~2.1.17",
+    "grunt-readme": "~0.4.5",
+    "load-grunt-tasks": "~3.1.0",
+    "grunt-exec": "^0.4.6",
+    "spacejam": "^1.2.0"
+  }
+}

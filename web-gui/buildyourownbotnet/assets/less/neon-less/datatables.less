@@ -1,0 +1,558 @@
+.dataTables_wrapper {
+	border: 1px solid @default;
+	.border-radius(@border-radius-base);
+	
+	> div {
+		padding: @base-padding;
+		
+		label {
+			margin-bottom: 0;
+			font-weight: normal;
+			color: @p-text-color;
+		}
+		
+		&.dataTables_length,
+		&.dataTables_filter,
+		&.dataTables_info,
+		&.dataTables_processing,
+		&.dataTables_paginate {
+			color: @p-text-color;
+		}
+		
+		input[type="text"],
+		input[type="search"],
+		input[type="numbeer"] {
+			background: #fff;
+			border: 1px solid @default;
+			padding: 6px @base-padding;
+			outline: 0;
+		}
+		
+		// Filter/Search
+		&.dataTables_filter {
+			padding-top: @base-padding + 5;
+		}
+		
+		// Select2 
+		.select2-container {
+			display: inline-block;
+			min-width: 85px;
+			margin: 0 @base-padding;
+			
+			.select2-choice {
+				
+				@media screen and (max-width: @screen-sm-min){
+					padding-left: 0;
+					padding-right: @base-padding + 5;					
+				}
+			}
+		}
+	}
+	
+	// Main Table
+	> table.dataTable {
+		border-left: 0;
+		border-right: 0;
+		
+		&.no-footer {
+			border-bottom: 1px solid @default;
+		}
+		
+		.sorting_disabled {
+			padding-left: @base-padding;
+		}
+		
+		thead, tbody, tfoot {
+			
+			td, th {
+				border-right: 0;
+				border-bottom: 0;
+			}
+			
+			> tr {
+				
+				> td:first-child,
+				> th:first-child {
+					border-left: 0;
+				}
+			}
+		}
+		
+		tfoot {
+			
+			th, td {
+				border-top-color: @default;
+			}
+		}
+	}
+	
+	// Pagination
+	.dataTables_paginate {
+		border: 1px solid @default;
+		padding: 0 !important;
+		margin: @base-padding;
+		
+		.paginate_button {
+			padding: 0;
+			background-color: #fff;
+			border: 0 !important;
+			margin: 0 !important;
+			color: @p-text-color !important;
+			outline: 0;
+			.border-radius(0) !important;
+			
+			&.previous {
+				border-right: 1px solid @default !important;
+			}
+			
+			&:active {
+				.box-shadow(none) !important;
+			}
+			
+			&:hover {
+				background: #fafafa !important;
+				
+				.page-body & {
+					color: @default-text !important;
+				}
+			}
+		}
+		
+		span {
+			padding: 0;
+			margin: 0;
+			
+			.ellipsis + .paginate_button  {
+				border-left: 1px solid @default !important;
+			}
+			
+			.paginate_button {
+				margin: 0;
+				background: #fff !important;
+				border-right: 1px solid @default !important;
+				
+				&.current {
+					background: @main-active-color !important;
+					color: #fff !important;
+					
+					&:hover {
+						
+						.page-body & {
+							color: #fff !important;
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	// Info
+	.dataTables_info {
+		padding-top: @base-padding + 8 !important;
+	}
+	
+	// Buttons
+	.dt-buttons {
+		
+		.dt-button {
+			background: #fff;
+			border: 1px solid @default;
+			margin: 0;
+			font-size: @font-size-base;
+			.border-radius(0px);
+			
+			&:hover {
+				background: #fafafa;
+				border-color: @default;
+			}
+			
+			+ .dt-button {
+				border-left: 0;
+			}
+		}
+		
+		> .dt-button:first-child {
+			.border-radius( @border-radius 0 0 @border-radius );
+		}
+		
+		> .dt-button:last-child {
+			.border-radius( 0 @border-radius @border-radius 0 );
+		}
+	}
+}
+
+
+
+
+/*!
+ * DataTables + Font Awesome integration
+ * License: MIT - http://datatables.net/license
+ */
+table.dataTable thead th {
+	position: relative;
+	background-image: none !important; /* Remove the DataTables bootstrap integration styling */
+}
+
+table.dataTable thead th.sorting:after,
+table.dataTable thead th.sorting_asc:after,
+table.dataTable thead th.sorting_desc:after {
+	position: absolute;
+	top: 50% !important;
+	right: 8px;
+	display: block;
+	font-family: Entypo;
+	.transform(~"translateY(-50%)");
+}
+
+table.dataTable thead th.sorting:after {
+	content: "\e834";
+	color: #ddd;
+	font-size: 0.8em;
+	padding-top: 0.12em;
+	.transform(~"translateY(-50%) rotate(90deg)");
+}
+table.dataTable thead th.sorting_asc:after {
+	content: "\e876";
+	.transform(~"translateY(-50%) rotate(0deg)");
+}
+table.dataTable thead th.sorting_desc:after {
+	content: "\e873";
+	.transform(~"translateY(-50%) rotate(0deg)");
+}
+
+div.dataTables_scrollBody table.dataTable thead th.sorting:after,
+div.dataTables_scrollBody table.dataTable thead th.sorting_asc:after,
+div.dataTables_scrollBody table.dataTable thead th.sorting_desc:after {
+	content: "";
+}
+
+/* In Bootstrap and Foundation the padding top is a little different from the DataTables stylesheet */
+table.table thead th.sorting:after,
+table.table thead th.sorting_asc:after,
+table.table thead th.sorting_desc:after {
+	top: 8px;
+}
+
+
+/*
+ * DataTables style pagination controls
+ */
+div.dataTables_paginate a.paginate_button.first,
+div.dataTables_paginate a.paginate_button.previous {
+	position: relative;
+	padding-left: 24px;
+}
+
+div.dataTables_paginate a.paginate_button.next,
+div.dataTables_paginate a.paginate_button.last {
+	position: relative;
+	padding-right: 24px;
+}
+
+div.dataTables_paginate a.first:before, 
+div.dataTables_paginate a.previous:before {
+	position: absolute;
+	top: 50%;
+	left: 10px;
+	display: block;
+	.transform(~"translateY(-50%)");
+	font-family: Entypo;
+}
+
+div.dataTables_paginate a.next:after,
+div.dataTables_paginate a.last:after {
+	position: absolute;
+	top: 50%;
+	right: 10px;
+	display: block;
+	.transform(~"translateY(-50%)");
+	font-family: Entypo;
+}
+
+div.dataTables_paginate a.first:before {
+	content: "\e880";
+}
+
+div.dataTables_paginate a.previous:before {
+	content: "\e874";
+}
+
+div.e875 a.next:after,
+div.dataTables_paginate a.next:after {
+	content: "\e875";
+}
+
+div.dataTables_paginate a.last:after {
+	content: "\e881";
+}
+
+
+/*
+ * Bootstrap and foundation style pagination controls
+ */
+div.dataTables_paginate li.first > a,
+div.dataTables_paginate li.previous > a {
+	position: relative;
+	padding-left: 24px;
+}
+
+div.dataTables_paginate li.next > a,
+div.dataTables_paginate li.last > a {
+	position: relative;
+	padding-right: 24px;
+}
+
+div.dataTables_paginate li.first a:before, 
+div.dataTables_paginate li.previous a:before {
+	position: absolute;
+	top: 6px;
+	left: 10px;
+	display: block;
+	font-family: Entypo;
+}
+
+div.dataTables_paginate li.next a:after,
+div.dataTables_paginate li.last a:after {
+	position: absolute;
+	top: 6px;
+	right: 10px;
+	display: block;
+	font-family: Entypo;
+}
+
+div.dataTables_paginate li.first a:before {
+	content: "\f100";
+}
+
+div.dataTables_paginate li.previous a:before {
+	content: "\e874";
+}
+
+div.dataTables_paginate li.next a:after {
+	content: "\e875";
+}
+
+div.dataTables_paginate li.last a:after {
+	content: "\e881";
+}
+
+/* In Foundation we don't want the padding like in bootstrap */
+div.columns div.dataTables_paginate li.first a:before, 
+div.columns div.dataTables_paginate li.previous a:before,
+div.columns div.dataTables_paginate li.next a:after,
+div.columns div.dataTables_paginate li.last a:after {
+	top: 0;
+}
+
+
+/*
+.dataTables_wrapper-old {
+	.clearfix;
+	
+	table {
+		margin-bottom: 0;
+		
+		thead {
+			
+			tr {
+				
+				th {
+					font-weight: bold;
+					outline: none;
+					cursor: default;
+					.transall;
+				
+					&.sorting_asc:before,
+					&.sorting_desc:before {
+						display: block;
+						float: right;
+						color: @main_color;
+						font-family: @font_entypo;
+						content: '\e876';
+					}
+						
+					&.sorting_desc:before {
+						content: '\e873';
+					}
+					
+					&:active {
+						outline: none;
+					}
+					
+					&.sorting_asc, &.sorting_desc {
+						color: @main_color;
+					}
+				}
+			}
+		}
+		
+		tfoot {
+			
+			tr {
+				
+				th {
+					font-weight: bold;
+				}
+			}
+		}
+		
+		+ .row {
+			margin-bottom: 20px;
+		}
+	}
+	
+	> table:first-child {
+		.border-radius(@border_radius @border_radius 0 0);
+	}
+	
+	a {
+		cursor: pointer;
+		outline: none;
+	}
+	
+	.col-left {
+		padding-right: 0;
+	}
+	
+	.col-right {
+		padding-left: 0;
+	}
+	
+	// Table Header
+	.dataTables_length, .dataTables_filter {
+		background: #fff;
+		border: 1px solid @default;
+		border-bottom: 0;
+		padding: @base_margin/2 @padding-base-horizontal;
+		height: 58px;
+		.clearfix;
+		
+	}
+	
+	.dataTables_length {
+		border-right: 0;
+		.border-radius(@border_radius 0 0 0);
+		
+		> label {
+			white-space: nowrap;
+			margin-top: -7px;
+			
+			.select2-container {
+				display: inline-block;
+				width: auto !important;
+				min-width: 87px;
+			}
+		}
+	}
+	
+	.dataTables_filter {
+		border-left: 0;
+		padding-top: @base_padding + 3;
+		.border-radius(0 @border_radius 0 0);
+		
+		> label {
+			float: right;
+			display: block;
+			white-space: nowrap;
+			
+			input {
+				.form-control;
+				display: inline-block;
+				width: 150px;
+				margin-left: @base_padding/2;
+			}
+		}
+	}
+	
+	.select2-container {
+		display: inline-block !important;
+		margin-left: @base_padding/2;
+		margin-right: @base_padding/2;
+		@h: 25px;
+		
+		.select2-choice {
+			height: @h;
+			line-height: @h - 1;
+			
+			.select2-chosen {
+				padding-right: @base_margin/2;
+			}
+			
+			.select2-arrow {
+				width: 25px;
+			}
+		}
+	}
+	
+	
+	// Table Footer
+	.dataTables_info, .dataTables_paginate {
+		padding: @base_padding @padding-base-horizontal;
+		border: 1px solid @default;
+		border-top: 0;
+		background: darken(#fff, 2%);
+		height: 47px;
+		.clearfix;
+		
+		&.dataTables_info {
+			border-right: 0;
+			.border-radius(0 0 0 @border_radius);
+			line-height: 30px;
+		}
+		
+		&.dataTables_paginate {
+			border-left: 0;
+			.border-radius(0 0 @border_radius 0);
+			text-align: right;
+			
+			.pagination {
+				margin: 0;
+			}
+		}
+	}
+	
+	
+	// Table Tools
+	
+	.export-data {
+		position: absolute;
+		right: 250px;
+		top: 13px;
+	}
+}
+
+
+
+.page-body .datatable.table {
+	
+	tbody {
+		
+		td, th {
+			vertical-align: middle;
+		}
+	}
+}
+
+
+table {
+	
+	.replace-inputs {
+		
+		input {
+			.form-control;
+		}
+	}
+}
+
+
+
+// v1.5.2
+.dataTables_wrapper {
+	
+	.dataTable {
+		width: 100% !important;
+	}
+}*/
+
+
+/* Table Tools */

@@ -1,0 +1,99 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="robots" content="index, follow">
+        <title>aciTree selected event demo - A treeview control with jQuery</title>
+        <meta name="description" content="A demo to show you how aciTree can be used with the selected event">
+        <meta name="keywords" content="aciTree, treeview, control, tree view, javascript, jQuery">
+        <link rel="stylesheet" type="text/css" href="../css/aciTree.css" media="all">
+        <link rel="stylesheet" type="text/css" href="../css/demo.css" media="all">
+        <script type="text/javascript" src="../js/jquery.min.js"></script>
+        <script type="text/javascript" src="../js/jquery.aciPlugin.min.js"></script>
+        <script type="text/javascript" src="../js/jquery.aciTree.min.js"></script>
+    </head>
+    <body>
+
+        <div>
+
+            <p>A demo to show how you can listen for the selected event.</p>
+            <p>Note: a custom property named 'my-url' is used here to hold an extra value for each item (see the JSON).</p>
+
+            <p>See a extended demo for the selected event <a href="selected-event-extended.html" title="aciTree selected event">here</a>.</p>
+
+            <p><a href="index.html" title="aciTree usage demo">back to index</a></p>
+
+            <div id="tree" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/sample.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>Sample tree</div></div>
+
+            <div class="log">Tree Log... <a class="clear_log" style="font-size:10px" href="#" title="Clear the LOG" target="_blank">clear log</a>
+                <div></div></div>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // listen for the events
+                    $('#tree').on('acitree', function(event, api, item, eventName, options) {
+                        if (eventName == 'selected'){
+                            // do something when a item is selected
+                            var itemData = api.itemData(item);
+                            alert('You just selected the item with the ID: ' + api.getId(item) + '\n' +
+                                'also the custom property [my-url] equals: ' + itemData['my-url']);
+                        }
+                    });
+
+                    // init the tree
+                    $('#tree').aciTree({
+                        ajax: {
+                            url: '../json/sample.json'
+                        },
+                        selectable: true
+                    });
+
+                });
+
+            </script>
+
+            <script type="text/javascript">
+
+                $(function() {
+
+                    var log = $('.log div');
+
+                    // write to log
+                    $('#tree').on('acitree', function(event, api, item, eventName, options) {
+                        if (api.isItem(item)) {
+                            log.prepend('<p>' + eventName + ' [' + api.getId(item) + ']</p>');
+                        } else {
+                            log.prepend('<p>' + eventName + ' [tree]</p>');
+                        }
+                    });
+
+                    $('.clear_log').click(function() {
+                        $('.log div').html('');
+                        return false;
+                    });
+
+                });
+
+            </script>
+
+        </div>
+
+        <script type="text/javascript">
+
+            $(function() {
+
+                $('script.code').each(function() {
+                    $(this).before('<div style="clear:both;margin:10px 0 10px 0"><pre style="padding:20px;border:1px dashed #000;background:#f6f6f6;display:inline-block;"></pre></div>');
+                    $(this).prev('div').find('pre').text($(this).html());
+                });
+
+            });
+
+        </script>
+
+    </body>
+</html>

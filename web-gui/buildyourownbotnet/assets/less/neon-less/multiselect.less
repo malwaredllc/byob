@@ -1,0 +1,71 @@
+.ms-container {
+	.clearfix;
+	
+	.ms-selectable,
+	.ms-selection {
+		display: block;
+		background: @hover_bg;
+	}
+	
+	// Left side
+	.ms-selectable {
+		position: relative;
+		float: left;
+		margin-right: 25px;
+		
+		&:after {
+			content: '\e120';
+			font-family: "Glyphicons Halflings";
+			display: block;
+			position: absolute;
+			right: -19px;
+			color: @main_color;
+			font-size: 15px;
+			top: 50%;
+			margin-top: -8px;
+		}
+	}
+	
+	// Right side
+	.ms-selection {
+		float: left;
+	}
+	
+	
+	// List
+	.ms-list {
+		display: block;
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		width: 150px;
+		height: 150px;
+		outline: none;
+		border: 1px solid @default;
+		overflow: auto;
+		.custom-scrollbar();
+		.user-select(none);
+		
+		> li {
+			border-bottom: 1px solid @default;
+			.transall;
+			
+			&:hover {
+				background: @main_color;
+				color: #fff;
+			}
+			
+			span {
+				display: block;
+				display: block;
+				padding: 4px 8px;
+				cursor: pointer;
+				.text-overflow();
+			}
+			
+			&:last-child {
+				border-bottom: 0;
+			}
+		}
+	}
+}

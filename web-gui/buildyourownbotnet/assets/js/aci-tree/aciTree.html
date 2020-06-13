@@ -1,0 +1,1832 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="robots" content="index, follow">
+        <title>aciTree demo - A treeview control with jQuery</title>
+        <meta name="description" content="A demo to show you how aciTree can be used, check the plugin page to see all the functions exposed by the API">
+        <meta name="keywords" content="aciTree, treeview, control, tree view, javascript, jQuery">
+        <link rel="stylesheet" type="text/css" href="css/aciTree.css" media="all">
+        <link rel="stylesheet" type="text/css" href="css/demo.css" media="all">
+        <script type="text/javascript" src="js/jquery.min.js"></script>
+        <script type="text/javascript" src="js/jquery.aciPlugin.min.js"></script>
+        <script type="text/javascript" src="js/jquery.aciSortable.min.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.dom.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.core.js"></script>
+        <!--<script type="text/javascript" src="js/jquery.aciTree.aria.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.en_EN.js"></script>-->
+        <script type="text/javascript" src="js/jquery.aciTree.utils.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.selectable.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.checkbox.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.radio.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.column.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.editable.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.sortable.js"></script>
+        <!--<script type="text/javascript" src="js/jquery.aciTree.persist.js"></script>
+        <script type="text/javascript" src="js/jstorage.min.js"></script>-->
+    </head>
+    <body>
+
+        <div>
+
+            <p>Here you have a simple implementation of a file system tree with the most features available to be changed at the runtime from the interface.
+                You can find a simple PHP implementation in the download but any server-side language can be used because aciTree needs the data in JSON
+                format and it's using AJAX to load the children of a inner node (once they are needed).</p>
+
+            <p>Note: I recommend checking the code from the other demos as this page can be complex for someone new to aciTree. Also, do not forget to check the API docs
+                before you try using the methods and also check online on the plugin page for extra info (like init options and using the events).</p>
+
+            <p><b>Start <a href="sample/index.html" target="_blank" title="aciTree usage samples"><span style="color:red">here</span></a> first if you are new to aciTree</b> (check <b>using the API</b> demos for a detailed introduction to aciTree)</p>
+
+            <p>See a checkbox tree demo <a href="aciTree-checkbox.html" target="_blank" title="aciTree with checkboxes">here</a></p>
+            <p>See a radio-button tree demo <a href="aciTree-radio.html" target="_blank" title="aciTree with radio-buttons">here</a></p>
+            <p>See a multiple column tree demo <a href="/demo/aciTree.html" target="_blank" title="aciTree with columns">here</a></p>
+            <p>See how you can change the column width and toggle columns <a href="/demo/aciTree-column-width.html" target="_blank" title="aciTree with column width">here</a></p>
+            <p>Save/restore items state (open/closed/selected) using local storage demo <a href="/demo/aciTree_persist.html" target="_blank" title="aciTree with local storage">here</a></p>
+            <p>Select/open items based on the variables stored in the URL fragment demo <a href="/demo/aciTree_hash.html" target="_blank" title="aciTree with aciFragment">here</a></p>
+            <p>See how you can use the drag & drop events to sort the tree items and limit the draggable items / drop targets <a href="aciTree-drag-drop.html" target="_blank" title="aciTree drag & drop">here</a></p>
+            <p>See how you can add a tooltip for each tree item <a href="/demo/aciTree-tooltip.html" target="_blank" title="aciTree tooltips">here</a></p>
+            <p>See how you can use a custom tree data structure <a href="/demo/aciTree-custom-data.html" target="_blank" title="aciTree custom data">here</a></p>
+            <p>(<span style="color:red">new</span>) See a demo with a custom/multiple data sources <a href="/demo/aciTree-data-source.html" target="_blank" title="aciTree full size">here</a></p>
+            <p>See how you can use a custom filter/search <a href="/demo/aciTree-filter-search.html" target="_blank" title="aciTree filter & search">here</a></p>
+            <p>See a demo with a full-sized tree container <a href="/demo/aciTree-full-size.html" target="_blank" title="aciTree full size">here</a></p>
+
+            <p>Note: in the demo below - the node loading it's made with a delay so you can see the loading animation.
+                If you want you can remove the delay from the <i>PHP</i> script ...</p>
+
+            <p id="info">Hover over a tree item to show his info (using the aciTree API) ...</p>
+
+            <div id="tree" class="aciTree"><div class="eyes"></div><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/php/aciTree.php?branch=" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>Anything here or just remove</div></div>
+
+            <div class="form">
+                <form action="" enctype="application/x-www-form-urlencoded" method="post" target="_self">
+                    <table cellspacing="0" cellpadding="10" border="0"><tr><td width="300">
+                                <p>Filter: <input type="text" id="filter" value=""> (<span style="color:blue">note</span>)</p>
+                                <p>Use Animations: <label><input type="radio" name="animate" value="1"> Yes</label>
+                                    <label><input type="radio" name="animate" value="0"> No</label></p>
+                                <p>Expand All: <label><input type="radio" name="expand" value="1"> Yes</label>
+                                    <label><input type="radio" name="expand" value="0"> No</label></p>
+                                <p>Collapse All: <label><input type="radio" name="collapse" value="1"> Yes</label>
+                                    <label><input type="radio" name="collapse" value="0"> No</label></p>
+                                <p>Unique on Open: <label><input type="radio" name="unique" value="1"> Yes</label>
+                                    <label><input type="radio" name="unique" value="0"> No</label></p>
+                                <p>Empty on Close: <label><input type="radio" name="empty" value="1"> Yes</label>
+                                    <label><input type="radio" name="empty" value="0"> No</label></p>
+                                <p>Selectable: <label><input type="radio" name="selectable" value="1"> Yes</label>
+                                    <label><input type="radio" name="selectable" value="0"> No</label></p>
+                                <p><span style="color:red">(new) </span>Multi-Selectable <label><input type="radio" name="multiSelectable" value="1"> Yes</label>
+                                    <label><input type="radio" name="multiSelectable" value="0"> No</label></p>
+                                <p>Full Row: <label><input type="radio" name="fullRow" value="1"> Yes</label>
+                                    <label><input type="radio" name="fullRow" value="0"> No</label></p>
+                                <p>Text Selection: <label><input type="radio" name="textSelection" value="1"> Enabled</label>
+                                    <label><input type="radio" name="textSelection" value="0"> Disabled</label></p>
+                                <p>Sortable: <label><input type="radio" name="sortable" value="1"> Enabled</label>
+                                    <label><input type="radio" name="sortable" value="0"> Disabled</label></p>
+
+                                <p>Checkboxes: <label><input type="radio" name="checkbox" value="1"> Yes</label>
+                                    <label><input type="radio" name="checkbox" value="0"> No</label></p>
+                                <p>Chain Checkboxes: <label><input type="radio" name="checkboxChain" value="true"> Yes</label>
+                                    <label><input type="radio" name="checkboxChain" value="-1"> Update Parents</label>
+                                    <label><input type="radio" name="checkboxChain" value="1"> Update Children </label>
+                                    <label><input type="radio" name="checkboxChain" value="false"> No</label></p>
+                                <p>Checkbox Break: <label><input type="radio" name="checkboxBreak" value="1"> Yes</label>
+                                    <label><input type="radio" name="checkboxBreak" value="0"> No</label></p>
+                                <p>Checkbox-Only Click: <label><input type="radio" name="checkboxClick" value="1"> Yes</label>
+                                    <label><input type="radio" name="checkboxClick" value="0"> No</label></p>
+                                <p>Radio Buttons: <label><input type="radio" name="radio" value="1"> Yes</label>
+                                    <label><input type="radio" name="radio" value="0"> No</label></p>
+                                <p>Chain Radio Buttons: <label><input type="radio" name="radioChain" value="1"> Yes</label>
+                                    <label><input type="radio" name="radioChain" value="0"> No</label></p>
+                                <p>Radio Button Break: <label><input type="radio" name="radioBreak" value="1"> Yes</label>
+                                    <label><input type="radio" name="radioBreak" value="0"> No</label></p>
+                                <p>Radio-Only Click: <label><input type="radio" name="radioClick" value="1"> Yes</label>
+                                    <label><input type="radio" name="radioClick" value="0"> No</label></p>
+
+                                <p>Editable: <label><input type="radio" name="editable" value="1"> Yes</label>
+                                    <label><input type="radio" name="editable" value="0"> No</label></p>
+
+                                <p><input id="destroy" type="button" value="Destroy">
+                                    <input id="init" type="button" value="Init with AJAX"></p>
+                                <p><input id="init_data" type="button" value="Init from Data">
+                                    <input id="init_huge" type="button" value="Init Huge">
+                                    <input id="clear_log" type="button" value="Clear Log"></p>
+                                <p id="selected">Select a Tree item or the Tree itself (<span style="color:red">note</span>)!</p>
+                                <p>Mode: <label><input type="radio" name="addMode" value="before"> Add Before</label>
+                                    <label><input type="radio" name="addMode" value="after" checked="checked"> Add After</label></p>
+                                <p><input id="addFile" type="button" value="Add File">
+                                    <input id="addFolder" type="button" value="Add Folder">
+                                    <input id="addChilds" type="button" value="Add Children"></p>
+                                <p><input id="unload" type="button" value="Unload Folder/Tree">
+                                    <input id="load" type="button" value="Load Folder/Tree"></p>
+                                <p><input id="setFile" type="button" value="Set as File">
+                                    <input id="setFolder" type="button" value="Set as Folder">
+                                    <input id="remove" type="button" value="Remove"></p>
+                            </td><td>
+                                <p><span style="color:red">(new) </span>Size: <label><input type="radio" name="esize" value="small"> Smaller</label>
+                                    <label><input type="radio" name="esize" value="big"> Bigger</label></p>
+                                <p><span style="color:red">(new) </span>Node Button: <label><input type="radio" name="nodebtn" value="square"> Square</label>
+                                    <label><input type="radio" name="nodebtn" value="arrow"> Arrow</label></p>
+                                <p><span style="color:green">(update) </span>Show Branches: <label><input type="radio" name="branches" value="1"> Yes</label>
+                                    <label><input type="radio" name="branches" value="0"> No</label></p>
+
+                                <p>Direction: <label><input type="radio" name="direction" value="1"> LTR</label>
+                                    <label><input type="radio" name="direction" value="0"> RTL</label></p>
+                                <p>Odd/Even Rows: <label><input type="radio" name="oddeven" value="1"> Yes</label>
+                                    <label><input type="radio" name="oddeven" value="0"> No</label></p>
+                                <p>Set Icon: <select id="setIcon"><option value="">-- choose --</option>
+                                        <option value="file">File</option><option value="folder">Folder</option><option value="remove">Remove</option></select></p>
+
+                                <p>Set Checkbox: <select id="setCheckbox"><option value="">-- choose --</option>
+                                        <option value="yes">Yes</option><option value="No">No</option></select></p>
+                                <p>Set Radio: <select id="setRadio"><option value="">-- choose --</option>
+                                        <option value="yes">Yes</option><option value="No">No</option></select></p>
+
+                                <p>Item: <span style="color:red">(new) </span><input id="disable" type="button" value="Disable">
+                                    <input id="enable" type="button" value="Enable">
+                                    (<span style="color:blue">note</span>) <input id="hide" type="button" value="Hide"> <input id="show" type="button" value="Show">
+                                    <input id="hideshow" type="button" value="Toggle"></p>
+                                <p>Node: <input id="open" type="button" value="Open"> <input id="close" type="button" value="Close">
+                                    <input id="toggle" type="button" value="Toggle"></p>
+                                <p>Burn some CPU: <input id="addFile10k" type="button" value="Add 10k Files">
+                                    <input id="addFolder10k" type="button" value="Add 10k Folders"></p>
+                                <p>Using 'branch': <input id="branch_open" type="button" value="Open All"> <input id="branch_close" type="button" value="Close All">
+                                    <input id="branch_toggle" type="button" value="Toggle All"></p>
+                                <p>Search ID: <input type="text" name="item_id" value="/Item 1/document 1.txt" size="23"><input type="button" id="item_id_btn" value="@">
+                                    <input id="set_visible" type="button" value="Set Visible"></p>
+                                <p>Search Params: <label><input type="checkbox" name="search_load" value="1"> Use Load</label></p>
+                                <p><label>Item Content:</label>
+                                    <textarea name="item_cnt">a long item text haha this is a looooong text to be set for a item<br>with a brake...<br>more lines</textarea>
+                                    <input id="set_cnt" type="button" value="Set Content"></p>
+                                <p>Move Item: <input id="move_up" type="button" value="Up"> <input id="move_down" type="button" value="Down">
+                                    <input id="move_first" type="button" value="First Position"> <input id="move_last" type="button" value="Last Position"></p>
+
+                                <p>Move Before/After/As Child (by ID): <input type="text" name="move" value="/document a.txt" size="18"><input type="button" id="move_btn" value="@"> <br>
+                                    <input id="move_before" type="button" value="Move Before"> <input id="move_after" type="button" value="Move After">
+                                    <input id="move_child" type="button" value="As Child"></p>
+
+                                <p>Set Index: <input type="text" name="index" value="0" size="23">
+                                    <input id="set_index" type="button" value="Set Index"></p>
+                                <p>Swap Item (by ID): <input type="text" name="swap1" value="/document b.txt"><input type="button" id="swap1_btn" value="@"> <br> with
+                                    <input type="text" name="swap2" value="/Item 3"><input type="button" id="swap2_btn" value="@"> <input id="swap" type="button" value="Swap"></p>
+
+                                <p>Cancel UI Tasks : <label><input type="radio" name="cancel_ui" value="1"> Yes</label>
+                                    <label><input type="radio" name="cancel_ui" value="0"> No</label></p>
+                                <p>Cancel User-Defined Tasks : <label><input type="radio" name="cancel_user" value="1"> Yes</label>
+                                    <label><input type="radio" name="cancel_user" value="0"> No</label></p>
+
+                                <p>Serialize (see the log):
+                                    <input id="serialize_checkbox" type="button" value="Checkbox">
+                                    <input id="serialize_radio" type="button" value="Radio">
+                                    <input id="serialize_json" type="button" value="Item Data"></p>
+
+                            </td></tr></table>
+                </form>
+            </div>
+
+            <div class="log">Tree Log... <a class="clear_log" style="font-size:10px" href="#" title="Clear the LOG" target="_blank">clear log</a>
+                <div></div></div>
+
+            <div style="float:left"><p>Test JavaScript code performance:<br>(see the log for output)</p>
+                <textarea class="testarea" style="width:315px;height:200px">alert('children: ' + treeApi.children(null, true, true).length);</textarea>
+                <p><input type="button" name="testarea" value="Test"></p></div>
+
+            <p style="clear:both"><br><span style="color:red">Note</span>: the selected pink item does not have anything to do with the <i>selectable</i> option, it's there just to be able to 'select' the
+                entire tree (not only a item).<br>All item based functions are made - in this demo - to run against the pink selected item (and not the <i>real</i> selected item - when/if the
+                selectable option is used).</p>
+
+            <p><span style="color:blue">Note</span>: for this demo I have changed the default style from `display:none` for `.aciTreeHidden`
+                so you can have a chance to show again a hidden item. The `hidden` items will have a darker background.</p>
+
+        </div>
+
+        <script language="javascript" type="text/javascript">
+
+            $(function() {
+
+                // Tree API
+                var treeApi;
+
+                // if we want to init without one initial AJAX request :)
+                var rootData = [{
+                        id: "\/Item 1",
+                        label: "Item 1 - From rootData",
+                        branch: [],
+                        inode: true,
+                        open: false,
+                        icon: "folder",
+                        random: 34
+                    },
+                    {
+                        id: "\/Item 2",
+                        label: "Item 2 - very long item text<br>with a brake",
+                        branch: [],
+                        inode: true,
+                        open: false,
+                        icon: "folder",
+                        random: 9
+                    },
+                    {
+                        id: "\/Item 3",
+                        label: "Item 3",
+                        branch: [],
+                        inode: false,
+                        open: false,
+                        icon: "folder",
+                        random: 26
+                    },
+                    {
+                        id: "\/Item 4",
+                        label: "Item 4",
+                        branch: [],
+                        inode: false,
+                        open: false,
+                        icon: "folder",
+                        random: 71
+                    },
+                    {
+                        id: "\/Item 5",
+                        label: "Item 5",
+                        branch: [],
+                        inode: true,
+                        open: false,
+                        icon: "folder",
+                        random: 93
+                    },
+                    {
+                        id: "\/Item 6",
+                        label: "Item 6",
+                        branch: [],
+                        inode: false,
+                        open: false,
+                        icon: "folder",
+                        random: 14
+                    },
+                    {
+                        id: "\/Item 7",
+                        label: "Item 7",
+                        branch: [],
+                        inode: true,
+                        open: false,
+                        icon: "folder",
+                        random: 49
+                    },
+                    {
+                        id: "\/Item 8",
+                        label: "Item 8",
+                        branch: [],
+                        inode: true,
+                        open: false,
+                        icon: "folder",
+                        random: 99
+                    },
+                    {
+                        id: "\/document a.txt",
+                        label: "document a.txt",
+                        branch: [],
+                        inode: false,
+                        open: false,
+                        icon: "file",
+                        random: 86
+                    },
+                    {
+                        id: "\/document b.txt",
+                        label: "document b.txt",
+                        branch: [],
+                        inode: false,
+                        open: false,
+                        icon: "file",
+                        random: 76
+                    },
+                    {
+                        id: "\/document c.txt",
+                        label: "document c.txt",
+                        branch: [],
+                        inode: false,
+                        open: false,
+                        icon: "file",
+                        random: 11
+                    }];
+
+                // the tree container
+                var theTree = $('#tree');
+
+                // init the Tree
+                function initTree(type, ui, skip) {
+                    treeApi = theTree.aciTree({
+                        autoInit: false,
+                        ajax: {
+                            url: (type == 'huge') ? 'php/hugeTree.php?branch=' : 'php/aciTree.php?branch='/*,
+                             // our custom data processing function (see jQuery.ajax)
+                             converters: {
+                             'text json': function(data) {
+                             var json = $.parseJSON(data);
+                             var recursive = function(item) {
+                             item.inode = item.isFolder;
+                             item.branch = item.childs;
+                             for (var i in item.branch) {
+                             recursive(item.branch[i]);
+                             }
+                             };
+                             for (var i in json) {
+                             recursive(json[i]);
+                             }
+                             return json;
+                             }
+                             }*/
+                        },
+                        rootData: (type == 'data') ? rootData : null,
+                        itemHook: function(parent, item, itemData, level) {
+                            // a custom item implementation to show the tree level
+                            this.setLabel(item, {
+                                label: itemData.label + ' (' + level + ')'
+                            });
+                        },
+                        persist: 'mytree'/*,
+                         columnData: [{
+                         width: 80,
+                         props: 'c1',
+                         value: 'column #1'
+                         }, {
+                         width:80,
+                         props: 'c2',
+                         value: 'column #2'
+                         }]*/
+                    }).aciTree('api');
+                    treeApi.init({
+                        uid: (ui == 'ui') ? 'ui' : 'user-defined',
+                        success: function() {
+                            if (!skip) {
+                                alert('The treeview control was init !');
+                            }
+                        },
+                        fail: function() {
+                            alert('Failed to init the treeview control !');
+                        }
+                    });
+                }
+
+                var log = $('.log div');
+
+                function alert(message) {
+                    log.prepend('<p style="color:red">' + message + '</p>');
+                }
+
+                var eye = $('.eyes'), eyes = 0;
+
+                // a little animation :)
+                function showEyes() {
+                    if (eyes > 2) {
+                        eyes = 0;
+                    }
+                    eye.css('background-position', '0 -' + (eyes * 48) + 'px');
+                }
+
+                theTree.scroll(function() {
+                    eye.css('top', $(this).scrollTop() + 'px');
+                });
+
+                var cancelUi = false, cancelUser = false;
+
+                // show tree events
+                theTree.on('acitree', function(event, api, item, eventName, options) {
+                    if (options.uid == 'skip-log') {
+                        return;
+                    }
+                    if (eventName.search(/^before/) != -1) {
+                        // cancel if requested
+                        if ((cancelUi && (options.uid == 'ui')) || (cancelUser && (options.uid != 'ui'))) {
+                            if (item) {
+                                log.prepend('<p>(canceled) ' + eventName + ' [' + api.getId(item) + '] [' + options.uid + ']</p>');
+                            } else {
+                                log.prepend('<p>(canceled) ' + eventName + ' [tree] [' + options.uid + ']</p>');
+                            }
+                            return false;
+                        }
+                    }
+                    if (api.isLocked()) {
+                        // prevent write to log on init/destroy
+                        return;
+                    }
+                    switch (eventName) {
+                        case 'idset':
+                            log.prepend('<p>' + eventName + ' [' + api.getId(item) + '] old ID: [' + options.oldId + '] [' + options.uid + ']</p>');
+                            break;
+                        case 'labelset':
+                            log.prepend('<p>' + eventName + ' [' + api.getId(item) + '] old label: [' + options.oldLabel + '] [' + options.uid + ']</p>');
+                            break;
+                        case 'swapped':
+                            var item1 = options.item1;
+                            var item2 = options.item2;
+                            log.prepend('<p>' + eventName + ' [' + api.getId(item1) + '] <=> [' + api.getId(item2) + '] [' + options.uid + ']</p>');
+                            if (!api.isVisible(item1) && !api.isVisible(item2)) {
+                                // make one item visible (check by index, not a problem if not with the same parent ...
+                                if (api.getIndex(item1) < api.getIndex(item2)) {
+                                    api.setVisible(item1);
+                                } else {
+                                    api.setVisible(item2);
+                                }
+                            }
+                            break;
+                        case 'indexset':
+                            log.prepend('<p>' + eventName + ' [' + api.getId(item) + '] old index: [' + options.oldIndex + '] [' + options.uid + ']</p>');
+                            if (!api.isVisible(item)) {
+                                // make it visible ;)
+                                api.setVisible(item);
+                            }
+                            break;
+                        case 'filtered':
+                            log.prepend('<p>' + eventName + ' [' + options.search + '] first match: [' + api.getId(options.first) + '] [' + options.uid + ']</p>');
+                            break;
+                        case 'sorted':
+                            log.prepend('<p>' + eventName + ' [' + api.getId(item) + '] moved inside [' + api.getId(api.parent(item)) + ']</p>');
+                            break;
+                        default:
+                            if (item) {
+                                log.prepend('<p>' + eventName + ' [' + api.getId(item) + '] [' + options.uid + ']</p>');
+                            } else {
+                                log.prepend('<p>' + eventName + ' [tree] [' + options.uid + ']</p>');
+                            }
+                            if (eventName == 'toggled') {
+                                eyes++;
+                                showEyes();
+                            }
+                    }
+                });
+
+                // do it ;-)
+                initTree(null, 'ui', true);
+
+                // a little debug info tool :)
+                function debug(item) {
+                    var info = '';
+                    info += 'getId: [' + treeApi.getId(item) + ']\n';
+                    info += 'getLabel: "' + treeApi.getLabel(item) + '"\n';
+                    info += 'level: ' + treeApi.level(item) + '\n';
+                    info += 'getIndex: ' + treeApi.getIndex(item) + '\n';
+                    info += 'isLeaf: ' + treeApi.isLeaf(item) + '\n';
+                    info += 'isInode: ' + treeApi.isInode(item) + ' (open: ' + treeApi.isOpen(item) + ')\n';
+                    info += 'wasLoad: ' + treeApi.wasLoad(item) + '\n';
+                    info += 'hasParent: ' + treeApi.hasParent(item) + '\n';
+                    info += 'parent: [' + treeApi.getId(treeApi.parent(item)) + ']\n';
+                    info += 'path: [root] ';
+                    treeApi.path(item).each(function() {
+                        info += '[' + treeApi.getId($(this)) + '] ';
+                    });
+                    info += '\n';
+                    info += 'hasSiblings: ' + treeApi.hasSiblings(item) + ' count: #' + treeApi.siblings(item).length + '\n';
+                    info += 'hasPrev: ' + treeApi.hasPrev(item) + ' [' + treeApi.getId(treeApi.prev(item)) + ']\n';
+                    info += 'hasNext: ' + treeApi.hasNext(item) + ' [' + treeApi.getId(treeApi.next(item)) + ']\n';
+                    var children = treeApi.children(item);
+                    info += 'hasChildren: ' + treeApi.hasChildren(item) + ' count: #' + children.length +
+                            ' inodes: #' + treeApi.inodes(children).length + ' (open: #' + treeApi.inodes(children, true).length +
+                            ' closed: #' + treeApi.inodes(children, false).length + ') leaves: #' + treeApi.leaves(children).length + '\n';
+                    info += 'first [' + treeApi.getId(treeApi.first(item)) + '] isFirst: ' + treeApi.isFirst(item) + '\n';
+                    info += 'last [' + treeApi.getId(treeApi.last(item)) + '] isLast: ' + treeApi.isLast(item) + '\n';
+                    // the next are commented because of the low performance
+                    //var allChildren = treeApi.children(null, true);
+                    info += 'children: #' + children.length + /*' (total: #' + allChildren.length + ')' +*/ '\n';
+                    /*info += 'visible: #' + treeApi.visible(children).length + ' in view: #' + treeApi.visible(children, true).length +
+                     ' (total: #' + treeApi.visible(allChildren).length + ' total in view: #' + treeApi.visible(allChildren, true).length + ')\n';*/
+                    return info;
+                }
+
+                // keep the last element
+                var _g_tree = null;
+
+                // ensure info changes
+                window.setInterval(function() {
+                    _g_tree = null;
+                }, 500);
+
+                // output some info
+                function getDebug(element) {
+                    if (_g_tree == element) {
+                        return;
+                    }
+                    _g_tree = element;
+                    var item = treeApi.itemFrom(element);
+                    if (!item.length) {
+                        item = null;
+                    }
+                    $('#info').html(debug(item).replace(/\n/g, '<br>'));
+                }
+
+                // refresh on item 'mouseover'
+                theTree.on('mouseover', '.aciTreeLi', function(e) {
+                    getDebug(e.target);
+                    return false;
+                }).bind('mouseover', function(e) {
+                    getDebug(e.target);
+                });
+
+                // get Tree init options
+                var options = theTree.aciTree('options');
+
+                // get string value from BOOL/numeric
+                function valueBoolNum(mixed) {
+                    return (mixed === true) ? 'true' : ((mixed === false) ? 'false' : mixed);
+                }
+
+                // get BOOL/numeric value from string
+                function boolNumValue(string) {
+                    return (string == 'true') ? true : ((string == 'false') ? false : parseInt(string));
+                }
+
+                // init FORM based on options
+                $('[name=esize][value=' + (theTree.hasClass('aciTreeBig') ? 'big' : 'small') + ']').prop('checked', true);
+                $('[name=nodebtn][value=' + (theTree.hasClass('aciTreeArrow') ? 'arrow' : 'square') + ']').prop('checked', true);
+                $('[name=branches][value=' + (theTree.hasClass('aciTreeNoBranches') ? 0 : 1) + ']').prop('checked', true);
+                $('[name=animate][value=' + (options.show ? 1 : 0) + ']').prop('checked', true);
+                $('[name=expand][value=' + (options.expand ? 1 : 0) + ']').prop('checked', true);
+                $('[name=collapse][value=' + (options.collapse ? 1 : 0) + ']').prop('checked', true);
+                $('[name=empty][value=' + (options.empty ? 1 : 0) + ']').prop('checked', true);
+                $('[name=unique][value=' + (options.unique ? 1 : 0) + ']').prop('checked', true);
+                $('[name=selectable][value=' + (options.selectable ? 1 : 0) + ']').prop('checked', true);
+                $('[name=fullRow][value=' + (options.fullRow ? 1 : 0) + ']').prop('checked', true);
+                $('[name=textSelection][value=' + (options.textSelection ? 1 : 0) + ']').prop('checked', true);
+                $('[name=sortable][value=' + (options.sortable ? 1 : 0) + ']').prop('checked', true);
+                $('[name=multiSelectable][value=' + (options.multiSelectable ? 1 : 0) + ']').prop('checked', true);
+
+                $('[name=checkbox][value=' + (options.checkbox ? 1 : 0) + ']').prop('checked', true);
+                $('[name=radio][value=' + (options.radio ? 1 : 0) + ']').prop('checked', true);
+                $('[name=checkboxChain][value=' + valueBoolNum(options.checkboxChain) + ']').prop('checked', true);
+                $('[name=checkboxBreak][value=' + (options.checkboxBreak ? 1 : 0) + ']').prop('checked', true);
+                $('[name=checkboxClick][value=' + (options.checkboxClick ? 1 : 0) + ']').prop('checked', true);
+                $('[name=radioChain][value=' + (options.radioChain ? 1 : 0) + ']').prop('checked', true);
+                $('[name=radioBreak][value=' + (options.radioBreak ? 1 : 0) + ']').prop('checked', true);
+                $('[name=radioClick][value=' + (options.radioClick ? 1 : 0) + ']').prop('checked', true);
+
+                $('#setCheckbox').attr('disabled', !options.checkbox);
+                $('#setRadio').attr('disabled', !options.radio);
+                $('[name=direction][value=' + ((theTree.attr('dir') == 'rtl') ? 0 : 1) + ']').prop('checked', true);
+                $('[name=oddeven][value=' + (theTree.hasClass('aciTreeColors') ? 1 : 0) + ']').prop('checked', true);
+                $('[name=editable][value=' + (options.editable ? 1 : 0) + ']').prop('checked', true);
+
+                $('[name=cancel_ui][value=0]').prop('checked', true);
+                $('[name=cancel_user][value=0]').prop('checked', true);
+
+                // filter the tree
+
+                $('#filter').keyup(function() {
+                    treeApi.filter(null, {
+                        search: $(this).val()
+                    });
+                });
+
+                // update options
+
+                $('[name=animate]').click(function() {
+                    if ($(this).val() == 1) {
+                        treeApi.option('show', {
+                            props: {
+                                'height': 'show'
+                            },
+                            duration: 'medium',
+                            easing: 'linear'
+                        });
+                        treeApi.option('hide', {
+                            props: {
+                                'height': 'hide'
+                            },
+                            duration: 'medium',
+                            easing: 'linear'
+                        });
+                        treeApi.option('view', {
+                            duration: 'medium',
+                            easing: 'linear'
+                        });
+                    } else {
+                        treeApi.option('show', null);
+                        treeApi.option('hide', null);
+                        treeApi.option('view', null);
+                    }
+                });
+
+                $('[name=esize]').click(function() {
+                    theTree.toggleClass('aciTreeBig', $(this).val() == 'big');
+                });
+
+                $('[name=nodebtn]').click(function() {
+                    theTree.toggleClass('aciTreeArrow', $(this).val() == 'arrow');
+                });
+
+                $('[name=branches]').click(function() {
+                    theTree.toggleClass('aciTreeNoBranches', $(this).val() == 0);
+                });
+
+                $('[name=checkbox]').click(function() {
+                    $('#setCheckbox').attr('disabled', $(this).val() != 1);
+                });
+
+                $('[name=radio]').click(function() {
+                    $('#setRadio').attr('disabled', $(this).val() != 1);
+                });
+
+                $('[name=direction]').click(function() {
+                    theTree.attr('dir', ($(this).val() == 1) ? 'ltr' : 'rtl');
+                });
+
+                $('[name=oddeven]').click(function() {
+                    theTree.toggleClass('aciTreeColors', $(this).val() == 1);
+                });
+
+                $('[name=expand],[name=collapse],[name=empty],[name=unique],[name=selectable],[name=fullRow],[name=textSelection],[name=sortable],[name=checkbox],[name=radio],[name=checkboxBreak],[name=radioChain],[name=radioBreak],[name=editable],[name=checkboxClick],[name=radioClick],[name=multiSelectable]').click(function() {
+                    var option = $(this).prop('name');
+                    theTree.aciTree('option', option, $(this).val() == 1);
+                    if (option == 'fullRow') {
+                        theTree.toggleClass('aciTreeFullRow', $(this).val() == 1);
+                    }
+                });
+
+                $('[name=checkboxChain]').click(function() {
+                    var option = $(this).prop('name');
+                    theTree.aciTree('option', option, boolNumValue($(this).val()));
+                    $('[name=checkboxBreak]').prop('disabled', $(this).val() == 'false');
+                });
+
+                $('[name=radioChain]').click(function() {
+                    $('[name=radioBreak]').prop('disabled', $(this).val() == '0');
+                });
+
+                $('[name=cancel_ui]').click(function() {
+                    cancelUi = $(this).val() == 1;
+                });
+
+                $('[name=cancel_user]').click(function() {
+                    cancelUser = $(this).val() == 1;
+                });
+
+                // FORM button functions
+
+                // update init options based on inputs
+                function updateOptions() {
+                    $('[name=expand]:checked,[name=collapse]:checked,[name=empty]:checked,[name=unique]:checked,[name=selectable]:checked,[name=fullRow]:checked,[name=textSelection]:checked,[name=sortable]:checked,[name=checkbox]:checked,[name=radio]:checked,[name=checkboxBreak]:checked,[name=radioChain]:checked,[name=radioBreak]:checked,[name=editable]:checked,[name=checkboxClick]:checked,[name=radioClick]:checked,[name=multiSelectable]:checked').each(function() {
+                        var option = $(this).prop('name');
+                        $.fn.aciTree.defaults[option] = $(this).val() == 1;
+                    });
+                    $('[name=checkboxChain]:checked').each(function() {
+                        var option = $(this).prop('name');
+                        $.fn.aciTree.defaults[option] = boolNumValue($(this).val());
+                    });
+                }
+
+                function warnInit(init) {
+                    if (treeApi) {
+                        if (treeApi.isLocked()) {
+                            alert('Please wait until the treeview finishes the init/destroy !');
+                            return true;
+                        }
+                        if (!init && !treeApi.wasInit()) {
+                            alert('The treeview need to be init before continue !');
+                            return true;
+                        }
+                        return false;
+                    } else {
+                        alert('Please wait until the treeview finishes the init !');
+                        return true;
+                    }
+                }
+
+                // check before we try to do something
+                $('[type=button]').not('#clear_log').click(function(e) {
+                    var init = $(this).is('#init,#init_data,#init_huge');
+                    if (warnInit(init)) {
+                        // prevent API calls if not init
+                        e.stopImmediatePropagation();
+                    }
+                });
+
+                // check before we try to do something
+                $('select').change(function(e) {
+                    if (warnInit()) {
+                        $(this).val('');
+                        // prevent API calls if not init
+                        e.stopImmediatePropagation();
+                    }
+                });
+
+                $('#destroy').click(function() {
+                    theTree.aciTree('api').destroy({
+                        uid: 'user-defined',
+                        success: function() {
+                            alert('Treeview control successfully destroyed !');
+                        },
+                        fail: function() {
+                            alert('Failed to destroy the treeview control !');
+                        }
+                    });
+                });
+
+                $('#init').click(function() {
+                    // update options
+                    updateOptions();
+                    initTree();
+                });
+
+                $('#init_data').click(function() {
+                    // update options
+                    updateOptions();
+                    initTree('data');
+                });
+
+                $('#init_huge').click(function() {
+                    // update options
+                    updateOptions();
+                    initTree('huge');
+                });
+
+                $('#clear_log,.clear_log').click(function() {
+                    $('.log div').html('');
+                    return false;
+                });
+
+                // keep the last selected
+                var _g_sel = null;
+
+                // selected state for the Tree
+                $(document).on('click', '#tree', function() {
+                    theTree.find('.selected').removeClass('selected');
+                    $(this).addClass('selected');
+                    _g_sel = this;
+                });
+
+                // selected state for the Tree items
+                theTree.on('click', '.aciTreeItem', function(e) {
+                    theTree.removeClass('selected').find('.selected').removeClass('selected');
+                    $(this).addClass('selected');
+                    _g_sel = this;
+                    e.stopPropagation();
+                });
+
+                // few little helpers ->
+
+                // return TRUE if the treeview is selected
+                function checkIsTree() {
+                    return _g_sel && (_g_sel == theTree.get(0));
+                }
+
+                // return the selected item (if any)
+                function checkIsItem() {
+                    if (_g_sel) {
+                        var item = treeApi.itemFrom(_g_sel);
+                        if (treeApi.isItem(item)) {
+                            return item;
+                        }
+                    }
+                    return null;
+                }
+
+                // test if the treeview or a item is selected, alert if not, return the item if selected
+                function requireSelection() {
+                    var item = checkIsItem();
+                    if (checkIsTree() || item) {
+                        return item;
+                    }
+                    alert('Please select one item or the treeview itself (with a mouse click, will have a pink background after selection) !');
+                    return null;
+                }
+
+                // test if a item is selected, alert if not, return the item if selected
+                function requireItem() {
+                    var item = checkIsItem();
+                    if (item) {
+                        return item;
+                    }
+                    alert('Please select one item (with a mouse click, will have a pink background after selection) !');
+                    return null;
+                }
+
+                // test if a inode item is selected, alert if not, return the item if selected
+                function requireInode() {
+                    var item = checkIsItem();
+                    if (item && treeApi.isInode(item)) {
+                        return item;
+                    }
+                    alert('Please select one folder item (with a mouse click, will have a pink background after selection) !');
+                    return null;
+                }
+
+                // test if a leaf item is selected, alert if not, return the item if selected
+                function requireLeaf() {
+                    var item = checkIsItem();
+                    if (item && treeApi.isLeaf(item)) {
+                        return item;
+                    }
+                    alert('Please select one file item (with a mouse click, will have a pink background after selection) !');
+                    return null;
+                }
+
+                // test if the treeview or the inode was loaded, alert if was loaded, return TRUE if was not loaded
+                function requestLoad() {
+                    if (checkIsTree()) {
+                        if (treeApi.wasLoad()) {
+                            alert('The treeview was loaded already !');
+                        } else {
+                            return true;
+                        }
+                    } else {
+                        var item = checkIsItem();
+                        if (item && requireInode(item)) {
+                            if (treeApi.wasLoad(item)) {
+                                alert('The folder item was loaded already !');
+                            } else {
+                                return true;
+                            }
+                        } else {
+                            requireSelection();
+                        }
+                    }
+                    return false;
+                }
+
+                var leafIndex = 0;
+
+                // get new leaf item data
+                function newLeaf() {
+                    var itemData = {
+                        id: 'a_new_File_ID_' + leafIndex,
+                        label: 'File name ' + leafIndex,
+                        inode: false,
+                        icon: 'file'
+                    };
+                    leafIndex++;
+                    return itemData;
+                }
+
+                var inodeIndex = 0;
+
+                // get new inode item data
+                function newInode() {
+                    var itemData = {
+                        id: 'a_new_Folder_ID_' + inodeIndex,
+                        label: 'Folder name ' + inodeIndex,
+                        inode: null,
+                        open: false,
+                        icon: 'folder'
+                    };
+                    inodeIndex++;
+                    return itemData;
+                }
+
+                // add one or more items (after or before a item)
+                function treeAddItem(item, itemData, skipLog) {
+                    var before = $('[name=addMode]:checked').val() == 'before';
+                    if (before) {
+                        treeApi.before(item.first(), {
+                            uid: (skipLog ? 'skip-log' : 'user-defined'),
+                            success: function(item) {
+                                alert('Item(s) successfully added before [' + this.getId(item) + '] !');
+                                if (!this.isVisible(item)) {
+                                    this.setVisible(item);
+                                }
+                            },
+                            fail: function(item) {
+                                alert('Failed to add the item(s) before [' + this.getId(item) + '] !');
+                            },
+                            itemData: itemData
+                        });
+                    } else {
+                        treeApi.after(item.last(), {
+                            uid: (skipLog ? 'skip-log' : 'user-defined'),
+                            success: function(item) {
+                                alert('Item(s) successfully added after [' + this.getId(item) + '] !');
+                                if (!this.isVisible(item)) {
+                                    this.setVisible(item);
+                                }
+                            },
+                            fail: function(item) {
+                                alert('Failed to add the item(s) after [' + this.getId(item) + '] !');
+                            },
+                            itemData: itemData
+                        });
+                    }
+                }
+
+                // <- few little helpers
+
+                // do something with the selected item ;-)
+
+                // set text fields value from the selected item
+                $('#item_id_btn,#move_btn,#swap1_btn,#swap2_btn').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        $('input[name="' + $(this).attr('id').replace('_btn', '') + '"]').val(treeApi.getId(item));
+                    }
+                });
+
+                // add a leaf to the treeview or to the selected inode
+                $('#addFile').click(function() {
+                    if (checkIsTree()) {
+                        // the treeview is selected, add a leaf on the first/last position
+                        var children = treeApi.children();
+                        if (children.length) {
+                            // already has some items on ROOT
+                            treeAddItem(children, newLeaf());
+                        } else {
+                            // no items on ROOT
+                            treeApi.append(null, {
+                                uid: 'user-defined',
+                                success: function() {
+                                    alert('The file item was added on ROOT !');
+                                },
+                                fail: function() {
+                                    alert('Failed to add the file item on ROOT !');
+                                },
+                                itemData: newLeaf()
+                            });
+                        }
+                    } else {
+                        var item = requireSelection();
+                        if (item) {
+                            // a item is selected, add a leaf before/after it
+                            treeAddItem(item, newLeaf());
+                        }
+                    }
+                });
+
+                // add a inode to the treeview or to the selected inode
+                $('#addFolder').click(function() {
+                    if (checkIsTree()) {
+                        // the treeview is selected, add a inode on the first/last position
+                        var children = treeApi.children();
+                        if (children.length) {
+                            // already has some items on ROOT
+                            treeAddItem(children, newInode());
+                        } else {
+                            // no items on ROOT
+                            treeApi.append(null, {
+                                uid: 'user-defined',
+                                success: function() {
+                                    alert('The folder item was added on ROOT !');
+                                },
+                                fail: function() {
+                                    alert('Failed to add the folder item on ROOT !');
+                                },
+                                itemData: newInode()
+                            });
+                        }
+                    } else {
+                        var item = requireSelection();
+                        if (item) {
+                            // a item is selected, add a inode before/after it
+                            treeAddItem(item, newInode());
+                        }
+                    }
+                });
+
+                // add children to the treeview or to the selected inode
+                $('#addChilds').click(function() {
+                    if (checkIsTree()) {
+                        // the treeview is selected, add a inode/leaf
+                        treeApi.append(null, {
+                            uid: 'user-defined',
+                            success: function() {
+                                alert('The folder/file items where added on ROOT !');
+                            },
+                            fail: function() {
+                                alert('Failed to add the folder/file items on ROOT !');
+                            },
+                            itemData: [newInode(), newLeaf()]
+                        });
+                    } else {
+                        var item = requireSelection();
+                        if (requireInode()) {
+                            // a item is selected, add a inode/leaf
+                            treeApi.append(item, {
+                                uid: 'user-defined',
+                                success: function(item) {
+                                    alert('The folder/file items where added to [' + this.getId(item) + '] !');
+                                },
+                                fail: function(item) {
+                                    alert('Failed to add the folder/file items to [' + this.getId(item) + '] !');
+                                },
+                                itemData: [newInode(), newLeaf()]
+                            });
+                        }
+                    }
+                });
+
+                // unload the treeview or the selected inode
+                $('#unload').click(function() {
+                    if (checkIsTree()) {
+                        // the treeview is selected, unload it >:)
+                        treeApi.unload(null, {
+                            uid: 'user-defined',
+                            success: function(item) {
+                                alert('The ROOT was unloaded !');
+                            },
+                            fail: function(item) {
+                                alert('Failed to unload the ROOT !');
+                            }
+                        });
+                    } else {
+                        var item = requireSelection();
+                        if (item && requireInode()) {
+                            // a item is selected, unload it
+                            treeApi.unload(item, {
+                                uid: 'user-defined',
+                                success: function(item) {
+                                    alert('The item [' + this.getId(item) + '] was unloaded !');
+                                },
+                                fail: function(item) {
+                                    alert('Failed to unload the item [' + this.getId(item) + '] !');
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // load the treeview or the selected inode
+                $('#load').click(function() {
+                    if (requestLoad()) {
+                        if (checkIsTree()) {
+                            // the treeview is selected, load the ROOT
+                            treeApi.ajaxLoad(null, {
+                                uid: 'user-defined',
+                                success: function() {
+                                    alert('The ROOT was successfully loaded !');
+                                },
+                                fail: function() {
+                                    alert('Failed to load the ROOT !');
+                                }
+                            });
+                        } else {
+                            var item = checkIsItem();
+                            treeApi.ajaxLoad(item, {
+                                uid: 'user-defined',
+                                success: function(item) {
+                                    alert('The item [' + this.getId(item) + '] was successfully loaded !');
+                                },
+                                fail: function(item) {
+                                    alert('Failed to load the item [' + this.getId(item) + '] !');
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // set a inode to be a leaf
+                $('#setFile').click(function() {
+                    var item = requireInode();
+                    if (item) {
+                        treeApi.setLeaf(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                // change the icon
+                                this.addIcon(item, {
+                                    icon: 'file'
+                                });
+                                alert('The item [' + this.getId(item) + '] was made a file !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to make the item [' + this.getId(item) + '] into a file !');
+                            }
+                        });
+                    }
+                });
+
+                // set a leaf to be a inode
+                $('#setFolder').click(function() {
+                    var item = requireLeaf();
+                    if (item) {
+                        treeApi.setInode(item, {
+                            success: function(item, options) {
+                                // change the icon
+                                this.addIcon(item, {
+                                    icon: 'folder'
+                                });
+                                alert('The item [' + this.getId(item) + '] was made a folder !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to make the item [' + this.getId(item) + '] into a folder !');
+                            }
+                        });
+                    }
+                });
+
+                // remove item(s)
+                $('#remove').click(function() {
+                    if (checkIsTree()) {
+                        // the treeview is selected, remove all ROOT items
+                        treeApi.unload(null, {
+                            uid: 'user-defined',
+                            success: function() {
+                                alert('The entire treeview was successfully unloaded !');
+                            },
+                            fail: function() {
+                                alert('Failed to remove the ROOT items !');
+                            }
+                        });
+                    } else {
+                        var item = requireSelection();
+                        if (item) {
+                            // a item is selected, remove it
+                            var id = treeApi.getId(item);
+                            treeApi.remove(item, {
+                                uid: 'user-defined',
+                                success: function() {
+                                    alert('The item [' + id + '] was removed !');
+                                },
+                                fail: function() {
+                                    alert('Failed to remove the item [' + id + '] !');
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // set item icon
+                $('#setIcon').change(function() {
+                    var item = requireItem();
+                    if (item) {
+                        if ($(this).val() == 'remove') {
+                            treeApi.removeIcon(item, {
+                                uid: 'user-defined',
+                                success: function(item, options) {
+                                    alert('The icon for the item [' + this.getId(item) + '] was removed !');
+                                },
+                                fail: function(item, options) {
+                                    alert('Failed to remove the icon for the item [' + this.getId(item) + '] !');
+                                }
+                            });
+                        } else {
+                            treeApi.addIcon(item, {
+                                uid: 'user-defined',
+                                success: function(item, options) {
+                                    alert('The icon for the item [' + this.getId(item) + '] was set !');
+                                },
+                                fail: function(item, options) {
+                                    alert('Failed to set the icon for the item [' + this.getId(item) + '] !');
+                                },
+                                icon: $(this).val()
+                            });
+                        }
+                    }
+                    $(this).val('');
+                });
+
+                // add a checkbox to the item
+                $('#setCheckbox').change(function() {
+                    var item = requireItem();
+                    if (item) {
+                        if ($(this).val() == 'yes') {
+                            treeApi.addCheckbox(item, {
+                                uid: 'user-defined',
+                                success: function(item) {
+                                    alert('The checkbox for the item [' + this.getId(item) + '] was added !');
+                                },
+                                fail: function(item) {
+                                    alert('Failed to add the checkbox for the item [' + this.getId(item) + '] !');
+                                }
+                            });
+                        } else {
+                            treeApi.removeCheckbox(item, {
+                                uid: 'user-defined',
+                                success: function(item) {
+                                    alert('The checkbox for the item [' + this.getId(item) + '] was removed !');
+                                },
+                                fail: function(item) {
+                                    alert('Failed to remove the checkbox for the item [' + this.getId(item) + '] !');
+                                }
+                            });
+                        }
+                    }
+                    $(this).val('');
+                });
+
+                // add a radio-button to the item
+                $('#setRadio').change(function() {
+                    var item = requireItem();
+                    if (item) {
+                        if ($(this).val() == 'yes') {
+                            treeApi.addRadio(item, {
+                                uid: 'user-defined',
+                                success: function(item) {
+                                    alert('The radio-button for the item [' + this.getId(item) + '] was added !');
+                                },
+                                fail: function(item) {
+                                    alert('Failed to add the radio-button for the item [' + this.getId(item) + '] !');
+                                }
+                            });
+                        } else {
+                            treeApi.removeRadio(item, {
+                                uid: 'user-defined',
+                                success: function(item) {
+                                    alert('The radio-button for the item [' + this.getId(item) + '] was removed !');
+                                },
+                                fail: function(item) {
+                                    alert('Failed to remove the radio-button for the item [' + this.getId(item) + '] !');
+                                }
+                            });
+                        }
+                    }
+                    $(this).val('');
+                });
+
+                // disable item
+                $('#disable').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        treeApi.disable(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The item [' + this.getId(item) + '] was disabled !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to disable the item [' + this.getId(item) + '] !');
+                            }
+                        });
+                    }
+                });
+
+                // enable item
+                $('#enable').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        treeApi.enable(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The item [' + this.getId(item) + '] was enabled !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to enable the item [' + this.getId(item) + '] !');
+                            }
+                        });
+                    }
+                });
+
+                // show item
+                $('#show').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        treeApi.show(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The item [' + this.getId(item) + '] was show !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to show the item [' + this.getId(item) + '] !');
+                            }
+                        });
+                    }
+                });
+
+                // hide item
+                $('#hide').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        treeApi.hide(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The item [' + this.getId(item) + '] was hidden !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to hide the item [' + this.getId(item) + '] !');
+                            }
+                        });
+                    }
+                });
+
+                // toggle item
+                $('#hideshow').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        if (treeApi.isHidden(item)) {
+                            $('#show').trigger('click');
+                        } else {
+                            $('#hide').trigger('click');
+                        }
+                    }
+                });
+
+                // open a inode item
+                $('#open').click(function() {
+                    var item = requireInode();
+                    if (item) {
+                        treeApi.open(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The item [' + this.getId(item) + '] was opened !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to open the item [' + this.getId(item) + '] !');
+                            }
+                        });
+                    }
+                });
+
+                // close a inode item
+                $('#close').click(function() {
+                    var item = requireInode();
+                    if (item) {
+                        treeApi.close(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The item [' + this.getId(item) + '] was closed !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to close the item [' + this.getId(item) + '] !');
+                            }
+                        });
+                    }
+                });
+
+                // toggle a inode item
+                $('#toggle').click(function() {
+                    var item = requireInode();
+                    if (item) {
+                        treeApi.toggle(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The item [' + this.getId(item) + '] was toggled !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to toggle the item [' + this.getId(item) + '] !');
+                            }
+                        });
+                    }
+                });
+
+                // time to burn your CPU ;))
+
+                // add 10k leaf items
+                $('#addFile10k').click(function() {
+                    var list = [];
+                    for (var i = 0; i < 10000; i++) {
+                        list[list.length] = newLeaf();
+                    }
+                    if (checkIsTree()) {
+                        // the treeview is selected
+                        var children = treeApi.children();
+                        if (children.length) {
+                            // already has some items on ROOT
+                            treeAddItem(children, list, true);
+                        } else {
+                            // no items on ROOT
+                            treeApi.append(null, {
+                                uid: 'skip-log',
+                                success: function(item, options) {
+                                    alert('The 10k file items where added to the ROOT !');
+                                },
+                                fail: function(item, options) {
+                                    alert('Failed to add the 10k files to the ROOT !');
+                                },
+                                itemData: list
+                            });
+                        }
+                    } else {
+                        var item = requireSelection();
+                        if (item) {
+                            // a item is selected
+                            treeAddItem(item, list, true);
+                        }
+                    }
+                });
+
+                // add 10k inode items
+                $('#addFolder10k').click(function() {
+                    var list = [];
+                    for (var i = 0; i < 10000; i++) {
+                        list[list.length] = newInode();
+                    }
+                    if (checkIsTree()) {
+                        // the treeview is selected
+                        var children = treeApi.children();
+                        if (children.length) {
+                            // already has some items on ROOT
+                            treeAddItem(children, list, true);
+                        } else {
+                            // no items on ROOT
+                            treeApi.append(null, {
+                                uid: 'skip-log',
+                                success: function(item, options) {
+                                    alert('The 10k inode items where added to the ROOT !');
+                                },
+                                fail: function(item, options) {
+                                    alert('Failed to add the 10k inodes to the ROOT !');
+                                },
+                                itemData: list
+                            });
+                        }
+                    } else {
+                        var item = requireSelection();
+                        if (item) {
+                            // a item is selected
+                            treeAddItem(item, list, true);
+                        }
+                    }
+                });
+
+                // custom stuff :) using 'branch' ...
+                // note that 'doOpen' and 'doClose' already have the 'propagate' option and they are optimized for large branches
+                // this is just to show how a tree branch can be processed
+                // including starting from ROOT; in this way you can do your custom thing with more ease
+                // note that 'branch' will load the nodes if 'load' is set to TRUE (we need to load a node before we can open it)
+
+                function checkBusy() {
+                    if (treeApi.isBusy()) {
+                        alert("The treeview is busy right now.\nPlease wait while it's finishing his thing :)");
+                        return true;
+                    }
+                    return false;
+                }
+
+                // custom open magic happens here
+                var branch_open = function(item) {
+                    if (this.isInode(item)) {
+                        // check if is a inode just to avoid error notification
+                        this.open(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The folder item [' + this.getId(item) + '] was opened !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to open the item [' + this.getId(item) + '] !');
+                            }
+                        });
+                    }
+                };
+
+                // open item and all subitems
+                $('#branch_open').click(function() {
+                    if (checkBusy()) {
+                        return;
+                    }
+                    if (checkIsTree()) {
+                        treeApi.branch(null, branch_open, true);
+                    } else {
+                        var item = requireInode();
+                        if (item) {
+                            // need this cause .branch is processing only the children (the item is not included)
+                            treeApi.open(item, {
+                                success: function() {
+                                    this.branch(item, branch_open, true);
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // custom close magic happens here
+                var branch_close = function(item) {
+                    if (this.isInode(item)) {
+                        // check if is a inode just to avoid error notification
+                        this.close(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The folder item [' + this.getId(item) + '] was closed !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to close the item [' + this.getId(item) + '] !');
+                            }
+                        });
+                    }
+                };
+
+                // close item and all subitems
+                $('#branch_close').click(function() {
+                    if (checkBusy()) {
+                        return;
+                    }
+                    if (checkIsTree()) {
+                        treeApi.branch(null, branch_close);
+                    } else {
+                        var item = requireInode();
+                        if (item) {
+                            // need this cause .branch is processing only the children (the item is not included)
+                            treeApi.close(item, {
+                                success: function() {
+                                    this.branch(item, branch_close);
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // custom toggle magic happens here
+                var branch_toggle = function(item) {
+                    if (this.isInode(item)) {
+                        // check if is a inode just to avoid error notification
+                        this.toggle(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The folder item [' + this.getId(item) + '] was toggled !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to toggle the item [' + this.getId(item) + '] !');
+                            }
+                        });
+                    }
+                };
+
+                // toggle item and all subitems
+                $('#branch_toggle').click(function() {
+                    if (checkBusy()) {
+                        return;
+                    }
+                    if (checkIsTree()) {
+                        treeApi.branch(null, branch_toggle, true);
+                    } else {
+                        var item = requireInode();
+                        if (item) {
+                            // need this cause .branch is processing only the children (the item is not included)
+                            treeApi.toggle(item, {
+                                success: function() {
+                                    this.branch(item, branch_toggle, true);
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // set item visible, search by ID
+                $('#set_visible').click(function() {
+                    var id = $('[name=item_id]').val();
+                    var load = $('[name=search_load]').is(':checked');
+                    treeApi.search(null, {
+                        uid: 'user-defined',
+                        success: function(item, options) {
+                            uid: 'user-defined',
+                            this.openPath(item, {
+                                success: function(item, options) {
+                                    this.setVisible(item, {
+                                        uid: 'user-defined',
+                                        success: function(item, options) {
+                                            var path = '[root] ';
+                                            this.path(item).each(this.proxy(function(element) {
+                                                path += '[' + this.getId($(element)) + '] ';
+                                            }, true));
+                                            alert('The item with the ID [' + this.getId(item) + '] has been found !\nThe path is: ' + path);
+                                        },
+                                        fail: function(item, options) {
+                                            alert('Failed to make visisble the item [' + this.getId(item) + '] !');
+                                        }
+                                    });
+                                },
+                                fail: function(item, options) {
+                                    alert('Failed to make visisble the item [' + this.getId(item) + '] !');
+                                }
+                            });
+                        },
+                        fail: function(item, options) {
+                            alert('Failed to find the ID [' + options.search + '] !');
+                        },
+                        search: id,
+                        load: load
+                    });
+                });
+
+                // set item text content
+                $('#set_cnt').click(function() {
+                    var text = $('[name=item_cnt]').val();
+                    var item = requireItem();
+                    if (item) {
+                        treeApi.setLabel(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The item text [' + this.getId(item) + '] was set ! ');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to update item text for the item [' + this.getId(item) + '] !');
+                            },
+                            label: text
+                        });
+                    }
+                });
+
+                // move items
+
+                $('#move_up').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        treeApi.moveUp(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The item was moved up !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to move item up !');
+                            }
+                        });
+                    }
+                });
+
+                $('#move_down').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        treeApi.moveDown(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The item was moved down !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to move item down !');
+                            }
+                        });
+                    }
+                });
+
+                $('#move_first').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        treeApi.moveFirst(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The item was moved on first position !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to move item on first position !');
+                            }
+                        });
+                    }
+                });
+
+                $('#move_last').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        treeApi.moveLast(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The item was moved on last position !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to move item on last position !');
+                            }
+                        });
+                    }
+                });
+
+                $('#move_before').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        var move = $('[name=move]').val();
+                        treeApi.search(null, {
+                            uid: 'user-defined',
+                            success: function(item1, options) {
+                                treeApi.moveBefore(item, {
+                                    uid: 'user-defined',
+                                    success: function(item, options) {
+                                        alert('The item was moved before ' + this.getId(options.before) + ' !');
+                                    },
+                                    fail: function(item, options) {
+                                        alert('Failed to move item before ' + this.getId(options.before) + ' !');
+                                    },
+                                    before: item1
+                                });
+                            },
+                            fail: function(item, options) {
+                                alert('The ID [' + options.search + '] has not been found !');
+                            },
+                            search: move
+                        });
+                    }
+                });
+
+                $('#move_after').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        var move = $('[name=move]').val();
+                        treeApi.search(null, {
+                            uid: 'user-defined',
+                            success: function(item1, options) {
+                                treeApi.moveAfter(item, {
+                                    uid: 'user-defined',
+                                    success: function(item, options) {
+                                        alert('The item was moved after ' + this.getId(options.after) + ' !');
+                                    },
+                                    fail: function(item, options) {
+                                        alert('Failed to move item after ' + this.getId(options.after) + ' !');
+                                    },
+                                    after: item1
+                                });
+                            },
+                            fail: function(item, options) {
+                                alert('The ID [' + options.search + '] has not been found !');
+                            },
+                            search: move
+                        });
+                    }
+                });
+
+                $('#move_child').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        var move = $('[name=move]').val();
+                        treeApi.search(null, {
+                            uid: 'user-defined',
+                            success: function(item1, options) {
+                                treeApi.asChild(item, {
+                                    uid: 'user-defined',
+                                    success: function(item, options) {
+                                        alert('The item was set as child of ' + this.getId(options.parent) + ' !');
+                                    },
+                                    fail: function(item, options) {
+                                        alert('Failed to set as child of ' + this.getId(options.parent) + ' !');
+                                    },
+                                    parent: item1
+                                });
+                            },
+                            fail: function(item, options) {
+                                alert('The ID [' + options.search + '] has not been found !');
+                            },
+                            search: move
+                        });
+                    }
+                });
+
+                // set item index
+                $('#set_index').click(function() {
+                    var item = requireItem();
+                    if (item) {
+                        var index = parseInt($('[name=index]').val());
+                        if (isNaN(index)) {
+                            index = 0;
+                        }
+                        treeApi.setIndex(item, {
+                            uid: 'user-defined',
+                            success: function(item, options) {
+                                alert('The item index was set !');
+                            },
+                            fail: function(item, options) {
+                                alert('Failed to set the item index !');
+                            },
+                            index: index
+                        });
+                    }
+                });
+
+                // swap items by ID (if found)
+                $('#swap').click(function() {
+                    var swap1 = $('[name=swap1]').val();
+                    treeApi.search(null, {
+                        uid: 'user-defined',
+                        success: function(item1) {
+                            var swap2 = $('[name=swap2]').val();
+                            treeApi.search(null, {
+                                uid: 'user-defined',
+                                success: function(item2) {
+                                    this.swap({
+                                        uid: 'user-defined',
+                                        success: function(item, options) {
+                                            alert('[' + this.getId(options.item1) + '] successfully swapped with [' + this.getId(options.item2) + '] !');
+                                        },
+                                        fail: function(item, options) {
+                                            alert('Failed to swap [' + this.getId(options.item1) + '] with [' + this.getId(options.item2) + '] !');
+                                        },
+                                        item1: item1,
+                                        item2: item2
+                                    });
+                                },
+                                fail: function(item, options) {
+                                    alert('The ID [' + options.search + '] has not been found !');
+                                },
+                                search: swap2
+                            });
+                        },
+                        fail: function(item, options) {
+                            alert('The ID [' + options.search + '] has not been found !');
+                        },
+                        search: swap1
+                    });
+                });
+
+                // serialize `checkbox`
+                $('#serialize_checkbox').click(function() {
+                    var serialized = treeApi.serialize(null, 'checkbox');
+                    alert('The serialized checkboxes: ' + serialized);
+                });
+
+                // serialize `radio`
+                $('#serialize_radio').click(function() {
+                    var serialized = treeApi.serialize(null, 'radio');
+                    alert('The serialized radios: ' + serialized);
+                });
+
+                // serialize item data
+                $('#serialize_json').click(function() {
+                    var serialized = treeApi.serialize(null, {
+                    });
+                    alert('The serialized tree: ' + ((JSON && JSON.stringify) ? JSON.stringify(serialized) : 'JSON.stringify not supported by your browser'));
+                });
+
+                // test area
+                $('input[name=testarea]').click(function() {
+                    var code = $('.testarea').val();
+                    var start = Date.now();
+                    try {
+                        eval(code);
+                        var end = Date.now();
+                        alert((end - start) + ' msec');
+                    } catch (e) {
+                        alert(e.message);
+                    }
+                });
+
+            });
+
+        </script>
+
+    </body>
+</html>

@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block slider %}
+<div class="demo-1 black-canvas" style="z-index: 0;">
+	<div class="content">
+		<div id="large-header" class="large-header">
+			<canvas id="demo-canvas"></canvas>
+			<h1></h1>
+		</div>
+	</div>
+</div>
+{% endblock slider %}
+
+{% block main %}
+<style>
+
+	.input-group {
+		width: 30%;
+	}
+
+</style>
+
+<div class="container" style="z-index: 1; position: absolute; top: 0; left: 50%; transform: translate(-50%, -100%);">
+	<h1 align="center" style="color: white;">Change Password</h1>
+
+	<hr style="width: 30%"/>
+
+	<div class="row" align="center">
+
+		<div class="col-md-12" align="center">
+
+			<div class="login-form">
+				
+				<div class="login-content">
+					
+					<!-- edit account form -->
+					<form method="post" action="" enctype="multipart/form-data">
+		            {{ form.hidden_tag() }}
+
+						<!-- password field -->
+		                <div class="form-group">
+							<div class="input-group">
+<!-- 								{{ form.password.label() }}
+ -->			                    {% if form.password.errors %}
+
+			                        {{ form.password(class="form-control is-invalid") }}
+			                        <div class="invalid-feedback">
+			                            {% for error in form.password.errors %}
+			                                <span>{{ error }}</span>
+			                            {% endfor %}
+			                        </div>
+
+			                    {% else %}
+			                        {{ form.password(class="form-control", placeholder="New Password") }}
+			                    {% endif %}
+			                </div>
+		                </div>
+
+		                <!-- confirm password field -->
+		                <div class="form-group">
+							<div class="input-group">
+	
+<!-- 							{{ form.confirm_password.label() }}
+ -->		                    {% if form.confirm_password.errors %}
+		                        {{ form.confirm_password(class="form-control is-invalid") }}
+		                        <div class="invalid-feedback">
+		                            {% for error in form.confirm_password.errors %}
+		                                <span>{{ error }}</span>
+		                            {% endfor %}
+		                        </div>
+
+		                    {% else %}
+		                        {{ form.confirm_password(class="form-control", placeholder="Confirm New Password") }}
+		                    {% endif %}
+			                </div>
+		                </div>
+
+		                <br/>
+
+			            <div class="form-group">
+			                {{ form.submit(class="btn btn-info btn-block btn-login", style="text-align: center; width: 30%") }}
+				       </div>
+					
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

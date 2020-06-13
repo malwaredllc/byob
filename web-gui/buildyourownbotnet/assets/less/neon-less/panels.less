@@ -1,0 +1,839 @@
+// Panel Settings
+//
+// Panels
+// --------------------------------------------------
+
+@panel_vpadding: 10px;
+@panel_hpadding: 15px;
+
+// Base class
+.panel {
+  margin-bottom: @line-height-computed;
+  background-color: @panel-bg;
+  border: 1px solid transparent;
+  border-radius: @panel-border-radius;
+  .box-shadow(none);
+  //.box-shadow(0 1px 1px rgba(0,0,0,.05));
+	  
+  > .panel-heading {
+	  
+	  .panel-title {
+		  font-size: @font-size-base;
+		  
+		  h4 {
+		  	font-size: @font-size-base + 2;
+		  	color: @main_color;
+		  }
+	  }
+  }
+  
+  &.panel-shadow {
+  	.box-shadow(~"0 3px 1px rgba(0,0,0,.04)");
+  }
+  
+  &.reloading > .panel-heading > .panel-options > a[rel="reload"] > i {
+	.transition(~"none");
+	.animation(~"reloadingAnimation 1s linear infinite");
+  }
+  
+  &.panel-collapse > .panel-heading > .panel-options > a[rel="collapse"] > i {
+  	.rotate(180deg);
+  }
+  
+ 
+ // ReLoading
+  .blockUI.blockOverlay {
+	  background-image: url(../images/loader-1.gif);
+	  background-image: url(../images/loader-2.gif);
+	  background-repeat: no-repeat;
+	  background-position: center center;
+  }
+  
+  // Collapsed
+  &[data-collapsed="1"] {
+  
+  	.panel-body {
+	  	display: none;
+  	}
+  	
+  	.panel-heading > .panel-options > a[rel="collapse"] > i {
+	  	.rotate(180deg);
+  	}
+  }
+  
+  // Minimal
+  &.minimal {
+	  
+	  > .panel-heading {
+	  	  padding: 0;
+		  border-bottom: 1px solid @default;
+		  
+		  > .panel-title {
+		  	  position: relative;
+			  color: @main_color;
+			  padding: 0;
+			  padding-bottom: @panel_vpadding;
+			  top: @panel_vpadding - 2;
+		  }
+		  
+		  // Nav tabs
+		  > .panel-options {
+		  	padding-right: 0;
+		  	
+		  	> .nav-tabs {
+			  position: relative;
+			  top: 1px;
+			  
+			  > li {
+				  
+				  a {
+					  padding: 8px 10px;
+					  font-size: @p_size;
+					  .border-radius(@border-radius-base @border-radius-base 0 0);
+					  .transall;
+					  
+					  i {
+					  	  color: darken(@text_disabled, 5%);
+						  font-size: 14px;
+						  line-height: 1;
+						  .transall;
+					  }
+					  
+					  &:hover {
+						  background-color: @secondary_background_color;
+					  }
+				  }
+				  
+				  &.active {
+					  
+					  a {
+					  	border-bottom-color: #fff;
+					  	
+					  	&:hover {
+						  	background-color: #fff;
+					  	}
+					  	
+					  	i {
+						  color: @main_color;
+						}
+					  }
+				  }
+			  }
+		    }
+		  }
+	  }
+	  
+	  > .panel-body {
+		  padding-left: 0;
+		  padding-right: 0;
+	  }
+	  
+	  // Minimal Gray Skin
+	  &.minimal-gray {
+	  	  @minimal_gray_border: #ebebeb;
+		  
+		  > .panel-heading {
+		  	
+		  	> .panel-options {
+			  	
+			  	> .nav-tabs {
+				  	
+				  	> li {
+					  	
+					  	> a {
+					  		background-color: #f3f3f3;
+					  		border-color: @minimal_gray_border;
+					  		color: fade(@text_color_light, 75%);
+					  	}
+					  	
+					  	&.active > a {
+						  	background-color: #fff;
+						  	border-bottom-color: #fff;
+						  	color: @main_color;
+					  	}
+				  	}
+			  	}
+		  	}
+		  }
+	  }
+  }
+}
+
+// Panel contents
+.panel-body {
+  position: relative;
+  padding: 15px;
+  .clearfix();
+  
+  &.no-padding {
+	  padding: 0;
+  }
+}
+
+
+// List groups in panels
+//
+// By default, space out list group content from panel headings to account for
+// any kind of custom content between the two.
+
+.panel {
+  > .list-group {
+    margin-bottom: 0;
+
+    .list-group-item {
+      border-width: 1px 0;
+
+      // Remove border radius for top one
+      border-radius: 0;
+      &:first-child {
+      	border-top: 0;
+      }
+      // But keep it for the last one
+      &:last-child {
+        border-bottom: 0;
+      }
+    }
+    // Add border top radius for first one
+    &:first-child {
+      .list-group-item:first-child {
+        .border-top-radius((@panel-border-radius - 1));
+      }
+    }
+    // Add border bottom radius for last one
+    &:last-child {
+      .list-group-item:last-child {
+        .border-bottom-radius((@panel-border-radius - 1));
+      }
+    }
+  }
+}
+// Collapse space between when there's no additional content.
+.panel-heading + .list-group {
+  .list-group-item:first-child {
+    border-top-width: 0;
+  }
+}
+
+
+// Tables in panels
+//
+// Place a non-bordered `.table` within a panel (not within a `.panel-body`) and
+// watch it go full width.
+
+.panel {
+  > .table,
+  > .table-responsive > .table {
+    margin-bottom: 0;
+  }
+  // Add border top radius for first one
+  > .table:first-child,
+  > .table-responsive:first-child > .table:first-child {
+    > thead:first-child,
+    > tbody:first-child {
+      > tr:first-child {
+        td:first-child,
+        th:first-child {
+          border-top-left-radius: (@panel-border-radius - 1);
+        }
+        td:last-child,
+        th:last-child {
+          border-top-right-radius: (@panel-border-radius - 1);
+        }
+      }
+    }
+  }
+  // Add border bottom radius for last one
+  > .table:last-child,
+  > .table-responsive:last-child > .table:last-child {
+    > tbody:last-child,
+    > tfoot:last-child {
+      > tr:last-child {
+        td:first-child,
+        th:first-child {
+          border-bottom-left-radius: (@panel-border-radius - 1);
+        }
+        td:last-child,
+        th:last-child {
+          border-bottom-right-radius: (@panel-border-radius - 1);
+        }
+      }
+    }
+  }
+  > .panel-body + .table,
+  > .panel-body + .table-responsive {
+    border-top: 1px solid @table-border-color;
+  }
+  > .table > tbody:first-child > tr:first-child th,
+  > .table > tbody:first-child > tr:first-child td {
+    border-top: 0;
+  }
+  > .table-bordered,
+  > .table-responsive > .table-bordered {
+    border: 0;
+    > thead,
+    > tbody,
+    > tfoot {
+      > tr {
+        > th:first-child,
+        > td:first-child {
+          border-left: 0;
+        }
+        > th:last-child,
+        > td:last-child {
+          border-right: 0;
+        }
+        &:first-child > th,
+        &:first-child > td {
+          border-top: 0;
+        }
+        &:last-child > th,
+        &:last-child > td {
+          border-bottom: 0;
+        }
+      }
+    }
+  }
+  > .table-responsive {
+    border: 0;
+    margin-bottom: 0;
+  }
+}
+
+
+// Optional heading
+.panel-heading {
+  border-bottom: 1px solid transparent;
+  .border-top-radius(@panel-border-radius);
+  .clearfix;
+
+  > .dropdown .dropdown-toggle {
+    color: inherit;
+  }
+  
+  // Laborator
+  > .panel-title {
+	  float: left;
+	  padding: @panel_vpadding @panel_hpadding;
+	  
+	  > * {
+		  margin: 0;
+	  }
+	  
+	  > span {
+		  font-weight: normal;
+	  }
+  }
+  
+  > .panel-options {
+	float: right;
+	padding-right: @panel_hpadding;
+	
+	> a {
+		margin-top: @panel_vpadding;
+	}
+	
+	> a[rel="reload"] > i {
+		.transform-origin(50%);
+	}
+	
+	> a[rel="collapse"] > i {
+		.transall;
+	}
+	
+	> .nav-tabs {
+		margin-top: 0;
+		margin-bottom: 0;
+	
+		> li {
+			margin-right: 4px;
+			
+			&:last-child {
+				margin-right: 0;
+			}
+		}
+	}
+  }
+}
+
+.keyframes(~'reloadingAnimation, 0%{ transform: rotate(0deg); } 100%{ transform: rotate(360deg); }');
+
+// Within heading, strip any `h*` tag of it's default margins for spacing.
+.panel-title {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: ceil((@font-size-base * 1.125));
+  > a {
+    color: inherit;
+  }
+}
+
+// Optional footer (stays gray in every modifier class)
+.panel-footer {
+  padding: 10px 15px;
+  background-color: @panel-footer-bg;
+  border-top: 1px solid @panel-inner-border;
+  .border-bottom-radius(@panel-border-radius - 1);
+}
+
+
+// Collapsable panels (aka, accordion)
+//
+// Wrap a series of panels in `.panel-group` to turn them into an accordion with
+// the help of our collapse JavaScript plugin.
+
+.panel-group {
+  margin-bottom: @line-height-computed;
+  // Tighten up margin so it's only between panels
+  .panel {
+    margin-bottom: 0;
+    //border-radius: @panel-border-radius;
+    overflow: hidden; // crop contents when collapsed
+    
+    > .panel-heading > .panel-title {
+	    
+	    float: none;
+	    
+	    > a {
+		    display: block;
+	    }
+    }
+    
+    + .panel {
+      margin-top: 5px;
+    }
+  }
+
+  .panel-heading {
+    border-bottom: 0;
+    + .panel-collapse .panel-body {
+      border-top: 1px solid @panel-inner-border;
+    }
+  }
+  .panel-footer {
+    border-top: 0;
+    + .panel-collapse .panel-body {
+      border-bottom: 1px solid @panel-inner-border;
+    }
+  }
+  
+  // Joined Accordions
+  &.joined {
+	  
+	  > .panel {
+		  .rounded(0);
+		  
+		  + .panel {
+			  margin-top: 0;
+			  border-top: 0;
+		  }
+		  
+		  > .panel-heading {
+			  background-color: @background_color;
+			  
+			  h4 a {
+			  	
+			  	&:before {				  	
+					position: relative;
+					content: '\e87a';
+					//content: '\e879';
+					display: inline-block;
+					font-family: @font_entypo;
+					color: fade(@text_color_light, 70%);
+					padding: @panel_vpadding @panel_hpadding;
+					padding: 0;
+					float: right;
+					font-size: 17px;
+					margin-left: @base_padding + 3;
+					top: 0px;
+					.transall;
+			  	}
+			  	
+			  	&.collapsed:before {
+			  		.rotate(180deg);
+			  	}
+			  }
+		  }
+		  
+		  > .panel-heading + .panel-collapse {
+			  //background-color: @default;
+			  background-color: @hover_bg;
+			  margin-bottom: 0;
+			  font-size: @p_size;
+		  }
+		  
+		  &:first-child { .rounded(@border_radius @border_radius 0 0); }
+		  &:last-child { .rounded(0 0 @border_radius @border_radius); }
+	  }
+  }
+}
+
+
+// Contextual variations
+.panel-primary {
+  @panel-default-heading-bg: #ffffff;
+  @options-color: lighten(@panel-default-border, 5%);
+  @panel-default-border: @default;
+  
+  .panel-variant(@panel-default-border; @panel-default-text; @panel-default-heading-bg; @panel-default-border; @options-color);
+}
+.panel-invert {
+  @panel-default-heading-bg: @main_color;
+  @panel-default-border: #39414e;
+  
+  @options-color: lighten(@panel-default-border, 10%);
+  @panel-default-text: @main_text_acitve_color;
+  
+  .panel-variant(@panel-default-border; @panel-default-text; @panel-default-heading-bg; @panel-default-border; @options-color);
+  
+  > .panel-body {
+  	background-color: @panel-default-heading-bg;
+  	color: #778193;
+  }
+}
+.panel-default {
+  @panel-default-heading-bg: #f0f0f1;
+  @options-color: darken(@panel-default-border, 5%);
+  @panel-default-border: @default;
+  
+  .panel-variant(@panel-default-border; @panel-default-text; @panel-default-heading-bg; @panel-default-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: @options-color; }
+	&.active > a { background-color: #fff; border-bottom-color: #fff; }
+  }
+}
+.panel-success {
+  @options-color: darken(@panel-success-border, 5%);
+  .panel-variant(@panel-success-border; @panel-success-text; @panel-success-heading-bg; @panel-success-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: darken(@options-color, 5%); }
+	&.active > a { background-color: #fff; border-bottom-color: #fff; }
+  }
+}
+.panel-warning {
+  @options-color: darken(@panel-warning-border, 5%);
+  .panel-variant(@panel-warning-border; @panel-warning-text; @panel-warning-heading-bg; @panel-warning-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: darken(@panel-warning-heading-bg, 15%); }
+	&.active > a { background-color: #fff; border-bottom-color: #fff; }
+  }
+}
+.panel-danger {
+  @options-color: darken(@panel-danger-border, 5%);
+  .panel-variant(@panel-danger-border; @panel-danger-text; @panel-danger-heading-bg; @panel-danger-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: darken(@panel-danger-heading-bg, 15%); }
+	&.active > a { background-color: #fff; border-bottom-color: #fff; }
+  }
+}
+.panel-info {
+  @options-color: darken(@panel-info-border, 5%);
+  .panel-variant(@panel-info-border; @panel-info-text; @panel-info-heading-bg; @panel-info-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: darken(@panel-info-heading-bg, 15%); }
+	&.active > a { background-color: #fff; border-bottom-color: #fff; }
+  }
+}
+.panel-dark {
+  @panel-dark-text: #FFF;
+  @panel-dark-heading-bg: #333; 
+  @panel-dark-border: #222;
+  @options-color: lighten(@panel-dark-border, 15%);
+  
+  .panel-variant(@panel-dark-border; @panel-dark-text; @panel-dark-heading-bg; @panel-dark-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: fade(@panel-dark-text, 10%); color: @panel-dark-text; border-color: fade(@panel-dark-border, 10%); }
+	&.active > a { background-color: #fff; border-bottom-color: #fff; color: @panel-dark-border; i { color: @panel-dark-border; } }
+  }
+}
+.panel-gray {
+  @panel-gray-text: #FFF;
+  @panel-gray-heading-bg: #EEE; 
+  @panel-gray-border: #FFF;
+  @options-color: darken(@panel-gray-border, 12%);
+  
+  .panel-variant(@panel-gray-heading-bg; @panel-default-text; @panel-gray-heading-bg; @panel-gray-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: @panel-gray-text; border-bottom: 1px solid @panel-gray-text; }
+	&.active > a { background-color: @panel-gray-heading-bg; border-color: @panel-gray-border; border-bottom-color: @panel-gray-heading-bg; }
+  }
+  
+  > .panel-body {
+	  background-color: @panel-gray-heading-bg;
+  }
+  
+  > .panel-body + .panel-body {
+  	border-top-color: @panel-gray-border;
+  }
+}
+.panel-gradient {
+  @panel-gradient-text: @main_color;
+  @panel-gradient-heading-bg: #FFF;
+  @panel-gradient-border: #CCC;
+  
+  @options-color: lighten(@panel-gradient-border, 2%);
+  
+  .panel-variant(@panel-gradient-border; @panel-gradient-text; @panel-gradient-heading-bg; @panel-gradient-border; @options-color);
+  
+  > .panel-heading {
+	  .background-image(linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%));
+	  
+	  > .panel-options {
+		  
+		  i {
+			  color: @panel-gradient-text;
+		  }
+	  }
+  }
+}
+
+// Contextual variations
+.panel-primary {
+  @panel-default-heading-bg: #ffffff;
+  @options-color: lighten(@panel-default-border, 5%);
+  @panel-default-border: @default;
+  
+  .panel-variant(@panel-default-border; @panel-default-text; @panel-default-heading-bg; @panel-default-border; @options-color);
+}
+
+.panel-invert {
+  @panel-default-heading-bg: @main_color;
+  @panel-default-border: #39414e;
+  
+  @options-color: lighten(@panel-default-border, 10%);
+  @panel-default-text: @main_text_acitve_color;
+  
+  .panel-variant(@panel-default-border; @panel-default-text; @panel-default-heading-bg; @panel-default-border; @options-color);
+  
+  > .panel-body {
+  	background-color: @panel-default-heading-bg;
+  	color: #778193;
+  }
+}
+
+.panel-default {
+  @panel-default-heading-bg: #f0f0f1;
+  @options-color: darken(@panel-default-border, 5%);
+  @panel-default-border: @default;
+  
+  .panel-variant(@panel-default-border; @panel-default-text; @panel-default-heading-bg; @panel-default-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: @options-color; }
+	&.active > a { background-color: #fff; border-bottom-color: #fff; }
+  }
+}
+
+.panel-success {
+  @options-color: darken(@panel-success-border, 5%);
+  .panel-variant(@panel-success-border; @panel-success-text; @panel-success-heading-bg; @panel-success-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: darken(@options-color, 5%); }
+	&.active > a { background-color: #fff; border-bottom-color: #fff; }
+  }
+}
+
+.panel-warning {
+  @options-color: darken(@panel-warning-border, 5%);
+  .panel-variant(@panel-warning-border; @panel-warning-text; @panel-warning-heading-bg; @panel-warning-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: darken(@panel-warning-heading-bg, 15%); }
+	&.active > a { background-color: #fff; border-bottom-color: #fff; }
+  }
+}
+
+.panel-danger {
+  @options-color: darken(@panel-danger-border, 5%);
+  .panel-variant(@panel-danger-border; @panel-danger-text; @panel-danger-heading-bg; @panel-danger-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: darken(@panel-danger-heading-bg, 15%); }
+	&.active > a { background-color: #fff; border-bottom-color: #fff; }
+  }
+}
+
+.panel-info {
+  @options-color: darken(@panel-info-border, 5%);
+  .panel-variant(@panel-info-border; @panel-info-text; @panel-info-heading-bg; @panel-info-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: darken(@panel-info-heading-bg, 15%); }
+	&.active > a { background-color: #fff; border-bottom-color: #fff; }
+  }
+}
+
+.panel-dark {
+  @panel-dark-text: #FFF;
+  @panel-dark-heading-bg: #333; 
+  @panel-dark-border: #222;
+  @options-color: lighten(@panel-dark-border, 15%);
+  
+  .panel-variant(@panel-dark-border; @panel-dark-text; @panel-dark-heading-bg; @panel-dark-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: fade(@panel-dark-text, 10%); color: @panel-dark-text; border-color: fade(@panel-dark-border, 10%); }
+	&.active > a { background-color: #fff; border-bottom-color: #fff; color: @panel-dark-border; i { color: @panel-dark-border; } }
+  }
+}
+
+.panel-gray {
+  @panel-gray-text: #FFF;
+  @panel-gray-heading-bg: #EEE; 
+  @panel-gray-border: #FFF;
+  @options-color: darken(@panel-gray-border, 12%);
+  
+  .panel-variant(@panel-gray-heading-bg; @panel-default-text; @panel-gray-heading-bg; @panel-gray-border; @options-color);
+  
+  > .panel-heading > .panel-options > .nav-tabs > li {    	
+	> a { background-color: @panel-gray-text; border-bottom: 1px solid @panel-gray-text; }
+	&.active > a { background-color: @panel-gray-heading-bg; border-color: @panel-gray-border; border-bottom-color: @panel-gray-heading-bg; }
+  }
+  
+  > .panel-body {
+	  background-color: @panel-gray-heading-bg;
+  }
+  
+  > .panel-body + .panel-body {
+  	border-top-color: @panel-gray-border;
+  }
+}
+
+.panel-gradient {
+  @panel-gradient-text: @main_color;
+  @panel-gradient-heading-bg: #FFF;
+  @panel-gradient-border: #CCC;
+  
+  @options-color: lighten(@panel-gradient-border, 2%);
+  
+  .panel-variant(@panel-gradient-border; @panel-gradient-text; @panel-gradient-heading-bg; @panel-gradient-border; @options-color);
+  
+  > .panel-heading {
+	  .background-image(linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%));
+	  
+	  > .panel-options {
+		  
+		  i {
+			  color: @panel-gradient-text;
+		  }
+	  }
+  }
+}
+
+// Panel Variant Mixin
+.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border; @options-color;) {
+  border-color: @border;
+  .rounded;
+
+  & > .panel-heading {
+    color: @heading-text-color;
+    background-color: @heading-bg-color;
+    border-color: @heading-border;
+    padding: 0;
+
+    + .panel-collapse .panel-body {
+      border-top-color: @border;
+    }
+    & > .dropdown .caret {
+      border-color: @heading-text-color transparent;
+    }
+    
+    > .panel-title {
+	    
+	    > a {
+		    color: @heading-text-color;
+	    }
+    }
+    
+    > .panel-options {
+	    
+	    > a {
+	    	display: inline-block;
+		    color: @heading-text-color;
+		    text-align: center;
+		    line-height: 1;
+		    padding: 4px 2px;
+		    .rounded;
+		    .transall;
+		    
+		    &.bg {
+		    	background-color: @options-color;
+				margin-left: @base_padding/2;
+		    
+			    &:hover {
+				    background-color: lighten(@options-color, 3%);
+			    }
+		    }
+		    
+		    i {
+			    margin: 0;
+			    padding: 0;
+			    display: inline-block;
+		    }
+	    }
+	    
+	    // Tabs
+	    > .nav-tabs {
+	    	position: relative;
+	    	top: 1px;
+	    	border-bottom: 1px solid @border;
+	    	padding-top: 5px;
+	    	
+	    	> li {
+	    		background-color: transparent;
+	    		
+	    		 > a {
+			    	border-color: @border;
+				    background-color: @border;
+				    //color: @options-color;
+				    padding: 8px 10px;
+				    color: fade(@heading-text-color, 50%);
+				    font-size: @p_size;
+				    .border-radius(@border-radius-base @border-radius-base 0 0);
+					.transall;
+					
+					> i {
+				 	  font-size: 14px;
+				 	  line-height: 1;
+					  .transall;
+					}
+	    		 }
+	    		 
+	    		 &.active {
+					 
+					 
+					 > a {
+				    	border-bottom: 1px solid @heading-bg-color;
+				    	background-color: @heading-bg-color;
+				    	color: @heading-text-color;
+				    	
+				    	> i {
+					    	color: @heading-text-color;
+					    }
+					 }
+				 }
+	    	}
+    	}
+    }
+  }
+  & > .panel-footer {
+  	background-color: @heading-bg-color;
+  	color: @heading-text-color;
+  	border-top-color: @heading-border;
+  	
+    + .panel-collapse .panel-body {
+      border-bottom-color: @border;
+    }
+  }
+  
+  & > .panel-body + .panel-body {
+	  border-top-color: @heading-border;
+  }
+}

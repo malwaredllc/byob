@@ -1,0 +1,39 @@
+.label {
+	display: inline-block;
+	padding: 6px 12px;
+	font-weight: normal;
+	
+	+ .label {
+		margin-left: @base-padding;
+	}
+}
+
+.label-default {
+  .label-variant(@default);
+  color: @main_color;
+}
+
+.label-primary {
+  .label-variant(@label-primary-bg);
+  color: @main_text_acitve_color;
+}
+
+.label-secondary {
+  .label-variant(@secondary_color);
+}
+
+.label-success {
+  .label-variant(@label-success-bg);
+}
+
+.label-info {
+  .label-variant(@label-info-bg);
+}
+
+.label-warning {
+  .label-variant(@label-warning-bg);
+}
+
+.label-danger {
+  .label-variant(@label-danger-bg);
+}

@@ -1,0 +1,64 @@
+.invoice {
+	margin: 0px 0;
+	font-size: 14px;
+	
+	.invoice-left, .invoice-right {
+		
+		strong {
+			color: @main_color;
+		}
+		
+		> h3 {
+			margin-top: 0;
+		}
+	}
+	
+	.invoice-left {
+		
+	}
+	
+	.invoice-right {
+		text-align: right;
+	}
+	
+	.margin {
+		margin: 40px 0;
+	}
+	
+	h4 {
+		font-weight: bold;
+	}
+}
+
+@media print {
+
+	.invoice-left {
+		float: left !important;
+	}
+	
+	.invoice-right {
+		float: right !important;
+		text-align: right !important;
+		top: -20px;
+		position: relative;
+	}
+}
+
+@media (max-width: @screen-sm) {
+
+	.invoice {
+	
+		.invoice-right {
+			text-align: left;
+			margin-top: 20px;
+		}
+		
+		.margin {
+			margin: 15px 0;
+		}
+		
+		table {
+			margin: 20px 0;
+		}
+	}
+}

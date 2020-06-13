@@ -1,0 +1,28 @@
+@p-radius: 10px;
+
+.progress {;
+  .rounded(@p-radius);
+  .box-shadow(none);
+}
+
+// Bar of progress
+.progress-bar {
+  .box-shadow(none);
+}
+
+.progress-bar-default {
+  background: #fff;
+  padding: 2px;
+  border: 1px solid @default;
+  
+  
+  .progress-bar {
+  	.progress-bar-variant(@default);
+  	#gradient > .striped(darken(@default, 4%); 45deg);
+  	.border-radius(@p-radius 0 0 @p-radius);
+  	
+  	&[aria-valuenow="100"] {
+	  .rounded(@p-radius);
+  	}
+  }
+}

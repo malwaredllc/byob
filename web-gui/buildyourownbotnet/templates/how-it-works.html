@@ -1,0 +1,205 @@
+{% extends "layout.html" %}
+
+{% block slider %}
+<div class="demo-1 black-canvas" style="z-index: 0;">
+	<div class="content">
+		<div id="large-header" class="large-header">
+			<canvas id="demo-canvas"></canvas>
+			<h1></h1>
+		</div>
+	</div>
+</div>
+{% endblock slider %}
+
+
+{% block main %}
+
+<style>
+	p {
+/*		padding-left: 30px;*/
+		font-size: 15px;
+	}
+
+	h2 {
+		font-family: titillium;
+		padding-bottom: 10px;
+	}
+
+	h3 {
+		font-family: titillium;
+		padding-left: 0;
+	}
+
+/*	h4 {
+		padding-left: 30px;
+	}*/
+
+	li {
+		font-size: 15px;
+	}
+
+	a {
+		color: #4497fc;
+	}
+
+	a:hover {
+		color: gray;
+	}
+
+	@media screen and (max-width: 1060px) {
+	  #toc {
+	    visibility: false;
+	    display: none;
+	  }
+	}
+</style>
+
+
+<div class="container" style="z-index: 2; position: relative;">
+
+	<div class="row">
+
+		<div class="col-sm-2">
+
+			<div class="tocify" id="toc" style="position: fixed; top: 200px; left: 40px"></div>
+			
+		</div>
+
+		<div class="col-md-10" style="color: white; transform: translateY(-400px);">
+
+			<h1 style="color: white;" align="center">How it Works</h1>
+
+			<br/>
+			<hr/>
+			<br/>
+
+			<div class="tocify-content">
+
+			<p>BYOB is intended to be a beginner friendly tool for those interested in learning basic botnet architecture. It is not intended to be a robust solution suitable for real world attackers. Below are details on the architecture and design choices of this project.</p>
+
+			<p>This web application uses a version of the original console-based application <a href="https://github.com/malwaredllc/byob">BYOB</a> which has been modified for use with a web-based front-end.</p>
+
+			<br/>
+
+			<p>BYOB uses "staged" payloads, which work something like this:</p>
+		
+			<br/>
+			<hr/>
+			<br/>
+
+				<h2 style="font-weight: bold; color: white;">Dropper</h2>
+				<p>The main "dropper" file is first thing to be executed. It is a tiny file which only purposes is to fetch and execute the next stage of code). It is the only file which actually exists on the disk of the target machine.</p>
+				<p>The dropper is heavily obfuscated and compressed, and is usually compiled into a binary executable. It contains a hardcoded address where an encrypted file containing the next stage of the of payload is located. It downloads this encrypted file, decrypts it in memory, and executes the decrypted code.</p>
+
+				<br/>
+				<hr/>
+				<br/>
+
+				<h2 style="font-weight: bold; color: white;">Stager</h2>
+				<p>The "stager" file is the second stage of code. It only exists in memory on the target machine. The stager's purpose is to run some environment checks, which can do things like test if a debugger is attached to the currently running process and abort execution if so, or test if it is running in a virtual machine or sandbox environment and abort execution if true.<p>
+
+				<p>This is all to prevent analysis of the code running in memory. Finally if all checks pass, it download another encrypted file containing the main payload code. It decrypts it in memory and runs it.</p>
+
+				<p>Note that these anti-anlysis features are disabled by default in order not to confuse new users trying to run a BYOB payload on a virtual machine.</p>
+
+				<br/>
+				<hr/>
+				<br/>
+
+
+				<h2 style="font-weight: bold; color: white;">Payload</h2>
+
+				<p>The main payload is the "meat and potatoes" and contains all of the main functionality to control the target machine, remotely import Python packages and post-exploitation modules from the server, and operate as a <a href="https://www.acunetix.com/blog/web-security-zone/what-is-reverse-shell/">reverse TCP shell</a>.</p>
+
+				<p>Throughout all of this, the only data that exists on the disk is the original tiny dropper file, which contains obfuscated code and also usually is compiled into a binary executable file, which makes reverse-engineering that much more tedious.</p>
+
+				<p>In a real life scenario, this is not fool-proof obviously, as a determined analyst could reverse-engineer this and find the C2 server. The idea is to make it as tedious, time consuming, and difficult as possible so that they may conclude it is not worth the time/resources to follow the trail (which in all likely hood will just lead down a rabbit hole of proxies and/or TOR nodes to a bulletproof hosted server).</p>
+
+			<br/>
+			<hr/>
+			<br/>
+
+			<h2 style="font-weight: bold; color: white;">Security</h2>
+
+				<p>Staged payloads can add security through anti-analysis techniques, and minimizing the on-disk memory footprint of the payload. However, encrypting communication between client and server is also essential to ensuring security.</p>
+
+				<br/>
+
+				<h3 style="font-weight: bold; color: white;">Encrypted Connection</h3>
+				<p>This main payload's first step is to establish a secure, AES-256-CBC encrypted TCP connection with the C2 server. It does this via the <a href="https://en.wikipedia.org/wiki/Diffie–Hellman_key_exchange">Diffie-Hellman Internet Key Exchange Protocol</a>, which is a way of generating a shared secret between two people in such a way that the secret can't be seen by observing the communication. That's an important distinction: you're not sharing information during the key exchange, you're creating a key together.</p>
+
+				<p>This is particularly useful because you can use this technique to create an encryption key with someone, and then start encrypting your traffic with that key. And even if the traffic is recorded and later analyzed, there's absolutely no way to figure out what the key was, even though the exchanges that created it may have been visible.<p>
+
+				<br/>
+
+				<h3 style="font-weight: bold; color: white;">Encrypted Payloads</h3>
+
+				<p>At this time the stagers and payloads can be encrypted via a simple XOR cipher with a 128 bit key. However, there are plans to make this more robust in the future.</p>
+
+				<p>The goal of encrypting stager and payloads is that they are hosted online and externally exposed to the world, so encrypted the payload forces an analyst forces them to study the behavior of the payload to reverse-engineer its implementation details. This is much more difficult for them than if they could simply read the code.</p>
+
+			<br/>
+			<hr/>
+			<br/>
+
+			<h2 style="font-weight: bold; color: white;">Portability</h2>
+				<p>Real botnets generally don't use a scripting language like Python for the payload, which is much easier to reverse-engineer, requires Python be installed on the target machine to run, and many third party packages are required to do anything useful. However, BYOB gets around these problems in 2 ways:</p>
+
+				<br/>
+
+				<h3 style="font-weight: bold; color: white;">Executables</h3>
+				<p>By selecting the "executable" format when generating a payload, the Python payload is compiled into a binary executable with an embedded Python interpreter, so it will run on a machine that does not have Python installed. BYOB accomplishes this by running <a href="https://www.docker.com/">Docker</a> containers and <a href="https://www.winehq.org/">Wine</a> servers for different platforms and architectures, and running <a href="https://www.pyinstaller.org">PyInstaller</a> within the appropriate environment based on the platform and architecture selected by the user.</p>
+
+				<br/>
+
+				<h3 style="font-weight: bold; color: white;">Remote Imports</h3>
+				<p>The C2 server also runs a simple HTTP server to host the third party Python packages that some of the post-exploitation modules use. If a post-exploitation module attempts to import a third party package that isn't available, it will then remotely import the package from the server over HTTP. This allows the payloads to import third party packages directly the same way as if they were installed on the machine locally.<p>
+
+				<p>The 2 features above combine to make the payload quite portable.</p>
+					
+			<br/>
+			<hr/>
+			<br/>
+		</div>
+
+		<div class="row" align="center">
+			<!-- Discord server -->
+				<h2 style="color: white; font-family: titillium">Questions?</h2>
+				<br/>
+				<div class="join-discord" onclick="openInNewTab('https://discord.com/channels/709150520446550097/709150520929026241');">
+					<img src="/assets/images/discord.png" style="width: 50px; padding-right: 10px"/>
+					<span>Join our Discord server</span>
+				</div>
+
+		</div>
+	</div>
+
+</div>
+
+<script>
+	window.addEventListener("hashchange", function () {
+	    window.scrollTo(window.scrollX, window.scrollY - 100);
+	});
+</script>
+<!-- Import tocify -->
+	<script src="/assets/js/gsap/TweenMax.min.js"></script>
+	<script src="/assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+	<script src="/assets/js/bootstrap.js"></script>
+	<script src="/assets/js/joinable.js"></script>
+	<script src="/assets/js/resizeable.js"></script>
+	<script src="/assets/js/neon-api.js"></script>
+
+
+	<!-- Imported scripts on this page -->
+	<script src="/assets/js/tocify/jquery.tocify.min.js"></script>
+	<script src="/assets/js/neon-chat.js"></script>
+
+
+	<!-- JavaScripts initializations and stuff -->
+	<script src="/assets/js/neon-custom.js"></script>
+
+
+	<!-- Demo Settings -->
+	<script src="/assets/js/neon-demo.js"></script>
+
+{% endblock main %}

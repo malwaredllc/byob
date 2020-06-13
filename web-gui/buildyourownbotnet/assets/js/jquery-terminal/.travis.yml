@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - 10.15.0
+before_install:
+  - sudo apt-get -y install graphicsmagick
+install:
+  - npm ci
+script:
+  - make
+  - make lint
+  - make tscheck
+  - make skipped_tests
+  - make test || travis_terminate 1
+after_script:
+  - make coveralls

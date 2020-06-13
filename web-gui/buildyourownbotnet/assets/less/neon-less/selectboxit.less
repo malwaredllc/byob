@@ -1,0 +1,131 @@
+.selectboxit {
+	visibility: hidden;
+}
+
+.page-body {
+	
+	.selectboxit {
+		
+		display: block;
+		
+		&.visible {
+			visibility: visible;
+		}
+	}
+	
+	
+	.selectboxit-container {
+		display: block;
+		
+		.selectboxit {
+			width: 100% !important;
+			background: #fff;
+			border: 1px solid @default;
+			.transition(~"all 150ms ease-in-out");
+			.rounded;
+			
+			&.selectboxit-enabled:focus {
+				background-color: #fff;
+				
+				.selectboxit-text {
+					color: @main_color;
+				}
+			}
+			
+			&:hover, &.selectboxit-open {
+				background-color: fade(@hover_bg, 80%);
+				
+				.selectboxit-text {
+					color: @main_color;
+				}
+			}
+			
+			&.selectboxit-open {
+				.border-radius(@border_radius @border_radius 0 0);
+				
+				.selectboxit-arrow-container {
+					background-color: fade(@hover_bg, 80%);
+					
+					&:after {
+						.rotate(180deg);
+					}
+				}
+			}
+			
+			.selectboxit-option-icon-container .selectboxit-option-icon {
+				margin-left: 5px;
+			}
+			
+			.selectboxit-text {
+				max-width: 100% !important;
+				font-size: @p_size;
+				font-family: @font_family;
+				color: #888;
+				.transall;
+			}
+			
+			.selectboxit-arrow-container {
+				border-left: 1px solid @default;
+				text-align: center;
+				width: 40px;
+				
+				.selectboxit-arrow {
+					display: none;
+				}			
+				
+				&:after {
+					position: relative;
+					font-family: @font_entypo;
+					content: '\e873';
+					display: block;
+					color: @main_color;
+					.transition(~"all 150ms ease-in-out");
+					font-size: @p_size;
+				}
+			}
+		}
+			
+		.selectboxit-options {
+			@pad: 5px;
+			
+			width: 100%;
+			background: #fff;
+			.border-radius(0 0 @border_radius @border_radius);
+			border-top: 0;
+			border-color: @default;
+			.box-shadow(~"0 2px 7px rgba(0,0,0,.06)");
+			max-height: 350px;
+			
+			> span.selectboxit-optgroup-header {
+				font-size: @p_size;
+				color: @main_color;
+				background: #fafafa;
+				border-bottom: 1px solid #f5f5f5;
+				padding-left: @pad;
+				padding-right: @pad;
+			}
+			
+			li {
+				
+				.selectboxit-option-anchor {
+					font-size: @p_size;
+					padding-left: @pad;
+					padding-right: @pad;
+					.transall;
+					
+					.selectboxit-option-icon-container .selectboxit-option-icon {
+						margin-left: 5px;
+					}
+				}
+				
+				&.selectboxit-focus {
+					
+					.selectboxit-option-anchor {
+						background: #f3f3f3;
+						color: #666;
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+find . -type f -not -path './node_modules*' -a -not -path '*.git*' -a -not -path './coverage*' -a -not -path './bower_components*' | while read file; do
+  git check-ignore -q "$file" || echo "$file"
+done

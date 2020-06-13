@@ -1,0 +1,110 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="robots" content="index, follow">
+        <title>aciTree checkbox demo - A treeview control with jQuery</title>
+        <meta name="description" content="A demo to show you how aciTree can be used with checkboxes, check the plugin page to see all the functions exposed by the API">
+        <meta name="keywords" content="aciTree, treeview, control, tree view, javascript, jQuery">
+        <link rel="stylesheet" type="text/css" href="css/aciTree.css" media="all">
+        <link rel="stylesheet" type="text/css" href="css/demo.css" media="all">
+        <script type="text/javascript" src="js/jquery.min.js"></script>
+        <script type="text/javascript" src="js/jquery.aciPlugin.min.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.dom.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.core.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.selectable.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.checkbox.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.radio.js"></script>
+    </head>
+    <body>
+
+        <div>
+
+            <p>This is a demo to show you using aciTree with checkboxes. The <b>checkbox</b> flag need to be set for each item into the JSON data when
+                both checkbox and radio extensions are included.<br>
+                By default, all items will have a checkbox (if <b>checkbox</b> is missing from the JSON data).</p>
+
+            <p>When a checkbox is checked, all children from each level under the selected one will be checked by default. Also, the parents
+                will be checked all the way up to the root item.<br>This functionality will break once there is a missing checkbox (with the default options set).
+                In this way you can form checkbox groups.</p>
+
+            <p>Note: When loading nodes, the checked/unchecked state need to be correctly set in the JSON data.</p>
+
+            <div id="tree" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/checkbox.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>The easy way to find a car that's right for you</div></div>
+
+            <div id="tree-combined" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/checkbox-radio-button.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>With checkbox + radio button sample</div></div>
+
+            <div class="log">Tree Log... <a class="clear_log" style="font-size:10px" href="#" title="Clear the LOG" target="_blank">clear log</a>
+                <div></div></div>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // init the tree
+                    $('#tree').aciTree({
+                        ajax: {
+                            url: 'json/checkbox.json'
+                        },
+                        checkbox: true
+                    });
+
+                    // init the tree
+                    $('#tree-combined').aciTree({
+                        ajax: {
+                            url: 'json/checkbox-radio-button.json'
+                        },
+                        checkbox: true,
+                        radio: true,
+                        unique: true
+                    });
+
+                });
+
+            </script>
+
+            <script type="text/javascript">
+
+                $(function() {
+
+                    var log = $('.log div');
+
+                    // write to log
+                    $('#tree,#tree-combined').on('acitree', function(event, api, item, eventName, options) {
+                        if (api.isItem(item)) {
+                            log.prepend('<p>' + eventName + ' [' + api.getId(item) + ']</p>');
+                        } else {
+                            log.prepend('<p>' + eventName + ' [tree]</p>');
+                        }
+                    });
+
+                    $('.clear_log').click(function() {
+                        $('.log div').html('');
+                        return false;
+                    });
+
+                });
+
+            </script>
+
+        </div>
+
+        <script type="text/javascript">
+
+            $(function() {
+
+                $('script.code').each(function() {
+                    $(this).before('<div style="clear:both;margin:10px 0 10px 0"><pre style="padding:20px;border:1px dashed #000;background:#f6f6f6;display:inline-block;"></pre></div>');
+                    $(this).prev('div').find('pre').text($(this).html());
+                });
+
+            });
+
+        </script>
+
+    </body>
+</html>

@@ -1,0 +1,483 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="robots" content="index, follow">
+        <title>aciTree using the API demo - A treeview control with jQuery</title>
+        <meta name="description" content="A demo to show you how aciTree API can be used">
+        <meta name="keywords" content="aciTree, treeview, control, tree view, javascript, jQuery">
+        <link rel="stylesheet" type="text/css" href="../css/aciTree.css" media="all">
+        <link rel="stylesheet" type="text/css" href="../css/demo.css" media="all">
+        <script type="text/javascript" src="../js/jquery.min.js"></script>
+        <script type="text/javascript" src="../js/jquery.aciPlugin.min.js"></script>
+        <script type="text/javascript" src="../js/jquery.aciTree.min.js"></script>
+    </head>
+    <body>
+
+        <div>
+
+            <p>A demo to show how you can use the aciTree API (read below).</p>
+
+            <p><a href="index.html" title="aciTree usage demo">back to index</a></p>
+
+            <div id="tree" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/sample.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>Sample tree</div></div>
+
+            <div class="log">Tree Log... <a class="clear_log" style="font-size:10px" href="#" title="Clear the LOG" target="_blank">clear log</a>
+                <div></div></div>
+
+            <div style="clear:both"></div>
+
+            <p>Init the aciTree by using a relative path to the `ajax.url` option (see the docs for all available aciTree options):</p>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // init the tree
+                    $('#tree').aciTree({
+                        ajax: {
+                            url: '../json/sample.json'
+                        },
+                        selectable: true
+                    });
+
+                });
+
+            </script>
+
+            <p><span style="color:red"><b>Note</b></span>: the `ajax` option will be used whenever a tree node needs to be loaded, it is used on the initial AJAX request to
+                init (load) the tree ROOT (what you first see as the tree when you visit this page) and it it used again when a not-yet-loaded
+                inner node (a node that can have children) is opened for the first time. In this demo the entire tree is loaded in one step but the tree
+                can be loaded node by node on request if needed (i.e. when the user clicks on the [+] button to open a node). aciTree will create as many tree levels
+                as returned in the JSON, practically (with server-side coding) the tree can not only be loaded node-by-node but in an optimised way - many levels at once -
+                depending on the tree weight.</p>
+
+            <br><br><br>
+
+            <p>You can init as many trees as you want on a single page:</p>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // init the #tree-1
+                    $('#tree-1').aciTree({
+                        ajax: {
+                            url: 'json-url-for-tree-1?node_id='
+                        }
+                    });
+
+                    // init the #tree-2
+                    $('#tree-2').aciTree({
+                        ajax: {
+                            url: 'json-url-for-tree-2?node_id='
+                        }
+                    });
+
+                });
+
+            </script>
+
+            <br><br><br>
+
+            <p>And you can init many at once. Because the tree will be init by default - you need to specify
+                the `autoInit` option (set to FALSE), set the `ajax.url` option and - just after that - init the tree:</p>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // set tree options
+                    $('#tree-1,#tree-2').aciTree({
+                        autoInit: false
+                                // any other options here
+                    });
+
+                    // set the ajax.url for #tree-1
+                    $('#tree-1').aciTree('option', 'ajax.url', 'json-url-for-tree-1?node_id=');
+
+                    // set the ajax.url for #tree-2
+                    $('#tree-2').aciTree('option', 'ajax.url', 'json-url-for-tree-2?node_id=');
+
+                    // init them
+                    $('#tree-1,#tree-2').aciTree('init');
+
+                });
+
+            </script>
+
+            <p><span style="color:red"><b>Note</b></span>: when aciTree will make a AJAX request to the `ajax.url` option (to load the tree nodes and init them based on the JSON response from the server),
+                the node ID will be appended to the [string] value of the `ajax.url`, for example - when the tree node with the ID 'node-547' needs to be loaded, the request made
+                to the server will be <b>String(ajax.url + 'node-547')</b>, that's why in my examples there is a <b>?branch=</b> or <b>?node_id=</b> at the end of the URL.
+                Server-side you need to read the GET value and return only the data for whatever node ID was requested (insted of returning the entire tree).</p>
+
+            <br><br><br>
+
+            <p>Get the aciTree API to use it later (see the docs for all available aciTree API methods):</p>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // ... the tree init code here ...
+
+                    // get the API and keep it for later use
+                    var treeApi = $('#tree').aciTree('api');
+
+                    // use the API to select the first tree item
+                    var selectFirstItem = function() {
+
+                        // get the first item
+                        var firstItem = treeApi.first();
+
+                        // then select it
+                        treeApi.select(firstItem);
+
+                    };
+
+                    // run our custom function
+                    setTimeout(selectFirstItem, 2000);
+
+                });
+
+            </script>
+
+            <p><span style="color:red"><b>Note</b></span>: you need to keep in mind that loading the tree/nodes with AJAX is made in asynchronous way, that means - on tree init -
+                the called function will exit before the tree is actually loaded so we may end up executing some code before the tree itself is ready. That's why I have added
+                a little delay in the previous example, to let time to the tree to finish loading with AJAX and init his structure.
+                <b>The example here is just to let you know how aciTree behaves and not the correct way to implement things. Do not use in real applications, you will
+                    need to use <i>events</i> for that!</b> (see examples a bit lower)</p>
+
+            <br><br><br>
+
+            <p>Use the 'itemHook' option to set each item in a custom way (just before it is actually added to the DOM):</p>
+
+            <div id="tree-custom-label" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/sample.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>Sample tree</div></div>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // init the tree
+                    $('#tree-custom-label').aciTree({
+                        ajax: {
+                            url: '../json/sample.json'
+                        },
+                        selectable: true,
+                        itemHook: function(parent, item, itemData, level) {
+                            // set a custom item label to show the branch level
+                            this.setLabel(item, {
+                                label: itemData.label + ' (level ' + level + ')'
+                            });
+                        }
+                    });
+
+                });
+
+            </script>
+
+            <p>Where the 'parent' is the parent LI element (if any; as a jQuery object), the 'item' is the LI element for the item (as a jQuery object),
+                'itemData' is the item data (as read from the JSON) and the
+                'level' is the tree branch level (where the item is located - starting from 0). Inside the <b>itemHook</b> function, <i>this</i> keyword points to the aciTree API
+                (for the current tree).</p>
+
+            <br><br><br>
+
+            <p>The way to respond to the aciTree changes is using the events, also if you want to do some stuff just after init or when a specific event is fired:</p>
+
+            <div id="tree-using-events" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/sample.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>Sample tree</div></div>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // listen for the events before we init the tree
+                    $('#tree-using-events').on('acitree', function(event, api, item, eventName, options) {
+                        // get the item ID
+                        var itemId = api.getId(item);
+                        if (eventName == 'selected') {
+                            alert('one tree item was selected, his ID is ' + itemId);
+                        }
+                    });
+
+                    // init the tree
+                    $('#tree-using-events').aciTree({
+                        ajax: {
+                            url: '../json/sample.json'
+                        },
+                        selectable: true
+                    });
+
+                });
+
+            </script>
+
+            <p>The event handler receives a few extra parameters: the aciTree 'api', the 'item' is the LI element for the item (as a jQuery object; can be NULL - for ROOT for example),
+                'eventName' the aciTree event name (like 'selected' when a tree item is selected), 'options' is an object you can pass to some of the aciTree
+                API methods and it is sent back to the event handler function (more about this a bit later).</p>
+
+            <p><span style="color:red"><b>Note</b></span>: most of the aciTree API methods trigger one or more events. <b>When you call the API methods from inside the
+                    event handler function you need to make sure you will not end in a loop</b>, consult the
+                docs to see what events are triggered for each API method you want to call.</p>
+
+            <br><br><br>
+
+            <p>Now that we know how to listen for the aciTree events, the way to go with the example where we used the <i>setTimeout</i> to add a delay
+                and set the selection to the first tree item:</p>
+
+            <div id="tree-on-init" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/sample.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>Sample tree</div></div>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // listen for the events before we init the tree
+                    $('#tree-on-init').on('acitree', function(event, api, item, eventName, options) {
+                        // do some stuff on init
+                        if (eventName == 'init') {
+
+                            // get the first item
+                            var firstItem = api.first();
+
+                            // then select it
+                            api.select(firstItem);
+
+                        }
+                    });
+
+                    // init the tree
+                    $('#tree-on-init').aciTree({
+                        ajax: {
+                            url: '../json/sample.json'
+                        },
+                        selectable: true
+                    });
+
+                });
+
+            </script>
+
+            <br><br><br>
+
+            <p>Bad way to do things and end up in a loop:</p>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // listen for the events before we init the tree
+                    $('#tree-bad-way').on('acitree', function(event, api, item, eventName, options) {
+                        // do it the wrong way
+                        if (eventName == 'beforeopen') {
+
+                            // open the node
+                            api.open(item);
+
+                        }
+                    });
+
+                    // init the tree
+                    $('#tree-bad-way').aciTree({
+                        ajax: {
+                            url: 'json-url-for-tree?node='
+                        }
+                    });
+
+                });
+
+            </script>
+
+            <p><span style="color:red"><b>Note</b></span>: because the API method .open itself is triggering the 'beforeopen' event, you
+                will end in a never endin loop with the above code. There is no easy explanation what you can and can't do inside the event handler function, you
+                need to check the docs and see what events are triggered. Please note that some API methods also internally call other API methods so more events (than expected) can be
+                triggered at a time. In practice any of the API methods can be used by checking the 'eventName' and item states before trying to call the API to do something.</p>
+
+            <br><br><br>
+
+            <p><span style="color:red"><b>Important</b></span>: a few words about the 'options' object for the API methods that support this parameter:</p>
+
+            <div id="tree-using-callbacks" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/sample.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>Sample tree</div></div>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // listen for the events before we init the tree
+                    $('#tree-using-callbacks').on('acitree', function(event, api, item, eventName, options) {
+                        // do some stuff on init
+                        if (eventName == 'init') {
+
+                            // get the first item
+                            var firstItem = api.first();
+
+                            // then select it
+                            api.select(firstItem, {
+                                success: function(item, options) {
+                                    var itemId = this.getId(item);
+                                    // uncomment to show it on screen :)
+                                    //alert('selected the node with the ID ' + itemId);
+                                },
+                                fail: function(item, options) {
+                                    alert('failed to select the requested item')
+                                }
+                            });
+
+                        }
+                    });
+
+                    // init the tree
+                    $('#tree-using-callbacks').aciTree({
+                        ajax: {
+                            url: '../json/sample.json'
+                        },
+                        selectable: true
+                    });
+
+                });
+
+            </script>
+
+            <p>As you can see it's the same example as before but now we use the 'success' and 'fail' callbacks to do some processing on success/fail (depending on the
+                current opperation, in this example - on item selection).</p>
+
+            <p><span style="color:red"><b>Note</b></span>: the 'success' and 'fail' callbacks need to be used whenever you want to do any processing related to the
+                success (or not) of an operation. These callbacks are available for most of the API methods that change the aciTree structure (read the docs to find
+                what other options are available with the 'options' parameter for each API method). Their use is needed because there can be async operations involved, then the
+                API method will exit before the job is finished. Also note that the <i>this</i> keyword inside these callback functions points to the aciTree API,
+                'item' is the LI for the item (if any, as a jQuery object, can be NULL for the ROOT - for example) and the 'options' is the object initially
+                passed to the API method. Note that the 'options' object inside the callbacks can also contain other new properties, some of the API methods
+                are returning values as properties of the 'options' object (check the docs for each API method you want to use).</p>
+
+            <br><br><br>
+
+            <p>The 'options' parameter (for the API methods that support this parameter) is passed to all inner API methods and ends up as a parameter to
+                both the event handler and the 'success' and 'fail' callbacks. There can be new properties set and you can pass your own properties
+                (but make sure you do not override the defaults,
+                I suggest using a [_] infront of custom property names). You can also check the <b>uid</b> property (set by default to 'ui').
+                By setting this value you can respond in different ways for different actions:</p>
+
+            <div id="tree-options" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/sample.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>Sample tree</div></div>
+
+            <input id="open-folder" type="button" value="Open Folder"> (select a closed tree inode item and press open - vs. - open with the [+] button)
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // listen for the events before we init the tree
+                    $('#tree-options').on('acitree', function(event, api, item, eventName, options) {
+                        // do some stuff on node open
+                        if (eventName == 'opened') {
+
+                            alert('this message is from the event handler\noptions.uid equals ' + options.uid);
+
+                            // do something based on the options.uid
+                            switch (options.uid) {
+                                case 'ui':
+                                    alert('this message is from the event handler\nthe user clicked on the [+] tree button');
+                                    break;
+                                case 'my-custom-button':
+                                    alert('this message is from the event handler\nthe user clicked on the custom button\nthe extra property value is ' + options._custom_property);
+                                    break;
+                                default:
+                                    alert('unknown - not handled UID ' + options.uid);
+                            }
+
+                        }
+                    });
+
+                    // init the tree
+                    $('#tree-options').aciTree({
+                        ajax: {
+                            url: '../json/sample.json'
+                        },
+                        selectable: true
+                    });
+
+                    // onClick for our button :)
+                    $('#open-folder').click(function() {
+                        var api = $('#tree-options').aciTree('api');
+                        var selectedItem = api.selected();
+                        if (api.isInode(selectedItem)) {
+                            // this is a tree inode
+                            if (api.isOpen(selectedItem)) {
+                                // if already opened
+                                alert('you need to select a closed inner node\nthe current one is already open');
+                            } else {
+                                // open the inner item
+                                api.open(selectedItem, {
+                                    uid: 'my-custom-button',
+                                    success: function(item, options) {
+                                        var itemId = this.getId(item);
+                                        alert('a item was just opened, the item ID was ' + itemId);
+                                    },
+                                    fail: function(item, options) {
+                                        var itemId = this.getId(item);
+                                        alert('failed to open the item with the ID ' + itemId);
+                                    },
+                                    _custom_property: 'some-custom-value'
+                                });
+                            }
+                        } else {
+                            // no selected item or not a tree inode item
+                            alert('you need to select a closed inner node first');
+                        }
+                    });
+
+                });
+
+            </script>
+
+            <script type="text/javascript">
+
+                $(function() {
+
+                    var log = $('.log div');
+
+                    // write to log
+                    $('#tree').on('acitree', function(event, api, item, eventName, options) {
+                        if (api.isItem(item)) {
+                            log.prepend('<p>' + eventName + ' [' + api.getId(item) + ']</p>');
+                        } else {
+                            log.prepend('<p>' + eventName + ' [tree]</p>');
+                        }
+                    });
+
+                    $('.clear_log').click(function() {
+                        $('.log div').html('');
+                        return false;
+                    });
+
+                });
+
+            </script>
+
+        </div>
+
+        <script type="text/javascript">
+
+            $(function() {
+
+                $('script.code').each(function() {
+                    $(this).before('<div style="clear:both;margin:10px 0 10px 0"><pre style="padding:20px;border:1px dashed #000;background:#f6f6f6;display:inline-block;"></pre></div>');
+                    $(this).prev('div').find('pre').text($(this).html());
+                });
+
+            });
+
+        </script>
+
+    </body>
+</html>

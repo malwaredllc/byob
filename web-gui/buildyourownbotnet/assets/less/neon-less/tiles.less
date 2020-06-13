@@ -1,0 +1,670 @@
+@tiles_radius: 5px;
+
+// Stats Tile
+.tile-stats {
+	@color: #fff;
+	
+	position: relative;
+	display: block;
+	background: @main_color;
+	padding: 20px;
+	margin-bottom: 10px;
+	overflow: hidden;
+	.border-radius(@tiles_radius);
+	.transall;
+	
+	&:hover {
+		background: darken(@main_color, 5%)
+	}
+	
+	.icon {
+		color: fade(#000000, 10%);
+		position: absolute;
+		right: 5px;
+		bottom: 5px;
+		z-index: 1;
+		
+		i {
+			font-size: 100px;
+			line-height: 0;
+			margin: 0;
+			padding: 0;
+			vertical-align: bottom;
+			
+			&:before {
+				margin: 0;
+				padding: 0;
+				line-height: 0;
+			}
+		}
+		
+	}
+	
+	.num, h3, p {
+		position: relative;
+		color: @color;
+		z-index: 5;
+		margin: 0;
+		padding: 0;
+	}
+	
+	.num {
+		font-size: 38px;
+		font-weight: bold;
+	}
+	
+	h3 {
+		font-size: 18px;
+		margin-top: 5px;
+	}
+	
+	p {
+		font-size: 11px;
+		margin-top: 5px;
+	}
+	
+	// Variants
+	&.tile-red { .tile-stats-variant(#f56954; #fff; fade(#000, 10%)); }
+	&.tile-green { .tile-stats-variant(#00a65a; #fff; fade(#000, 10%)); }
+	&.tile-blue { .tile-stats-variant(#0073b7; #fff; fade(#000, 10%)); }
+	&.tile-aqua { .tile-stats-variant(#00c0ef; #fff; fade(#000, 10%)); }
+	&.tile-cyan { .tile-stats-variant(#00b29e; #fff; fade(#000, 10%)); }
+	&.tile-purple { .tile-stats-variant(#ba79cb; #fff; fade(#000, 10%)); }
+	&.tile-pink { .tile-stats-variant(#ec3b83; #fff; fade(#000, 10%)); }
+	&.tile-orange { .tile-stats-variant(#ffa812; #fff; fade(#000, 10%)); }
+	&.tile-brown { .tile-stats-variant(#6c541e; #fff; fade(#000, 10%)); }
+	&.tile-plum { .tile-stats-variant(#701c1c; #fff; fade(#000, 10%)); }
+	&.tile-gray { .tile-stats-variant(#f5f5f5; darken(#f5f5f5, 40%); fade(#000, 10%)); }
+	
+	
+	&.tile-white { .tile-stats-variant(#fff; @main_color; #f2f2f2); border: 1px solid @default; &:hover { background-color: #fafafa; } }
+	&.tile-white-red { .tile-stats-variant(#fff; #f56954; #f2f2f2); border: 1px solid @default; &:hover { background-color: #fafafa; } }
+	&.tile-white-green { .tile-stats-variant(#fff; #00a65a; #f2f2f2); border: 1px solid @default; &:hover { background-color: #fafafa; } }
+	&.tile-white-blue { .tile-stats-variant(#fff; #0073b7; #f2f2f2); border: 1px solid @default; &:hover { background-color: #fafafa; } }
+	&.tile-white-aqua { .tile-stats-variant(#fff; #00c0ef; #f2f2f2); border: 1px solid @default; &:hover { background-color: #fafafa; } }
+	&.tile-white-cyan { .tile-stats-variant(#fff; #00b29e; #f2f2f2); border: 1px solid @default; &:hover { background-color: #fafafa; } }
+	&.tile-white-purple { .tile-stats-variant(#fff; #ba79cb; #f2f2f2); border: 1px solid @default; &:hover { background-color: #fafafa; } }
+	&.tile-white-pink { .tile-stats-variant(#fff; #ec3b83; #f2f2f2); border: 1px solid @default; &:hover { background-color: #fafafa; } }
+	&.tile-white-orange { .tile-stats-variant(#fff; #ffa812; #f2f2f2); border: 1px solid @default; &:hover { background-color: #fafafa; } }
+	&.tile-white-brown { .tile-stats-variant(#fff; #6c541e; #f2f2f2); border: 1px solid @default; &:hover { background-color: #fafafa; } }
+	&.tile-white-plum { .tile-stats-variant(#fff; #701c1c; #f2f2f2); border: 1px solid @default; &:hover { background-color: #fafafa; } }
+	&.tile-white-gray { .tile-stats-variant(#fff; darken(#f5f5f5, 40%); #f2f2f2); border: 1px solid @default; &:hover { background-color: #fafafa; } }
+}
+
+.tile-stats-variant(@background; @text_color; @icon_color;)
+{
+	background: @background;
+	
+	&:hover {
+		background: darken(@background, 5%)
+	}
+	
+	.icon {
+		color: @icon_color;
+	}
+	
+	.num, h3, p {
+		color: @text_color;
+	}
+}
+
+
+// Title Tile
+.tile-title {
+	@color: #fff;
+	@margin: 20px;
+	
+	position: relative;
+	display: block;
+	background: @main_color;
+	margin-bottom: 10px;
+	.border-radius(@tiles_radius);
+	.transall;
+	
+	&:hover {
+		background-color: darken(@main_color, 5%);
+	}
+	
+	.icon {
+		text-align: center;
+		padding: @margin;
+		
+		i {
+			font-size: 60px;
+			line-height: 1;
+			margin: 0;
+			padding: 0;
+			vertical-align: middle;
+			
+			&:before {
+				margin: 0;
+				padding: 0;
+				line-height: 1;
+			}
+		}
+	}
+	
+	.icon i, h3, p {
+		color: @color;
+	}
+	
+	.title {
+		background: darken(@main_color, 5%);
+		text-align: center;
+		
+		h3, p {
+			margin: 0;
+			padding: 0 @margin;
+		}
+		
+		h3 {
+			padding-top: @margin;
+			font-size: 16px;
+			font-weight: bold;
+		}
+		
+		p {
+			padding-bottom: @margin;
+			font-size: 11px;
+			color: fade(@color, 85%);
+		}
+	}
+	
+	// Variants
+	&.tile-red { .tile-title-variant(#f56954; #fff; #fff); }
+	&.tile-green { .tile-title-variant(#00a65a; #fff; #fff); }
+	&.tile-blue { .tile-title-variant(#0073b7; #fff; #fff); }
+	&.tile-aqua { .tile-title-variant(#00c0ef; #fff; #fff); }
+	&.tile-cyan { .tile-title-variant(#00b29e; #fff; #fff); }
+	&.tile-purple { .tile-title-variant(#ba79cb; #fff; #fff); }
+	&.tile-pink { .tile-title-variant(#ec3b83; #fff; #fff); }
+	&.tile-orange { .tile-title-variant(#ffa812; #fff; #fff); }
+	&.tile-brown { .tile-title-variant(#6c541e; #fff; #fff); }
+	&.tile-plum { .tile-title-variant(#701c1c; #fff; #fff); }
+	&.tile-gray { .tile-title-variant(#f5f5f5; darken(#f5f5f5, 40%); darken(#f5f5f5, 40%)); }
+}
+
+
+.tile-title-variant(@background; @text_color; @icon_color;)
+{
+	background: @background;
+	
+	&:hover {
+		background-color: darken(@background, 5%);
+	}
+	
+	.icon i, h3, p {
+		color: @text_color;
+	}
+	
+	.icon i {
+		color: @icon_color;
+	}
+	
+	
+	.title {
+		background: fade(#000, 10%);
+		
+		p {
+			color: fade(@text_color, 85%);
+		}
+	}
+}
+
+
+// Block Tile
+.tile-block {
+	@bg: #00a65b;
+	@color: #fff;
+	@border: fade(#fff, 10%);
+	@padd: 20px;
+	
+	@input_bg: fade(#000, 15%);
+	@input_color: #fff;
+	
+	background: @bg;
+	color: @color;
+	.border-radius(@tiles_radius);
+	margin-bottom: 20px;
+	.clearfix;
+	
+	.tile-header {
+		color: @color;
+		font-size: 17px;
+		padding: @padd;
+		
+		a, span {
+			color: @color;
+		}
+		
+		
+		span {
+			display: block;
+			margin-top: 4px;
+			font-size: 11px;
+		}
+		
+		i {
+			float: right;
+			font-size: 28px;
+			position: relative;
+			top: 4px;
+			
+			&[class^="entypo-"] {
+				top: 0;
+			}
+		} 
+	}
+	
+	.tile-content {
+		background: fade(#000, 3%);
+		padding: @padd;
+		
+		.todo-list {
+			
+			.neon-cb-replacement {
+				
+				.cb-wrapper + label {
+					top: -3px;
+					margin-left: 8px;
+				}
+			}
+		}
+	}
+	
+	.tile-footer {
+		background: fade(#000, 3%);
+		border-top: 1px solid @border;
+		padding: @padd;
+		color: @color;
+		.border-radius(0 0 @tiles_radius @tiles_radius);
+		
+		a {
+			color: @color;
+			font-weight: bold;
+		}
+	}
+	
+	.form-control, .btn {
+		background: @input_bg;
+		color: @input_color;
+		border-color: transparent;
+		.placeholder(fade(@input_color, 60%));
+		
+		+ .todo-list {
+			margin-top: 20px;
+		}
+	}
+	
+	.form-control + .btn {
+		margin-top: 10px;
+	}
+	
+	// Block Tile Variants
+	& { .tile-block-variant(@main_color; @color; @border); }
+	&.tile-red { .tile-block-variant(#f56954; @color; @border); }
+	&.tile-green { .tile-block-variant(#00a65a; @color; @border;); }
+	&.tile-blue { .tile-block-variant(#0073b7; @color; @border;); }
+	&.tile-aqua { .tile-block-variant(#00c0ef; @color; @border;); }
+	&.tile-cyan { .tile-block-variant(#00b29e; @color; @border;); }
+	&.tile-purple { .tile-block-variant(#ba79cb; @color; @border;); }
+	&.tile-pink { .tile-block-variant(#ec3b83; @color; @border;); }
+	&.tile-orange { .tile-block-variant(#ffa812; @color; @border;); }
+	&.tile-brown { .tile-block-variant(#6c541e; @color; @border;); }
+	&.tile-plum { .tile-block-variant(#701c1c; @color; @border;); }
+	
+	&.tile-gray { .tile-block-variant(#f5f5f5; darken(#f5f5f5, 50%); darken(#f5f5f5, 40%)); }
+	&.tile-gray { .tile-content .todo-list .neon-cb-replacement .cb-wrapper .checked { background: darken(#f5f5f5, 10%); } }
+}
+
+.tile-block-variant(@background; @color; @border;)
+{
+	background-color: @background;
+	color: @color;
+	
+	.tile-header {
+		
+		a, span, i {
+			color: @color;
+		}
+	}
+	
+	.tile-content {
+		
+		.todo-list {
+			
+			.neon-cb-replacement {
+				
+				.cb-wrapper {
+					
+					.checked {
+						background: @background;
+					}
+				}
+			}
+		}
+	}
+	
+	.tile-footer {
+		color: @color;
+		
+		a {
+			color: @color;
+		}
+	}
+}
+
+.todo-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	
+	> li {
+		margin: 0;
+		margin-bottom: 5px;
+		padding: 0;
+		
+		&:last-child {
+			margin-bottom: 0;
+		}
+		
+		.neon-cb-replacement {
+			//.transall;
+			
+			.cb-wrapper {
+				background: #fff;
+				
+				+ label {
+					position: relative;
+				
+					&:after {
+						position: absolute;
+						content: '';
+						height: 2px;
+						background: #fff;
+						width: 0%;
+						top: 50%;
+						left: 0;
+						margin: 0;
+						margin-top: 0px;
+						.bs;
+						.transall;
+					}
+				}
+			}
+			
+			&.checked {
+				
+				.cb-wrapper {
+				
+					+ label {
+						
+						&:after {
+							.opacity(.8);
+							width: 100%;
+						}
+					}
+					
+					.checked {
+						background: fade(#000, 25%);
+					}
+				}
+			}
+		}
+	}
+}
+
+
+// Tile Progress
+.tile-progress {
+	@bg: #00a65b;
+	@color: #fff;
+	@border: fade(#fff, 10%);
+	@padd: 20px;
+	
+	background: @bg;
+	color: @color;
+	margin-bottom: 20px;
+	.border-radius(@tiles_radius);
+	.rounded;
+	.clearfix;
+	
+	.tile-header {
+		padding: 15px 20px;
+		padding-bottom: 40px;
+		
+		h3, span {
+			display: block;
+			color: @color;
+		}
+		
+		h3 {
+			margin: 0;
+			font-size: 18px;
+			font-weight: bold;
+		}
+		
+		span {
+			margin-top: 4px;
+			color: fade(@color, 70%);
+			font-size: 11px;
+		}
+	}
+	
+	.tile-progressbar {
+		height: 2px;
+		background: fade(#000, 18%);
+		margin: 0;
+		
+		span {
+			display: block;
+			background: @color;
+			width: 0%;
+			height: 100%;
+			.transition(~"all 1.5s cubic-bezier(0.230, 1.000, 0.320, 1.000)");
+		}
+	}
+	
+	.tile-footer {
+		padding: @padd;
+		text-align: right;
+		background: fade(#000, 10%);
+		.border-radius(0 0 @border_radius @border_radius);
+		
+		h4, > span {
+			display: block;
+			color: @color;
+		}
+		
+		h4 {
+			font-size: 14px;
+			margin: 0;
+		}
+		
+		> span {
+			margin-top: 4px;
+			color: fade(@color, 70%);
+			font-size: 11px;
+		}
+	}
+	
+	// Block Tile Variants
+	& { .tile-progress-variant(@main_color; @color; @border); }
+	&.tile-red { .tile-progress-variant(#f56954; @color; @border); }
+	&.tile-green { .tile-progress-variant(#00a65a; @color; @border); }
+	&.tile-blue { .tile-progress-variant(#0073b7; @color; @border); }
+	&.tile-aqua { .tile-progress-variant(#00c0ef; @color; @border); }
+	&.tile-cyan { .tile-progress-variant(#00b29e; @color; @border); }
+	&.tile-purple { .tile-progress-variant(#ba79cb; @color; @border); }
+	&.tile-pink { .tile-progress-variant(#ec3b83; @color; @border); }
+	&.tile-orange { .tile-progress-variant(#ffa812; @color; @border); }
+	&.tile-brown { .tile-progress-variant(#6c541e; @color; @border); }
+	&.tile-plum { .tile-progress-variant(#701c1c; @color; @border); }
+	&.tile-gray { .tile-progress-variant(#f5f5f5; darken(#f5f5f5, 40%); darken(#f5f5f5, 40%)); }
+}
+
+.tile-progress-variant(@background; @color; @border;)
+{
+	background-color: @background;
+	color: @color;
+	
+	.tile-header {
+		
+		h3, a, span, i {
+			color: @color;
+		}
+	}
+	
+	.tile-progressbar {
+		
+		span {
+			background: @color;
+		}
+	}
+	
+	.tile-footer {
+		
+		h4, > span {
+			color: @color;
+		}
+		
+		> span {
+			color: fade(@color, 70%);
+		}
+	}
+}
+
+
+
+// Tile Group
+.tile-group {
+	@bg: @main_color;
+	@color: #fff;
+	@border: fade(#fff, 10%);
+	@padd: 25px 30px;
+	
+	@left_width: 40%;
+	
+	background: @bg;
+	color: @color;
+	margin-bottom: 20px;
+	overflow: hidden;
+	.border-radius(@tiles_radius);
+	display: table;
+	width: 100%;
+	.rounded;
+	.clearfix;
+	
+	
+	.tile-left, .tile-right {
+		display: table-cell;
+		position: relative;
+		
+		.map {
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: 0;
+			margin: 1px 0;
+			overflow: hidden;
+			.bs;
+			.rounded;
+		}
+	}
+	
+	.tile-left {
+		width: @left_width;
+	}
+	
+	.tile-right {
+		width: 100% - @left_width;
+	}
+	
+	.tile-entry {
+		background: fade(#000, 10%);
+		padding: @padd;
+		border-bottom: 1px solid @bg;
+		
+		span, h3, h4 {
+			display: block;
+			color: @color;
+			margin: 0;
+		}
+		
+		span {
+			color: fade(@color, 50%);
+			font-size: 11px;
+		}
+		
+		h3 + span, h4 + span {
+			margin-top: 4px;
+		}
+		
+		.op {
+			.opacity(.5);
+			.transall;
+		}
+		
+		&:hover .op {
+			.opacity(1);
+		}
+	}
+	
+	div > tile-entry:last-child {
+		border-bottom: 0;
+	}
+	
+	
+	// Vectormap
+	.jvectormap-zoomin,
+	.jvectormap-zoomout {
+		.size(15px);
+		margin-bottom: 4px;
+	}
+	
+	// Variants
+	&.tile-red { .tile-group-variant(#ff4853; @color; @border); }
+	&.tile-green { .tile-group-variant(#00a65a; @color; @border); }
+	&.tile-blue { .tile-group-variant(#0073b7; @color; @border); }
+	&.tile-aqua { .tile-group-variant(#00c0ef; @color; @border); }
+	&.tile-cyan { .tile-group-variant(#00b29e; @color; @border); }
+	&.tile-purple { .tile-group-variant(#ba79cb; @color; @border); }
+	&.tile-pink { .tile-group-variant(#ec3b83; @color; @border); }
+	&.tile-orange { .tile-group-variant(#ffa812; @color; @border); }
+	&.tile-brown { .tile-group-variant(#6c541e; @color; @border); }
+	&.tile-plum { .tile-group-variant(#701c1c; @color; @border); }
+	&.tile-gray { .tile-group-variant(#f5f5f5; darken(#f5f5f5, 40%); darken(#f5f5f5, 40%)); }
+}
+
+.tile-group-variant(@background; @color; @border;)
+{
+	background-color: @background;
+	color: @color;
+	
+	.tile-entry {
+		border-bottom-color: @background;
+		
+		h3, h4, a, span, i {
+			color: @color;
+		}
+	}
+	
+	.tile-progressbar {
+		
+		span {
+			background: @color;
+		}
+	}
+	
+	.tile-footer {
+		
+		h4, > span {
+			color: @color;
+		}
+		
+		> span {
+			color: fade(@color, 70%);
+		}
+	}
+}

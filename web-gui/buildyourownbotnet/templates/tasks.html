@@ -1,0 +1,113 @@
+{% extends "layout.html" %}
+
+{% block slider %}
+<div class="demo-1 black-canvas" style="z-index: 0">
+	<div class="content">
+		<div id="large-header" class="large-header">
+			<canvas id="demo-canvas"></canvas>
+			<h1></h1>
+		</div>
+	</div>
+</div>
+{% endblock slider %}
+
+{% block main %}
+
+<div class="container" style="z-index: 1; position: absolute; top: 100px; left: 50%; transform: translate(-50%, -500px);">
+
+	<h1 style="color: white;" align="center">Task History</h1>
+	<h3 style="color: grey;" align="center">Bot {{ session_uid }}</h3>
+
+	<hr/>
+	<br/>
+
+	<div class="col-md-12">
+
+		<!-- Table sorting and search functions -->
+		<script type="text/javascript">
+		jQuery( document ).ready( function( $ ) {
+			var $table3 = jQuery("#sessions-table");
+			
+			var table3 = $table3.DataTable( {
+				"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
+			} );
+			
+			// Initalize Select Dropdown after DataTables is created
+			$table3.closest( '.dataTables_wrapper' ).find( 'select' ).select2( {
+				minimumResultsForSearch: -1
+			});
+			
+			// Apply the search
+			table3.columns().every( function () {
+				var that = this;
+			
+				$( 'input', this.header() ).on( 'keyup change', function () {
+					if ( that.search() !== this.value ) {
+						that
+							.search( this.value )
+							.draw();
+					}
+				});
+			});
+		} );
+		</script>
+
+
+		<!-- Sessions table -->
+		<table class="table table-bordered datatable" id="sessions-table" style="opacity: 1.0;">
+			<thead>
+				<tr class="replace-inputs"">
+					<th style="color: black; text-align: center; vertical-align: middle;"><input type="text" class="form-control" placeholder="ID"/></th>
+					<th style="color: black; text-align: center; vertical-align: middle;"><input type="text" class="form-control" placeholder="Task"/></th>
+					<th style="color: black; text-align: center; vertical-align: middle;"><input type="text" class="form-control" placeholder="Result"/></th>
+					<th style="color: black; text-align: center; vertical-align: middle;"><input type="text" class="form-control" placeholder="Completed"/></th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for task in tasks %}
+				<tr style="background-color: white; color: grey;">
+
+					<!-- ID -->
+					<td class="text-center" style="text-align: center; vertical-align: middle;">{{ task['id'] }}</td>
+
+					<!-- Task -->
+					<td class="text-center" style="text-align: center; vertical-align: middle;">{{ task['task'] }}</td>
+
+					<!-- Result -->
+					<td class="text-center" style="text-align: center; vertical-align: middle;">{{ task['result'] }}</td>
+
+					<!-- Completed -->
+					<td class="text-center" style="text-align: center; vertical-align: middle;">{{ task['completed'] }}</td>
+
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		</div>
+	</div>
+
+
+<!-- Imported styles on this page -->
+<link rel="stylesheet" href="assets/js/datatables/datatables.css">
+<link rel="stylesheet" href="assets/js/select2/select2-bootstrap.css">
+<link rel="stylesheet" href="assets/js/select2/select2.css">
+
+<!-- Bottom scripts (common) -->
+<script src="assets/js/gsap/TweenMax.min.js"></script>
+<script src="assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+<script src="assets/js/bootstrap.js"></script>
+<script src="assets/js/joinable.js"></script>
+<script src="assets/js/resizeable.js"></script>
+<script src="assets/js/neon-api.js"></script>
+
+
+<!-- Imported scripts on this page -->
+<script src="assets/js/datatables/datatables.js"></script>
+<script src="assets/js/select2/select2.min.js"></script>
+<script src="assets/js/neon-chat.js"></script>
+
+
+<!-- JavaScripts initializations and stuff -->
+<script src="assets/js/neon-custom.js"></script>
+
+{% endblock main %}

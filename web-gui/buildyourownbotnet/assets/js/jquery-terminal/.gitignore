@@ -1,0 +1,17 @@
+*~
+.[0-9/]*
+components
+\#*\#
+.\#*
+www
+test
+bower_components
+node_modules
+coverage
+reports
+.github.token
+.npmrc
+tmp
+npm
+contributors.json
+contributors-www.json

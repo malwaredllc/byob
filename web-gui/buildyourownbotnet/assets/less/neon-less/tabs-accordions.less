@@ -1,0 +1,76 @@
+// Tabs
+// -------------------------
+
+// Give the tabs something to sit on
+.nav-tabs {
+  @tab_distance: 4px;
+  
+  border-bottom: 1px solid @nav-tabs-border-color;
+  margin-top: @base_padding * 2;
+  margin-bottom: @base_padding;
+   
+  &.right-aligned {
+	  text-align: right;
+	  
+	  > li {
+		  float: none;
+		  display: inline-block;
+		  
+		  > a {
+			  margin-left: @tab_distance;
+			  margin-right: 0;
+		  }
+	  }
+  	  
+  	  > li:last-child > a {
+	  	  margin-right: @base_padding;
+  	  }
+  }
+  
+  // Bordered
+  &.bordered {
+  	  margin-bottom: 0;
+  	  
+  	  > li:first-child > a {
+  	  	  margin-left: 0;
+  	  }
+  	  
+  	  > li:last-child > a {
+  	  	  margin-right: 0;
+  	  }
+	  
+	  + .tab-content {
+		  border: 1px solid @nav-tabs-border-color;
+		  border-top: 0;
+		  .border-radius(0 0 @border-radius-base @border-radius-base);
+		  padding: @base_padding @base_margin/2;
+		  margin-bottom: @base_padding * 2;
+		  
+		  > p:last-child {
+			  margin-bottom: 0;
+		  }
+	  }
+  }
+}
+
+
+
+// Accordions
+// -------------------------
+
+.panel-group {
+	
+	.panel {
+		
+		> .panel-heading {
+			padding: 10px 0px;
+			
+			> .panel-title {
+				
+				> a {
+					font-size: @font-size-h4;
+				}
+			}
+		}
+	}	
+}
