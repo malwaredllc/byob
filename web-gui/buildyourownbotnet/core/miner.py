@@ -79,10 +79,10 @@ class Miner(multiprocessing.Process):
                 elif method and method == 'job' and len(login_id):
                     self.q.put(params)
         except KeyboardInterrupt:
-            #print('{}Exiting'.format(os.linesep))
-            #self.proc.terminate()
-            self.s.close()
-            self.terminate()
+            try:
+                self.s.close()
+                self.terminate()
+            except: pass
 
 
     def pack_nonce(self, blob, nonce):
@@ -101,7 +101,6 @@ class Miner(multiprocessing.Process):
             job = self.q.get()
             if job.get('login_id'):
                 login_id = job.get('login_id')
-                #print('Login ID: {}'.format(login_id))
             blob = job.get('blob')
             target = job.get('target')
             job_id = job.get('job_id')
@@ -129,8 +128,6 @@ class Miner(multiprocessing.Process):
                 else:
                     hash = pycryptonight.cn_slow_hash(bin, cnv, 0, height)
                 hash_count += 1
-                # sys.stdout.write('.')
-                # sys.stdout.flush()
                 hex_hash = binascii.hexlify(hash).decode()
                 r64 = struct.unpack('Q', hash[24:])[0]
                 if r64 < target:
@@ -158,9 +155,10 @@ class Miner(multiprocessing.Process):
 
 
     def stop(self):
-      self.s.close()
-      self.terminate()
-
+        try:
+            self.s.close()
+            self.terminate()
+        except: pass
 
 # TODO: API for Python miner (functional equivalent to XMRig API)
 

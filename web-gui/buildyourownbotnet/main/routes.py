@@ -138,10 +138,9 @@ def tasks():
 	session_uid = request.args.get('session_uid')
 
 	# get serialized task history from database
-	tasks = get_tasks_serialized(current_user.username, session_uid)
+	tasks = get_tasks_serialized(session_uid)
 
 	# show task history as a table
-	profile_pic = _get_profile_pic()
 	return render_template("tasks.html", 
 							tasks=tasks, 
 							session_uid=session_uid,

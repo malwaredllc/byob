@@ -38,4 +38,10 @@ class UpdateAccountForm(FlaskForm):
 						validators=[FileAllowed(['jpg','png'])])
 	submit = SubmitField('Update')
 
+class ResetPasswordForm(FlaskForm):
+	password = PasswordField('New Password',
+							validators=[DataRequired(), Length(min=8)])
+	confirm_password = PasswordField('Confirm New Password',
+							validators=[DataRequired(), Length(min=8), EqualTo('password')])
+	submit = SubmitField('Reset Password')
 

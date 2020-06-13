@@ -9,7 +9,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 
 from buildyourownbotnet import app, db, bcrypt, client, server
 from buildyourownbotnet.core import database
-from buildyourownbotnet.users.forms import RegistrationForm, LoginForm, UpdateAccountForm
+from buildyourownbotnet.users.forms import RegistrationForm, LoginForm, UpdateAccountForm, ResetPasswordForm
 from buildyourownbotnet.models import User, Session
 
 
@@ -95,20 +95,12 @@ def account():
 		hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
 		user.password = hashed_password
 		db.session.commit()
-
 		flash("Your password has been updated.", "success")
-
 		db.session.commit()
-			
-	if current_user.image_file.startswith('http'):
-		profile_pic = current_user.image_file
-	else:
-		profile_pic = url_for('static', filename='profile_pics/' + current_user.image_file)
-
 	return render_template("account.html", 
-							title="Account", 
-							profile_pic=profile_pic,
+							title="Account",
 							form=form)
+
 
 @users.route('/logout')
 def logout():

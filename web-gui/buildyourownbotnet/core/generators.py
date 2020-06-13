@@ -177,15 +177,13 @@ def main(function, *args, **kwargs):
 
     """
     global template_main
-    options = ', '.join(args)
+    options = list(args)
     for k,v in kwargs.items():
         if not v:
             continue
-        v = str(v)
-        if v.count('{') > 0 and v.count('}') > 0:
-            options += ', '.join("{}={}".format(k, v))
-        else:
-            options += "{}='{}'".format(k,v)
+        k, v = str(k), str(v)
+        options.append("{}='{}'".format(k,v))
+    options = ', '.join(options)    
     return template_main.substitute(VARIABLE=function.lower(), FUNCTION=function, OPTIONS=options)
 
 

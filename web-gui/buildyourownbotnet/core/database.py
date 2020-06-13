@@ -43,7 +43,7 @@ def get_sessions_new(user_id):
     user = User.query.get(user_id)
     new_sessions = []
     if user:
-        sessions = user.sessions if user.email != app.config.get('ADMIN') else Session.query.all()
+        sessions = user.sessions
         for s in sessions:
             if s.new:
                 s.new = False
@@ -118,12 +118,12 @@ def add_file(owner, filename, session, module):
     :param str session:         public IP of session
     :param str module:          module name (keylogger, screenshot, upload, etc.)
     """
-    user = User.query.filter_by(email=owner).first()
+    user = User.query.filter_by(username=owner).first()
     if user:  
         exfiltrated_file = ExfiltratedFile(filename=filename,
                                            session=session,
                                            module=module,
-                                           owner=user.email)
+                                           owner=user.username)
         db.session.add(exfiltrated_file)
         db.session.commit()
 
@@ -272,7 +272,7 @@ def update_session_status(session_uid, status):
     Update online/offline status of the specified session.
 
     `Required`
-    :param int session_id:      Session *ID
+    :param int session_id:      Session UID
     :param bool status:         True (online), False (offline)
     """
     session = Session.query.filter_by(uid=session_uid).first()

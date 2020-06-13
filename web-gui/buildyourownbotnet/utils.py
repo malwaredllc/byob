@@ -25,9 +25,9 @@ def get_sessions_serialized(user_id):
 	return [session.serialize() for session in database.get_sessions(user_id)]
 
 
-def get_tasks_serialized(session_id):
+def get_tasks_serialized(session_uid):
 	"""Return serialized list of tasks for a given session."""
-	tasks = database.get_tasks(session_id)
+	tasks = database.get_tasks(session_uid)
 	serialized_tasks = []
 	for task in tasks:
 		task = task.serialize()

