@@ -1,10 +1,10 @@
 flask
-flask-session
+flask_session
 flask_wtf
-Flask-SQLAlchemy
-Flask-Login
-Flask-Bcrypt
-flask-mail
+Flask_SQLAlchemy
+Flask_Login
+Flask_Bcrypt
+flask_mail
 wtforms
 mss==3.3.0
 WMI==1.4.9

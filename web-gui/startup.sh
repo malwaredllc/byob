@@ -38,6 +38,7 @@ docker build -f Dockerfile-py3-i386 -t nix-i386 .
 docker build -f Dockerfile-py3-win32 -t win-win32 .
 
 # Run app
+cd ..
 echo "Running C2 server with locally hosted web app GUI..."
 echo "Navigate to http://127.0.0.1:5000 and set up your user to get started."
 python3 run.py
