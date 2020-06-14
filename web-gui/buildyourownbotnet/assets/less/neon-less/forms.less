@@ -1,0 +1,38 @@
+// Inputs
+.form-control {
+	.box-shadow(none) !important;
+	outline: 0 !important;
+	
+
+	// Multi Select Input
+	&.multi-select {
+		visibility: hidden;
+	}
+}
+
+
+// Control Labels
+.form-group {
+
+	// Warning
+	&.has-warning {
+	  .form-control-validation(darken(@state-warning-bg, 30%); @state-warning-border; @state-warning-bg);
+	}
+	// Error
+	&.has-error {
+	  .form-control-validation(darken(@state-danger-bg, 30%); @state-danger-border; @state-danger-bg);
+	}
+	// Success
+	&.has-success {
+	  .form-control-validation(darken(@state-success-bg, 30%); @state-success-border; @state-success-bg);
+	}
+}
+
+// Twitter Typeahead
+.input-group {
+	
+	> span.twitter-typeahead {
+		display: block !important;
+		.clearfix;
+	}
+}

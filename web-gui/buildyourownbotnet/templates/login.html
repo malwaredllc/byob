@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" style="background-color: black">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Build Your Own Botnet" />
+	<meta name="author" content="" />
+
+	<link rel="icon" href="assets/images/byob_favicon_round-15.png">
+
+	<title>Log In</title>
+
+	<link rel="stylesheet" href="assets/js/jquery-ui/css/no-theme/jquery-ui-1.10.3.custom.min.css">
+	<link rel="stylesheet" href="assets/css/font-icons/entypo/css/entypo.css">
+	<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noto+Sans:400,700,400italic">
+	<link rel="stylesheet" href="assets/css/bootstrap.css">
+	<link rel="stylesheet" href="assets/css/neon-core.css">
+	<link rel="stylesheet" href="assets/css/neon-theme.css">
+	<link rel="stylesheet" href="assets/css/neon-forms.css">
+	<link rel="stylesheet" href="assets/css/custom.css">
+
+	<script src="assets/js/jquery-1.11.3.min.js"></script>
+	
+	<!--[if lt IE 9]><script src="assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+	
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+		<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+
+
+</head>
+
+<div class="demo-1 parallax-login" style="z-index: 0">
+	<div class="content">
+		<div id="large-header" class="large-header">
+			<canvas id="demo-canvas"></canvas>
+			<h1></h1>
+		</div>
+	</div>
+</div>
+
+<body class="page-body login-page login-form-fall boxed-layout" data-url="http://neon.dev" style="background-color: black;">
+
+	<!-- This is needed when you send requests via Ajax -->
+	<script type="text/javascript">
+	var baseurl = '';
+	</script>
+
+	<div class="login-container" style="z-index: 1; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+		
+		<div class="login-header login-caret" style="max-height: 200px; background-color: transparent;">
+			
+			<div class="login-content">
+				
+				<a href="{{ url_for('main.home') }}" class="logo">
+					<img src="assets/images/byob_logo-12.png" width="120" alt="" />
+				</a>
+				
+				<p class="description">Log in.</p>
+
+				<!-- progress bar indicator -->				
+				<div class="login-progressbar-indicator">
+					<h3>43%</h3>
+					<span>logging in...</span>
+				</div>
+			</div>
+
+			<!-- Display flashed messages -->
+	        <div class="row">
+	            <div class="col-md-6 col-md-offset-3" style="text-align: center;">
+	                {% with messages = get_flashed_messages(with_categories=true) %}
+	                    {% if messages %}
+	                        {% for category, message in messages %}
+	                            <div class="alert alert-{{ category }}">
+	                                {{ message }}
+	                            </div>
+	                        {% endfor %}
+	                    {% endif %}
+	                {% endwith %}
+
+	            </div>
+	       </div>
+		</div>
+		
+		<div class="login-progressbar">
+			<div></div>
+		</div>
+		
+		<div class="login-form">
+			
+			<div class="login-content">
+				
+				<div class="form-login-error">
+					<h3>Invalid login</h3>
+					<p>Enter <strong>demo</strong>/<strong>demo</strong> as login and password.</p>
+				</div>
+				
+				<!-- login form -->
+				<form method="post" action="">
+	            {{ form.hidden_tag() }}
+
+					<!-- email field -->
+	                <div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon">
+								<i class="entypo-user"></i>
+							</div>
+
+		                    {% if form.username.errors %}
+
+		                        {{ form.username(class="form-control is-invalid") }}
+		                        <div class="invalid-feedback">
+		                            {% for error in form.username.errors %}
+		                                <span>{{ error }}</span>
+		                            {% endfor %}
+		                        </div>
+
+		                    {% else %}
+		                        {{ form.username(class="form-control", placeholder="Username") }}
+		                    {% endif %}
+		                </div>
+	                </div>
+
+	                <!-- password field -->
+	                <div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon">
+								<i class="entypo-key"></i>
+							</div>
+
+	                    {% if form.password.errors %}
+	                        {{ form.password(class="form-control is-invalid") }}
+	                        <div class="invalid-feedback">
+	                            {% for error in form.password.errors %}
+	                                <span>{{ error }}</span>
+	                            {% endfor %}
+	                        </div>
+
+	                    {% else %}
+	                        {{ form.password(class="form-control", placeholder="Password") }}
+	                    {% endif %}
+		                </div>
+	                </div>
+
+	            <div class="form-group">
+	                {{ form.submit(class="btn btn-info btn-block btn-login", style="text-align: center") }}
+		       </div>
+
+			</form>
+			
+			
+			<div class="login-bottom-links">
+
+				<a href="{{ url_for('users.register') }}" class="link">
+					<i class="entypo-user"></i>
+					Register
+				</a>
+			</div>
+
+			<!-- Footer -->
+			<footer id="footer-layout" class="main" align="center" style="color: white;">
+				
+				&copy; 2020 <a href="https://malwared.com">Malwared</a>
+			
+			</footer>
+				
+			</div>
+			
+		</div>
+		
+	</div>
+
+
+	<!-- Bottom scripts (common) -->
+	<script src="assets/js/gsap/TweenMax.min.js"></script>
+	<script src="assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+	<script src="assets/js/bootstrap.js"></script>
+	<script src="assets/js/joinable.js"></script>
+	<script src="assets/js/resizeable.js"></script>
+	<script src="assets/js/neon-api.js"></script>
+	<script src="assets/js/jquery.validate.min.js"></script>
+	<script src="assets/js/neon-login.js"></script>
+
+
+	<!-- JavaScripts initializations and stuff -->
+	<script src="assets/js/neon-custom.js"></script>
+	<script src="assets/js/custom/canvas-login.js"></script>
+
+	<!-- Demo Settings -->
+	<script src="assets/js/neon-demo.js"></script>
+
+</body>
+
+
+
+</html>

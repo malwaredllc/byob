@@ -1,0 +1,131 @@
+// Calendar 2
+.calendar-env {
+	position: relative;
+	.clearfix;
+
+	.fc {
+
+		.fc-toolbar {
+			padding: @calendar-base-padding;
+			margin: 0;
+
+			h2, h3 {
+				margin: 0;
+				padding: 0;
+			}
+
+			.fc-button {
+				background: none;
+				border: 1px solid @default;
+				height: auto;
+				padding: 5px 10px;
+				.box-shadow(none);
+				outline: none;
+
+				+ .fc-button {
+
+				}
+
+				.fc-icon {
+					top: 0;
+					margin: 0;
+
+					&:after {
+						font-weight: normal;
+						font-size: 16px;
+					}
+				}
+			}
+
+			.fc-button-group {
+			}
+		}
+
+		.fc-view-container {
+
+			> .fc-view {
+				border-left: 1px solid @default;
+			}
+
+			.fc-widget-content,
+			.fc-widget-header {
+				border: 0;
+			}
+
+			.fc-widget-header .fc-widget-header {
+				border: 1px solid @default;
+				border-left: 0;
+				border-right: 0;
+				.box-shadow(none);
+			}
+
+			.fc-view {
+
+				table {
+
+					thead {
+						border-left: 0;
+						border-right: 0;
+
+						tr {
+
+							th {
+								text-align: center;
+								padding: 5px 0;
+								border: 0;
+								border-bottom: 1px solid @default;
+								background: @hover_bg;
+							}
+						}
+					}
+
+					tbody {
+						border: 0;
+
+						.fc-day {
+							border: 0;
+							border-top: 1px solid @default;
+
+							&.fc-state-highlight {
+								background: #fafafa;
+								color: #111 !important;
+							}
+
+						}
+
+						.fc-day-number {
+							padding: 5px 10px;
+						}
+
+						.fc-event {
+							background: #000;
+							padding: 2px 4px;
+							margin-top: 2px;
+							.rounded;
+							.event-color-variant(#ee4749, #fff);
+							&.color-blue { .event-color-variant(@brand-info, #fff); }
+							&.color-green { .event-color-variant(@brand-success, #fff); }
+							&.color-primary { .event-color-variant(@main_color, #fff); }
+							&.color-orange { .event-color-variant(#ffae2f, #fff); }
+							border: 0;
+						}
+					}
+				}
+
+				&.fc-agenda-view {
+
+					table {
+
+						.fc-widget-content {
+							border-bottom: 1px solid @default;
+						}
+
+						.fc-axis {
+							border-right: 1px solid @default;
+						}
+					}
+				}
+			}
+		}
+	}
+}

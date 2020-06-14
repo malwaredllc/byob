@@ -1,0 +1,365 @@
+// Left aligned timeline
+.page-body .main-content .cbp_tmtimeline {
+	
+	@border: @hover_bg;
+	
+	&:before {
+		background: @border;
+		width: 5px;
+		margin-left: -6px;
+	}
+	
+	> li {
+		
+		.cbp_tmtime {
+			
+			> span {
+				color: #111;
+				font-size: 15px;
+				
+				&:first-child {
+					font-weight: bold;
+					margin-bottom: 2px;
+				}
+				
+				&:last-child {
+					color: @main_color;
+					.opacity(.8);
+					font-size: 12px;
+				}
+				
+				&.large {
+					font-size: 17px;
+				}
+				
+				&.hidden + span {
+					margin-top: 8px;
+				}
+			}
+		}
+		
+		.cbp_tmicon {
+			background: #ffffff;
+			color: #d2d2d2;
+			.box-shadow(0px 0px 0px 5px @border);
+			
+			
+			&.bg-primary { .primary(); }
+			&.bg-secondary { .secondary(); }
+			&.bg-success { .success(); }
+			&.bg-info { .info(); }
+			&.bg-warning { .warning(); }
+			&.bg-danger { .danger(); }
+		}
+		
+		.cbp_tmlabel {
+			background: @border;
+			color: @text_color_light;
+			margin-bottom: 70px;
+			padding: 1.7em;
+			.rounded;
+			
+			h2, p {
+				color: @text_color_light;
+				font-family: @font_family;
+				font-size: @p_size;
+				margin: 0;
+				line-height: @line-height-base;
+			}
+			
+			p + p {
+				margin-top: @base_margin / 2;
+			}
+			
+			h2 {
+				font-size: @font-size-h3 - 5;
+				
+				a {
+					color: @main_color;
+				}
+				
+				span {
+					.opacity(.6);
+				}
+			}
+			
+			&:after {
+				border-right-color: @border;
+			}
+			
+			&.empty {
+				background: 0;
+				padding: 9px 0;
+				margin-bottom: 70px;
+				
+				&:after {
+					visibility: hidden;
+				}
+			}
+		}
+	}
+}
+
+@media screen and (max-width: 47.2em) {
+	
+	.page-body .main-content .cbp_tmtimeline > li .cbp_tmlabel:after {
+		border-right-color: transparent;
+		border-bottom-color: @hover_bg;
+		left: 10px;
+		//border-bottom-color: @hover_bg;
+	}
+	
+	.page-body .main-content .cbp_tmtimeline > li .large {
+		font-weight: bold;
+		font-size: 16px !important;
+	}
+	
+	.page-body .main-content .cbp_tmtimeline > li .cbp_tmlabel.empty {
+		background: @hover_bg;
+		padding: 1.7em;
+		
+		&:after {
+			visibility: visible;
+		}
+	}	
+}
+
+
+// Centered timeline
+.timeline-centered {
+	@icon_size: 40px;
+	
+	position: relative;
+	margin-bottom: @base_margin;
+	.clearfix;
+	
+	
+	&:before {
+		content: '';
+		position: absolute;
+		display: block;
+		width: 4px;
+		background: @hover_bg;
+		left: 50%;
+		top: @icon_size / 2;
+		bottom: @icon_size / 2;
+		margin-left: -4px;
+	}
+	
+	.timeline-entry {
+		@tm_w: 100px;
+
+		position: relative;
+		width: 50%;
+		float: right;
+		margin-bottom: 70px;
+		clear: both;
+		.clearfix;
+		
+		&.begin {
+			margin-bottom: 0;
+		}
+		
+		&.left-aligned {
+			float: left;
+			
+			.timeline-entry-inner {
+				margin-left: 0;
+				margin-right: -@icon_size/2 + 2;
+				
+				.timeline-time {
+					//left: auto;
+					//right: -@tm_w;
+					text-align: left;
+					white-space: nowrap;
+					left: auto;
+					right: 100%;
+				}
+				
+				.timeline-icon {
+					float: right;
+				}
+				
+				.timeline-label {
+					margin-left: 0;
+					margin-right: 70px;
+					
+					&:after {
+						left: auto;
+						right: 0;
+						margin-left: 0;
+						margin-right: -9px;
+						.rotate(180deg);
+					}
+				}
+			}
+		}
+		
+		.timeline-entry-inner {
+			position: relative;
+			margin-left: -@icon_size/2 - 2;
+			.clearfix;
+			
+			.timeline-time {
+				
+				position: absolute;
+				left: -@tm_w;
+				text-align: right;
+				padding: 10px;
+				.bs;
+				
+				> span {
+					display: block;
+					
+					&:first-child {
+						font-size: 15px;
+						font-weight: bold;
+					}
+					
+					&:last-child {
+						font-size: 12px;
+					}
+				}
+			}
+			
+			.timeline-icon {
+				background: #fff;
+				color: @text_color_light;
+				display: block;
+				.size(@icon_size);
+				.border-radius(@icon_size/2);
+				text-align: center;
+				.box-shadow(0px 0px 0px 5px @hover_bg);
+				line-height: @icon_size;
+				font-size: @p_size + 3;
+				float: left;
+			
+			
+				&.bg-primary { .primary(); }
+				&.bg-secondary { .secondary(); }
+				&.bg-success { .success(); }
+				&.bg-info { .info(); }
+				&.bg-warning { .warning(); }
+				&.bg-danger { .danger(); }
+			}
+			
+			.timeline-label {
+				position: relative;
+				background: @hover_bg;
+				padding: 1.7em;
+				margin-left: 70px;
+				.rounded;
+				
+				&:after {
+					content: '';
+					display: block;
+					position: absolute;
+					width: 0px;
+					height: 0px;
+					border-style: solid;
+					border-width: 9px 9px 9px 0;
+					border-color: transparent @hover_bg transparent transparent;
+					left: 0;
+					top: @base_padding;
+					margin-left: -9px;
+
+				}
+			
+				h2, p {
+					color: @text_color_light;
+					font-family: @font_family;
+					font-size: @p_size;
+					margin: 0;
+					line-height: @line-height-base;
+				}
+				
+				p + p {
+					margin-top: @base_margin / 2;
+				}
+				
+				h2 {
+					font-size: @font-size-h3 - 5;
+					margin-bottom: @base_padding;
+					
+					a {
+						color: @main_color;
+					}
+					
+					span {
+						.opacity(.6);
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
+
+@media screen and (max-width: 47.2em) {
+
+	.timeline-centered {
+		margin-top: 20px;
+		
+		&:before {
+			left: 22px;
+		}
+	}
+	
+	.timeline-centered .timeline-entry,
+	.timeline-centered .timeline-entry.left-aligned {
+		width: 100%;
+		float: none;
+		
+		.timeline-entry-inner {
+			margin-left: 0;
+			margin-right: 0;
+		}
+	}
+	.timeline-centered .timeline-entry .timeline-entry-inner .timeline-time,
+	.timeline-centered .timeline-entry.left-aligned .timeline-entry-inner .timeline-time {
+		left: 60px;
+		right: auto;
+		top: -40px;
+		width: auto;
+		
+		span {
+			display: inline-block;
+			
+			& + span {
+				margin-left: 10px;
+			}
+		}
+	}
+	
+	.timeline-centered .timeline-entry.left-aligned .timeline-entry-inner .timeline-icon {
+		float: left;
+	}
+	
+	.timeline-centered .timeline-entry.left-aligned .timeline-entry-inner .timeline-label {
+		margin-left: 70px;
+		margin-right: 0;
+	}
+	
+	.timeline-centered .timeline-entry.left-aligned .timeline-entry-inner .timeline-label:after {
+		left: 0;
+		right: auto;
+		margin-left: -9px;
+		margin-right: 0;
+		.rotate(0deg);
+	}
+}
+
+@media screen and (min-width: 1700px) {
+	
+	.cbp_tmtimeline > li .cbp_tmtime {
+		width: 23% !important;
+	}
+}
+
+.timeline-centered .timeline-entry.left-aligned .timeline-entry-inner .timeline-time{
+	white-space: nowrap;
+	right: auto;
+	left: 100%; 
+}

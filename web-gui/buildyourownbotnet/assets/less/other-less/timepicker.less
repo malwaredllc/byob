@@ -1,0 +1,221 @@
+/*!
+ * Timepicker Component for Twitter Bootstrap
+ *
+ * Copyright 2013 Joris de Wit
+ *
+ * Contributors https://github.com/jdewit/bootstrap-timepicker/graphs/contributors
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+.bootstrap-timepicker {
+    position: relative;
+
+    &.pull-right {
+        .bootstrap-timepicker-widget {
+            &.dropdown-menu {
+                left: auto;
+                right: 0;
+
+                &:before {
+                    left: auto;
+                    right: 12px;
+                }
+                &:after {
+                    left: auto;
+                    right: 13px;
+                }
+            }
+        }
+    }
+
+    .add-on {
+        cursor: pointer;
+        i {
+           display: inline-block;
+           width: 16px;
+           height: 16px;
+        }
+    }
+}
+.bootstrap-timepicker-widget {
+    &.dropdown-menu {
+        padding: 4px;
+        &.open {
+            display: inline-block;
+            z-index: 10000;
+        }
+        &:before {
+            border-bottom: 7px solid rgba(0, 0, 0, 0.2);
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            content: "";
+            display: inline-block;
+            position: absolute;
+        }
+        &:after {
+            border-bottom: 6px solid #FFFFFF;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            content: "";
+            display: inline-block;
+            position: absolute;
+        }
+    }
+    &.timepicker-orient-left {
+        &:before {
+           left: 6px;
+        }
+        &:after {
+           left: 7px;
+        }
+    }
+    &.timepicker-orient-right {
+        &:before {
+           right: 6px;
+        }
+        &:after {
+           right: 7px;
+        }
+    }
+    &.timepicker-orient-top {
+        &:before {
+           top: -7px;
+        }
+        &:after {
+            top: -6px;
+        }
+    }
+    &.timepicker-orient-bottom {
+        &:before {
+            bottom: -7px;
+            border-bottom: 0;
+            border-top: 7px solid #CCC;
+        }
+        &:after {
+            bottom: -6px;
+            border-bottom: 0;
+            border-top: 6px solid #ffffff;
+        }
+    }
+    a.btn, input {
+        border-radius: @border_radius;
+    }
+
+    table {
+        width: 100%;
+        margin: 0;
+
+        td {
+            text-align: center;
+            height: 30px;
+            margin: 0;
+            padding: 2px;
+
+            &:not(.separator) {
+                min-width: 30px;
+            }
+
+            span {
+                width: 100%;
+            }
+            a {
+                border: 1px transparent solid;
+                width: 100%;
+                display: inline-block;
+                margin: 0;
+                padding: 0 0;
+                outline: 0;
+                color: @main_color;
+
+                &:hover {
+                    text-decoration: none;
+                    background-color: @hover_bg;
+                    .rounded;
+                    border-color: @default;
+                }
+
+                i {
+                    margin-top: 2px;
+                    
+                    &:before {
+	                    font-family: @font_entypo;
+	                    font-size: @p_size;
+	                    font-style: normal;
+                    }
+                    
+                    &.icon-chevron-up {
+	                    
+	                    &:before {
+		                    content: '\e876';
+	                    }
+                    }
+                    
+                    &.icon-chevron-down {
+	                    
+	                    &:before {
+		                    content: '\e873';
+	                    }
+                    }
+                }
+            }
+            input {
+                width: 25px;
+                margin: 0;
+                text-align: center;
+                outline: none;
+                border: 0;
+                background: transparent;
+                
+                &:focus {
+	                background: @hover_bg;
+                }
+            }
+        }
+    }
+}
+
+.bootstrap-timepicker-widget .modal-content {
+    padding: 4px;
+}
+
+.date-and-time {
+	
+	@datepicker_width: 70%;
+	
+	> input.datepicker {
+		float: left;
+		width: @datepicker_width;
+	}
+	
+	> input.timepicker {
+		float: right;
+		width: 100% - @datepicker_width;
+	}
+	
+	> input:first-child {
+		.border-radius(@border_radius 0 0 @border_radius);
+		border-right: 0;
+	}
+	
+	> input:last-child {
+		.border-radius(0 @border_radius @border_radius 0);
+	}
+}
+
+@media (min-width: 767px) {
+    .bootstrap-timepicker-widget.modal {
+        width: 200px;
+        margin-left: -100px;
+    }
+}
+
+@media (max-width: 767px) {
+    .bootstrap-timepicker {
+        width: 100%;
+
+        .dropdown-menu {
+            width: 100%;
+        }
+    }
+}

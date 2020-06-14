@@ -1,0 +1,13 @@
+*.pyc
+*.db
+*.rdb
+*.log
+*.txt
+*.pcap
+*.avi
+payloads/
+stagers/
+output/
+__pycache__/
+byob-app-local-env/
+.DS_Store

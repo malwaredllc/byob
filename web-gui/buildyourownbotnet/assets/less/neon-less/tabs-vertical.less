@@ -1,0 +1,131 @@
+// Vertical Tabs
+@m: 20px;
+@lp: 25px;
+
+.tabs-vertical-env {
+	.clearfix;
+	margin-bottom: @m;
+	
+	.tabs-vertical {
+		margin-bottom: 0;
+		
+		+ .tab-content {
+			margin-bottom: 0;
+		}
+	}
+}
+
+.tabs-vertical {	
+	@s: 18px;
+	@r: 12px;
+	@t: -1px;
+					
+	float: left;
+	background: @hover_bg;
+	width: 20%;
+	border: 1px solid @default;
+	margin-bottom: @m;
+	.rounded;
+	
+	> li {
+		border-bottom: 1px solid @default;
+		
+		&:first-child {
+			
+			> a { .border-radius(@border_radius @border_radius 0 0); }
+		}
+		
+		&:last-child {
+			border-bottom: 0;
+			
+			> a { .border-radius(0 0 @border_radius @border_radius); }
+		}
+		
+		&:hover {
+			
+			> a {
+				background-color: fade(#ffffff, 30%);
+				color: lighten(@default_text, 15%);
+			}
+		}
+		
+		&.active {
+			
+			> a {	
+				display: block;
+				position: relative;
+				background-color: #ffffff;
+				color: @default_text;
+				
+				&:before {
+					content: '';
+					display: block;
+					position: absolute;
+					width: 0px;
+					height: 0px;
+					border-style: solid;
+					border-width: @s+2 0 @s+2 13px;
+					border-color: transparent transparent transparent @default;
+					top: 0;
+					right: -1px;
+					margin-right: -@r;
+					margin-top: @t;
+				}
+				
+				&:after {
+					content: '';
+					display: block;
+					position: absolute;
+					width: 0px;
+					height: 0px;
+					border-style: solid;
+					border-width: @s 0 @s 12px;
+					border-color: transparent transparent transparent #fff;
+					top: 2px;
+					right: 0;
+					margin-right: -@r;
+					margin-top: @t;
+				}
+			}
+		}
+	}
+	
+	+ .tab-content {
+		float: right;
+		width: 80%;
+		padding-left: @lp;
+		.bs;
+		margin-bottom: @m;
+	}
+	
+	// Right Aligned
+	&.right-aligned {
+		float: right;
+		
+		> li.active {
+		
+			> a {
+				
+				&:before, &:after {
+					.transform(~"rotate(180deg)");
+					right: auto;
+				}
+				
+				@x: 5;
+				
+				&:before {
+					left: 0px - @s + @x;
+				}
+				
+				&:after {
+					left: 1px - @s + @x;
+				}
+			}
+		}
+	
+		+ .tab-content {
+			padding-right: @lp;
+			padding-left: 0;
+		}
+	}
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Text based input box using jQuery Terminal</title>
+    <link href="../css/jquery.terminal-src.css" rel="stylesheet"/>
+    <script src="https://unpkg.com/js-polyfills/keyboard.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="dialog.js"></script>
+    <link href="dialog.css" rel="stylesheet"/>
+    <script src="../js/jquery.terminal-src.js"></script>
+    <style>
+     .dialog {
+         --size: 1.5;
+     }
+    </style>
+    <script>
+     $(function() {
+         $('body').dialog(function(input) {
+             setTimeout(function() {
+                 alert(input);
+             }, 100);
+         }, {
+             cols: 40,
+             rows: 10,
+             message: 'Hey you',
+             title: 'Foo Bar'
+         });
+     });
+    </script>
+  </head>
+  <body></body>
+</html>

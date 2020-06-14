@@ -23,8 +23,23 @@ from the C2 and executed on the target machine without writing anything to the d
 
 Supports Python 2 & 3.
 
+*BYOB now includes a powerful web GUI. Check out https://buildyourownbotnet.com to see a preview, or follow [this guide](https://github.com/malwaredllc/byob/wiki) to get started! Key features include:*
+
+## Dashboard
+A control panel for your C2 server with a point-and-click interface for executing post-exploitation modules across your botnet. The dashboard includes a map of your bots across the globe, and hashrate trackers & graphs for those of you mining Monero.
+![dashboard_preview](https://github.com/malwaredllc/byob/blob/master/web-gui/buildyourownbotnet/assets/images/previews/preview-dashboard.png)
+
+## Payload Generator
+The payload generator uses black magic involving Docker containers & Wine servers to compile executable payloads for any platform/architecture you select.
+![payload_generator_preview](https://github.com/malwaredllc/byob/blob/master/web-gui/buildyourownbotnet/assets/images/previews/preview-payloads2.png)
+
+## Terminal Emulator
+The web app includes an in-browser terminal emulator so you can still have direct shell access even when using the GUI
+![shell_preview](https://github.com/malwaredllc/byob/blob/master/web-gui/buildyourownbotnet/assets/images/previews/preview-shell2.png)
+
+
 ## Client
-[![client](https://img.shields.io/badge/byob-client-blue.svg)](https://github.com/colental/byob/blob/master/byob/core/payloads.py)
+[![client](https://img.shields.io/badge/byob-client-blue.svg)](https://github.com/malwaredllc/byob/blob/master/byob/payloads.py)
 
 *Generate fully-undetectable clients with staged payloads, remote imports, and unlimited post-exploitation modules*
 
@@ -61,7 +76,7 @@ in the payload stager which is generated along with it
 12) __Prevent Reverse-Engineering__: by default, clients will abort execution if a virtual machine or sandbox is detected
 
 ## Modules
-[![modules](https://img.shields.io/badge/byob-modules-blue.svg)](https://github.com/colental/byob/blob/master/byob/modules)
+[![modules](https://img.shields.io/badge/byob-modules-blue.svg)](https://github.com/malwaredllc/byob/blob/master/byob/modules)
 
 *Post-exploitation modules that are remotely importable by clients*
 
@@ -81,7 +96,7 @@ in the payload stager which is generated along with it
 14) __Miner__ (`byob.core.miner`): mine Monero in the background using the built-in miner or XMRig
 
 ## Server
-[![server](https://img.shields.io/badge/byob-server-blue.svg)](https://github.com/colental/byob/blob/master/byob/server.py)
+[![server](https://img.shields.io/badge/byob-server-blue.svg)](https://github.com/malwaredllc/byob/blob/master/byob/server.py)
 
 *Command & control server with persistent database and console*
 
@@ -95,7 +110,7 @@ to remotely import without writing them to the disk of the target machines, allo
 packages not installed on the target machines
 
 ## Core
-[![core](https://img.shields.io/badge/byob-core-blue.svg)](https://github.com/colental/byob/blob/master/byob/core)
+[![core](https://img.shields.io/badge/byob-core-blue.svg)](https://github.com/malwaredllc/byob/blob/master/byob/core)
 
 *Core framework modules used by the generator and the server*
 
@@ -127,7 +142,7 @@ ________________________________________________________________________________
 
 ### Contact
 
-__Website__: https://malwared.com
+__Website__: https://buildyourownbotnet.com
 
 __Email__: security@malwared.com
 

@@ -1,0 +1,177 @@
+@navHeight: 60px;
+@fontSize: 18px;
+@lineHeight: 1.4;
+@white: #FFF;
+@darkGray: #333;
+@gray: #CCCCCC;
+
+.noGap(){
+	font-size: 0;
+	line-height: 0;
+	letter-spacing: -.3em;
+}
+.reGap(@fz:@fontSize,@lh:@lineHeight){
+	font-size: @fz;
+	line-height: @lh;
+	letter-spacing: normal;
+}
+.box-sizing(@v) {
+	-moz-box-sizing: @v;
+	box-sizing: @v;
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0;
+}
+
+body {
+	-webkit-font-smoothing: antialiased;
+	text-align: center;
+	font: @fontSize / @lineHeight 'Helvetica', 'Arial', sans-serif;
+	padding-top: @navHeight;
+}
+
+ul{
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	margin: 0;
+	padding: 0;
+	height: @navHeight;
+	background: @gray;
+	.noGap;
+}
+
+li{
+	position: relative;
+	display: inline-block;
+	vertical-align: top;
+	width: (100% / 4);
+	text-align: center;
+	.reGap(@fontSize, @navHeight);
+
+	a {
+		display: block;
+		color: @white;
+		text-decoration: none;
+		text-transform: uppercase;
+		white-space: nowrap;
+
+		&:hover,
+		&.active{
+			background: @darkGray;
+			color: @white;
+		}
+
+		&.active{
+			&:after{
+				content: '';
+				position: absolute;
+				top: 100%;
+				left: 50%;
+				margin-left: -10px;
+				border: 10px solid;
+				border-color: transparent;
+				border-top-color: @darkGray;
+			}
+		}
+	}
+}
+
+.chart{
+	position: relative;
+	display: inline-block;
+	width: 110px;
+	height: 110px;
+	margin-top: 50px;
+	margin-bottom: 50px;
+	text-align: center;
+	canvas {
+		position: absolute;
+		top: 0;
+		left: 0;
+	}
+}
+
+.percent{
+	display: inline-block;
+	line-height: 110px;
+	z-index: 2;
+
+	&:after{
+		content: '%';
+		margin-left: 0.1em;
+		font-size: .8em;
+	}
+}
+
+.angular{
+	margin-top: 100px;
+	.chart{
+		margin-top: 0;
+	}
+}
+
+input{
+	display: block;
+	margin: auto;
+	margin-bottom: 3em;
+}
+
+.btn {
+	display: block;
+	width: 200px;
+	margin: 0 auto;
+	padding: 10px 20px;
+	background: @gray;
+	color: @white;
+	text-transform: uppercase;
+	cursor: pointer;
+	font-size: 0.8em;
+	.box-sizing(border-box);
+
+	&:hover{
+		background: @darkGray;
+		color: @white;
+	}
+}
+
+.span6 {
+	float: left;
+	width: 50%;
+}
+
+
+@media only screen and (max-width: 600px) {
+	li{
+		font-size: (@fontSize * .8);
+	}
+}
+
+@media only screen and (max-width: 430px) {
+	.span6 {
+		float: none;
+		width: 100%;
+	}
+
+	body{
+		padding-top: 0;
+	}
+	ul{
+		height: auto;
+		position: static;
+	}
+	li{
+		display: block;
+		width: 100%;
+	}
+	li a{
+		white-space: normal;
+	}
+	a.active:after{
+		display: none;
+	}
+}

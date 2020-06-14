@@ -1,0 +1,67 @@
+.tocify {
+	@tocify-bg: lighten(@hover_bg, 2%);
+	@tocify-border: darken(@hover_bg, 1%);
+	
+	border: 1px solid @tocify-border;
+	background: #fff;
+	overflow: hidden;
+	margin-top: 20px;
+	.rounded;
+	
+	&.fixed {
+		position: fixed;
+		top: 10px;
+	}
+	
+	li {
+		
+		a {
+			
+			&:hover {
+				background: @tocify-bg;
+				color: @main_color;
+			}
+		}
+	}
+	
+	> ul {
+		border-bottom: 1px solid @tocify-border;
+		
+		ul li a {
+			padding-left: 20px + 10px;
+		}
+		
+		ul {
+			border-top: 1px solid @tocify-border;
+			background: lighten(@tocify-bg, 1%);
+		}
+		
+		&:last-child { border-bottom: 0; }
+	}
+	
+	.tocify-item.active {
+		
+		> a {
+			background: darken(@tocify-bg, 1%);
+			font-weight: bold;
+		}
+	}
+}
+
+.tocify-extend-page {
+	display: none !important;
+}
+
+
+
+// Small Screens
+@media (max-width: @screen-sm-max) {
+
+	.tocify {
+	
+		&.fixed {
+			position: static;
+			top: 0px;
+		}
+	}
+}

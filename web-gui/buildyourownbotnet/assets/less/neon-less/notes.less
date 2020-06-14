@@ -1,0 +1,239 @@
+.notes-env {
+	position: relative;
+	
+	.notes-header {
+		.clearfix;
+		display: table;
+		width: 100%;
+		vertical-align: middle;
+		
+		> h2, > .right {
+			display: table-cell;
+			vertical-align: middle;
+			width: 50%;
+			margin: 0;
+			padding-bottom: @base_padding * 2;
+		}
+		
+		> .right {
+			text-align: right;
+		}
+	}
+	
+	.notes-list {
+		@wp_width: 74%;
+		@wp_bg: #fffced;
+		@wp_line_bg: #e9e4ca;
+		@nl_bg: #f0ecdb;
+		
+		position: relative;
+		background: @nl_bg;
+		margin-left: -@inner_padding;
+		margin-right: -@inner_padding;
+		border: 1px solid @default;
+		border-left: 0;
+		border-right: 0;
+		.clearfix;
+		
+		.write-pad, .list-of-notes {
+			.bs;
+		}
+		
+		.list-of-notes {
+			float: right;
+			width: 100% - @wp_width;
+			list-style: none;
+			margin: 0;
+			padding: 0;
+			padding-bottom: @base_margin;
+			
+			li {
+				position: relative;
+				padding: @base_margin;
+				padding-bottom: 0;
+				
+				a {
+					display: block;
+					border: 1px solid @wp_line_bg;
+					background: @wp_bg;
+					padding: @base_padding * 2;
+					.transall;
+					
+					strong, span {
+						display: block;
+						
+						& + strong, & + span {
+							padding-top: 8px;
+						}
+					}
+					
+					strong {
+						word-break: break-all;
+					}
+					
+					span {
+						.text-overflow();
+					}
+					
+					em {
+						float: right;
+					}
+					
+					&:hover {
+						background: lighten(@wp_line_bg, 1%);
+						border-color: darken(@wp_line_bg, 10%);
+						
+						span, strong {
+							color: @text_color_light;
+						}
+					}
+				}
+				
+				.note-close {
+					position: absolute;
+					right: @base_margin;
+					top: @base_margin;
+					border: none;
+					background: none;
+					outline: none;
+					.opacity(0);
+					.transall;
+				}
+				
+				&:hover .note-close {
+					.opacity(1);
+				}
+				
+				.content {
+					display: none;
+				}
+				
+				&.current {
+					
+					a {
+						background: #fff;
+					}
+				}
+			}
+			
+			li + .no-notes {
+				display: none;
+			}
+		}
+		
+		.write-pad {
+			float: left;
+			width: @wp_width;
+			background: @wp_bg;
+			position: relative;
+							
+			&:after {
+				display: block;
+				content: '';
+				position: absolute;
+				left: 95px;
+				top: 0;
+				bottom: 0;
+				background: #f9d4d1;
+				width: 1px;
+			}
+			
+			textarea {
+				background: transparent;
+				border: none;
+				background: url(../images/notes-lines.png) left top;
+				background-attachment: local;
+				min-height: 780px;
+				font: 14px/52px @font_family, serif;
+				max-height: 1500px;
+				padding-left: 125px;
+				padding-right: 50px;
+				
+				&::-webkit-scrollbar {
+			            width: 5px;
+			    }
+			    &::-webkit-scrollbar-track {
+			            width: 5px;
+			            background-color: darken(@nl_bg, 5%);
+			    }
+			    &::-webkit-scrollbar-thumb {
+			            background-color: darken(@default, 18%);
+			    }
+			}
+		}
+	}
+	
+	& + footer.main {
+		border-top: 0;
+		padding-top: @base_padding;
+	}
+}
+
+
+
+// Medium Screens
+@media (max-width: @screen-md-min) {
+
+	.notes-env {
+		
+		.notes-list {
+			@wp_width: 65%;
+			
+			.list-of-notes {
+				width: 100% - @wp_width;
+			}
+		
+			.write-pad {
+				width: @wp_width;
+				
+				textarea {
+					padding-left: 50px;
+				}
+				
+				&:after {
+					left: 35px;
+				}
+			}
+		}
+	}
+}
+
+// Small Screens
+@media (max-width: @screen-sm-min) {
+	
+	body .notes-env {
+		
+		.notes-list {
+			@wp_width: 100%;
+			
+			.list-of-notes, .write-pad {
+				width: 100%;
+				float: none;
+			}
+			
+			.list-of-notes {
+				padding-bottom: @base_padding;
+				
+				li {
+					padding: @base_margin / 2;
+					padding-top: @base_padding;
+					padding-bottom: 0;
+					
+					a {
+						span {
+							display: none;
+						}
+					}
+				}
+			}
+			
+			.write-pad {
+				
+				textarea {
+					min-height: 400px; 
+					max-height: 600px; 
+				}
+			}
+		}
+	}
+}

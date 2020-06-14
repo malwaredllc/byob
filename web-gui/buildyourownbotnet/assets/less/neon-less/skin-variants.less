@@ -1,0 +1,1108 @@
+.neon-skin-variant (@sidebarBg; @sidebarHover; @sidebarHover2; @sidebarBorder;@sidebarLinkHover;@secondary;@textColor;@sidebarHover3;@rgbaBorder){
+	a {
+		color: @sidebarBg;
+	}
+	
+	// Profile Dropdown
+	.profile-info.dropdown .dropdown-menu {
+		background: @sidebarBg;
+		border-color: @sidebarBg;
+	}
+	
+	.profile-info.dropdown .dropdown-menu > li {
+		border-bottom-color: transparent;
+	}
+	
+	.profile-info.dropdown .dropdown-menu li a {
+		color: @textColor;
+	}
+	
+	.profile-info.dropdown .dropdown-menu li a:hover {
+		background: @sidebarHover;
+	}
+	
+	.page-container .sidebar-menu {
+		background: @sidebarBg;
+		color: @sidebarLinkHover;
+	}
+
+
+	.page-container.sidebar-collapsed .sidebar-menu #main-menu > li#search .search-input {
+		background-color: @sidebarHover !important;
+		border-color: @sidebarBorder !important;
+	}
+	
+	.page-container .sidebar-menu #main-menu li#search {
+		background-color: @sidebarHover;
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container .sidebar-menu #main-menu li ul {
+		border-color: @rgbaBorder;
+	}
+
+	.page-container .sidebar-menu #main-menu li ul > li {
+		border-color: @rgbaBorder;
+	}
+	.page-container .sidebar-menu #main-menu li ul > li > a {
+		background-color: @sidebarBg;		
+	}	
+	
+	.page-container .sidebar-menu #main-menu li.active>a {
+		background: @sidebarHover;
+	}
+	
+	.page-container .sidebar-menu #main-menu li ul > li > a {
+		background-color: @sidebarHover;
+	}
+	
+	.page-container .sidebar-menu .logo-env > div.sidebar-collapse a, .page-container .sidebar-menu .logo-env > div.sidebar-mobile-menu a {
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container .sidebar-menu .logo-env > div.sidebar-collapse a:hover {
+		background: @sidebarHover
+	}
+	
+	.page-container .sidebar-menu .sidebar-user-info {
+		border-color: @sidebarBorder;
+	}
+
+	.page-container .sidebar-menu .sidebar-user-info .sui-hover { 
+		background-color: @sidebarBg;
+	}	
+
+	.page-container .sidebar-menu #main-menu li {
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container .sidebar-menu #main-menu li a {
+		color: @textColor;
+	}
+	
+	.page-container .sidebar-menu #main-menu li a:hover {
+		background-color: @sidebarLinkHover;
+	}
+
+	.page-container .sidebar-menu #main-menu li ul > li > a:hover {
+		background-color: @sidebarHover3;
+	}
+	.page-container.sidebar-collapsed .sidebar-menu #main-menu > li > ul li {
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container .sidebar-menu #main-menu li ul > li ul > li > a {
+		background-color: @sidebarHover2;
+	}
+	
+	.page-container .sidebar-menu #main-menu li ul > li ul > li ul > li > a {
+		background-color: @sidebarHover2;
+	}
+	
+	.page-container .sidebar-menu #main-menu li ul > li ul > li ul > li ul > li > a { 
+		background-color: @sidebarHover2;
+	}
+
+	.page-container.sidebar-collapsed .sidebar-menu #main-menu > li > a > span:not(.badge) {
+		background: @sidebarBg;
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container.sidebar-collapsed .sidebar-menu #main-menu > li ul {
+		border-color: @sidebarBorder;
+	}	
+	
+	.profile-info.dropdown .dropdown-menu > .caret {
+		border-bottom-color: @sidebarBg;
+	}
+	
+	//Chat 
+	#chat {
+		background: @sidebarBg;
+	}
+	
+	#chat .chat-header {
+		color: #FFF;
+		border-bottom: 1px solid @sidebarBorder;
+	}
+	
+	#chat .chat-group > a:hover, #chat .chat-group > a.active {
+		background: @sidebarBorder;
+	}
+	
+	#chat .chat-group > strong {
+		color: rgba(255,255,255,0.4);
+	}
+	
+	#chat .chat-conversation {
+		background: @sidebarHover2;
+	}
+	
+	#chat .chat-conversation .conversation-body > li.odd, #chat .chat-conversation .conversation-body > li.even, #chat .chat-conversation .conversation-body > li.opponent {
+		background: @sidebarHover;		
+	}
+	
+	#chat .chat-conversation .conversation-header {
+		border-color: @sidebarBorder;
+	}
+	
+	#chat .chat-conversation .chat-textarea textarea {
+		background: @sidebarHover;	
+		box-shadow: none;
+		border-color: @sidebarHover;
+	}
+	
+	#chat .chat-group > a:before {
+		//border-left: @sidebarHover2;		
+		border-color: transparent transparent transparent @sidebarHover2;
+	}
+	
+	// Login Page
+	
+	&.login-page .login-form .form-group .input-group {
+		border-color: @sidebarBorder;
+	}	
+	
+	&.login-page {
+		background: @sidebarHover;
+		color: rgba(255,255,255,0.5);
+	}
+	
+	
+	&.login-page .login-form .form-group .input-group .form-control {
+		&::-webkit-input-placeholder { 
+		    color:    @textColor;
+		}
+		&:-moz-placeholder { 
+		    color:    @textColor;
+		}
+		&::-moz-placeholder {
+		    color:    @textColor;
+		}
+		&:-ms-input-placeholder { 
+		    color:    @textColor;
+		}		
+	}
+	
+	&.login-page .login-form .form-group .input-group {
+		background: @sidebarBg;
+		border-color: @sidebarBorder;
+	}
+		
+	&.login-page .login-form .form-group .input-group.focused {
+		border-color: lighten(@sidebarBorder,5%);
+	}
+	
+	&.login-page .login-form .form-group .input-group .input-group-addon:after {
+		background: @sidebarBorder;
+	}
+
+	&.login-page .login-form .form-group .btn-login {
+		background: @sidebarHover;
+		border-color: @sidebarBorder;
+	}
+	
+	
+	
+	&.login-page .login-form .form-group .btn-login:hover {
+		background: @sidebarBg;
+	}	
+	.login-container .login-header {
+		background-color: @sidebarBg ;
+	}
+	
+	.login-container .login-header.login-caret:after {
+		border-top-color: @sidebarBg;
+	}
+
+	&.login-page {
+		&.logging-in {
+			.login-progressbar  {
+				background: lighten(@sidebarBg, 12%);
+				height: 2px;
+				
+				div {
+					background: @secondary;
+				}
+			}
+		}
+	}
+	
+	
+	// Buttons, tiles and more
+	.tile-primary {
+		background: @sidebarBg;
+	}
+	
+	.tile-primary .tile-entry {
+		border-color: @sidebarBorder;
+	}
+	
+	.tile-primary .title {
+		background: darken(@sidebarBg,5%);
+	}
+	
+	.tile-white-primary {
+		
+		.num, h3, p {
+			color: @sidebarBorder;
+		}
+	}
+	
+	.btn-primary {
+		background: @sidebarBg;
+		border-color: @sidebarBg;
+	}
+	
+	.panel-invert {
+		background: @sidebarBg;
+	}
+	
+	.navbar-inverse {
+		border-color: @sidebarBg;
+		background: @sidebarBg;
+	}
+	.navbar-inverse .navbar-nav > li > a {
+		color: @textColor;
+	}
+	.navbar-inverse .navbar-nav > .open > a, .navbar-inverse .navbar-nav > .open > a:hover, .navbar-inverse .navbar-nav > .open > a:focus {
+		background: @sidebarHover;		
+	}
+	
+	.navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:hover, .navbar-inverse .navbar-nav > .active > a:focus {
+		background: @sidebarHover;		
+	}
+	
+	.badge.badge-primary, .label-primary  {
+		background-color: @sidebarBg;
+	}
+	
+	.badge.badge-secondary, .label-secondary {
+		background-color: @secondary;
+	}
+	
+	
+	.pagination > .active > a, .pagination > .active > span, .pagination > .active > a:hover, .pagination > .active > span:hover, .pagination > .active > a:focus, .pagination > .active > span:focus {
+		border-color: @sidebarBg;
+		background: @sidebarBg;
+	}
+
+	div.datepicker table tr td.active, div.datepicker table tr td.active:hover, div.datepicker table tr td.active.disabled, div.datepicker table tr td.active.disabled:hover {
+			background-color: @sidebarBg;	
+	}
+
+	&.login-page .login-form .form-group.lockscreen-input .lockscreen-thumb img {
+		border-color: @sidebarHover;
+	}
+	
+	&.login-page .login-content a {
+		color: @textColor;
+	}
+	
+	.input-group-addon {
+		color: @textColor;
+	}
+	
+	// Page transitions
+	&.page-left-in, &.page-right-in, &.page-fade-only, &.page-fade {
+		background: @sidebarBg !important;
+	}
+
+	
+	.page-container .sidebar-menu #main-menu li#search button i {
+		color: @textColor;
+	}
+	
+	.btn-primary.btn-icon i {
+		background-color: rgba(0,0,0,0.2);
+	}
+	
+	.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary {
+		background: @sidebarHover2;
+		border-color: @sidebarHover2;
+	}
+	
+	.tile-block .tile-content .todo-list .neon-cb-replacement .cb-wrapper .checked {
+		background: @sidebarBg;
+	}
+	
+	// Navbar
+	.page-container.horizontal-menu header.navbar {
+		background: @sidebarBg;
+	}
+	
+	.page-container.horizontal-menu.with-sidebar header.navbar{
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container.horizontal-menu.with-sidebar .sidebar-user-info {
+		border-color: @sidebarBorder;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li > a {
+		border-right-color: @rgbaBorder;
+		color: @textColor;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li.active > a {
+		background: @sidebarHover;
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-nav {
+		border-left-color: @rgbaBorder;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li#search {
+		border-right-color: @rgbaBorder;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li:hover > a {
+		background: @sidebarHover;
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul {
+		background: @sidebarBg;
+	}
+
+	.page-container.horizontal-menu header.navbar ul.nav > li.dropdown.open {
+		background: @sidebarHover;
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul li a {
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul li:hover > a {
+		background: @sidebarHover;
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul li.active > a {
+		background: @sidebarHover;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-inner > ul > li#search .search-input, .page-container.horizontal-menu header.navbar > ul > li#search .search-input {
+		background: @sidebarHover;
+		border-color: @sidebarBorder;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li#search.search-input-collapsed:hover {
+		border-color: @sidebarBorder;
+		background: @sidebarHover;
+	}
+
+	.page-container.horizontal-menu header.navbar ul.nav > li.sep {
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container.horizontal-menu header.navbar ul.nav > li > a, .page-container.horizontal-menu header.navbar ul.nav > li > span {
+		color: @textColor;
+	}
+	
+	.entypo-menu {
+		color: @textColor;
+	}
+	
+	.page-container .sidebar-menu #main-menu li#search .search-input {
+		color: @textColor;
+		&::-webkit-input-placeholder { 
+		    color:    @textColor;
+		}
+		&:-moz-placeholder { 
+		    color:    @textColor;
+		}
+		&::-moz-placeholder {
+		    color:    @textColor;
+		}
+		&:-ms-input-placeholder { 
+		    color:    @textColor;
+		}		
+	}
+	
+	#chat .chat-group > a {
+		color: @textColor;
+	}
+	
+	.conversation-body, #chat .entypo-cancel, #chat .chat-conversation .chat-textarea:after {
+		color: @textColor;
+	}
+
+	#chat .chat-conversation .chat-textarea textarea {
+		&::-webkit-input-placeholder { 
+		    color:    @textColor;
+		}
+		&:-moz-placeholder { 
+		    color:    @textColor;
+		}
+		&::-moz-placeholder {
+		    color:    @textColor;
+		}
+		&:-ms-input-placeholder { 
+		    color:    @textColor;
+		}		
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul li a {
+		color: @textColor;
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-inner > ul > li#search button i, .page-container.horizontal-menu header.navbar > ul > li#search button i {
+		color: @textColor;
+	}
+
+	.page-container.sidebar-collapsed .sidebar-menu #main-menu > li.has-sub:hover.has-sub > a:hover, .page-container.sidebar-collapsed .sidebar-menu #main-menu > li:hover.has-sub > a:hover {
+		color: @textColor;
+	}	
+	
+	.panel-invert > .panel-heading, .modal.invert .modal-dialog .modal-content .modal-header, .modal.invert .modal-dialog .modal-content .modal-footer {
+		background: @sidebarBg;
+		border-color: @sidebarBorder;		
+	}
+	
+	.panel-invert > .panel-body, .modal.invert .modal-dialog .modal-content {
+		background: @sidebarBg;
+		color: @textColor;
+	}
+	
+	.modal.invert .modal-dialog .modal-content {
+		border-color: @sidebarBg;
+	}
+	
+	.panel-invert {
+		border-color: @sidebarBg;		
+	}
+	
+	.panel-invert > .panel-heading > .panel-options > a.bg, .modal.invert .modal-dialog .modal-content .modal-header .close {
+		background-color: @sidebarHover;
+	}
+	
+	.panel-invert > .panel-heading > .panel-options > a.bg:hover {
+		background-color: @sidebarHover2;
+	}
+	
+	a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.active:focus {
+		background-color: @sidebarBg; 
+		border-color: @sidebarBg; 
+	}	
+	
+	a.list-group-item.active .list-group-item-text, a.list-group-item.active:hover .list-group-item-text, a.list-group-item.active:focus .list-group-item-text {
+		color: @textColor;
+	}
+	
+	.popover {
+		&.popover-primary {
+			background-color: @sidebarBg;
+			border-color: @sidebarBg;
+			
+			.popover-title {
+				background-color: @sidebarHover2;
+				border-color: @sidebarHover2;
+			}
+	
+
+
+			&.top .arrow {
+			border-top-color: @sidebarBg;
+			&:after {
+			  border-top-color: @sidebarBg;
+			}
+			}
+			&.right .arrow {
+			border-right-color: @sidebarBg;
+			&:after {
+			  border-right-color: @sidebarBg;
+			}
+			}
+			&.bottom .arrow {
+			border-bottom-color: @sidebarBg;
+			&:after {
+			  border-bottom-color: @sidebarBg;
+			}
+			}
+			
+			&.left .arrow {
+			border-left-color: @sidebarBg;
+			&:after {
+			  border-left-color: @sidebarBg;
+			}
+		  }
+	  }
+
+		&.popover-secondary {
+			background-color: @secondary;
+			border-color: @secondary;
+		
+			.popover-title {
+				background-color: @secondary;
+				border-color: @secondary;
+			}
+
+			&.top .arrow {
+			border-top-color: @secondary;
+			&:after {
+			  border-top-color: @secondary;
+			}
+			}
+			&.right .arrow {
+			border-right-color: @secondary;
+			&:after {
+			  border-right-color: @secondary;
+			}
+			}
+			&.bottom .arrow {
+			border-bottom-color: @secondary;
+			&:after {
+			  border-bottom-color: @secondary;
+			}
+			}
+			
+			&.left .arrow {
+			border-left-color: @secondary;
+			&:after {
+			  border-left-color: @secondary;
+			}
+		}
+		}
+	}
+	
+	.tooltip {
+		&.tooltip-primary { .tooltip-variant(@sidebarBg; @textColor); }
+		&.tooltip-secondary { .tooltip-variant(@secondary; @textColor); }		
+	}
+
+	.horizontal-menu header.navbar .navbar-inner > ul > li#search .search-input,
+	.horizontal-menu header.navbar > ul > li#search .search-input {
+		&::-webkit-input-placeholder { 
+		    color:    @textColor;
+		}
+		&:-moz-placeholder { 
+		    color:    @textColor;
+		}
+		&::-moz-placeholder {
+		    color:    @textColor;
+		}
+		&:-ms-input-placeholder { 
+		    color:    @textColor;
+		}		
+	}
+	
+}
+
+.neon-skin-variant-white (@sidebarBg; @sidebarHover; @sidebarHover2; @sidebarBorder;@sidebarLinkHover;@secondary;@textColor;@sidebarHover3;@rgbaBorder){
+
+	// Light
+
+	&.login-page .login-form .form-group.lockscreen-input .lockscreen-details h4 {
+		color: @textColor;
+	}
+	
+	&.login-page .login-form .form-group.lockscreen-input .lockscreen-details span {
+		color: lighten(@textColor,25%);
+	}
+
+	&.login-page .login-form .form-group.lockscreen-input .lockscreen-thumb img {
+		border-color: @sidebarHover;
+	}	
+
+	.profile-info.dropdown .dropdown-menu li a:hover {
+		color: @textColor;
+	}
+	
+
+	.page-container .sidebar-menu {
+		border-right: 1px solid @sidebarBorder;	
+	}
+	
+	#chat {
+		border-left: 1px solid @sidebarBorder;	
+	}
+	
+	.page-container .sidebar-menu .sidebar-user-info .user-link img {
+		border: 4px solid rgba(0, 0, 0, 0.06);
+	}
+
+	#chat .user-status.is-offline {
+		background-color: #dbdbdb;
+	}
+	
+	.page-container .sidebar-menu .sidebar-user-info .user-link strong, .page-container .sidebar-menu .sidebar-user-info .user-link img + span, .page-container .sidebar-menu .sidebar-user-info .user-link img + strong, .page-container .sidebar-menu .sidebar-user-info .sui-hover.visible.animate-in a, .page-container .sidebar-menu .sidebar-user-info .sui-hover.visible .close-sui-popup {
+		color: @textColor;
+	}
+	
+	#chat .chat-conversation .conversation-body > li .user {
+		color: @textColor;
+	}
+	
+	&.login-page .login-bottom-links .link {
+		color: @textColor;
+		
+		&:hover {
+			color: darken(@textColor,5%);
+		}
+	}
+	
+	&.login-page .login-bottom-links {
+		color: @textColor;
+	}
+	
+	///////
+	
+	
+	// Profile Dropdown
+	.profile-info.dropdown .dropdown-menu {
+		background: @sidebarHover;
+		border-color: @sidebarHover;
+	}
+	
+	.profile-info.dropdown .dropdown-menu > li {
+		border-bottom-color: transparent;
+	}
+	
+	.profile-info.dropdown .dropdown-menu li a {
+		color: @textColor;
+	}
+	
+	.profile-info.dropdown .dropdown-menu li a:hover {
+		background: @sidebarHover;
+	}
+	
+	.page-container .sidebar-menu {
+		background: @sidebarBg;
+		color: @sidebarLinkHover;
+	}
+
+
+	.page-container.sidebar-collapsed .sidebar-menu #main-menu > li#search .search-input {
+		background-color: @sidebarHover !important;
+		border-color: @sidebarBorder !important;
+	}
+	
+	.page-container .sidebar-menu #main-menu li#search {
+		background-color: @sidebarHover;
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container .sidebar-menu #main-menu li ul {
+		border-color: @rgbaBorder;
+	}
+
+	.page-container .sidebar-menu #main-menu li ul > li {
+		border-color: @rgbaBorder;
+	}
+	.page-container .sidebar-menu #main-menu li ul > li > a {
+		background-color: @sidebarBg;		
+	}	
+	
+	.page-container .sidebar-menu #main-menu li.active>a {
+		background: @sidebarHover;
+		color: @textColor;
+	}
+	
+	.page-container .sidebar-menu #main-menu li ul > li > a {
+		background-color: @sidebarHover;
+	}
+	
+	.page-container .sidebar-menu .logo-env > div.sidebar-collapse a, .page-container .sidebar-menu .logo-env > div.sidebar-mobile-menu a {
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container .sidebar-menu .logo-env > div.sidebar-collapse a:hover {
+		background: @sidebarHover
+	}
+	
+	.page-container .sidebar-menu .sidebar-user-info {
+		border-color: @sidebarBorder;
+	}
+
+	.page-container .sidebar-menu .sidebar-user-info .sui-hover { 
+		background-color: @sidebarBg;
+	}	
+
+	.page-container .sidebar-menu #main-menu li {
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container .sidebar-menu #main-menu li a {
+		color: @textColor;
+	}
+	
+	.page-container .sidebar-menu #main-menu li a:hover {
+		background-color: @sidebarLinkHover;
+		color: @textColor;
+	}
+
+	.page-container .sidebar-menu #main-menu li.has-sub > a:before {
+		color: @textColor;
+	}
+	
+	
+
+
+	.page-container .sidebar-menu #main-menu li ul > li > a:hover {
+		background-color: @sidebarHover3;
+	}
+	.page-container.sidebar-collapsed .sidebar-menu #main-menu > li > ul li {
+		border-color: @sidebarBorder;
+		border-right: 1px solid @sidebarBorder;
+	}
+	
+	.page-container .sidebar-menu #main-menu li ul > li ul > li > a {
+		background-color: @sidebarHover2;
+	}
+	
+	.page-container .sidebar-menu #main-menu li ul > li ul > li ul > li > a {
+		background-color: @sidebarHover2;
+	}
+	
+	.page-container .sidebar-menu #main-menu li ul > li ul > li ul > li ul > li > a { 
+		background-color: @sidebarHover2;
+	}
+
+	.page-container.sidebar-collapsed .sidebar-menu #main-menu > li > a > span:not(.badge) {
+		background: @sidebarBg;
+		border-color: @sidebarBorder;
+		border-right: 1px solid @sidebarBorder;
+	}
+	
+	.page-container.sidebar-collapsed .sidebar-menu #main-menu > li ul {
+		border-color: @sidebarBorder;
+	}	
+	
+	.profile-info.dropdown .dropdown-menu > .caret {
+		border-bottom-color: @sidebarHover;
+	}
+	
+	//Chat 
+	#chat {
+		background: @sidebarBg;
+	}
+	
+	#chat .chat-header {
+		color: @textColor;
+		border-bottom: 1px solid @sidebarBorder;
+	}
+	
+	#chat .chat-group > a:hover, #chat .chat-group > a.active {
+		background: rgba(228, 228, 228, 0.18);
+	}
+	
+	#chat .chat-group > strong {
+		color: @textColor;
+	}
+	
+	#chat .chat-conversation {
+		background: @sidebarHover2;
+	}
+	
+	#chat .chat-conversation .conversation-body > li.odd, #chat .chat-conversation .conversation-body > li.even, #chat .chat-conversation .conversation-body > li.opponent {
+		background: @sidebarHover;		
+	}
+	
+	#chat .chat-conversation .conversation-header {
+		border-color: rgba(0, 0, 0, 0.02);
+		color: @textColor;
+	}
+	
+	#chat .chat-conversation .conversation-body>li.odd, #chat .chat-conversation .conversation-body>li.even, #chat .chat-conversation .conversation-body>li.opponent {
+		background-color: rgba(0, 0, 0, 0.02);
+	}
+	
+	#chat .chat-conversation .chat-textarea textarea {
+		background: @sidebarHover;	
+		box-shadow: none;
+		color: @textColor;
+		border-color: @sidebarHover;
+	}
+	
+	#chat .chat-group > a:before {
+		//border-left: @sidebarHover2;		
+		border-color: transparent transparent transparent @sidebarHover2;
+	}
+	
+	// Login Page
+	
+	&.login-page .login-form .form-group .input-group {
+		border-color: @sidebarBorder;
+	}	
+	
+	&.login-page {
+		background: @sidebarHover;
+		color: rgba(255,255,255,0.5);
+	}
+	
+	&.login-page .login-header .description {
+		color: @textColor;
+	}
+	
+	
+	&.login-page .login-form .form-group .input-group .form-control {
+		color: @textColor;
+		
+		&::-webkit-input-placeholder { 
+		    color:    @textColor;
+		}
+		&:-moz-placeholder { 
+		    color:    @textColor;
+		}
+		&::-moz-placeholder {
+		    color:    @textColor;
+		}
+		&:-ms-input-placeholder { 
+		    color:    @textColor;
+		}		
+	}
+	
+	&.login-page .login-form .form-group .input-group {
+		background: @sidebarBg;
+		border-color: @sidebarBorder;
+	}
+		
+	&.login-page .login-form .form-group .input-group.focused {
+		border-color: darken(@sidebarBorder,5%);
+	}
+	
+	&.login-page .login-form .form-group .input-group .input-group-addon:after {
+		background: @sidebarBorder;
+	}
+
+	&.login-page .login-form .form-group .btn-login {
+		background: @sidebarHover;
+		border-color: @sidebarBorder;
+		color: @textColor;
+	}
+	
+	
+	
+	&.login-page .login-form .form-group .btn-login:hover {
+		background: @sidebarBg;
+		border-color: @sidebarBorder;
+		color: @textColor;
+	}	
+	.login-container .login-header {
+		background-color: @sidebarBg ;
+	}
+	
+	.login-container .login-header.login-caret:after {
+		border-top-color: @sidebarBg;
+	}
+
+	&.login-page {
+		&.logging-in {
+			.login-progressbar  {
+				background: lighten(@sidebarBg, 12%);
+				height: 2px;
+				
+				div {
+					background: @secondary;
+				}
+			}
+			.login-progressbar-indicator {
+				color: @textColor;
+				
+				h3 {
+					color: @textColor;
+				}
+			}
+		}
+	}
+	
+	
+	// Page transitions
+	&.page-left-in, &.page-right-in, &.page-fade-only, &.page-fade {
+		background: @sidebarBg !important;
+	}
+
+	.page-container.horizontal-menu header.navbar.navbar-fixed-top {
+		border-bottom: 1px solid @sidebarBorder;
+	}
+	
+	.page-container .sidebar-menu #main-menu li#search button i {
+		color: @textColor;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li.active.has-sub > a:after {
+		border-color: @sidebarHover rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0);		
+	}
+
+	// Navbar
+	.page-container.horizontal-menu header.navbar {
+		background: @sidebarBg;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul li.has-sub > a:before {
+		color: @textColor;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul li.has-sub:hover > a:before {
+		color: @textColor;
+	}
+
+	.page-container.horizontal-menu.with-sidebar header.navbar{
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container.horizontal-menu.with-sidebar .sidebar-user-info {
+		border-color: @sidebarBorder;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li > a {
+		border-right-color: @rgbaBorder;
+		color: @textColor;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li.active > a {
+		background: @sidebarHover;
+		color: @textColor;
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-nav {
+		border-left-color: @rgbaBorder;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li#search {
+		border-right-color: @rgbaBorder;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li:hover > a {
+		background: @sidebarHover;
+		color: @textColor;
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul {
+		background: @sidebarBg;
+	}
+
+	.page-container.horizontal-menu header.navbar ul.nav > li.dropdown.open {
+		background: @sidebarHover;
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul li a {
+		border-color: @sidebarBorder;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul {
+		.box-shadow(0px 1px 1px rgba(0, 0, 0, 0.25));
+	}	
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul li:hover > a {
+		background: @sidebarHover;
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul li.active > a {
+		background: @sidebarHover;
+		color: @textColor;
+	}
+
+	.page-container.horizontal-menu header.navbar .navbar-inner > ul > li#search .search-input, .page-container.horizontal-menu header.navbar > ul > li#search .search-input {
+		background: @sidebarHover;
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul li:hover > a {
+		color: @textColor;
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul > li:last-child > a {
+		color: @textColor;
+	}	
+
+	.page-container.horizontal-menu header.navbar .navbar-nav > li#search.search-input-collapsed:hover {
+		border-color: @sidebarBorder;
+		background: @sidebarHover;
+	}
+
+	.page-container.horizontal-menu header.navbar ul.nav > li.sep {
+		border-color: @sidebarBorder;
+	}
+	
+	.page-container.horizontal-menu header.navbar ul.nav > li > a, .page-container.horizontal-menu header.navbar ul.nav > li > span {
+		color: @textColor;
+	}
+	
+	.entypo-menu {
+		color: @textColor;
+	}
+	
+	.page-container .sidebar-menu #main-menu li#search .search-input {
+		color: @textColor;
+		&::-webkit-input-placeholder { 
+		    color:    @textColor;
+		}
+		&:-moz-placeholder { 
+		    color:    @textColor;
+		}
+		&::-moz-placeholder {
+		    color:    @textColor;
+		}
+		&:-ms-input-placeholder { 
+		    color:    @textColor;
+		}		
+	}
+	
+	#chat .chat-group > a {
+		color: @textColor;
+	}
+	
+	.conversation-body, #chat .entypo-cancel, #chat .chat-conversation .chat-textarea:after {
+		color: @textColor;
+	}
+
+	#chat .chat-conversation .chat-textarea textarea {
+		&::-webkit-input-placeholder { 
+		    color:    @textColor;
+		}
+		&:-moz-placeholder { 
+		    color:    @textColor;
+		}
+		&::-moz-placeholder {
+		    color:    @textColor;
+		}
+		&:-ms-input-placeholder { 
+		    color:    @textColor;
+		}		
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-nav > li ul li a {
+		color: @textColor;
+	}
+	
+	.page-container.horizontal-menu header.navbar .navbar-inner > ul > li#search button i, .page-container.horizontal-menu header.navbar > ul > li#search button i {
+		color: @textColor;
+	}
+
+	.page-container.sidebar-collapsed .sidebar-menu #main-menu > li.has-sub:hover.has-sub > a:hover, .page-container.sidebar-collapsed .sidebar-menu #main-menu > li:hover.has-sub > a:hover {
+		color: @textColor;
+	}	
+
+		.horizontal-menu header.navbar .navbar-inner > ul > li#search .search-input,
+	.horizontal-menu header.navbar > ul > li#search .search-input {
+		&::-webkit-input-placeholder { 
+		    color:    @textColor;
+		}
+		&:-moz-placeholder { 
+		    color:    @textColor;
+		}
+		&::-moz-placeholder {
+		    color:    @textColor;
+		}
+		&:-ms-input-placeholder { 
+		    color:    @textColor;
+		}		
+	}
+	
+	.page-container.horizontal-menu header.navbar ul.nav > li > a {
+		color: @textColor;
+	}
+	
+	.page-container.horizontal-menu header.navbar ul.nav > li > a:hover, .page-container.horizontal-menu header.navbar ul.nav > li > a:focus {
+		color: darken(@textColor,5%);
+	}
+	
+	.page-container.horizontal-menu header.navbar ul.nav > li.dropdown.open > a {
+		color: @textColor;
+	}
+	
+	.page-container.horizontal-menu header.navbar ul.nav > li.dropdown.open:after {
+		border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #F5F5F6 rgba(0, 0, 0, 0);
+	}
+	
+}
+

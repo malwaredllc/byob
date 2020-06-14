@@ -1,0 +1,339 @@
+{
+  "name": "jquery.terminal",
+  "version": "{{VER}}",
+  "description": "jQuery Terminal Emulator is a plugin for creating command line interpreters in your applications.",
+  "main": "js/jquery.terminal.js",
+  "typings": "js/jquery.terminal.d.ts",
+  "keywords": [
+    "terminal",
+    "emulator",
+    "prompt",
+    "console",
+    "keyboard",
+    "type",
+    "rpc",
+    "input",
+    "ui"
+  ],
+  "scripts": {
+    "test": "make test"
+  },
+  "author": {
+    "name": "Jakub Jankiewicz",
+    "email": "jcubic@onet.pl",
+    "url": "https://jcubic.pl/me"
+  },
+  "contributors": [
+    {
+      "name": "Jakub T. Jankiewicz",
+      "url": "https://jcubic.pl/me"
+    },
+    {
+      "name": "Zuo Qiyang",
+      "url": "http://zuoqy.com"
+    },
+    {
+      "name": "Marcel Link",
+      "url": "https://github.com/ml1nk"
+    },
+    {
+      "name": "Sébastien Warin",
+      "url": "http://sebastien.warin.fr"
+    },
+    {
+      "name": "Christopher John Ryan",
+      "url": "https://github.com/ChrisJohnRyan"
+    },
+    {
+      "name": "Johan",
+      "url": "https://github.com/johanjordaan"
+    },
+    {
+      "name": "Florian Schäfer",
+      "url": "https://github.com/fschaefer"
+    },
+    {
+      "name": "David Refoua",
+      "url": "http://www.Refoua.me"
+    },
+    {
+      "name": "Ishan Ratnapala",
+      "url": "https://github.com/IshanRatnapala"
+    },
+    {
+      "name": "Tomasz Ducin",
+      "url": "http://ducin.it"
+    },
+    {
+      "name": "7twin",
+      "url": "https://7twin.com"
+    },
+    {
+      "name": "Abdelrahman Omran",
+      "url": "https://omranic.com"
+    },
+    {
+      "name": "Anton Vasil'ev",
+      "url": "https://github.com/avdes"
+    },
+    {
+      "name": "finlob",
+      "url": "https://github.com/finlob"
+    },
+    {
+      "name": "Hasan",
+      "url": "https://github.com/JuanPotato"
+    },
+    {
+      "name": "Hraban Luyat",
+      "url": "https://luyat.com"
+    },
+    {
+      "name": "Jarry Shaw",
+      "url": "jarryshaw.me"
+    },
+    {
+      "name": "Jon Steinich",
+      "url": "https://github.com/jsteinich"
+    },
+    {
+      "name": "Martin v. Löwis",
+      "url": "https://github.com/loewis"
+    },
+    {
+      "name": "Mateusz Paprocki",
+      "url": "https://github.com/mattpap"
+    },
+    {
+      "name": "exit1",
+      "url": "https://github.com/exit1"
+    },
+    {
+      "name": "Robert Wikman",
+      "url": "https://github.com/rbw"
+    },
+    {
+      "name": "Steve Phillips",
+      "url": "https://tryingtobeawesome.com/"
+    },
+    {
+      "name": "Yutong Luo",
+      "url": "https://yutongluo.com"
+    },
+    {
+      "name": "coderaiser",
+      "url": "http://coderaiser.github.io"
+    },
+    {
+      "name": "mrkaiser",
+      "url": "https://github.com/mrkaiser"
+    },
+    {
+      "name": "stereobooster",
+      "url": "https://stereobooster.com"
+    },
+    {
+      "name": "Steve Kirkegard",
+      "url": "https://www.linkedin.com/in/steve-kirkegard"
+    },
+    {
+      "name": "Juraj Vitko",
+      "url": "https://github.com/youurayy"
+    }
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jcubic/jquery.terminal.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jcubic/jquery.terminal/issues"
+  },
+  "homepage": "https://terminal.jcubic.pl",
+  "eslintConfig": {
+    "parserOptions": {
+      "ecmaVersion": 3,
+      "sourceType": "script",
+      "ecmaFeatures": {}
+    },
+    "env": {
+      "browser": true,
+      "jasmine": true,
+      "node": true
+    },
+    "globals": {
+      "jQuery": true,
+      "sprintf": true,
+      "$": true,
+      "Symbol": true
+    },
+    "rules": {
+      "no-console": "error",
+      "eqeqeq": "error",
+      "curly": "error",
+      "no-unreachable": "error",
+      "valid-typeof": "error",
+      "no-unexpected-multiline": "error",
+      "no-regex-spaces": "error",
+      "no-irregular-whitespace": "error",
+      "no-invalid-regexp": "error",
+      "no-inner-declarations": "error",
+      "no-func-assign": "error",
+      "no-extra-semi": "error",
+      "no-extra-boolean-cast": "error",
+      "no-debugger": "error",
+      "no-dupe-args": "error",
+      "no-dupe-keys": "error",
+      "no-duplicate-case": "error",
+      "no-empty-character-class": "error",
+      "no-ex-assign": "error",
+      "array-callback-return": "error",
+      "no-case-declarations": "error",
+      "guard-for-in": "error",
+      "no-caller": "error",
+      "no-empty-function": "error",
+      "no-extend-native": "error",
+      "no-extra-bind": "error",
+      "no-fallthrough": "error",
+      "no-global-assign": "error",
+      "no-implicit-globals": "error",
+      "no-implied-eval": "error",
+      "no-multi-spaces": "error",
+      "no-new-wrappers": "error",
+      "no-redeclare": "error",
+      "no-self-assign": "error",
+      "no-return-assign": "error",
+      "no-self-compare": "error",
+      "no-throw-literal": "error",
+      "no-unused-labels": "error",
+      "no-useless-call": "error",
+      "no-useless-escape": "error",
+      "no-void": "error",
+      "no-with": "error",
+      "radix": "error",
+      "wrap-iife": [
+        "error",
+        "inside"
+      ],
+      "yoda": [
+        "error",
+        "never"
+      ],
+      "no-catch-shadow": "error",
+      "no-delete-var": "error",
+      "no-label-var": "error",
+      "no-undef-init": "error",
+      "no-unused-vars": "error",
+      "no-undef": "error",
+      "comma-style": [
+        "error",
+        "last"
+      ],
+      "comma-dangle": [
+        "error",
+        "never"
+      ],
+      "comma-spacing": [
+        "error",
+        {
+          "before": false,
+          "after": true
+        }
+      ],
+      "computed-property-spacing": [
+        "error",
+        "never"
+      ],
+      "eol-last": [
+        "error",
+        "always"
+      ],
+      "func-call-spacing": [
+        "error",
+        "never"
+      ],
+      "key-spacing": [
+        "error",
+        {
+          "beforeColon": false,
+          "afterColon": true,
+          "mode": "strict"
+        }
+      ],
+      "max-len": [
+        "error",
+        90
+      ],
+      "max-statements-per-line": "error",
+      "new-parens": "error",
+      "no-array-constructor": "error",
+      "no-lonely-if": "error",
+      "no-mixed-spaces-and-tabs": "error",
+      "no-multiple-empty-lines": "error",
+      "no-new-object": "error",
+      "no-tabs": "error",
+      "no-trailing-spaces": "error",
+      "no-whitespace-before-property": "error",
+      "object-curly-spacing": [
+        "error",
+        "never"
+      ],
+      "space-before-blocks": "error",
+      "keyword-spacing": [
+        "error",
+        {
+          "before": true,
+          "after": true
+        }
+      ],
+      "space-in-parens": [
+        "error",
+        "never"
+      ],
+      "space-infix-ops": "error",
+      "space-before-function-paren": [
+        "error",
+        "never"
+      ],
+      "complexity": [
+        "error",
+        {
+          "max": 30
+        }
+      ],
+      "indent": [
+        "error",
+        4,
+        {
+          "SwitchCase": 1
+        }
+      ],
+      "linebreak-style": [
+        "error",
+        "unix"
+      ],
+      "semi": [
+        "error",
+        "always"
+      ]
+    }
+  },
+  "dependencies": {
+    "@types/jquery": "^3.3.29",
+    "jquery": "~3",
+    "prismjs": "^1.16.0",
+    "wcwidth": "^1.0.1"
+  },
+  "devDependencies": {
+    "coveralls": "^3.0.3",
+    "cssnano": "^4.1.10",
+    "emoji-datasource-twitter": "^4.1.0",
+    "eslint": "^5.16.0",
+    "gm": "^1.23.1",
+    "iconv-lite": "^0.5.0",
+    "jest": "^24.8.0",
+    "jsonlint": "^1.6.3",
+    "typescript": "^3.1.6",
+    "uglify-js": "^3.5.12"
+  }
+}

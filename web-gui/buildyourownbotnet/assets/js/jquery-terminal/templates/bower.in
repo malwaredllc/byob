@@ -1,0 +1,30 @@
+{
+    "name": "jquery.terminal",
+    "version": "{{VER}}",
+    "main": [
+        "js/jquery.terminal.min.js",
+        "js/jquery.mousewheel-min.js",
+        "css/jquery.terminal.min.css"
+    ],
+    "description": "jQuery Terminal Emulator is a plugin for creating command line interpreters in your applications.",
+    "license": "MIT",
+    "ignore": [
+        "examples",
+        "README.in",
+        "bower.in",
+        "Makefile",
+        "manifest",
+        ".gitignore",
+        ".npmignore",
+        "package.in",
+        "package.json",
+        "bin",
+        "version"
+    ],
+    "dependencies": {
+        "jquery": "~3"
+    },
+    "devDependencies": {
+        "keyboardevent-key-polyfill": "^1.0.2"
+    }
+}

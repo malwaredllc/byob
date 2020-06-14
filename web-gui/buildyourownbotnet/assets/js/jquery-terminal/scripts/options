@@ -1,0 +1,3 @@
+#!/bin/bash
+# print missing options in documentation
+grep -oE 'settings\.[^;, ().?:]+' js/jquery.terminal-src.js | sort | uniq | while read setting; do grep `echo $setting | sed -e 's/settings.//'` ../www/api_reference.php.in > /dev/null || echo $setting; done

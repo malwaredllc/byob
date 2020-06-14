@@ -1,0 +1,374 @@
+// Section: User Info (user profile info container)
+.user-info {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	.clearfix;
+	
+	> li {
+		float: left;
+		margin-right: @base_padding/4;
+		
+		&.profile-info {
+			margin-right: @base_padding;
+		}
+	}
+}
+
+// Section: Profile Info
+.profile-info.dropdown {
+	@min-width: 210px;
+	@caret-dist: 20px;
+	
+	// Dropdown Toggler
+	> a {
+		color: @menu_active_color;
+		text-decoration: none;
+		font-size: @medium_font_size;
+		.transall;
+		
+		&:hover {
+			color: @hover_text_color;
+		}
+		
+		img {
+			border: 2px solid #f5f5f5;
+			margin-right: @base_padding/2;
+		}
+	}
+	
+	.dropdown-menu {
+		background-color: @main_color;
+		border-color: @main_border_color;
+		padding: 0;
+		margin-top: @base_margin/2;
+		
+		> .caret {
+			position: absolute;
+			left: @caret-dist;
+			top: -@caret-width-base;
+			border-bottom-width: @caret-width-base;
+			border-top-width: 0;
+			border-bottom-color: @main_border_color;
+			margin-left: -@caret-width-base/2;
+		}
+		
+		li {
+			color: @main_text_color;
+			font-size: @p_size;
+			padding: 0;
+			
+			a {
+				color: @main_text_color;
+				padding: @base_padding - 2 @base_padding;
+				.transall;
+				
+				i {
+					margin-right: @base_padding/2;
+					.opacity(.7);
+				}
+				
+				&:hover {
+					background-color: @menu_active_color;
+					color: @menu_active_text_color;
+					
+					i {
+						.opacity(1);
+					}
+				}
+			}
+		}
+		
+		> li {
+			border-bottom: 1px solid @main_border_color;
+			
+			> a {
+				display: block;
+				min-width: @min-width;
+			}
+			
+			&:last-child {
+				border-bottom: 0;
+			}
+		}
+	}
+	
+	
+	// Right Aligned
+	&.pull-right {
+		text-align: right;
+		
+		> a {
+			
+			img {
+				margin-left: @base_padding/2;
+				margin-right: 0;
+			}
+		}
+		
+		.dropdown-menu {
+			background-color: @main_color;
+			border-color: @main_border_color;
+			padding: 0;
+			margin-top: @base_margin/2;
+			text-align: left;
+			
+			> .caret {
+				left: auto;
+				right: @caret-dist;
+			}
+		}
+	}
+}
+
+
+// Section: User Notifications
+.notifications.dropdown {
+	
+	> a {
+		position: relative;
+		display: block;
+		padding: @base_padding @base_padding;
+		color: @text_color_light;
+		
+		i {
+			font-size: 19px;
+		}
+		
+		.badge {
+			position: absolute;
+			padding: 2px;
+			font-size: 10px;
+			right: 6px;
+			top: 6px;
+			min-width: 17px;
+			line-height: 12px;
+		}
+	}
+	
+	&.open {
+		
+		> a {
+			background-color: @hover_bg;
+			.rounded(@border_radius @border_radius 0 0);
+		}
+	}
+	
+	.dropdown-menu {
+		.neon-dropdown-menu-body;
+	}
+}
+
+
+// Mixins
+.neon-dropdown-menu-body() {	
+	@dd_background_color: @hover_bg;
+	@dd_border_color: #ededed;
+	@dd_color: #888888; // text color
+	
+	background-color: @dd_background_color;
+	.border-radius(0 0 @border_radius @border_radius);
+	.box-shadow(~"0 1px 0px rgba(0,0,0,.05)");
+	border: 1px solid #f8f8f8;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	margin-top: 0px;
+	width: @horizontal_notifications_width;
+	
+	li, a, p {
+		color: @dd_color;
+	}
+	
+	> li {
+		display: block;
+		border-bottom: 1px solid @dd_border_color;
+		margin: 0;
+		padding: 0;
+		font-size: @p_size;
+		
+		&.top {
+			
+			> p {
+				background-color: @dd_background_color;
+			}
+		}
+		
+		> a, > p {
+			margin: 0;
+			padding: @base_padding + 2 @inner_padding;
+		}
+		
+		> p {
+			background-color: #FFF;
+			
+			a {
+				color: @secondary_color;
+				.transall;
+				
+				&:hover {
+					color: darken(@secondary_color, 5%);
+				}
+			}
+		}
+		
+		.scroller {
+			max-height: @horizontal_notifications_scroller;
+			overflow: auto;
+		}
+		
+		> ul {
+			@normal_color: @dd_background_color;
+			@hover_color: lighten(@dd_background_color, 4%);
+			
+			position: relative;
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			
+			> li {
+				font-size: @p_size;
+				border-bottom: 1px solid @dd_border_color;
+				background: @normal_color;
+		
+				> a, > p {
+					display: block;
+					position: relative;
+					margin: 0;
+					padding: @base_padding @inner_padding;
+					.transall;
+					.clearfix;
+																
+					> i {
+						background: @main_border_color;
+						display: block;
+						float: left;
+						text-align: center;
+						padding: @base_padding/2;
+						line-height: 14px;
+						color: @menu_active_text_color;
+						.size(28px, 24px);
+						.rounded();
+					}
+					
+					&:hover {
+						background-color: @normal_color !important;
+					}
+				}
+				
+				// Icon Colors
+				&.notification-primary { > i, > a > i { .primary(); } }
+				&.notification-secondary { > i, > a > i { .secondary(); } }
+				&.notification-success { > i, > a > i { .success(); } }
+				&.notification-info { > i, > a > i { .info(); } }
+				&.notification-warning { > i, > a > i { .warning(); } }
+				&.notification-danger { > i, > a > i { .danger(); } }
+				
+				&.current, &.active, &.read {
+					//background-color: @hover_color;
+					
+					&:hover {
+						//background-color: @hover_color;
+					}
+				}
+				
+				.task {
+					display: block;
+					.clearfix;
+					
+					span {
+						display: block;
+					
+						&.desc {
+							float: left;
+						}
+						
+						&.percent {
+							float: right;
+						}
+					}
+				}
+				
+				.image {
+					display: block;
+					margin-right: @base_padding;
+					float: left;
+					
+					&.pull-right {
+						margin-left: @base_padding;
+						margin-right: 0;
+					}
+					
+					.img-circle {
+						border: 2px solid #FFF;
+					}
+				}
+				
+				.image + .line {
+					margin-top: @base_padding/2 + 3;
+				}
+				
+				.line {
+					display: block;
+					
+					&.desc {
+						.text-overflow();
+					}
+				}
+				
+				.line + .line, .line + .line + .line, .line + .line + .line + .line , {
+					margin-top: @base_padding / 2;
+				}
+				
+				strong {
+					color: @default_text;
+				}
+				
+				.progress {
+					display: block;
+					height: 5px;
+					background-color: #ededed;
+					margin: 0;
+					margin-top: @base_padding;
+					margin-bottom: @base_padding/2;
+					.clearfix;
+				}
+				
+				&:last-child {
+					border-bottom: 0;
+				}
+				
+				&:first-child {
+				
+					a:afterx {
+						position: absolute;
+						content: '';
+						display: block;
+						height: 10px;
+						top: -@base_padding;
+						left: 0;
+						right: 0;
+						background: transparent;
+						background: red;
+						.box-shadow(0px 2px 4px fade(#000, 3%));
+					}
+				}
+			}
+		}
+		
+		&.external {
+			background-color: #FFF;
+			border-bottom: 0;
+			
+			a {
+				color: @secondary_color;
+				.transall;
+				
+				&:hover {
+					background-color: #fff;
+					color: darken(@secondary_color, 5%);
+				}
+			}
+		}
+	}
+}

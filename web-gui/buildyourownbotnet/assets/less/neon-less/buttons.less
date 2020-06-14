@@ -1,0 +1,179 @@
+// Core styles
+.btn {
+	outline: 0 !important;
+	
+	&:active {
+		.box-shadow(none);
+	}
+
+	&.btn-icon {
+		position: relative;
+		
+		i {
+			position: absolute;
+			right: 0;
+			top: 0;
+			height: 100%;
+		}
+	}
+}
+
+// Alternate buttons
+// --------------------------------------------------
+
+.btn-default {
+	.button-variant(@btn-default-color; @secondary_background_color; @btn-default-border);
+}
+
+.btn-primary {
+	.button-variant(@btn-primary-color; @btn-primary-bg; @btn-primary-border);
+}
+
+.btn-blue {
+	.button-variant(#FFF, #0072bc, #0072bc);
+}
+
+.btn-red {
+	.button-variant(#FFF, #d42020, #d42020);
+}
+
+.btn-orange {
+	.button-variant(#FFF, #ff9600, #ff9600);
+}
+
+.btn-gold {
+	.button-variant(#846e20, #fcd036, #fcd036);
+}
+
+.btn-black {
+	.button-variant(#FFF, #000000, #000000);
+}
+
+.btn-white {
+	.button-variant(@main_color, #FFF, #FFF);
+	border-color: @default !important;
+}
+
+.btn-warning {
+	.button-variant(@btn-warning-color; @btn-warning-bg; @btn-warning-border);
+}
+
+.btn-danger {
+	.button-variant(@btn-danger-color; @btn-danger-bg; @btn-danger-border);
+}
+
+.btn-success, .btn-green {
+	.button-variant(@btn-success-color; @btn-success-bg; @btn-success-border);
+}
+
+.btn-info {
+	.button-variant(@btn-info-color; @btn-info-bg; @btn-info-border);
+}
+
+// Vertically space out multiple block buttons
+.btn-block + .btn-block {
+	margin-top: 5px;
+}
+
+// Base styles
+// --------------------------------------------------
+
+.bs-example {
+	
+	> .btn, 
+	> .make-switch, 
+	> .btn-group {
+		margin-top: 4px;
+		margin-bottom: 4px;
+		margin-right: 9px;
+	}
+	
+	&.bs-baseline-top {
+		
+		.btn, .btn-group {
+			vertical-align: top !important;
+		}
+	}
+}
+
+
+// Button Variant Exented
+.button-variant(@color; @background; @border) {
+
+	&:hover,
+	&:focus,
+	&.focus {
+		color: @color !important;
+	}
+	
+	&.btn-icon {
+		@padd: 39px;
+		
+		position: relative;
+		padding-right: @padd;
+		border: none;
+	
+	i {
+		background-color: darken(@background, 8%);
+		font-size: @font-size-base;
+		.button-size(@padding-base-vertical; 6px; @font-size-base; @line-height-base; @border-radius-base);
+		.rounded(0 @border-radius-base @border-radius-base 0);
+	}
+		
+		&.icon-left {
+			padding-right: @padding-base-horizontal;
+			padding-left: @padd;
+
+			i {
+				float: left;
+				right: auto;
+				left: 0;
+				.rounded(~"@{border-radius-base} 0 0 @{border-radius-base} !important");
+			}
+		}
+		
+		&.btn-lg {
+			@padd: 55px;
+			padding-right: @padd;
+			
+			&.icon-left {
+				padding-right: @padding-large-horizontal;
+				padding-left: @padd;
+			}
+			
+			i {
+				.button-size(@padding-large-vertical; 10px; @font-size-large; @line-height-large; @border-radius-large);
+			}
+		}
+		
+		&.btn-sm {
+			@padd: 36px;
+			padding-right: @padd;
+			
+			&.icon-left {
+				padding-right: @padding-small-horizontal;
+				padding-left: @padd;
+			}
+			
+			i {
+				.button-size(@padding-small-vertical; 6px; @font-size-small; @line-height-small; @border-radius-small);
+			}
+		}
+		
+		&.btn-xs {
+			@padd: 32px;
+			@padding-small-vertical: 2px;
+			
+			padding-right: @padd;
+			
+			&.icon-left {
+				padding-right: @padding-small-horizontal;
+				padding-left: @padd;
+			}
+			
+			i {
+				.button-size(@padding-small-vertical; 6px; @font-size-small - 1; @line-height-small; @border-radius-small);
+			}
+		}
+	}
+}

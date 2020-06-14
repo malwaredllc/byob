@@ -1,0 +1,252 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="robots" content="index, follow">
+        <title>aciTree drag & drop sorting demo - A treeview control with jQuery</title>
+        <meta name="description" content="A demo to show you how aciTree can be used with aciSortable, check the plugin page to see all the functions exposed by the API">
+        <meta name="keywords" content="aciTree, treeview, control, tree view, javascript, jQuery">
+        <link rel="stylesheet" type="text/css" href="css/aciTree.css" media="all">
+        <link rel="stylesheet" type="text/css" href="css/demo.css" media="all">
+        <script type="text/javascript" src="js/jquery.min.js"></script>
+        <script type="text/javascript" src="js/jquery.aciPlugin.min.js"></script>
+        <script type="text/javascript" src="js/jquery.aciSortable.min.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.dom.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.core.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.utils.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.selectable.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.sortable.js"></script>
+    </head>
+    <body>
+
+        <div>
+
+            <p>The <i>sortable</i> extension is using the aciSortable plugin, the available callback init options and the options parameter of the event handler
+                receives the properties as defined by aciSortable (see the docs). aciTree adds a few extra events on top of aciSortable so we can handle
+                with ease the drag start and check for a valid drop target. In this way we can limit what items can be dragged and where they can be dropped.</p>
+
+            <p>For dragging tree items out of the tree - check <a href="aciTree-drag-outside.html" target="_blank" title="Dragging items outside tree">this</a> demo.</p>
+
+            <p>See the examples below for what can be done by responding to only two events: <b>beforedrag</b> and <b>checkdrop</b>.</p>
+
+            <p>Note: you can also implement your own <b>options.sortDrag</b> and <b>options.sortValid</b>
+                callbacks to set the helper (the element that follows the mouse pointer when in drag) the way you want.
+                For the default implementation - check the source code of the <i>sortable</i> extension.</p>
+
+            <p>The default implementation (<b>options.sortable</b> needs to be active), you can drag & drop items anywhere, before or after another one,
+                set as a child of a leaf node (it will be transformed in a inode by default), the parent can be changed:</p>
+
+            <div id="tree1" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/checkbox.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>The easy way to find a car that's right for you</div></div>
+
+            <div class="log">Tree Log... <a class="clear_log" style="font-size:10px" href="#" title="Clear the LOG" target="_blank">clear log</a>
+                <div></div></div>
+
+            <div style="clear:both"></div>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // init the tree
+                    $('#tree1').aciTree({
+                        ajax: {
+                            url: 'json/checkbox-radio-button.json'
+                        },
+                        sortable: true
+                    });
+
+                });
+
+            </script>
+
+            <br><br><br>
+
+            <p>Limit the number of newly created tree levels to only #3 (we wont be able to add more than #3 levels deep but still be able to sort
+                existing items in more than #3 levels deep):</p>
+
+            <div id="tree2" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/checkbox.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>The easy way to find a car that's right for you</div></div>
+
+            <div class="log">Tree Log... <a class="clear_log" style="font-size:10px" href="#" title="Clear the LOG" target="_blank">clear log</a>
+                <div></div></div>
+
+            <div style="clear:both"></div>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // listen for the events
+                    $('#tree2').on('acitree', function(event, api, item, eventName, options) {
+                        switch (eventName) {
+                            case 'checkdrop':
+                                if (options.isContainer) {
+                                    // a new container was created (for a leaf item)
+                                    // check the tree level
+                                    var target = api.itemFrom(options.hover);
+                                    if (api.level(target) >= 2) {
+                                        // mark the drop target as invalid
+                                        return false;
+                                    }
+                                } else {
+                                    if (options.before === null) {
+                                        // container creation is disabled for levels >= #3
+                                        var target = api.itemFrom(options.hover);
+                                        if (api.level(target) >= 2) {
+                                            // mark the drop target as invalid
+                                            return false;
+                                        }
+                                    }
+                                }
+                                break;
+                        }
+                    });
+
+                    // init the tree
+                    $('#tree2').aciTree({
+                        ajax: {
+                            url: 'json/checkbox-radio-button.json'
+                        },
+                        sortable: true
+                    });
+
+                });
+
+            </script>
+
+            <br><br><br>
+
+            <p>Limit the items that can be dragged around to just leaf items:</p>
+
+            <div id="tree3" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/checkbox.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>The easy way to find a car that's right for you</div></div>
+
+            <div class="log">Tree Log... <a class="clear_log" style="font-size:10px" href="#" title="Clear the LOG" target="_blank">clear log</a>
+                <div></div></div>
+
+            <div style="clear:both"></div>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // listen for the events
+                    $('#tree3').on('acitree', function(event, api, item, eventName, options) {
+                        switch (eventName) {
+                            case 'beforedrag':
+                                if (!api.isLeaf(item)) {
+                                    // mark the item as not draggable
+                                    return false;
+                                }
+                                break;
+                        }
+                    });
+
+                    // init the tree
+                    $('#tree3').aciTree({
+                        ajax: {
+                            url: 'json/checkbox-radio-button.json'
+                        },
+                        sortable: true
+                    });
+
+                });
+
+            </script>
+
+            <br><br><br>
+
+            <p>Items can be dragged around only inside the same parent (items can't change parent):</p>
+
+            <div id="tree4" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/checkbox.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>The easy way to find a car that's right for you</div></div>
+
+            <div class="log">Tree Log... <a class="clear_log" style="font-size:10px" href="#" title="Clear the LOG" target="_blank">clear log</a>
+                <div></div></div>
+
+            <div style="clear:both"></div>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // listen for the events
+                    $('#tree4').on('acitree', function(event, api, item, eventName, options) {
+                        switch (eventName) {
+                            case 'checkdrop':
+                                if (options.isContainer) {
+                                    // mark the drop target as invalid
+                                    return false;
+                                } else {
+                                    if (options.before === null) {
+                                        // container creation is disabled
+                                        return false;
+                                    }
+                                    // check to have the same parent
+                                    var target = api.itemFrom(options.hover);
+                                    if (!api.sameParent(item, target)) {
+                                        // mark the drop target as invalid
+                                        return false;
+                                    }
+                                }
+                                break;
+                        }
+                    });
+
+                    // init the tree
+                    $('#tree4').aciTree({
+                        ajax: {
+                            url: 'json/checkbox-radio-button.json'
+                        },
+                        sortable: true
+                    });
+
+                });
+
+            </script>
+
+            <script type="text/javascript">
+
+                $(function() {
+
+                    // write to log
+                    $('[id^=tree]').on('acitree', function(event, api, item, eventName, options) {
+                        var log = $(this).next('.log').find('div');
+                        if (api.isItem(item)) {
+                            log.prepend('<p>' + eventName + ' [' + api.getId(item) + ']</p>');
+                        } else {
+                            log.prepend('<p>' + eventName + ' [tree]</p>');
+                        }
+                    });
+
+                    $('.clear_log').click(function() {
+                        $(this).closest('.log').find('div').html('');
+                        return false;
+                    });
+
+                });
+
+            </script>
+
+        </div>
+
+        <script type="text/javascript">
+
+            $(function() {
+
+                $('script.code').each(function() {
+                    $(this).before('<div style="clear:both;margin:10px 0 10px 0"><pre style="padding:20px;border:1px dashed #000;background:#f6f6f6;display:inline-block;"></pre></div>');
+                    $(this).prev('div').find('pre').text($(this).html());
+                });
+
+            });
+
+        </script>
+
+    </body>
+</html>
