@@ -5,6 +5,10 @@
 [![build](https://img.shields.io/travis/com/malwaredllc/byob/master.svg)](https://travis-ci.com/malwaredllc/byob.svg?branch=master)
 
 
+[Getting Started Guide](https://buildyourownbotnet.com/guide)
+
+[Video Tutorial](https://www.youtube.com/watch?v=XCI9tcDVOMc)
+
 Questions? [Join our Discord server](https://discord.gg/8FsSrw7)
 
 __Disclaimer__: This project should be used for authorized testing or educational purposes only.
@@ -21,9 +25,9 @@ features *without* having to write a **RAT** (Remote Administration Tool) or a
 *The RAT's key feature is that arbitrary code/files can be remotely loaded into memory
 from the C2 and executed on the target machine without writing anything to the disk.*
 
-Supports Python 2 & 3.
+This project has 2 main parts: the **original console-based application** (`/byob`) and the **web GUI** (`/web-gui`).
 
-*BYOB now includes a powerful web GUI. Check out https://buildyourownbotnet.com to see a preview, or follow [this guide](https://github.com/malwaredllc/byob/wiki) to get started! Key features include:*
+# Web GUI
 
 ## Dashboard
 A control panel for your C2 server with a point-and-click interface for executing post-exploitation modules across your botnet. The dashboard includes a map of your bots across the globe, and hashrate trackers & graphs for those of you mining Monero.
@@ -37,6 +41,8 @@ The payload generator uses black magic involving Docker containers & Wine server
 The web app includes an in-browser terminal emulator so you can still have direct shell access even when using the GUI
 ![shell_preview](https://github.com/malwaredllc/byob/blob/master/web-gui/buildyourownbotnet/assets/images/previews/preview-shell2.png)
 
+
+# Console Application
 
 ## Client
 [![client](https://img.shields.io/badge/byob-client-blue.svg)](https://github.com/malwaredllc/byob/blob/master/byob/payloads.py)
