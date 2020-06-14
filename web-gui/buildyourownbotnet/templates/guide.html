@@ -58,7 +58,7 @@
 			
 		</div>
 
-		<div class="col-md-10" style="color: white; transform: translateY(-12%);">
+		<div class="col-md-10" style="color: white; transform: translateY(-10%);">
 
 			<h1 style="color: white;" align="center">Getting Started</h1>
 
@@ -68,14 +68,31 @@
 
 			<div class="tocify-content">
 
-			<h2 style="font-weight: bold; color: white;">Step 0: Create an Account</h2>
+			<h2 style="font-weight: bold; color: white;">Step 0: Installation and Setup</h2>
+	
+				<div class="row">
+					<div class="col-sm-12">
+						<p>The first thing you need to do to start building a botnet is <a class="link" href="https://github.com/malwaredllc/byob">download</a> the code from Github.</p>
+						<p>You will need to install <a class="link" href="https://docs.docker.com/get-docker/">Docker</a> and <a class="link" href="https://www.python.org/downloads/">Python</a> to use this software.</p>
+						<p>Once you have downloaded the code from Github and installed the necessary software, navigate to the <strong>/byob/web-gui</strong> directory and run the <strong>setup.sh</strong> script. This will build some Docker images that are used by the payload generator to cross-compile executables.</p>
+						<p>After completing the installation and setup, you can now launch the web GUI by running the command <strong>python3 run.py</strong> from the <strong>/byob/web-gui</strong> directory.</p>
+						<p>Once it is running, you can now open your browser and go to http://0.0.0.0:5000 to use the web GUI.</p>
+					</div>
+				</div>
+
+			<br/>
+			<hr/>
+			<br/>
+
+			<h2 style="font-weight: bold; color: white;">Step 1: Create an Account</h2>
 	
 				<div class="row">
 					<div class="col-sm-2">
-						<button class="btn signup" onclick="location.href='/register'"><i class="fa fa-user"></i> Register</button>
+						<button class="btn signup"><i class="fa fa-user"></i> Register</button>
 					</div>
 					<div class="col-sm-10 pull-right">
-						<p>Before you can create any bots you'll need to create an account. You can sign up with your email or Google account.</p>
+						<p>Once the web app is up and running, you are now ready to create an account. You can do this clicking on the register button at the top right.</p>
+						<p>This will you up as the sole administrator of the command & control server and restrict others from accessing it.</p>
 					</div>
 				</div>
 
@@ -84,15 +101,15 @@
 			<br/>
 
 
-			<h2 style="font-weight: bold; color: white;">Step 1: Generate a Payload</h2>
+			<h2 style="font-weight: bold; color: white;">Step 2: Generate a Payload</h2>
 	
 				<div class="row">
 					<div class="col-sm-2">
-						<button class="btn signup" onclick="location.href='/payloads'"><i class="fa fa-code"></i> Payloads</button>
+						<button class="btn signup"><i class="fa fa-code"></i> Payloads</button>
 					</div>
 
 					<div class="col-sm-10 pull-right">
-						<p>The first thing you need to do is generate a payload. To get started, click the Payloads button at the top of the screen to navigate to the payloads page.</p>
+						<p>Once you are logged in, the first thing you need to do is generate a payload. To get started, click the Payloads button at the top of the screen to navigate to the payloads page.</p>
 
 						<p>The payloads page has 2 main parts: </p>
 						<ul>
@@ -145,7 +162,7 @@
 			<hr/>
 			<br/>
 
-			<h2 style="font-weight: bold; color: white;">Step 2: Create Bots</h2>
+			<h2 style="font-weight: bold; color: white;">Step 3: Create Bots</h2>
 				<p>After downloading a payload, you can create bots by executing the payload on target machines.</p>
 
 				<p>This platform is strictly for authorized testing and education purposes, so this is done by simply downloading the payload onto your virtual machine or testing environment.</p>
@@ -156,11 +173,11 @@
 			<hr/>
 			<br/>
 
-			<h2 style="font-weight: bold; color: white;">Step 3: Command & Control</h2>
+			<h2 style="font-weight: bold; color: white;">Step 4: Command & Control</h2>
 		
 				<div class="row">
 					<div class="col-sm-3">
-						<button class="btn signup" onclick="location.href='/sessions'"><i class="entypo-monitor"></i> Control Panel</button>
+						<button class="btn signup"><i class="entypo-monitor"></i> Control Panel</button>
 					</div>
 					<div class="col-sm-9">
 						<p>Once you have a payload running on a target machine, you are ready to command and control your bots!</p>

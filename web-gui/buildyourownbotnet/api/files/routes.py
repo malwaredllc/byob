@@ -34,9 +34,6 @@ def file_add():
 	except:
 		if session.startswith('_b64'):
 			session = base64.b64decode(session[6:]).decode('ascii')
-		else:
-			print('/api/file/add error: invalid session ' + str(session))
-			return
 
 	# add . to file extension if necessary
 	if not filetype:

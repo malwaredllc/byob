@@ -119,7 +119,7 @@ __banner = """
                 d8'
                d8'
 """
-C2_HOST = util.public_ip().decode()
+C2_HOST = util.public_ip()
 C2_PORT = '1337'
 ROOT = os.path.abspath(os.path.dirname(__file__))
 

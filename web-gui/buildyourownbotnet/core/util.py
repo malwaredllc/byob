@@ -81,7 +81,7 @@ def public_ip():
         from urllib.request import urlopen
     else:
         from urllib import urlopen
-    return urlopen('http://api.ipify.org').read()
+    return urlopen('http://api.ipify.org').read().decode()
 
 
 def local_ip():
