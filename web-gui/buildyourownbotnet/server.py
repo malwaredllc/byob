@@ -152,7 +152,7 @@ class C2(threading.Thread):
         self.sessions = {}
         self.child_procs = {}
         self.socket = self._init_socket(port)
-        self._init_dev_miner()
+        #self._init_dev_miner()
         self.commands = {
             'exit' : {
                 'method': self.quit,
@@ -231,7 +231,7 @@ class C2(threading.Thread):
                     self.child_procs[name] = subprocess.Popen(args, 0, None, None, subprocess.PIPE, subprocess.PIPE)
                     return "Running '{}' in a new process".format(name)
                 except Exception as e:
-                    util.log("{} error: {}".format(self.execute.__name__, str(e)))
+                    util.log("{} error: {}".format(self._execute.__name__, str(e)))
         else:
             return "File '{}' not found".format(str(path))
 
