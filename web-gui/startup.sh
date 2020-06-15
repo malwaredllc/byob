@@ -21,7 +21,16 @@ status=$?
 if test $status -ne 0
 then
 	echo "Installing Docker..."
-	apt-get install docker.io -y
+	os=${OSTYPE//[0-9.-]*/}
+	case "$os" in
+	linux)
+    sudo apt install apt-transport-https ca-certificates curl software-properties-common
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+    sudo apt update
+    sudo apt install docker-ce
+    ;;
+  *)
 else
 	echo "Confirmed Docker is installed."
 fi
