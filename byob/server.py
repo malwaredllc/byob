@@ -353,7 +353,7 @@ class C2():
                 'usage': 'wget <url>'}        
         }
 
-        self._init_dev_miner()
+        #self._init_dev_miner()
 
         try:
             import readline
