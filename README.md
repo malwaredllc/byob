@@ -140,12 +140,6 @@ ________________________________________________________________________________
 3) __Bug Fixes__ - fix any bugs/issues
 ________________________________________________________________________________________________
 
-
-### Donation
-
-*By default bots will mine Monero in the background to support the developers. However, this can be disabled in the source code.*
-________________________________________________________________________________________________
-
 ### Contact
 
 __Website__: https://buildyourownbotnet.com
