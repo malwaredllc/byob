@@ -1,3 +1,0 @@
-[submodule "docker-pyinstaller"]
-	path = docker-pyinstaller
-	url = https://github.com/cdrx/docker-pyinstaller
