@@ -7,6 +7,8 @@
 
 [Getting Started Guide](https://buildyourownbotnet.com/guide)
 
+[Installation and Setup Video Walkthrough](https://www.youtube.com/watch?v=XA-S_FRz2ho)
+
 [Video Tutorial](https://www.youtube.com/watch?v=XCI9tcDVOMc)
 
 Questions? [Join our Discord server](https://discord.gg/8FsSrw7)
