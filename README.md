@@ -4,13 +4,6 @@
 [![version](https://img.shields.io/badge/version-1.0-lightgrey.svg)](https://github.com/malwaredllc/byob)
 [![build](https://img.shields.io/travis/com/malwaredllc/byob/master.svg)](https://travis-ci.com/malwaredllc/byob.svg?branch=master)
 
-
-[Getting Started Guide](https://buildyourownbotnet.com/guide)
-
-[Installation and Setup Video Walkthrough](https://www.youtube.com/watch?v=XA-S_FRz2ho)
-
-[Video Tutorial](https://www.youtube.com/watch?v=XCI9tcDVOMc)
-
 Questions? [Join our Discord server](https://discord.gg/8FsSrw7)
 
 __Disclaimer__: This project should be used for authorized testing or educational purposes only.
@@ -140,7 +133,7 @@ ________________________________________________________________________________
 
 ### Contact
 
-__Website__: https://buildyourownbotnet.com
+__Website__: https://malwared.com
 
 __Email__: security@malwared.com
 
