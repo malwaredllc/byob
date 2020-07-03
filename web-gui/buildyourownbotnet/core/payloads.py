@@ -392,9 +392,8 @@ class Payload():
             filename = uf[1]
         if url.startswith('http'):
             try:
-                if filename:
-                    if not filename.startswith('/'): 
-                        filename = os.getcwd() + '/' + filename 
+                if not filename.startswith('/'): 
+                    filename = os.getcwd() + '/' + filename 
                 if (not filename) or filename.endswith('/'):
                     filename = filename + os.path.basename(urllib.request.urlparse(url).path)
                 filename, headers = urllib.request.urlretrieve(url, filename)
