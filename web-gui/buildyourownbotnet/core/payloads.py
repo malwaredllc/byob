@@ -373,33 +373,36 @@ class Payload():
             return "{} error: {}".format(self.eval.__name__, str(e))
 
 
-    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='wget <url>')
-    def wget(self, url, filename=None):
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='wget <url> <filename/path (optional)>')
+    def wget(self, url, filename=''):
         """
         Download file from URL
 
         `Required`
-        :param str url:         target URL to download ('http://...')
+        :param str url:         target URL to download ('http(s)://...')
 
         `Optional`
-        :param str filename:    name of the file to save the file as
+        :param str filename:    name of the file to save the file as (or directory finishing with '/', in this case default filename is used); can be absolute or relative
 
         """
-        if sys.version_info[0] < 3:
-            from urllib import urlretrieve
-            from urllib2 import urlopen, urlparse
-            import StringIO
-        else:
-            from urllib import parse as urlparse
-            from urllib.request import urlopen, urlretrieve
+        import urllib.request
+        uf = url.split(' ', 1)
+        if len(uf) > 1:
+            url = uf[0]
+            filename = uf[1]
         if url.startswith('http'):
             try:
-                path, _ = urlretrieve(url, filename) if filename else urlretrieve(url)
-                return path
+                if filename:
+                    if not filename.startswith('/'): 
+                        filename = os.getcwd() + '/' + filename 
+                if (not filename) or filename.endswith('/'):
+                    filename = filename + os.path.basename(urllib.request.urlparse(url).path)
+                filename, headers = urllib.request.urlretrieve(url, filename)
+                return filename
             except Exception as e:
                 log("{} error: {}".format(self.wget.__name__, str(e)))
         else:
-            return "Invalid target URL - must begin with 'http'"
+            return "Invalid target URL - must begin with 'http(s)'"
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='kill')
