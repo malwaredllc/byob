@@ -396,6 +396,8 @@ class Payload():
                     filename = os.getcwd() + '/' + filename 
                 if (not filename) or filename.endswith('/'):
                     filename = filename + os.path.basename(urllib.request.urlparse(url).path)
+                if (not filename.endswith('/')) and os.path.isdir(filename):
+                    filename = filename + '/' + os.path.basename(urllib.request.urlparse(url).path)
                 filename, headers = urllib.request.urlretrieve(url, filename)
                 return filename
             except Exception as e:
