@@ -27,17 +27,17 @@ This project has 2 main parts: the **original console-based application** (`/byo
 ## Dashboard
 A control panel for your C2 server with a point-and-click interface for executing post-exploitation modules across your botnet. The dashboard includes a map of your bots across the globe, and hashrate trackers & graphs for those of you mining Monero.
 
-<img src="https://raw.githubusercontent.com/malwaredllc/byob/master/web-gui/assets/images/previews/preview-dashboard.png" width="400px"></img>
+![dashboard_preview](https://github.com/malwaredllc/byob/master/web-gui/assets/images/previews/preview-dashboard.png)
 
 ## Payload Generator
 The payload generator uses black magic involving Docker containers & Wine servers to compile executable payloads for any platform/architecture you select.
 
-<img src="https://raw.githubusercontent.com/malwaredllc/byob/master/web-gui/assets/images/previews/preview-payloads2.png" width="400px"></img>
+![payloads_preview](https://github.com/malwaredllc/byob/master/web-gui/assets/images/previews/preview-payloads2.png)
 
 ## Terminal Emulator
 The web app includes an in-browser terminal emulator so you can still have direct shell access even when using the GUI
 
-<img src="https://raw.githubusercontent.com/malwaredllc/byob/master/web-gui/assets/images/previews/preview-shell.png" width="400px"></img>
+![terminal_preview](https://github.com/malwaredllc/byob/master/web-gui/assets/images/previews/preview-shell.png)
 
 # Console Application
 
