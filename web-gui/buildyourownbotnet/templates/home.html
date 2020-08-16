@@ -90,23 +90,24 @@
 /*  -webkit-filter: drop-shadow(0 2px 2px #555);
           filter: drop-shadow(0 2px 2px #555);*/
   will-change: transform, opacity;
-  -webkit-animation: carousel-animate-vertical 27s linear infinite;
-          animation: carousel-animate-vertical 27s linear infinite;
+  -webkit-animation: carousel-animate-vertical 45s linear infinite;
+          animation: carousel-animate-vertical 45s linear infinite;
 }
 
 .carousel__item:nth-child(1) {
-  -webkit-animation-delay: calc(3s * -1);
-          animation-delay: calc(3s * -1);
+  -webkit-animation-delay: calc(5s * -1);
+          animation-delay: calc(5s * -1);
 }
 
-.carousel__item:nth-child(2) {
-  -webkit-animation-delay: calc(3s * 0);
-          animation-delay: calc(3s * 0);
+.carousel__item:nth-child(5) {
+  -webkit-animation-delay: calc(5s * 3);
+          animation-delay: calc(5s * 3);
 }
 
-.carousel__item:nth-child(3) {
-  -webkit-animation-delay: calc(3s * 1);
-          animation-delay: calc(3s * 1);
+/*
+.carousel__item:nth-child(9) {
+  -webkit-animation-delay: calc(3s * 6);
+          animation-delay: calc(3s * 6);
 }
 
 .carousel__item:nth-child(4) {
@@ -133,10 +134,10 @@
   -webkit-animation-delay: calc(3s * 6);
           animation-delay: calc(3s * 6);
 }
-
+*/
 .carousel__item:last-child {
-  -webkit-animation-delay: calc(-3s * 2);
-          animation-delay: calc(-3s * 2);
+  -webkit-animation-delay: calc(-5s * 2);
+          animation-delay: calc(-5s * 2);
 }
 
 .carousel__item-head {
@@ -296,11 +297,21 @@
 
 						<div class='wrapper'>
 						  <div class='carousel'">
+						  	<!-- For developers -->
+						    <div class='carousel__item'>
+						      <div class='carousel__item-head'>
+						        <img src="/assets/images/carouselpngs/carousel_developers.png" width="92" height="92"/>
+						      </div>
+						      <div class='carousel__item-body'>
+						        <p class='title'><strong>For Developers</strong></p>
+						        <p>Join our active community of developers working on the next generation of offensive security tools.</p>
+						      </div>
+						    </div>
 
 						  	<!-- For universities -->
 						    <div class='carousel__item'>
 						      <div class='carousel__item-head'>
-						        <img src="/assets/images/carouselpngs/carousel_monero2.png" width="92" height="92"/>
+						        <img src="/assets/images/carouselpngs/carousel_universities.png" width="92" height="92"/>
 						      </div>
 						      <div class='carousel__item-body'>
 						        <p class='title'><strong>For Universities</strong></p>
@@ -308,10 +319,11 @@
 						      </div>
 						    </div>
 
+
 						  	<!-- For businesses -->
 						    <div class='carousel__item'>
 						      <div class='carousel__item-head'>
-						        <img src="/assets/images/carouselpngs/carousel_ddos.png" width="92" height="92"/>
+						        <img src="/assets/images/carouselpngs/carousel_businesses.png" width="92" height="92"/>
 						      </div>
 						      <div class='carousel__item-body'>
 						        <p class='title'><strong>For Businesses</strong></p>
@@ -319,16 +331,6 @@
 						      </div>
 						    </div>
 
-						  	<!-- For developers -->
-						    <div class='carousel__item'>
-						      <div class='carousel__item-head'>
-						        <img src="/assets/images/carouselpngs/carousel_escalate.png" width="92" height="92"/>
-						      </div>
-						      <div class='carousel__item-body'>
-						        <p class='title'><strong>For Developers</strong></p>
-						        <p>Join our active community of developers working on the next generation of offensive security tools.</p>
-						      </div>
-						    </div>
 
 						  </div>
 						</div>
@@ -754,9 +756,9 @@
 				<div class="col-md-2" style="padding: 5px; padding-left: 80px; width: 250px">
 					<div class="row">
 						<!-- DDOS -->
-						<div>
+<!-- 						<div>
 							<img src="/assets/images/module_lineart/blue_lineart_ddos.png" style="width: 50px; vertical-align: middle;" class="responsive" /><p style="color: white; font-size: 13px; float: right; font-family: titillium; transform: translate(-97px, 12px);"><strong>DDOS</strong></p>
-						</div>
+						</div> -->
 
 						<!-- Keylogger -->
 						<div>
@@ -775,9 +777,9 @@
 				<div class="col-md-2" style="padding: 5px; padding-left: 80px; width: 250px">
 					<div class="row">
 						<!-- Process Control -->
-						<div>
+<!-- 						<div>
 							<img src="/assets/images/module_lineart/blue_lineart_process.png" style="width: 50px; vertical-align: middle;" class="responsive" /><p style="color: white; font-size: 13px; font-family: titillium; float: right; transform: translate(-16px,12px);"><strong>Anti-Virus Blocker</strong></p>
-						</div>
+						</div> -->
 
 						<!-- Screenshot -->
 						<div>
