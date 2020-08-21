@@ -1,10 +1,9 @@
 <img src="https://raw.githubusercontent.com/malwaredllc/byob/master/byob/static/byob_logo_email-black.png" width="400px"></img>
 
-[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=BYOB%20(Build%20Your%20Own%20Botnet)&url=https://github.com/malwaredllc/byob&via=malwaredllc&hashtags=botnet,python,infosec,github)
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/malwaredllc/byob/blob/master/LICENSE)
 [![version](https://img.shields.io/badge/version-1.0-lightgrey.svg)](https://github.com/malwaredllc/byob)
 [![build](https://img.shields.io/travis/com/malwaredllc/byob/master.svg)](https://travis-ci.com/malwaredllc/byob.svg?branch=master)
-
+[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=BYOB%20(Build%20Your%20Own%20Botnet)&url=https://github.com/malwaredllc/byob&via=malwaredllc&hashtags=botnet,python,infosec,github)
 Questions? [Join our Discord server](https://discord.gg/8FsSrw7)
 
 __Disclaimer__: This project should be used for authorized testing or educational purposes only.
