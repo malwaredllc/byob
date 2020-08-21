@@ -1,5 +1,5 @@
 <img src="https://raw.githubusercontent.com/malwaredllc/byob/master/byob/static/byob_logo_email-black.png" width="400px"></img>
-# Build Your Own Botnet [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=BYOB%20(Build%20Your%20Own%20Botnet)&url=https://github.com/malwaredllc/byob&via=malwaredllc&hashtags=botnet,python,infosec,github)
+[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=BYOB%20(Build%20Your%20Own%20Botnet)&url=https://github.com/malwaredllc/byob&via=malwaredllc&hashtags=botnet,python,infosec,github)
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/malwaredllc/byob/blob/master/LICENSE)
 [![version](https://img.shields.io/badge/version-1.0-lightgrey.svg)](https://github.com/malwaredllc/byob)
 [![build](https://img.shields.io/travis/com/malwaredllc/byob/master.svg)](https://travis-ci.com/malwaredllc/byob.svg?branch=master)
@@ -9,7 +9,7 @@ Questions? [Join our Discord server](https://discord.gg/8FsSrw7)
 __Disclaimer__: This project should be used for authorized testing or educational purposes only.
 
 BYOB is an open-source project that provides a framework for security researchers and developers 
-to build and operate a basic botnet to deepen their understanding of the sophisticated malware 
+to study basic botnet architecture and behavior, in order to deepen their understanding of the sophisticated malware 
 that infects millions of devices every year and spawns modern botnets, in order to improve their 
 ability to develop counter-measures against these threats. 
 
