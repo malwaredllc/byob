@@ -84,20 +84,17 @@ in the payload stager which is generated along with it
 
 *Post-exploitation modules that are remotely importable by clients*
 
-1) __Keylogger__ (`byob.modules.keylogger`): logs the user’s keystrokes & the window name entered
-2) __Screenshot__ (`byob.modules.screenshot`): take a screenshot of current user’s desktop
-3) __Webcam__ (`byob.modules.webcam`): view a live stream or capture image/video from the webcam
-4) __Ransom__ (`byob.modules.ransom`): encrypt files & generate random BTC wallet for ransom payment
-5) __Outlook__ (`byob.modules.outlook`): read/search/upload emails from the local Outlook client
-6) __Packet Sniffer__ (`byob.modules.packetsniffer`): run a packet sniffer on the host network & upload .pcap file
-7) __Persistence__ (`byob.modules.persistence`): establish persistence on the host machine using 5 different methods
-8) __Phone__ (`byob.modules.phone`): read/search/upload text messages from the client smartphone
-9) __Escalate Privileges__ (`byob.modules.escalate`): attempt UAC bypass to gain unauthorized administrator privileges
-10) __Port Scanner__ (`byob.modules.portscanner`): scan the local network for other online devices & open ports
-11) __Process Control__ (`byob.modules.process`): list/search/kill/monitor currently running processes on the host
-12) __iCloud__ (`byob.modules.icloud`): check for logged in iCloud account on macOS
-13) __Spreader__ (`byob.modules.spreader`): spread client to other hosts via emails disguised as a plugin update
-14) __Miner__ (`byob.core.miner`): mine Monero in the background using the built-in miner or XMRig
+1) __Persistence__ (`byob.modules.persistence`): establish persistence on the host machine using 5 different methods
+2) __Packet Sniffer__ (`byob.modules.packetsniffer`): run a packet sniffer on the host network & upload .pcap file
+3) __Escalate Privileges__ (`byob.modules.escalate`): attempt UAC bypass to gain unauthorized administrator privileges
+4) __Port Scanner__ (`byob.modules.portscanner`): scan the local network for other online devices & open ports
+5) __Keylogger__ (`byob.modules.keylogger`): logs the user’s keystrokes & the window name entered
+6) __Screenshot__ (`byob.modules.screenshot`): take a screenshot of current user’s desktop
+7) __Webcam__ (`byob.modules.webcam`): view a live stream or capture image/video from the webcam
+8) __Outlook__ (`byob.modules.outlook`): read/search/upload emails from the local Outlook client
+9) __Process Control__ (`byob.modules.process`): list/search/kill/monitor currently running processes on the host
+10) __iCloud__ (`byob.modules.icloud`): check for logged in iCloud account on macOS
+11) __Miner__ (`byob.core.miner`): mine Monero in the background using the built-in miner or XMRig
 
 ## Server
 [![server](https://img.shields.io/badge/byob-server-blue.svg)](https://github.com/malwaredllc/byob/blob/master/byob/server.py)
