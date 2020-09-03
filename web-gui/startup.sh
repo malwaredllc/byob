@@ -29,7 +29,8 @@ fi
 # Install Python packages
 echo "Installing Python packages..."
 python3 -m pip install -r requirements.txt
-
+apt-get install snapd -y
+snap install ngrok
 # Build Docker images
 echo "Building Docker images - this will take a while, please be patient..."
 cd docker-pyinstaller1
@@ -42,4 +43,3 @@ cd ..
 echo "Running C2 server with locally hosted web app GUI..."
 echo "Navigate to http://127.0.0.1:5000 and set up your user to get started."
 python3 run.py
-
