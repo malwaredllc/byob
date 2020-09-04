@@ -2,9 +2,18 @@ from buildyourownbotnet import app
 import os
 import os.path
 from pyngrok import ngrok
+import platform
+oss = platform.system()
 def find_files(filename, search_path):
    result = []
-
+def apikey()
+	input("Go to 'https://dashboard.ngrok.com/signup' to get a ngrok api key. Then click ENTER.")
+        print("Input your api key")
+        api = input(">>>>")
+	if oss == "Windows":
+		os.system("ngrok.exe authtoken " + api)
+        else:	
+		os.system("ngrok authtoken " + api)
 # Wlaking top-down from the root
    for root, dir, files in os.walk(search_path):
       if filename in files:
@@ -12,11 +21,11 @@ def find_files(filename, search_path):
    return result
 c = input('Would you like to run with ngrok? [Y/n]')
 if c == "y" or "Y" or "":
+    if oss == "Windows":
+	if find_files("ngrok.yml", "C:") == "[]":
+		apikey()
     if find_files("ngrok.yml","/") == "[]":
-        input("Go to 'https://dashboard.ngrok.com/signup' to get a ngrok api key. Then click ENTER.")
-        print("Input your api key")
-        api = input(">>>>")
-        os.system("ngrok authtoken " + api)
+        apikey()
     else:
         public_url = ngrok.connect(5000, "http")
 else:
