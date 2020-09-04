@@ -10,11 +10,9 @@ def find_files(filename, search_path):
       if filename in files:
          result.append(os.path.join(root, filename))
    return result
-
-print(find_files("smpl.htm","D:"))
 c = input('Would you like to run with ngrok? [Y/n]')
 if c == "y" or "Y" or "":
-    if os.path.isfile('/root/.ngrok2/ngrok.yml') == "false":
+    if find_files("ngrok.yml","/") == "[]":
         input("Go to 'https://dashboard.ngrok.com/signup' to get a ngrok api key. Then click ENTER.")
         print("Input your api key")
         api = input(">>>>")
