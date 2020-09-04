@@ -8,8 +8,7 @@ status = os.system("which python3")
 
 if status == "":
 	print("Installing Python 3.6...")
-  	print("In 5 secconds there will be a popup asking for you to put in an admin password. This is the python install exe running. This is NOT a virus the hashes for this file are in 'hashes.txt'.")
-	time.sleep(5)
+  	input("When you click ENTER there will be a popup asking for you to put in an admin password. This is the python install exe running. This is NOT a virus the hashes for this file are in 'hash.md'.")
   	os.system("python-3.8.5-amd64.exe")
 else:
 	print("Confirmed Python is installed.")
@@ -17,13 +16,11 @@ else:
 # Install Docker if necessary
 status2 = os.system("which docker")
 
-if test $status -ne 0
-then
-	echo "Installing Docker..."
-	apt-get install docker.io -y
+if status2 == "":
+	print("Installing Docker...")
+	os.system("docker-installer.exe")
 else
-	echo "Confirmed Docker is installed."
-fi
+	print("Confirmed Docker is installed.")
 
 # Install Python packages
 print("Installing Python packages...")
