@@ -22,7 +22,7 @@ This project has 2 main parts: the **original console-based application** (`/byo
 # Web GUI
 
 ## Dashboard
-A control panel for your C2 server with a point-and-click interface for executing post-exploitation modules. The dashboard includes an interactive map of client machines and 
+A control panel for your C2 server with a point-and-click interface for executing post-exploitation modules. The control panel includes an interactive map of client machines and a dashboard which allows efficient, intuitive administration of client machines.
 
 ![dashboard_preview](https://github.com/malwaredllc/byob/blob/master/web-gui/buildyourownbotnet/assets/images/previews/preview-dashboard.png)
 
