@@ -9,34 +9,30 @@ Questions? [Join our Discord server](https://discord.gg/8FsSrw7)
 
 __Disclaimer__: This project should be used for authorized testing or educational purposes only.
 
-BYOB is an open-source project that provides a framework for security researchers and developers 
-to study basic botnet architecture and behavior, in order to deepen their understanding of the sophisticated malware 
-that infects millions of devices every year and spawns modern botnets, in order to improve their 
-ability to develop counter-measures against these threats. 
+BYOB is an open-source post-exploitation framework for students, researchers and developers. It includes features such as:
+- Pre-built C2 server
+- Custom payload generator
+- 12 post-exploitation modules
 
-It is designed to allow developers to easily implement their own code and add cool new
-features *without* having to write a **RAT** (Remote Administration Tool) or a
-**C2** (Command & Control server) from scratch.
-
-*The RAT's key feature is that arbitrary code/files can be remotely loaded into memory
-from the C2 and executed on the target machine without writing anything to the disk.*
+It is designed to allow students and developers to easily implement their own code and add cool new
+features *without* having to write a C2 server or Remote Administration Tool from scratch.
 
 This project has 2 main parts: the **original console-based application** (`/byob`) and the **web GUI** (`/web-gui`).
 
 # Web GUI
 
 ## Dashboard
-A control panel for your C2 server with a point-and-click interface for executing post-exploitation modules across your botnet. The dashboard includes a map of your bots across the globe, and hashrate trackers & graphs for those of you mining Monero.
+A control panel for your C2 server with a point-and-click interface for executing post-exploitation modules. The dashboard includes an interactive map of client machines and 
 
 ![dashboard_preview](https://github.com/malwaredllc/byob/blob/master/web-gui/buildyourownbotnet/assets/images/previews/preview-dashboard.png)
 
 ## Payload Generator
-The payload generator uses black magic involving Docker containers & Wine servers to compile executable payloads for any platform/architecture you select.
+The payload generator uses black magic involving Docker containers & Wine servers to compile executable payloads for any platform/architecture you select. These payloads spawn reverse TCP shells with communication over the network encrypted via AES-256 after generating a secure symmetric key using the [Diffie-Hellman IKE](https://tools.ietf.org/html/rfc2409).
 
 ![payloads_preview](https://github.com/malwaredllc/byob/blob/master/web-gui/buildyourownbotnet/assets/images/previews/preview-payloads2.png)
 
 ## Terminal Emulator
-The web app includes an in-browser terminal emulator so you can still have direct shell access even when using the GUI
+The web app includes an in-browser terminal emulator so you can still have direct shell access even when using the web GUI.
 
 ![terminal_preview](https://github.com/malwaredllc/byob/blob/master/web-gui/buildyourownbotnet/assets/images/previews/preview-shell.png)
 
