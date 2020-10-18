@@ -43,7 +43,7 @@ RUN set -x \
     && cd /wine/drive_c/Python37 \
     && echo 'wine '\''C:\Python37\python.exe'\'' "$@"' > /usr/bin/python3 \
     && echo 'wine '\''C:\Python37\Scripts\easy_install.exe'\'' "$@"' > /usr/bin/easy_install \
-    && echo 'wine '\''C:\Python37\Scripts\pip.exe'\'' "$@"' > /usr/bin/pip \
+    && echo 'wine '\''C:\Python37\Scripts\pip.exe'\'' "$@"' > /usr/bin/pip3 \
     && echo 'wine '\''C:\Python37\Scripts\pyinstaller.exe'\'' "$@"' > /usr/bin/pyinstaller \
     && echo 'wine '\''C:\Python37\Scripts\pyupdater.exe'\'' "$@"' > /usr/bin/pyupdater \
     && echo 'assoc .py=PythonScript' | wine cmd \
