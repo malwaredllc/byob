@@ -21,14 +21,14 @@ status=$?
 if test $status -ne 0
 then
 	echo "Installing Docker..."
-	apt install docker -y
+	apt install docker.io -y
 else
 	echo "Confirmed Docker is installed."
 fi
 
 # Install Python packages
 echo "Installing Python packages..."
-python3 -m pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 # Build Docker images
 echo "Building Docker images - this will take a while, please be patient..."
