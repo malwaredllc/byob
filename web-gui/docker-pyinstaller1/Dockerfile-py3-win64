@@ -10,6 +10,7 @@ ARG PYINSTALLER_VERSION=3.6
 RUN set -x \
     && dpkg --add-architecture i386 \
     && apt update -qy \
+    && apt upgrade -y \
     && apt install --no-install-recommends -qfy apt-transport-https software-properties-common wget \
     && wget -nv https://dl.winehq.org/wine-builds/winehq.key \
     && apt-key add winehq.key \

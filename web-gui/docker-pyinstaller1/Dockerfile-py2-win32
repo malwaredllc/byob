@@ -37,7 +37,7 @@ RUN set -x \
     && sed -i 's/_windows_cert_stores = .*/_windows_cert_stores = ("ROOT",)/' "/wine/drive_c/Python27/Lib/ssl.py" \
     && echo 'wine '\''C:\Python27\python.exe'\'' "$@"' > /usr/bin/python3 \
     && echo 'wine '\''C:\Python27\Scripts\easy_install.exe'\'' "$@"' > /usr/bin/easy_install \
-    && echo 'wine '\''C:\Python27\Scripts\pip.exe'\'' "$@"' > /usr/bin/pip \
+    && echo 'wine '\''C:\Python27\Scripts\pip.exe'\'' "$@"' > /usr/bin/pip3 \
     && echo 'wine '\''C:\Python27\Scripts\pyinstaller.exe'\'' "$@"' > /usr/bin/pyinstaller \
     && chmod +x /usr/bin/* \
     && wget https://bootstrap.pypa.io/ez_setup.py -O - | /usr/bin/python3 \
