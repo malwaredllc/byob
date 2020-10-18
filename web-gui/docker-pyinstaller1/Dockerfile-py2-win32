@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -9,12 +9,12 @@ ARG PYINSTALLER_VERSION=3.6
 # we need wine for this all to work, so we'll use the PPA
 RUN set -x \
     && dpkg --add-architecture i386 \
-    && apt-get update -qy \
-    && apt-get install --no-install-recommends -qfy software-properties-common \
+    && apt update -qy \
+    && apt install --no-install-recommends -qfy software-properties-common \
     && add-apt-repository ppa:wine/wine-builds \
-    && apt-get update -qy \
-    && apt-get install --no-install-recommends -qfy $WINE_VERSION winetricks wget \
-    && apt-get clean
+    && apt update -qy \
+    && apt install --no-install-recommends -qfy $WINE_VERSION winetricks wget \
+    && apt clean
 
 # wine settings
 ENV WINEARCH win32
@@ -35,12 +35,12 @@ RUN set -x \
     && wine msiexec /qn /a VCForPython27.msi \
     && rm VCForPython27.msi \
     && sed -i 's/_windows_cert_stores = .*/_windows_cert_stores = ("ROOT",)/' "/wine/drive_c/Python27/Lib/ssl.py" \
-    && echo 'wine '\''C:\Python27\python.exe'\'' "$@"' > /usr/bin/python \
+    && echo 'wine '\''C:\Python27\python.exe'\'' "$@"' > /usr/bin/python3 \
     && echo 'wine '\''C:\Python27\Scripts\easy_install.exe'\'' "$@"' > /usr/bin/easy_install \
     && echo 'wine '\''C:\Python27\Scripts\pip.exe'\'' "$@"' > /usr/bin/pip \
     && echo 'wine '\''C:\Python27\Scripts\pyinstaller.exe'\'' "$@"' > /usr/bin/pyinstaller \
     && chmod +x /usr/bin/* \
-    && wget https://bootstrap.pypa.io/ez_setup.py -O - | /usr/bin/python \
+    && wget https://bootstrap.pypa.io/ez_setup.py -O - | /usr/bin/python3 \
     && /usr/bin/easy_install pip \
     && echo 'assoc .py=PythonScript' | wine cmd \
     && echo 'ftype PythonScript=c:\Python27\python.exe "%1" %*' | wine cmd \

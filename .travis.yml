@@ -2,14 +2,14 @@ group: travis_latest
 os: linux
 dist: focal
 language: python
-cache: pip
+cache: pip3
 python:
   - 2.7
   # - 3.6
   # - 3.7
   - 3.8
 install:
-  - pip install flake8 -r byob/requirements.txt
+  - pip3 install flake8 -r byob/requirements.txt
 before_script:
   # stop the build if there are Python syntax errors or undefined names
   - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics

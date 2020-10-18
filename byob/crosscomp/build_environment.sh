@@ -206,8 +206,8 @@ make_containers() {
 FROM $xc_dockimg
 COPY $str_binfmt $map_binfmt
 CMD ls ./ /usr/bin
-RUN /usr/bin/apt-get update
-RUN /usr/bin/apt-get install -y upx-ucl build-essential python python-pip zlib1g-dev python3 python3-pip python3-wheel python3-setuptools python3-dev python3-distutils python3-venv
+RUN /usr/bin/apt update
+RUN /usr/bin/apt install -y upx-ucl build-essential python python-pip zlib1g-dev python3 python3-pip python3-wheel python3-setuptools python3-dev python3-distutils python3-venv
 RUN mkdir /byob
 WORKDIR /byob
 EOF
