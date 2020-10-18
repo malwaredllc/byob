@@ -9,7 +9,7 @@ status=$?
 if test $status -ne 0
 then
 	echo "Installing Python 3.6..."
-	apt-get install python3.6 -y
+	sudo apt install python3.6 -y
 else
 	echo "Confirmed Python is installed."
 fi
@@ -21,14 +21,14 @@ status=$?
 if test $status -ne 0
 then
 	echo "Installing Docker..."
-	apt-get install docker.io -y
+	apt install docker -y
 else
 	echo "Confirmed Docker is installed."
 fi
 
 # Install Python packages
 echo "Installing Python packages..."
-python3 -m pip install -r requirements.txt
+python3 -m pip3 install -r requirements.txt
 
 # Build Docker images
 echo "Building Docker images - this will take a while, please be patient..."
@@ -40,6 +40,5 @@ docker build -f Dockerfile-py3-win32 -t win-x32 .
 # Run app
 cd ..
 echo "Running C2 server with locally hosted web app GUI..."
-echo "Navigate to http://127.0.0.1:5000 and set up your user to get started."
 python3 run.py
 
