@@ -4,7 +4,7 @@
 set -e
 
 # Make sure .bashrc is sourced
-. ~/.bashrc
+. /root/.bashrc
 
 # Allow the workdir to be set using an env var.
 # Useful for CI pipiles which use docker for their build steps
@@ -34,7 +34,7 @@ fi
 cd $WORKDIR
 
 if [ -f requirements.txt ]; then
-    pip install -r requirements.txt
+    python3 -m pip install -r requirements.txt
 fi # [ -f requirements.txt ]
 
 echo "$@"
