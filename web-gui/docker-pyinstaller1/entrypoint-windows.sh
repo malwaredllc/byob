@@ -15,18 +15,21 @@ WORKDIR=${SRCDIR:-/src}
 # In case the user specified a custom URL for PYPI, then use
 # that one, instead of the default one.
 #
+
 if [[ "$PYPI_URL" != "https://pypi.python.org/" ]] || \
    [[ "$PYPI_INDEX_URL" != "https://pypi.python.org/simple" ]]; then
     # the funky looking regexp just extracts the hostname, excluding port
     # to be used as a trusted-host.
-    mkdir -p /wine/drive_c/users~/pip
-    echo "[global]" > /wine/drive_c/users~/pip/pip.ini
-    echo "index = $PYPI_URL" >> /wine/drive_c/users~/pip/pip.ini
-    echo "index-url = $PYPI_INDEX_URL" >> /wine/drive_c/users~/pip/pip.ini
-    echo "trusted-host = $(echo $PYPI_URL | perl -pe 's|^.*?://(.*?)(:.*?)?/.*$|$1|')" >> /wine/drive_c/users~/pip/pip.ini
+    current_user=$(whoami)
+    mkdir -p /wine/drive_c/users/$current_user/pip
+    echo "[global]" > /wine/drive_c/users/$current_user/pip/pip.ini
+    echo "index = $PYPI_URL" >> /wine/drive_c/users/$current_user/pip/pip.ini
+    echo "index-url = $PYPI_INDEX_URL" >> /wine/drive_c/users/$current_user/pip/pip.ini
+    echo "trusted-host = $(echo $PYPI_URL | perl -pe 's|^.*?://(.*?)(:.*?)?/.*$|$1|')" >> /wine/drive_c/users/$current_user/pip/pip.ini
 
     echo "Using custom pip.ini: "
-    cat /wine/drive_c/users~/pip/pip.ini
+    cat /wine/drive_c/users/$current_user/pip/pip.ini
+    unset current_user
 fi
 
 cd $WORKDIR
