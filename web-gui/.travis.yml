@@ -1,5 +1,5 @@
 group: travis_latest
-language: python
+language: python3
 cache: pip
 matrix:
   include:
