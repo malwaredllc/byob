@@ -13,8 +13,9 @@ do
 done
 }
 echo "Running BYOB app startup..."
-spin & 
+spin &
 SPIN_PID=$!
+
 # Build Docker images
 echo "Building Docker images - this will take a while, please be patient..."
 cd docker-pyinstaller1 \
@@ -27,4 +28,3 @@ sleep .05
 cd ..
 echo "Running C2 server with locally hosted web app GUI..."
 python3 run.py
-
