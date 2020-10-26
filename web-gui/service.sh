@@ -8,5 +8,5 @@ cd docker-pyinstaller1 \
 ; docker build -f Dockerfile-py3-win32 -t win-x32 . >& /dev/null \
 # Run app
 cd ..
-echo ""
+echo "I am $(whoami)"
 python3 run.py
