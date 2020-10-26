@@ -24,7 +24,7 @@ cd docker-pyinstaller1 \
 ; docker build -f Dockerfile-py3-amd64 -t nix-amd64 . >& /dev/null \
 ; docker build -f Dockerfile-py3-i386 -t nix-i386 . >& /dev/null \
 ; docker build -f Dockerfile-py3-win32 -t win-x32 . >& /dev/null \
-; kill -9 $SPIN_PID
+; kill -9 $SPIN_PID > /dev/null
 sleep .05
 echo ""
 echo ""
