@@ -27,7 +27,7 @@ sleep .05
 # Run app
 cd ..
 echo "Running C2 server with locally hosted web app GUI..."
-echo "URL in browser: ""$HOSTNAME"".local:5000"
+echo "Open URL in browser: ""$HOSTNAME"".local:5000"
 echo ""
 echo "Don't use 0.0.0.0:5000 - That is just a testing IP."
 echo "Due to the ever developing of BYOB, 0.0.0.0:5000 stays for now"
