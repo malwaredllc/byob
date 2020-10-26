@@ -26,15 +26,10 @@ cd docker-pyinstaller1 \
 ; docker build -f Dockerfile-py3-win32 -t win-x32 . >& /dev/null \
 ; kill -9 $SPIN_PID > /dev/null
 sleep .05
-echo ""
+echo "This = line 28: 111695 Killed spin  (wd: ~/byob/web-gui) = Is not an error. Please ignore"
 echo ""
 # Run app
 cd ..
-echo "Don't use 0.0.0.0:5000 - That is just a testing IP."
-echo "Due to the ever developing of BYOB, 0.0.0.0:5000 stays for now"
-echo ""
 echo ""
 echo "Open URL in browser: ""$HOSTNAME"".local:5000"
-echo ""
-echo ""
 python3 run.py >& /dev/null
