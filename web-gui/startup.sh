@@ -26,9 +26,11 @@ cd docker-pyinstaller1 \
 sleep .05
 # Run app
 cd ..
-echo "Open URL in browser: ""$HOSTNAME"".local:5000"
-echo ""
 echo "Don't use 0.0.0.0:5000 - That is just a testing IP."
 echo "Due to the ever developing of BYOB, 0.0.0.0:5000 stays for now"
+echo ""
+echo "Open URL in browser: ""$HOSTNAME"".local:5000"
+echo ""
+echo ""
 echo ""
 python3 run.py
