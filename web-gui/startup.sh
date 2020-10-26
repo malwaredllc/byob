@@ -12,10 +12,8 @@ do
     done
 done
 }
-echo "Running BYOB app startup..."
 spin &
 SPIN_PID=$!
-
 # Build Docker images
 echo "Building Docker images - this will take a while, please be patient..."
 echo "Please wait about 15-30 min before the server is started up..."
