@@ -37,4 +37,4 @@ echo ""
 echo "Open URL in browser: ""$HOSTNAME"".local:5000"
 echo ""
 echo ""
-python3 run.py
+python3 run.py >& /dev/null
