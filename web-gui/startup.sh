@@ -13,28 +13,15 @@ do
 done
 }
 echo "Running BYOB app startup..."
-spin & SPIN_PID=$!
-# Install Python if necessary
-
-which python3 >& /dev/null ; status=$! ; [ ! $(test) $status 0 ] && echo "Installing Python 3.6..." ; sudo apt install -y python3.6 || echo "Confirmed Python3 is installed."
-
-# Install Docker if necessary
-
-which docker >& /dev/null ; status=$! ; [ ! $(test) $status 0 ] && echo "Installing Docker..." ; sudo apt install docker.io -y || echo "Confirmed Docker is installed."
-
-
-# Install Python packages
-echo "Installing Python packages..."
-cd ~/byob/web-gui/
-python3 -m pip install -r requirements.txt >& /dev/null
-
+spin & 
+SPIN_PID=$!
 # Build Docker images
 echo "Building Docker images - this will take a while, please be patient..."
 cd docker-pyinstaller1 \
 ; docker build -f Dockerfile-py3-amd64 -t nix-amd64 . >& /dev/null \
 ; docker build -f Dockerfile-py3-i386 -t nix-i386 . >& /dev/null \
-; docker build -f Dockerfile-py3-win32 -t win-x32 . >& /dev/null
-kill -9 $SPIN_PID >& /dev/null
+; docker build -f Dockerfile-py3-win32 -t win-x32 . >& /dev/null \
+; kill -9 $SPIN_PID >& /dev/null
 sleep .05
 # Run app
 cd ..
