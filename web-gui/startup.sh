@@ -27,7 +27,7 @@ cd docker-pyinstaller1 \
 ; kill -9 $SPIN_PID > /dev/null
 sleep .05
 echo ""
-echo "This = line 28: 111695 Killed spin  (wd: ~/byob/web-gui) = Is not an error. Please ignore"
+echo "Is not an error. Please ignore the above."
 # Run app
 cd ..
 echo ""
