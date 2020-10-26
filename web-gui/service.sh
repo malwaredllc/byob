@@ -9,5 +9,4 @@ cd docker-pyinstaller1 \
 # Run app
 cd ..
 echo ""
-echo "Open URL in browser: ""$HOSTNAME"".local:5000"
 python3 run.py
