@@ -96,12 +96,16 @@ else:
     from urllib.request import pathname2url
     sys.path.append('core')
 
+# packages
+import colorama
+
 # modules
 from buildyourownbotnet.core import util
 from buildyourownbotnet.core import security 
 from buildyourownbotnet.core import generators
 
 # globals
+colorama.init(autoreset=True)
 __banner = """
 
 88                                  88
