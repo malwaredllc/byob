@@ -235,7 +235,7 @@ def _modules(options, **kwargs):
     __load__ = threading.Event()
     __spin__ = _spinner(__load__)
 
-    modules = ['core/util.py','core/security.py','core/payloads.py', 'core/miner.py']
+    modules = ['modules/util.py','core/security.py','core/payloads.py', 'core/miner.py']
 
     if len(options.modules):
         for m in options.modules:
@@ -279,6 +279,8 @@ def _imports(options, **kwargs):
                         imports.add(line.strip())
 
     imports = list(imports)
+    if 'colorama' in imports:
+        imports.remove('colorama')
     if sys.platform != 'win32':
         for item in imports:
             if 'win32' in item or '_winreg' in item:
