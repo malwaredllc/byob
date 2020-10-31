@@ -3,9 +3,6 @@
 'Utilities (Build Your Own Botnet)'
 from __future__ import print_function
 
-import colorama
-colorama.init()
-
 _debug = False
 
 # main
