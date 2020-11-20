@@ -40,5 +40,6 @@ docker build -f Dockerfile-py3-win32 -t win-x32 .
 # Run app
 cd ..
 echo "Running C2 server with locally hosted web app GUI..."
+echo "BYOB WebGUI should now be available on: $HOSTNAME.local:5000"
 python3 run.py
 
