@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/malwaredllc/byob/master/byob/static/byob_logo_email-black.png" width="400px"></img>
+<img src="https://raw.githubusercontent.com/malwaredllc/byob/master/byob/static/byob_logo_email.png" width="400px"></img>
 
 
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/malwaredllc/byob/blob/master/LICENSE)
