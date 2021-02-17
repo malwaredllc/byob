@@ -46,6 +46,7 @@ fi
 
 # Install Python packages
 echo "Installing Python packages..."
+python3 -m pip install CMake==3.18.4
 python3 -m pip install -r requirements.txt
 
 # Build Docker images
