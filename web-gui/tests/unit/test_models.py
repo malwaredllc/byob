@@ -2,7 +2,7 @@
 import pytest
 import uuid
 from datetime import datetime
-from buildyourownbotnet import bcrypt
+from buildyourownbotnet import db, bcrypt
 from buildyourownbotnet.models import User, Session, Payload
 
 
