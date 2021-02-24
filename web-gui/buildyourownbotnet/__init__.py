@@ -48,6 +48,3 @@ app.register_blueprint(files)
 app.register_blueprint(session)
 app.register_blueprint(payload)
 app.register_blueprint(errors)
-
-# start c2 server
-server.main()
