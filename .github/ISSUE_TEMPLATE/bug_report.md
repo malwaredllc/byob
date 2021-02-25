@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Think you found a bug? Report it here!
+about: Please use the Discord Support Server if you need help. Only submit an issue to report a bug.
 title: ''
 labels: bug
 assignees: ''
