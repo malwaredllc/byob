@@ -1,5 +1,6 @@
-import uuid
 import pytest
+from hashlib import md5
+from random import getrandbits
 from datetime import datetime
 from buildyourownbotnet import db, bcrypt
 from buildyourownbotnet.models import User, Session
@@ -17,7 +18,7 @@ def new_user():
 
 @pytest.fixture(scope='module')
 def new_session(new_user):
-    uid = str(uuid.uuid4())
+    uid = md5(bytes(getrandbits(10))).hexdigest()
     session_dict = {
             "id": 1,
 			"uid": uid,
