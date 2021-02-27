@@ -1,5 +1,0 @@
-[run]
-omit = 
-	/Users/dvm/Library/*
-	./web-gui/tests/*
-	./byob/*
