@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-'Database (Build Your Own Botnet)'
+'DAO (Build Your Own Botnet)'
 
 # standard library
 import os
@@ -237,7 +237,7 @@ def handle_task(task_dict):
     Adds issued tasks to the database and updates completed tasks with results
 
     `Task`
-    :attr str client:          client ID assigned by server
+    :attr str session:         associated session UID 
     :attr str task:            task assigned by server
     :attr str uid:             task ID assigned by server
     :attr str result:          task result completed by client
