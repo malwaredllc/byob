@@ -1,6 +1,7 @@
 import uuid
 import pytest
 from datetime import datetime
+from buildyourownbotnet import db, bcrypt
 from buildyourownbotnet.models import User, Session
 
 @pytest.fixture(scope='module')
