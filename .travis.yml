@@ -4,8 +4,7 @@ dist: focal
 language: python
 cache: pip
 python:
-  - 2.7
-  - 3.8
+  - 3.9
 install:
   - pip install flake8 -r web-gui/requirements.txt
 before_script:
