@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from buildyourownbotnet import app, db, bcrypt
 from buildyourownbotnet.core import database
-from buildyourownbotnet.models import User, Session
+from buildyourownbotnet.models import User, Session, Task
 from ..conftests import new_user, new_session
 
 def test_handle_session(new_user):

