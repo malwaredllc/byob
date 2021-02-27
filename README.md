@@ -3,7 +3,7 @@
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/malwaredllc/byob/blob/master/LICENSE)
 [![version](https://img.shields.io/badge/version-1.0-lightgrey.svg)](https://github.com/malwaredllc/byob)
 ![build](https://github.com/malwaredllc/byob/workflows/build/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/malwaredllc/byob/badge.svg?branch=master)](https://coveralls.io/github/malwaredllc/byob?branch=master)
+[![Coverage](https://coveralls.io/repos/github/malwaredllc/byob/badge.svg?branch=more-tests-and-refactoring)](https://coveralls.io/github/malwaredllc/byob?branch=more-tests-and-refactoring)
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=BYOB%20(Build%20Your%20Own%20Botnet)&url=https://github.com/malwaredllc/byob&via=malwaredllc&hashtags=botnet,python,infosec,github)
 
 Questions? [Join the Discord support server](https://discord.gg/8FsSrw7)
