@@ -29,7 +29,7 @@ if sys.version_info[0] > 2:
     sys.path.append('modules')
 
 from buildyourownbotnet import db
-from buildyourownbotnet.core import database, security, util
+from buildyourownbotnet.core import dao, security, util
 from buildyourownbotnet.models import Session, Task
 
 # packages
@@ -321,7 +321,7 @@ class C2(threading.Thread):
             if session.info != None:
 
                 # database stores identifying information about session
-                session_dict = database.handle_session(session.info)
+                session_dict = dao.handle_session(session.info)
                 session.id = session_dict['id']
 
                 # display session information in terminal
@@ -446,7 +446,7 @@ class SessionThread(threading.Thread):
             session = owner_sessions[session_uid]
 
             # set session status as offline in database
-            database.update_session_status(session_uid, 0)
+            dao.update_session_status(session_uid, 0)
 
             # send kill command to client and shutdown the connection
             try:

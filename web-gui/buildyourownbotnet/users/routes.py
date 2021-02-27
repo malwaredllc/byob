@@ -8,7 +8,7 @@ from flask import (
 from flask_login import login_user, logout_user, current_user, login_required
 
 from buildyourownbotnet import app, db, bcrypt, client, server
-from buildyourownbotnet.core import database
+from buildyourownbotnet.core import dao
 from buildyourownbotnet.users.forms import RegistrationForm, LoginForm, UpdateAccountForm, ResetPasswordForm
 from buildyourownbotnet.models import User, Session
 

