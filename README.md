@@ -117,7 +117,7 @@ packages not installed on the target machines
 4) __Payloads__ (`byob.core.payloads`): reverse TCP shell designed to remotely import dependencies, packages & modules
 5) __Stagers__ (`byob.core.stagers`): generate unique payload stagers to prevent analysis & detection   
 6) __Generators__ (`byob.core.generators`): functions which all dynamically generate code for the client generator
-7) __Database__ (`byob.core.database`): handles interaction between command & control server and the SQLite database
+7) __DAO__ (`byob.core.dao`): handles interaction between command & control server and the SQLite database
 8) __Handler__ (`byob.core.handler`): HTTP POST request handler for remote file uploads to the server
 
 ________________________________________________________________________________________________
