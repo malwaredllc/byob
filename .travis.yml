@@ -5,8 +5,6 @@ language: python
 cache: pip
 python:
   - 2.7
-  # - 3.6
-  # - 3.7
   - 3.8
 install:
   - pip install flake8 -r byob/requirements.txt
@@ -16,7 +14,7 @@ before_script:
   # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
   - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 script:
-  - true  # add other tests here
+  - pytest
 notifications:
   on_success: change
   on_failure: change  # `always` will be the setting once code changes slow down
