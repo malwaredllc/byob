@@ -249,6 +249,7 @@ def handle_task(task_dict):
     """
     if not isinstance(task_dict, dict):
         task_dict = {'result': 'Error: client returned invalid response: "{}"'.format(str(task_dict))}
+        return task_dict
     if not task_dict.get('uid'):
         identity = str(str(task_dict.get('session')) + str(task_dict.get('task')) + datetime.utcnow().__str__()).encode()
         task_dict['uid'] = hashlib.md5(identity).hexdigest()
