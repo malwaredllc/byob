@@ -1,6 +1,7 @@
 
 import pytest
-import uuid
+from hashlib import md5
+from random import getrandbits
 from datetime import datetime
 from buildyourownbotnet import db, bcrypt
 from buildyourownbotnet.models import User, Session, Task, Payload, ExfiltratedFile
@@ -25,7 +26,7 @@ def test_new_session(new_user):
     when a new session is created, 
     then check the session metadata is stored in the database correctly.
     """
-    uid = str(uuid.uuid4())
+    uid = md5(bytes(getrandbits(10))).hexdigest()
     session_dict = {
             "id": 1,
 			"uid": uid,
