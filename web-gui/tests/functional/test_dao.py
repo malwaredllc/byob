@@ -5,7 +5,7 @@ from datetime import datetime
 from buildyourownbotnet import app, db, bcrypt
 from buildyourownbotnet.core import dao
 from buildyourownbotnet.models import User, Session, Task
-from ..conftests import new_user, new_session
+from ..conftest import new_user, new_session
 
 def test_handle_session(new_user):
     """
@@ -59,14 +59,21 @@ def test_handle_session(new_user):
     session_query.delete()
     db.session.commit()
 
-def test_handle_send_task(new_session):
+def test_handle_task(new_session):
     """
     Given a session,
-    when a new task is issued by the user,
-    check that the task is issued a UID, an issued timestamp, 
+    when the dao.handle_task method is called from a session,
+    check 3 scenarios:
+    
+    1. A new task is issued a UID, an issued timestamp, 
     and the metadata is stored in the database correctly.
+
+    2. A completed task has the result stored in the database, and
+    is marked as completed.
+
+    3. An invalid task is handled without exception or error.
     """
-    # create sample task
+    # 1. test new task
     input_task_dict = {
         "session": new_session.uid,
         "task": "whoami",
@@ -83,6 +90,25 @@ def test_handle_send_task(new_session):
     assert task.task == 'whoami'
     assert (datetime.utcnow() - task.issued).seconds <= 2
     
+    # 2. test completed task
+    output_task_dict['result'] = 'test_result'
+    completed_task_dict = dao.handle_task(input_task_dict)
+
+    # run tests
+    task_query = Task.query.filter_by(session=new_session.uid)
+    assert len(task_query.all()) == 1
+
+    task = task_query.first()
+    assert task.result == 'test_result'
+    assert task.completed is not None
+    assert (datetime.utcnow() - task.completed).seconds <= 5
+
+    # 3. test invalid task
+    invalid_task_dict = dao.handle_task('invalid task - not a dict')
+    assert isinstance(invalid_task_dict, dict)
+    assert 'result' in invalid_task_dict
+    assert 'Error' in invalid_task_dict['result']
+
     # clean up
     task_query.delete()
     db.session.commit()
