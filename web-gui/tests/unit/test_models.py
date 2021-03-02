@@ -1,5 +1,6 @@
 
 import pytest
+import json
 from hashlib import md5
 from random import getrandbits
 from datetime import datetime
@@ -50,6 +51,19 @@ def test_new_session(new_user):
     assert session.id == 1
     assert session.uid == uid
     assert session.owner == new_user.username
+
+def test_new_session_serialized(new_session):
+    """
+    Given a new session,
+    when the serialize method is called,
+    then check the output is a dictionary containing session attributes which can be represented as JSON string.
+    """
+    serialized = new_session.serialize()
+    assert isinstance(serialized, dict)
+    try:
+        json.dumps(serialized)
+    except:
+        pytest.fail("Session serialization failed.")
 
 def test_new_payload(new_user):
     """
