@@ -1,5 +1,6 @@
 
 import pytest
+import json
 from hashlib import md5
 from random import getrandbits
 from datetime import datetime
@@ -51,6 +52,19 @@ def test_new_session(new_user):
     assert session.uid == uid
     assert session.owner == new_user.username
 
+def test_new_session_serialized(new_session):
+    """
+    Given a new session,
+    when the serialize method is called,
+    then check the output is a dictionary containing session attributes which can be represented as JSON string.
+    """
+    serialized = new_session.serialize()
+    assert isinstance(serialized, dict)
+    try:
+        json.dumps(serialized)
+    except:
+        pytest.fail("Session serialization failed.")
+
 def test_new_payload(new_user):
     """
     Given a new user,
@@ -68,6 +82,24 @@ def test_new_payload(new_user):
     assert payload.operating_system == 'linux2'
     assert payload.architecture == 'x32'
     assert payload.owner == new_user.username
+
+def test_new_payload_serialized(new_user):
+    """
+    Given a new user,
+    when a new payload is created for that user,
+    then check the output is a dictionary containing payload attributes which can be represented as JSON string.
+    """
+    payload = Payload(id=1,
+                      filename='test', 
+                      operating_system='linux2',
+                      architecture='x32',
+                      owner=new_user.username)
+    serialized = payload.serialize()
+    assert isinstance(serialized, dict)
+    try:
+        json.dumps(serialized)
+    except:
+        pytest.fail("Payload serialization failed.")
 
 def test_new_exfiltrated_file(new_session):
     """
@@ -87,6 +119,24 @@ def test_new_exfiltrated_file(new_session):
     assert exfiltrated_file.module == 'portscanner'
     assert exfiltrated_file.owner == new_session.owner
 
+def test_new_exfiltrated_file_serialized(new_session):
+    """
+    Given a new session,
+    when a new exfiltrated file is created for that session,
+    then check the output is a dictionary containing file attributes which can be represented as JSON string.
+    """
+    exfiltrated_file = ExfiltratedFile(id=1,
+                                       filename='test.txt',
+                                       session=new_session.uid,
+                                       module='portscanner',
+                                       owner=new_session.owner)
+    serialized = exfiltrated_file.serialize()
+    assert isinstance(serialized, dict)
+    try:
+        json.dumps(serialized)
+    except:
+        pytest.fail("ExfiltratedFile serialization failed.")
+
 def test_new_task(new_session):
     """
     Given a session,
@@ -105,3 +155,19 @@ def test_new_task(new_session):
     assert task.result is None
     assert task.completed is None
 
+def test_new_task_serialized(new_session):
+    """
+    Given a new session,
+    when a new exfiltrated file is created for that session,
+    then check the output is a dictionary containing task attributes which can be represented as JSON string.
+    """
+    task = Task(id=1,
+                session=new_session.uid, 
+                task='whoami', 
+                issued=datetime.utcnow())
+    serialized = task.serialize()
+    assert isinstance(serialized, dict)
+    try:
+        json.dumps(serialized)
+    except:
+        pytest.fail("Task serialization failed.")

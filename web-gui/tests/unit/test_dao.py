@@ -19,7 +19,6 @@ def test_get_sessions(new_user):
     # check for invalid user
     assert len(dao.get_sessions(-1)) == 0
     
-
 def test_get_sessions_new(new_session):
     """
     Given a user,
@@ -36,7 +35,6 @@ def test_get_sessions_new(new_session):
     assert len(new_user_sessions) > 0
     assert all(s.new is False for s in user.sessions)
     
-
 def test_handle_session(new_user):
     """
     Given a new user,
@@ -61,7 +59,10 @@ def test_handle_session(new_user):
 			"longitude": 0.00,
 			"owner": new_user.username,
     }
-    output_session_dict = dao.handle_session(input_session_dict)
+    try:
+        output_session_dict = dao.handle_session(input_session_dict)
+    except Exception as e:
+        pytest.fail("dao.handle_session exception handling new session: " + str(e))
 
     # check server assigned uid
     assert 'uid' in output_session_dict
@@ -107,10 +108,11 @@ def test_handle_session(new_user):
 			"longitude": 0.00,
 			"owner": new_user.username,
     }
-    output_session_dict = dao.handle_session(input_session_dict)
+    try:
+        output_session_dict = dao.handle_session(input_session_dict)
+    except Exception as e:
+        pytest.fail("dao.handle_session exception handling existing session: " + str(e))
 
-    print(output_session_dict)
-    
     # run tests
     session_query = Session.query.filter_by(uid=uid)
     assert len(session_query.all()) == 1
@@ -132,7 +134,6 @@ def test_handle_session(new_user):
     assert session.longitude == 0.00
     assert session.latitude == 0.00
     
-
 def test_handle_task(new_session):
     """
     Given a session,
@@ -152,7 +153,10 @@ def test_handle_task(new_session):
         "session": new_session.uid,
         "task": "whoami",
     }
-    output_task_dict = dao.handle_task(input_task_dict)
+    try:
+        output_task_dict = dao.handle_task(input_task_dict)
+    except Exception as e:
+        pytest.fail("dao.handle_task exception handling new task: " + str(e))
 
     # run tests
     task_query = Task.query.filter_by(session=new_session.uid)
@@ -166,7 +170,10 @@ def test_handle_task(new_session):
     
     # 2. test completed task
     output_task_dict['result'] = 'test_result'
-    completed_task_dict = dao.handle_task(input_task_dict)
+    try:
+        completed_task_dict = dao.handle_task(output_task_dict)
+    except Exception as e:
+        pytest.fail("dao.handle_task exception handling completed task: " + str(e))
 
     # run tests
     task_query = Task.query.filter_by(session=new_session.uid)
@@ -178,12 +185,14 @@ def test_handle_task(new_session):
     assert (datetime.utcnow() - task.completed).seconds <= 5
 
     # 3. test invalid task
-    invalid_task_dict = dao.handle_task('invalid task - not a dict')
+    try:
+        invalid_task_dict = dao.handle_task('invalid task - not a dict')
+    except Exception as e:
+        pytest.fail("dao.handle_task exception handling invalid task: " + str(e))
     assert isinstance(invalid_task_dict, dict)
     assert 'result' in invalid_task_dict
     assert 'Error' in invalid_task_dict['result']
     
-
 def test_update_session_status(new_session):
     """
     Given a session,
