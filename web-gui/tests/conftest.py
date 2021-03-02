@@ -18,9 +18,9 @@ def new_user():
 
 @pytest.fixture(scope='module')
 def new_session(new_user):
-    uid = md5(bytes(getrandbits(10))).hexdigest()
-    session_dict = {
-            "id": 1,
+	uid = md5(bytes(getrandbits(10))).hexdigest()
+	session_dict = {
+			"id": 1,
 			"uid": uid,
 			"online": True,
 			"joined": datetime.utcnow(),
@@ -36,6 +36,8 @@ def new_session(new_user):
 			"latitude": 0.00,
 			"longitude": 0.00,
 			"owner": new_user.username
-    }
-    session = Session(**session_dict)
-    return session
+	}
+	session = Session(**session_dict)
+	db.session.add(session)
+	db.session.commit()
+	return session

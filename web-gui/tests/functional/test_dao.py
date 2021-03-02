@@ -33,10 +33,11 @@ def test_handle_session(new_user):
     }
     output_session_dict = dao.handle_session(input_session_dict)
 
-    # run tests
+    # check server assigned uid
     assert 'uid' in output_session_dict
-    uid = output_session_dict['uid']
+    uid = output_session_dict['uid'] 
 
+    # run tests
     session_query = Session.query.filter_by(uid=uid)
     assert len(session_query.all()) == 1
 
@@ -159,4 +160,25 @@ def test_handle_task(new_session):
 
     # clean up
     task_query.delete()
+    db.session.commit()
+
+def test_update_session_status(new_session):
+    """
+    Given a session,
+    when the dao.update_session_status is called,
+    check that the 'online' attribute of session metadata is correctly updated in the database.
+    """
+    # toggle online/offline status
+    prev_status = new_session.online
+    new_status = False if new_session.online else True 
+    dao.update_session_status(new_session.uid, new_status)
+
+    # check if it was updated correctly
+    session_query = Session.query.filter_by(uid=new_session.uid)
+    session = session_query.first()
+    assert session is not None
+    assert session.online == new_status
+
+    # clean up
+    session_query.delete()
     db.session.commit()
