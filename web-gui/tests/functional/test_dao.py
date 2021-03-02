@@ -7,6 +7,22 @@ from buildyourownbotnet.core import dao
 from buildyourownbotnet.models import User, Session, Task
 from ..conftest import new_user, new_session
 
+def test_get_sessions_new(new_session):
+    """
+    Given a user,
+    when the dao.get_sessions_new is called,
+    check the user's new sessions are fetched and their 'new' attribute is updated to false in the database.
+    """
+    # get session owner (user)
+    user_query = User.query.filter_by(username=new_session.owner)
+    user = user_query.first()
+    assert user is not None
+
+    # get users's new sessions and test 'new' attribute has been toggled to false
+    new_user_sessions = dao.get_sessions_new(user.id)
+    assert len(new_user_sessions) > 0
+    assert all(s.new is False for s in user.sessions)
+
 def test_handle_session(new_user):
     """
     Given a new user,
