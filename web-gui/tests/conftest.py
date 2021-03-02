@@ -3,20 +3,21 @@ from hashlib import md5
 from random import getrandbits
 from datetime import datetime
 from buildyourownbotnet import db, bcrypt
-from buildyourownbotnet.models import User, Session
+from buildyourownbotnet.models import User, Payload, Session, Task, ExfiltratedFile
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def new_user():
-    test_username = 'test_user'
-    user = User.query.filter_by(username=test_username).first()
-    if not user:
-        hashed_password = bcrypt.generate_password_hash('test_password').decode('utf-8')
-        user = User(username=test_username, password=hashed_password)
-        db.session.add(user)
-        db.session.commit()
-    return user
+	test_username = 'test_user'
+	user = User.query.filter_by(username=test_username).first()
+	if not user:
+		hashed_password = bcrypt.generate_password_hash('test_password').decode('utf-8')
+		user = User(username=test_username, password=hashed_password)
+		db.session.add(user)
+		db.session.commit()
+	yield user
+	cleanup()
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def new_session(new_user):
 	uid = md5(bytes(getrandbits(10))).hexdigest()
 	session_dict = {
@@ -40,4 +41,15 @@ def new_session(new_user):
 	session = Session(**session_dict)
 	db.session.add(session)
 	db.session.commit()
-	return session
+	yield session
+	cleanup()
+
+def cleanup():
+    """
+    Helper function for cleaning up database after tests.
+    """
+    User.query.delete()
+    Session.query.delete()
+    Task.query.delete()
+    ExfiltratedFile.query.delete()
+    db.session.commit()

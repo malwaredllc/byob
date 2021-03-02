@@ -4,8 +4,21 @@ from random import getrandbits
 from datetime import datetime
 from buildyourownbotnet import app, db, bcrypt
 from buildyourownbotnet.core import dao
-from buildyourownbotnet.models import User, Session, Task
+from buildyourownbotnet.models import User, Payload, Session, Task, ExfiltratedFile
 from ..conftest import new_user, new_session
+
+def test_get_sessions(new_user):
+    """
+    Given a user, 
+    when dao.get_sessions is called,
+    check that user sessions are returned from the database correctly.
+    """
+    # check for valid user
+    assert len(dao.get_sessions(new_user.id)) == 0
+
+    # check for invalid user
+    assert len(dao.get_sessions(-1)) == 0
+    
 
 def test_get_sessions_new(new_session):
     """
@@ -22,6 +35,7 @@ def test_get_sessions_new(new_session):
     new_user_sessions = dao.get_sessions_new(user.id)
     assert len(new_user_sessions) > 0
     assert all(s.new is False for s in user.sessions)
+    
 
 def test_handle_session(new_user):
     """
@@ -74,10 +88,6 @@ def test_handle_session(new_user):
     assert session.longitude == 0.00
     assert session.latitude == 0.00
 
-    # clean up
-    session_query.delete()
-    db.session.commit()
-
     # add test session (with uid)
     uid = md5(bytes(getrandbits(10))).hexdigest()
     input_session_dict = {
@@ -85,7 +95,7 @@ def test_handle_session(new_user):
 			"online": True,
 			"joined": datetime.utcnow(),
 			"last_online": datetime.utcnow(),
-			"public_ip": '1.2.3.4',
+			"public_ip": '5.6.7.8',
 			"local_ip": '192.1.1.168',
 			"mac_address": '00:0A:95:9D:68:16',
 			"username": 'test_user',
@@ -99,6 +109,8 @@ def test_handle_session(new_user):
     }
     output_session_dict = dao.handle_session(input_session_dict)
 
+    print(output_session_dict)
+    
     # run tests
     session_query = Session.query.filter_by(uid=uid)
     assert len(session_query.all()) == 1
@@ -109,7 +121,7 @@ def test_handle_session(new_user):
     assert session.online is True
     assert (datetime.utcnow() - session.joined).seconds <= 5
     assert (datetime.utcnow() - session.last_online).seconds <= 5
-    assert session.public_ip == '1.2.3.4'
+    assert session.public_ip == '5.6.7.8'
     assert session.local_ip == '192.1.1.168'
     assert session.mac_address == '00:0A:95:9D:68:16'
     assert session.username == 'test_user'
@@ -119,10 +131,7 @@ def test_handle_session(new_user):
     assert session.architecture == 'x32'
     assert session.longitude == 0.00
     assert session.latitude == 0.00
-
-    # clean up
-    session_query.delete()
-    db.session.commit()
+    
 
 def test_handle_task(new_session):
     """
@@ -173,10 +182,7 @@ def test_handle_task(new_session):
     assert isinstance(invalid_task_dict, dict)
     assert 'result' in invalid_task_dict
     assert 'Error' in invalid_task_dict['result']
-
-    # clean up
-    task_query.delete()
-    db.session.commit()
+    
 
 def test_update_session_status(new_session):
     """
@@ -195,6 +201,4 @@ def test_update_session_status(new_session):
     assert session is not None
     assert session.online == new_status
 
-    # clean up
-    session_query.delete()
-    db.session.commit()
+    
