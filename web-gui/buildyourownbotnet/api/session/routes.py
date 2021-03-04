@@ -77,7 +77,7 @@ def session_cmd():
 def session_poll():
 	"""Return list of sessions (JSON)."""
 	new_sessions = []
-	for s in dao.get_sessions_new(current_user.id):
+	for s in dao.get_user_sessions_new(current_user.id):
 		new_sessions.append(s.serialize())
 		s.new = False
 		db.session.commit()
