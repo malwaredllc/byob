@@ -21,7 +21,7 @@ def session_remove():
 		return redirect(url_for('sessions'))
 
 	# kill connection to C2
-	owner_sessions = server.c2.sessions.get(current_user.username, {})
+	owner_sessions = c2.sessions.get(current_user.username, {})
 
 	if session_uid and session_uid in owner_sessions:
 		session_thread = owner_sessions[session_uid]
@@ -52,7 +52,7 @@ def session_cmd():
 	command = request.form.get('cmd')
 
 	# get user sessions
-	owner_sessions = server.c2.sessions.get(current_user.username, {})
+	owner_sessions = c2.sessions.get(current_user.username, {})
 
 	if session_uid in owner_sessions:
 		session_thread = owner_sessions[session_uid]
