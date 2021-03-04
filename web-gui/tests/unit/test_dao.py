@@ -10,7 +10,7 @@ from ..conftest import new_user, new_session
 def test_get_user_sessions(new_user):
     """
     Given a user, 
-    when dao.get_user_sessions is called,
+    when session_dao.get_user_sessions is called,
     check that user sessions are returned from the database correctly.
     """
     # check for valid user
@@ -22,7 +22,7 @@ def test_get_user_sessions(new_user):
 def test_get_user_sessions_new(new_session):
     """
     Given a user,
-    when the dao.get_user_sessions_new is called,
+    when the session_dao.get_user_sessions_new is called,
     check the user's new sessions are fetched and their 'new' attribute is updated to false in the database.
     """
     # get session owner (user)
@@ -37,7 +37,7 @@ def test_get_user_sessions_new(new_session):
 def test_handle_session(new_user):
     """
     Given a new user,
-    when a new user is created via dao.handle_session function,
+    when a new user is created via session_dao.handle_session function,
     then check the session metadata is stored in the database correctly. 
     """
     # add test session (without uid)
@@ -210,4 +210,17 @@ def test_update_session_status(new_session):
     assert session is not None
     assert session.online == new_status
 
-    
+def test_add_payload(new_user):
+    """
+    Given a user,
+    when the payload_dao.add_payload method is called,
+    check that the payload metadata is added to the database correctly.
+    """
+    try:
+        payload = payload_dao.add_payload(new_user.username, 'test.py', 'nix', 'x32')
+    except Exception as e:
+        pytest.fail("payload_dao.add_payload returned exception: " + str(e))
+    assert payload.owner == new_user.username
+    assert payload.filename == 'test.py'
+    assert payload.operating_system == 'nix'
+    assert payload.architecture == 'x32'
