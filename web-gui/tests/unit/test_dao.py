@@ -217,7 +217,7 @@ def test_add_payload(new_user):
     check that the payload metadata is added to the database correctly.
     """
     try:
-        payload = payload_dao.add_payload(new_user.username, 'test.py', 'nix', 'x32')
+        payload = payload_dao.add_payload(new_user.id, 'test.py', 'nix', 'x32')
     except Exception as e:
         pytest.fail("payload_dao.add_payload returned exception: " + str(e))
     assert payload.owner == new_user.username

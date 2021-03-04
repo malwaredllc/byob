@@ -304,6 +304,7 @@ class PayloadDAO:
                             owner=user.username)
             db.session.add(payload)
             db.session.commit()
+            return payload
 
 user_dao = UserDAO(User)
 session_dao = SessionDAO(Session, user_dao)
