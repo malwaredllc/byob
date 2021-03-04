@@ -270,7 +270,7 @@ class C2(threading.Thread):
         if self.debug:
             while True:
                 try:
-                    raw = raw_input('byob-admin> ')
+                    raw = input('byob-admin> ')
 
                     # handle new line
                     if raw in ['\n']:
