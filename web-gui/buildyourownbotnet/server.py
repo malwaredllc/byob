@@ -32,23 +32,6 @@ from buildyourownbotnet import db
 from buildyourownbotnet.core import security, util
 from buildyourownbotnet.core.dao import session_dao
 
-# packages
-try:
-    import cv2
-except ImportError:
-    util.log("Warning: missing package 'cv2' is required for 'webcam' module.")
-
-try:
-    import colorama
-    colorama.init()
-except ImportError:
-    util.log("Warning: missing package 'colorama' is required.")
-
-try:
-    raw_input          # Python 2
-except NameError:
-    raw_input = input  # Python 3
-
 # globals
 __threads = {}
 __abort = False
@@ -221,11 +204,10 @@ class C2(threading.Thread):
                 proc.terminate()
             except: pass
 
-
         # forcibly end process
         globals()['__abort'] = True
         _ = os.popen("taskkill /pid {} /f".format(os.getpid()) if os.name == 'nt' else "kill {}".format(os.getpid())).read()
-        util.display('Exiting...')
+        util.log('Exiting...')
         sys.exit(0)
 
     @util.threaded
@@ -253,12 +235,10 @@ class C2(threading.Thread):
 
                 self.sessions[owner][session.info.get('uid')] = session
 
-                util.display('New session {}:{} connected'.format(owner, session.info.get('uid')))
+                util.log('New session {}:{} connected'.format(owner, session.info.get('uid')))
 
             else:
-                # util.display("\n\n[-]", color='red', style='bright', end=' ')
-                util.display("Failed Connection:", color='white', style='bright', end=' ')
-                util.display(address[0], color='white', style='normal')
+                util.log("Failed Connection: {}".format(address[0]))
 
             abort = globals()['__abort']
             if abort:
@@ -286,7 +266,7 @@ class C2(threading.Thread):
         if 'c2' not in globals()['__threads']:
             globals()['__threads']['c2'] = self.serve_until_stopped()
 
-        # admin shell
+        # admin shell for debugging
         if self.debug:
             while True:
                 try:
@@ -373,9 +353,9 @@ class SessionThread(threading.Thread):
 
             _ = owner_sessions.pop(session_uid, None)
 
-            util.display('Session {}:{} disconnected'.format(owner, session_uid))
+            util.log('Session {}:{} disconnected'.format(owner, session_uid))
         else:
-            util.display('Session {}:{} is already offline.'.format(owner, session_uid))
+            util.log('Session {}:{} is already offline.'.format(owner, session_uid))
 
 
     def client_info(self):
