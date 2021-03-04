@@ -23,11 +23,20 @@ class UserDAO:
         self.model = model
     
     def get_user(self, user_id=None, username=None):
+        """
+        Get user data from database.
+
+        `Required`
+        :param int user_id:  User ID
+        OR
+        :param str username: Username
+        """
+        user = None
         if user_id:
-            return db.session.query(self.model).get(user_id)
+            user = db.session.query(self.model).get(user_id)
         elif username:
-            return db.session.query(self.model).filter_by(username=username).first()
-        return None
+            user = db.session.query(self.model).filter_by(username=username).first()
+        return user
 
     def add_user(self, username, hashed_password):
         """
@@ -40,6 +49,7 @@ class UserDAO:
         user = User(username=username, password=hashed_password)
         db.session.add(user)
         db.session.commit()
+        return user
 
 
 class SessionDAO:
@@ -237,7 +247,7 @@ class FileDAO:
         self.model = model
         self.user_dao = user_dao
 
-    def add_file(self, owner, filename, session, module):
+    def add_user_file(self, owner, filename, session, module):
         """
         Add newly exfiltrated file to database.
 
@@ -255,8 +265,9 @@ class FileDAO:
                                             owner=user.username)
             db.session.add(exfiltrated_file)
             db.session.commit()
+            return exfiltrated_file
 
-    def get_files(self, user_id):
+    def get_user_files(self, user_id):
         """
         Get a list of files exfiltrated by the user.
 
@@ -274,7 +285,7 @@ class PayloadDAO:
         self.model = model
         self.user_dao = user_dao 
 
-    def get_payloads(self, user_id):
+    def get_user_payloads(self, user_id):
         """
         Get a list of the user's payloads.
 
@@ -286,9 +297,9 @@ class PayloadDAO:
             return user.payloads
         return []
 
-    def add_payload(self, user_id, filename, operating_system, architecture):
+    def add_user_payload(self, user_id, filename, operating_system, architecture):
         """
-        Add newly generated payload to database.
+        Add newly generated user payload to database.
 
         `Required`
         :param int user_id:             user ID
@@ -304,12 +315,10 @@ class PayloadDAO:
                             owner=user.username)
             db.session.add(payload)
             db.session.commit()
+            return payload
 
 user_dao = UserDAO(User)
 session_dao = SessionDAO(Session, user_dao)
 task_dao = TaskDAO(Task, session_dao)
 payload_dao = PayloadDAO(Payload, user_dao)
 file_dao = FileDAO(ExfiltratedFile, user_dao)
-
-
-

