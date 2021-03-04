@@ -132,15 +132,8 @@ def test_handle_task(new_session):
     """
     Given a session,
     when the dao.handle_task method is called from a session,
-    check 3 scenarios:
-    
-    1. A new task is issued a UID, an issued timestamp, 
+    check the new task is issued a UID, an issued timestamp, 
     and the metadata is stored in the database correctly.
-
-    2. A completed task has the result stored in the database, and
-    is marked as completed.
-
-    3. An invalid task is handled without exception or error.
     """
     # 1. test new task
     input_task_dict = {
@@ -162,7 +155,20 @@ def test_handle_task(new_session):
     assert task.task == 'whoami'
     assert (datetime.utcnow() - task.issued).seconds <= 2
     
-    # 2. test completed task
+def test_handle_completed_task(new_session):
+    """
+    Given a session,
+    when the dao.handle_task method is called for a completed task,
+    ensure the existing task metadata is updated correctly in the database.
+    """
+    # issue test task
+    input_task_dict = {
+        "session": new_session.uid,
+        "task": "whoami"
+    }
+    output_task_dict = task_dao.handle_task(input_task_dict)
+
+    # complete test task
     output_task_dict['result'] = 'test_result'
     try:
         completed_task_dict = task_dao.handle_task(output_task_dict)
@@ -170,15 +176,18 @@ def test_handle_task(new_session):
         pytest.fail("dao.handle_task exception handling completed task: " + str(e))
 
     # run tests
-    task_query = Task.query.filter_by(session=new_session.uid)
-    assert len(task_query.all()) == 1
-
-    task = task_query.first()
+    assert 'uid' in completed_task_dict
+    task = task_dao.get_task(output_task_dict['uid'])
     assert task.result == 'test_result'
     assert task.completed is not None
     assert (datetime.utcnow() - task.completed).seconds <= 5
 
-    # 3. test invalid task
+def test_handle_invalid_task():
+    """
+    Given a session,
+    when the dao.handle_task method is called with an invalid task,
+    check that there is no exception and it is handled gracefully.
+    """
     try:
         invalid_task_dict = task_dao.handle_task('invalid task - not a dict')
     except Exception as e:
