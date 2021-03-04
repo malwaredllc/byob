@@ -24,9 +24,9 @@ class UserDAO:
     
     def get_user(self, user_id=None, username=None):
         if user_id:
-            return db.session.query(self.model).get(user_id=user_id)
+            return db.session.query(self.model).get(user_id)
         elif username:
-            return db.session.query(self.model).get(username=user_id)
+            return db.session.query(self.model).filter_by(username=username).first()
         return None
 
     def add_user(self, username, hashed_password):
@@ -47,7 +47,11 @@ class SessionDAO:
         self.model = model
         self.user_dao = user_dao
 
-    def get_sessions(self, user_id, verbose=False):
+    def get_session(self, session_uid):
+        """Get session metadata from database."""
+        return db.session.query(self.model).filter_by(uid=session_uid).first()
+
+    def get_user_sessions(self, user_id, verbose=False):
         """
         Fetch sessions from database
 
@@ -64,7 +68,7 @@ class SessionDAO:
             return user.sessions
         return []
 
-    def get_sessions_new(self, user_id):
+    def get_user_sessions_new(self, user_id):
         """
         Get new sessions and update 'new' to False.
 
@@ -102,7 +106,7 @@ class SessionDAO:
         session_dict['last_online'] = datetime.utcnow()
 
         # check if session metadata already exists in database
-        session = db.session.query(self.model).filter_by(uid=session_dict['uid'])
+        session = self.get_session(session_dict['uid'])
 
         # if session for this machine not found, assign this machine to the listed owner 
         if not session:
@@ -156,7 +160,11 @@ class TaskDAO:
         self.model = model
         self.session_dao = session_dao
 
-    def get_tasks(self, session_uid):
+    def get_task(self, task_uid):
+        """Get task metadata from database."""
+        return db.session.query(self.model).filter_by(uid=task_uid).first()
+
+    def get_session_tasks(self, session_uid):
         """
         Fetch tasks from databse for specified session.
 
@@ -189,7 +197,6 @@ class TaskDAO:
                     return tasks[start:end], pages
         return [], 0
 
-
     def handle_task(self, task_dict):
         """
         Adds issued tasks to the database and updates completed tasks with results
@@ -217,18 +224,18 @@ class TaskDAO:
             # encode datetime object as string so it will be JSON serializable
             task_dict['issued'] = task_dict.get('issued').__str__()
         else:
-            task = Task.query.filter_by(uid=task_dict.get('uid')).first()
+            task = self.get_task(task_dict.get('uid'))
             if task:
                 task.result = task_dict.get('result')
                 task.completed = datetime.utcnow()
-
         db.session.commit()
         return task_dict
 
 
 class FileDAO:
-    def __init__(self, model):
+    def __init__(self, model, user_dao):
         self.model = model
+        self.user_dao = user_dao
 
     def add_file(self, owner, filename, session, module):
         """
@@ -240,7 +247,7 @@ class FileDAO:
         :param str session:         public IP of session
         :param str module:          module name (keylogger, screenshot, upload, etc.)
         """
-        user = User.query.filter_by(username=owner).first()
+        user = self.user_dao.get_user(username=owner)
         if user:
             exfiltrated_file = ExfiltratedFile(filename=filename,
                                             session=session,
@@ -256,15 +263,16 @@ class FileDAO:
         `Required`
         :param int user_id:         user ID
         """
-        user = User.query.get(user_id)
+        user = self.user_dao.get_user(user_id=user_id)
         if user:  
             return user.files
         return []
 
 
 class PayloadDAO:
-    def __init__(self, model):
+    def __init__(self, model, user_dao):
         self.model = model
+        self.user_dao = user_dao 
 
     def get_payloads(self, user_id):
         """
@@ -273,11 +281,10 @@ class PayloadDAO:
         `Required`
         :param int user_id:         user ID
         """
-        user = User.query.get(user_id)
+        user = self.user_dao.get_user(user_id=user_id)
         if user:
             return user.payloads
         return []
-
 
     def add_payload(self, user_id, filename, operating_system, architecture):
         """
@@ -289,7 +296,7 @@ class PayloadDAO:
         :param str operating_system:    nix, win, mac
         :param str architecture:        x32, x64, arm64v8/debian, arm32v7/debian, i386/debian
         """
-        user = User.query.get(user_id)
+        user = self.user_dao.get_user(user_id=user_id)
         if user:
             payload = Payload(filename=filename, 
                             operating_system=operating_system,
@@ -300,6 +307,9 @@ class PayloadDAO:
 
 user_dao = UserDAO(User)
 session_dao = SessionDAO(Session, user_dao)
+task_dao = TaskDAO(Task, session_dao)
+payload_dao = PayloadDAO(Payload, user_dao)
+file_dao = FileDAO(ExfiltratedFile, user_dao)
 
 
 

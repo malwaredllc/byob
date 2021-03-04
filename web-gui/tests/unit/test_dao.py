@@ -3,26 +3,26 @@ from hashlib import md5
 from random import getrandbits
 from datetime import datetime
 from buildyourownbotnet import app, db, bcrypt
-from buildyourownbotnet.core import dao
+from buildyourownbotnet.core.dao import user_dao, session_dao, task_dao, payload_dao, file_dao
 from buildyourownbotnet.models import User, Payload, Session, Task, ExfiltratedFile
 from ..conftest import new_user, new_session
 
-def test_get_sessions(new_user):
+def test_get_user_sessions(new_user):
     """
     Given a user, 
-    when dao.get_sessions is called,
+    when dao.get_user_sessions is called,
     check that user sessions are returned from the database correctly.
     """
     # check for valid user
-    assert len(dao.get_sessions(new_user.id)) == 0
+    assert len(session_dao.get_user_sessions(new_user.id)) == 0
 
     # check for invalid user
-    assert len(dao.get_sessions(-1)) == 0
+    assert len(session_dao.get_user_sessions(-1)) == 0
     
-def test_get_sessions_new(new_session):
+def test_get_user_sessions_new(new_session):
     """
     Given a user,
-    when the dao.get_sessions_new is called,
+    when the dao.get_user_sessions_new is called,
     check the user's new sessions are fetched and their 'new' attribute is updated to false in the database.
     """
     # get session owner (user)
@@ -31,7 +31,7 @@ def test_get_sessions_new(new_session):
     assert user is not None
 
     # get users's new sessions and test 'new' attribute has been toggled to false
-    new_user_sessions = dao.get_sessions_new(user.id)
+    new_user_sessions = session_dao.get_user_sessions_new(user.id)
     assert len(new_user_sessions) > 0
     assert all(s.new is False for s in user.sessions)
 
@@ -60,7 +60,7 @@ def test_handle_session(new_user):
 			"owner": new_user.username,
     }
     try:
-        output_session_dict = dao.handle_session(input_session_dict)
+        output_session_dict = session_dao.handle_session(input_session_dict)
     except Exception as e:
         pytest.fail("dao.handle_session exception handling new session: " + str(e))
 
@@ -69,10 +69,7 @@ def test_handle_session(new_user):
     uid = output_session_dict['uid'] 
 
     # run tests
-    session_query = Session.query.filter_by(uid=uid)
-    assert len(session_query.all()) == 1
-
-    session = session_query.first()
+    session = session_dao.get_session(uid)
     assert session.owner == new_user.username
     assert session.uid == uid
     assert session.online is True
@@ -109,15 +106,12 @@ def test_handle_session(new_user):
 			"owner": new_user.username,
     }
     try:
-        output_session_dict = dao.handle_session(input_session_dict)
+        output_session_dict = session_dao.handle_session(input_session_dict)
     except Exception as e:
         pytest.fail("dao.handle_session exception handling existing session: " + str(e))
 
     # run tests
-    session_query = Session.query.filter_by(uid=uid)
-    assert len(session_query.all()) == 1
-
-    session = session_query.first()
+    session = session_dao.get_session(uid)
     assert session.owner == new_user.username
     assert session.uid == uid
     assert session.online is True
@@ -154,7 +148,7 @@ def test_handle_task(new_session):
         "task": "whoami",
     }
     try:
-        output_task_dict = dao.handle_task(input_task_dict)
+        output_task_dict = task_dao.handle_task(input_task_dict)
     except Exception as e:
         pytest.fail("dao.handle_task exception handling new task: " + str(e))
 
@@ -171,7 +165,7 @@ def test_handle_task(new_session):
     # 2. test completed task
     output_task_dict['result'] = 'test_result'
     try:
-        completed_task_dict = dao.handle_task(output_task_dict)
+        completed_task_dict = task_dao.handle_task(output_task_dict)
     except Exception as e:
         pytest.fail("dao.handle_task exception handling completed task: " + str(e))
 
@@ -186,7 +180,7 @@ def test_handle_task(new_session):
 
     # 3. test invalid task
     try:
-        invalid_task_dict = dao.handle_task('invalid task - not a dict')
+        invalid_task_dict = task_dao.handle_task('invalid task - not a dict')
     except Exception as e:
         pytest.fail("dao.handle_task exception handling invalid task: " + str(e))
     assert isinstance(invalid_task_dict, dict)
@@ -202,7 +196,7 @@ def test_update_session_status(new_session):
     # toggle online/offline status
     prev_status = new_session.online
     new_status = False if new_session.online else True 
-    dao.update_session_status(new_session.uid, new_status)
+    session_dao.update_session_status(new_session.uid, new_status)
 
     # check if it was updated correctly
     session_query = Session.query.filter_by(uid=new_session.uid)
