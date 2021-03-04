@@ -274,7 +274,7 @@ class PayloadDAO:
         self.model = model
         self.user_dao = user_dao 
 
-    def get_payloads(self, user_id):
+    def get_user_payloads(self, user_id):
         """
         Get a list of the user's payloads.
 
@@ -286,9 +286,9 @@ class PayloadDAO:
             return user.payloads
         return []
 
-    def add_payload(self, user_id, filename, operating_system, architecture):
+    def add_user_payload(self, user_id, filename, operating_system, architecture):
         """
-        Add newly generated payload to database.
+        Add newly generated user payload to database.
 
         `Required`
         :param int user_id:             user ID
@@ -311,6 +311,3 @@ session_dao = SessionDAO(Session, user_dao)
 task_dao = TaskDAO(Task, session_dao)
 payload_dao = PayloadDAO(Payload, user_dao)
 file_dao = FileDAO(ExfiltratedFile, user_dao)
-
-
-

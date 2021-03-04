@@ -57,7 +57,7 @@ def payload_generate():
 		architecture = None if 'py' in payload_format else architecture
 
 		# add payload to database
-		dao.add_payload(current_user.id, os.path.basename(outfile), operating_system, architecture)
+		dao.add_user_payload(current_user.id, os.path.basename(outfile), operating_system, architecture)
 		flash('Successfully generated payload: ' + os.path.basename(outfile), 'success')
 	except Exception as e:
 		flash('Error: compilation timed out or failed. Please go to the Discord support server for help.')

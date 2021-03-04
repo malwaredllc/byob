@@ -210,17 +210,37 @@ def test_update_session_status(new_session):
     assert session is not None
     assert session.online == new_status
 
-def test_add_payload(new_user):
+def test_add_user_payload(new_user):
     """
     Given a user,
-    when the payload_dao.add_payload method is called,
+    when the payload_dao.add_user_payload method is called,
     check that the payload metadata is added to the database correctly.
     """
     try:
-        payload = payload_dao.add_payload(new_user.id, 'test.py', 'nix', 'x32')
+        payload = payload_dao.add_user_payload(new_user.id, 'test.py', 'nix', 'x32')
     except Exception as e:
-        pytest.fail("payload_dao.add_payload returned exception: " + str(e))
+        pytest.fail("payload_dao.add_user_payload returned exception: " + str(e))
     assert payload.owner == new_user.username
     assert payload.filename == 'test.py'
     assert payload.operating_system == 'nix'
     assert payload.architecture == 'x32'
+    # cleanup
+    Payload.query.delete()
+    db.session.commit()
+
+def test_get_user_payloads(new_user):
+    """
+    Given a user,
+    when the payload_dao.get_user_payloads method is called,
+    check that all user payload metadata are returned from the database correctly.
+    """
+    try:
+        # add test payload
+        new_payload = payload_dao.add_user_payload(new_user.id, 'test.py', 'nix', 'x32')
+        payloads = payload_dao.get_user_payloads(new_user.id)
+    except Exception as e:
+        pytest.fail("payload_dao.get_user_payloads returned excpetion: " + str(e))
+    assert len(payloads) != 0
+    # cleanup
+    Payload.query.delete()
+    db.session.commit()
