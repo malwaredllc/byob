@@ -237,7 +237,7 @@ class FileDAO:
         self.model = model
         self.user_dao = user_dao
 
-    def add_file(self, owner, filename, session, module):
+    def add_user_file(self, owner, filename, session, module):
         """
         Add newly exfiltrated file to database.
 
@@ -255,8 +255,9 @@ class FileDAO:
                                             owner=user.username)
             db.session.add(exfiltrated_file)
             db.session.commit()
+            return exfiltrated_file
 
-    def get_files(self, user_id):
+    def get_user_files(self, user_id):
         """
         Get a list of files exfiltrated by the user.
 

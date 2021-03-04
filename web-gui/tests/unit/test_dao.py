@@ -224,6 +224,7 @@ def test_add_user_payload(new_user):
     assert payload.filename == 'test.py'
     assert payload.operating_system == 'nix'
     assert payload.architecture == 'x32'
+
     # cleanup
     Payload.query.delete()
     db.session.commit()
@@ -241,6 +242,45 @@ def test_get_user_payloads(new_user):
     except Exception as e:
         pytest.fail("payload_dao.get_user_payloads returned excpetion: " + str(e))
     assert len(payloads) != 0
+
     # cleanup
     Payload.query.delete()
+    db.session.commit()
+
+def test_add_user_file(new_user, new_session):
+    """
+    Given a user,
+    when the file_dao.add_user_file method is called,
+    check the file metadata is added to the database correctly.
+    """
+    try:
+        test_file = file_dao.add_user_file(new_user.username, 'test.txt', new_session.public_ip, 'test_module')
+    except Exception as e:
+        ptyest.fail("file_dao.add_user_file returned exception: " + str(e))
+    assert test_file is not None
+    assert test_file.owner == new_user.username
+    assert test_file.session == new_session.public_ip
+    assert test_file.module == 'test_module'
+    assert test_file.filename == 'test.txt'
+    
+    # cleanup
+    ExfiltratedFile.query.delete()
+    db.session.commit()
+
+def test_get_user_files(new_user, new_session):
+    """
+    Given a user and session,
+    when the file_dao.get_user_files method is called,
+    check that all metadata for user's files is returned from the database correctly.
+    """
+    try:
+        # add test file
+        test_file = file_dao.add_user_file(new_user.username, 'test.txt', new_session.public_ip, 'test_module')
+        files = file_dao.get_user_files(new_user.id)
+    except Exception as e:
+        pytest.fail("file_dao.get_user_files returned exception: " + str(e))
+    assert len(files) != 0
+    
+    # cleanup
+    ExfiltratedFile.query.delete()
     db.session.commit()
