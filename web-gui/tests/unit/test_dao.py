@@ -286,7 +286,7 @@ def test_add_user_file(new_user, new_session):
     try:
         test_file = file_dao.add_user_file(new_user.username, 'test.txt', new_session.public_ip, 'test_module')
     except Exception as e:
-        ptyest.fail("file_dao.add_user_file returned exception: " + str(e))
+        pytest.fail("file_dao.add_user_file returned exception: " + str(e))
     assert test_file is not None
     assert test_file.owner == new_user.username
     assert test_file.session == new_session.public_ip
