@@ -26,8 +26,7 @@ def test_get_user_sessions_new(new_session):
     check the user's new sessions are fetched and their 'new' attribute is updated to false in the database.
     """
     # get session owner (user)
-    user_query = User.query.filter_by(username=new_session.owner)
-    user = user_query.first()
+    user = user_dao.get_user(username=new_session.owner)
     assert user is not None
 
     # get users's new sessions and test 'new' attribute has been toggled to false
@@ -146,10 +145,9 @@ def test_handle_task(new_session):
         pytest.fail("dao.handle_task exception handling new task: " + str(e))
 
     # run tests
-    task_query = Task.query.filter_by(session=new_session.uid)
-    assert len(task_query.all()) == 1
-
-    task = task_query.first()
+    tasks = task_dao.get_session_tasks(new_session.uid)
+    assert len(tasks) == 1
+    task = task_dao.get_task(output_task_dict['uid'])   
     assert len(task.uid) == 32
     assert task.session == new_session.uid
     assert task.task == 'whoami'
@@ -208,8 +206,7 @@ def test_update_session_status(new_session):
     session_dao.update_session_status(new_session.uid, new_status)
 
     # check if it was updated correctly
-    session_query = Session.query.filter_by(uid=new_session.uid)
-    session = session_query.first()
+    session = session_dao.get_session(new_session.uid)
     assert session is not None
     assert session.online == new_status
 

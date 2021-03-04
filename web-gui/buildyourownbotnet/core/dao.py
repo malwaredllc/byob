@@ -171,7 +171,7 @@ class TaskDAO:
         `Optional`
         :param int session_id:  Session ID 
         """
-        session = session_dao.filter_by(uid=session_uid).first()
+        session = session_dao.get_session(session_uid)
         if session:
             return session.tasks
         return []
@@ -190,7 +190,7 @@ class TaskDAO:
             tasks = session.tasks
             # janky manual pagination
             pages = int(math.ceil(float(len(tasks))/20.0))
-            blocks = [i for i in xrange(0, len(tasks), 20)]
+            blocks = [i for i in range(0, len(tasks), 20)]
             if (page - 1 >= 0) and (page + 1 <= len(blocks)):
                 start, end = blocks[page - 1:page + 1]
                 if (start >= 0) and (end <= len(tasks)):
