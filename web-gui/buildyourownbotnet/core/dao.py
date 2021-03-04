@@ -23,11 +23,20 @@ class UserDAO:
         self.model = model
     
     def get_user(self, user_id=None, username=None):
+        """
+        Get user data from database.
+
+        `Required`
+        :param int user_id:  User ID
+        OR
+        :param str username: Username
+        """
+        user = None
         if user_id:
-            return db.session.query(self.model).get(user_id)
+            user = db.session.query(self.model).get(user_id)
         elif username:
-            return db.session.query(self.model).filter_by(username=username).first()
-        return None
+            user = db.session.query(self.model).filter_by(username=username).first()
+        return user
 
     def add_user(self, username, hashed_password):
         """
@@ -40,6 +49,7 @@ class UserDAO:
         user = User(username=username, password=hashed_password)
         db.session.add(user)
         db.session.commit()
+        return user
 
 
 class SessionDAO:

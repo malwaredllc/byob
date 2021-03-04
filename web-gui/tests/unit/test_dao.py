@@ -7,6 +7,36 @@ from buildyourownbotnet.core.dao import user_dao, session_dao, task_dao, payload
 from buildyourownbotnet.models import User, Payload, Session, Task, ExfiltratedFile
 from ..conftest import new_user, new_session
 
+def test_add_user():
+    """
+    Given a username and hashed password,
+    when the user_dao.add_user method is called,
+    check the user data is added to the database correctly.
+    """
+    try:
+        test_username = 'test_user'
+        test_password = 'test_password'
+        test_hashed_password = bcrypt.generate_password_hash(test_password).decode('utf-8')
+        user = user_dao.add_user(username=test_username, hashed_password=test_hashed_password)
+    except Exception as e:
+        pytest.fail("user_dao.add_user returned exception: " + str(e))
+    assert user.username == test_username
+    assert user.password == test_hashed_password
+    assert bcrypt.check_password_hash(user.password, test_password)
+
+    # clean up
+    User.query.delete()
+    db.session.commit()
+
+def test_get_user(new_user):
+    """
+    Given a user id or username,
+    when the user_dao.get_user method is called,
+    check that we can fetch the user data from the database.  
+    """
+    assert user_dao.get_user(user_id=new_user.id) is not None
+    assert user_dao.get_user(username=new_user.username) is not None
+
 def test_get_user_sessions(new_user):
     """
     Given a user, 
