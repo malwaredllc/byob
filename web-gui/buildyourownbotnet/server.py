@@ -245,7 +245,7 @@ class C2(threading.Thread):
         # put sessions in passive mode
         for owner, sessions in self.sessions.items():
             for session_id, session in sessions.items():
-                if isinstance(session, Session):
+                if isinstance(session, SessionThread):
                     try:
                         session.send_task({"task": "passive"})
                     except: pass
