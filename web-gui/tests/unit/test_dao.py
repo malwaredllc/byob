@@ -34,7 +34,7 @@ def test_get_sessions_new(new_session):
     new_user_sessions = dao.get_sessions_new(user.id)
     assert len(new_user_sessions) > 0
     assert all(s.new is False for s in user.sessions)
-    
+
 def test_handle_session(new_user):
     """
     Given a new user,
