@@ -30,8 +30,9 @@ login_manager.login_message_category = 'info'
 from buildyourownbotnet import models
 db.create_all()
 
-# import c2 server and client generator
-from buildyourownbotnet import client, server
+# import server and client generator
+from buildyourownbotnet import client
+from buildyourownbotnet.server import C2
 
 # import blueprints
 from buildyourownbotnet.main.routes import main
