@@ -12,7 +12,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for,
 from flask_login import login_user, logout_user, current_user, login_required
 
 from buildyourownbotnet import app, db, bcrypt, client, server
-from buildyourownbotnet.core import dao
+from buildyourownbotnet.core.dao import file_dao, payload_dao, session_dao
 from buildyourownbotnet.users.forms import RegistrationForm, LoginForm, UpdateAccountForm
 from buildyourownbotnet.models import User, Session
 from buildyourownbotnet.utils import get_sessions_serialized, get_tasks_serialized
@@ -38,7 +38,7 @@ def sessions():
 def payloads():
 	"""Page for creating custom client scripts. Custom client scripts are generated on this page by sending user inputted values to 
 	the '/generate' API endpoint, which writes the dropper to the user's output directory."""
-	payloads = dao.get_payloads(current_user.id)
+	payloads = payload_dao.get_payloads(current_user.id)
 	return render_template("payloads.html", 
 							payloads=payloads, 
 							owner=current_user.username, 
@@ -49,7 +49,7 @@ def payloads():
 @login_required
 def files():
 	"""Page for displaying files exfiltrated from client machines"""
-	user_files = dao.get_files(current_user.id)
+	user_files = file_dao.get_files(current_user.id)
 	return render_template("files.html", 
 							files=user_files, 
 							owner=current_user.username, 
@@ -100,13 +100,13 @@ def shell():
 
 	# check if owner has any active sessions
 	if not owner_sessions:
-		dao.update_session_status(session_uid, 0)
+		session_dao.update_session_status(session_uid, 0)
 		flash("You have no bots online.", "danger")
 		return redirect(url_for('main.sessions'))
 
 	# check if requested session is owned by current user
 	if session_uid not in owner_sessions:
-		dao.update_session_status(session_uid, 0)
+		session_dao.update_session_status(session_uid, 0)
 		flash("Invalid bot UID: " + str(session_uid))
 		return redirect(url_for('main.sessions'))
 
@@ -126,7 +126,7 @@ def shell():
 
 	# if bot is offline, update status in database and notify user
 	else:
-		dao.update_session_status(session_uid, 0)
+		session_dao.update_session_status(session_uid, 0)
 		flash("Bot is offline.", "danger")
 		return redirect(url_for('main.sessions'))
 

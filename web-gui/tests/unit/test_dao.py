@@ -160,7 +160,7 @@ def test_handle_session(new_user):
 def test_handle_task(new_session):
     """
     Given a session,
-    when the dao.handle_task method is called from a session,
+    when the task_dao.handle_task method is called from a session,
     check the new task is issued a UID, an issued timestamp, 
     and the metadata is stored in the database correctly.
     """
@@ -186,7 +186,7 @@ def test_handle_task(new_session):
 def test_handle_completed_task(new_session):
     """
     Given a session,
-    when the dao.handle_task method is called for a completed task,
+    when the task_dao.handle_task method is called for a completed task,
     ensure the existing task metadata is updated correctly in the database.
     """
     # issue test task
@@ -213,7 +213,7 @@ def test_handle_completed_task(new_session):
 def test_handle_invalid_task():
     """
     Given a session,
-    when the dao.handle_task method is called with an invalid task,
+    when the task_dao.handle_task method is called with an invalid task,
     check that there is no exception and it is handled gracefully.
     """
     try:
@@ -227,7 +227,7 @@ def test_handle_invalid_task():
 def test_update_session_status(new_session):
     """
     Given a session,
-    when the dao.update_session_status is called,
+    when the session_dao.update_session_status is called,
     check that the 'online' attribute of session metadata is correctly updated in the database.
     """
     # toggle online/offline status

