@@ -52,7 +52,7 @@ Soon...
 To use BYOB, you need to setup a __Server__ and generate some __Clients__. The following instructions refer to a scenario where both are running on the same machine.
 
 ### Server
-Three parameters can be passed to the _setup.py_ file:
+Three parameters can be passed to the _server.py_ file:
 + --host: server hostname or IP address (i.e. 127.0.0.1, example.dns.com...);
 + --port: on what port server should listen for incoming connection (i.e. 1337...);
 + --db: custom path to a SQLite database file (i.e. database.db);
@@ -65,8 +65,11 @@ Done, the server is now listening on `0.0.0.0:1337` and uses _database.db_ as DB
 The _client.py_ requires three positional arguments, host, port, and modules:
 + host: server host address (hostname or IP address);
 + port: port number where the server is listening;
-+ modules: the modules that you want to import (all, by default).
++ modules: the post-exploitation modules you want the payload to remotely import upon execution (default: all). Specifying only specific modules to import can lower memory footprint.
 
-According to the server that is running on this machine, generate a client with the same parameters: `python3 client.py 127.0.0.1 1337`. This will generate a dropper, a stager, and a payload. Let's take directly the payload, located in _modules/clients/payloads/_: its filename is shown on screen, something like _byob_xyz.py_. 
+
+According to the server that is running on this machine, generate a client with the same parameters: `python3 client.py 127.0.0.1 1337`. This will generate a **dropper**, a **stager**, and a **payload**. Executing any of these to create a connection with the server will work, however, the dropper is just 1 line of code and remotely fetches everything it needs from the server, after the stager does some environment checks. For more detail, check the ["How it works"](https://byob.dev/docs) page on the official website.
+
+For this demo, let's take directly the payload, located in _modules/clients/payloads/_: its filename is shown on screen, and it's something like _byob_xyz.py_. 
 
 To execute: `python3 byob_xyz.py`. The client will connect to the server and... it's done!
