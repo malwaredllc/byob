@@ -436,9 +436,3 @@ class SessionThread(threading.Thread):
         else:
             # empty header; peer down, scan or recon. Drop.
             return 0
-
-
-def main(host='0.0.0.0', port=1337, debug=False):
-    globals()['c2'] = C2(host=host, port=port, debug=debug)
-    globals()['c2'].run()
-    return globals()['c2']

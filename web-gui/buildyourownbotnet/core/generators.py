@@ -101,11 +101,11 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           name=${NAME},
-          debug=False,
+          debug=True,
           strip=False,
           upx=False,
           runtime_tmpdir=None,
-          console=False, icon=${ICON})
+          console=True, icon=${ICON})
 """)
 
 
