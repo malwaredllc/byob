@@ -157,6 +157,18 @@ def test_handle_session(new_user):
     assert session.longitude == 0.00
     assert session.latitude == 0.00
     
+def test_delete_session(new_session):
+    """
+    Given a session,
+    when the session_dao.delete_session method is called,
+    check the session was removed from the database correctly.
+    """
+    try:
+        session_dao.delete_session(new_session.uid)
+    except Exception as e:
+        pytest.fail("session_dao.delete_session returned an exception: " + str(e))
+    assert session_dao.get_session(new_session.uid) is None
+
 def test_handle_task(new_session):
     """
     Given a session,
