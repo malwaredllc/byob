@@ -34,7 +34,7 @@ def get_tasks_serialized(session_uid):
 
 def get_tasks_serialized_paginated(session_id, page=1):
 	"""Return serialized list of tasks for a given session (paginated)."""
-	tasks, pages = tasks_dao.get_session_tasks_paginated(session_id, page=page)
+	tasks, pages = task_dao.get_session_tasks_paginated(session_id, page=page)
 	serialized_tasks = []
 	for task in tasks:
 		task = task.serialize()
