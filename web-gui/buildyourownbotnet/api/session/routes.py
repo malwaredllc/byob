@@ -31,11 +31,8 @@ def session_remove():
 			return "Error ending session - please try again."
 
 	# remove session from database
-	s = session_dao.get_session(session_uid)
-	if s:
-		s.delete()
-		db.session.commit()
-		return "Session {} removed.".format(session_uid)
+	s = session_dao.delete_session(session_uid)
+	return "Session {} removed.".format(session_uid)
 
 
 @session.route("/api/session/cmd", methods=["POST"])

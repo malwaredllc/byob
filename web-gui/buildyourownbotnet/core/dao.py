@@ -164,6 +164,18 @@ class SessionDAO:
             session.online = bool(status)
             db.session.commit()
 
+    def delete_session(self, session_uid):
+        """
+        Delete a session from the database.
+
+        `Required`
+        :param int session_id:      Session UID
+        """
+        session = db.session.query(self.model).filter_by(uid=session_uid)
+        if session:
+            session.delete()
+            db.session.commit()
+
 
 class TaskDAO:
     def __init__(self, model, session_dao):
