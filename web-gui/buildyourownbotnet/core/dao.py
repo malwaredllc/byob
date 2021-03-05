@@ -198,7 +198,7 @@ class TaskDAO:
             return session.tasks
         return []
 
-    def get_tasks_paginated(self, session_id, page=1):
+    def get_session_tasks_paginated(self, session_id, page=1):
         """
         Fetch tasks from database  for specified session (paginated).
 
