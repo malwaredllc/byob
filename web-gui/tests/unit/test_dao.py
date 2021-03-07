@@ -2,13 +2,12 @@ import pytest
 from hashlib import md5
 from random import getrandbits
 from datetime import datetime
-from flask import current_app
-from buildyourownbotnet import db, bcrypt
-from buildyourownbotnet.core.dao import user_dao, session_dao, task_dao, payload_dao, file_dao
-from buildyourownbotnet.models import User, Payload, Session, Task, ExfiltratedFile
-from ..conftest import new_user, new_session
 
-def test_add_user():
+from buildyourownbotnet.core.dao import user_dao, session_dao, task_dao, payload_dao, file_dao
+from buildyourownbotnet.models import db, bcrypt, User, Payload, Session, Task, ExfiltratedFile
+from ..conftest import app_client, new_user, new_session
+
+def test_add_user(app_client):
     """
     Given a username and hashed password,
     when the user_dao.add_user method is called,
@@ -29,7 +28,7 @@ def test_add_user():
     User.query.delete()
     db.session.commit()
 
-def test_get_user(new_user):
+def test_get_user(app_client, new_user):
     """
     Given a user id or username,
     when the user_dao.get_user method is called,
@@ -38,7 +37,7 @@ def test_get_user(new_user):
     assert user_dao.get_user(user_id=new_user.id) is not None
     assert user_dao.get_user(username=new_user.username) is not None
 
-def test_get_user_sessions(new_user):
+def test_get_user_sessions(app_client, new_user):
     """
     Given a user, 
     when session_dao.get_user_sessions is called,
@@ -50,7 +49,7 @@ def test_get_user_sessions(new_user):
     # check for invalid user
     assert len(session_dao.get_user_sessions(-1)) == 0
     
-def test_get_user_sessions_new(new_session):
+def test_get_user_sessions_new(app_client, new_session):
     """
     Given a user,
     when the session_dao.get_user_sessions_new is called,
@@ -65,7 +64,7 @@ def test_get_user_sessions_new(new_session):
     assert len(new_user_sessions) > 0
     assert all(s.new is False for s in user.sessions)
 
-def test_handle_session(new_user):
+def test_handle_session(app_client, new_user):
     """
     Given a new user,
     when a new user is created via session_dao.handle_session function,
@@ -158,7 +157,7 @@ def test_handle_session(new_user):
     assert session.longitude == 0.00
     assert session.latitude == 0.00
     
-def test_delete_session(new_session):
+def test_delete_session(app_client, new_session):
     """
     Given a session,
     when the session_dao.delete_session method is called,
@@ -170,7 +169,7 @@ def test_delete_session(new_session):
         pytest.fail("session_dao.delete_session returned an exception: " + str(e))
     assert session_dao.get_session(new_session.uid) is None
 
-def test_handle_task(new_session):
+def test_handle_task(app_client, new_session):
     """
     Given a session,
     when the task_dao.handle_task method is called from a session,
@@ -196,7 +195,7 @@ def test_handle_task(new_session):
     assert task.task == 'whoami'
     assert (datetime.utcnow() - task.issued).seconds <= 2
     
-def test_handle_completed_task(new_session):
+def test_handle_completed_task(app_client, new_session):
     """
     Given a session,
     when the task_dao.handle_task method is called for a completed task,
@@ -223,7 +222,7 @@ def test_handle_completed_task(new_session):
     assert task.completed is not None
     assert (datetime.utcnow() - task.completed).seconds <= 5
 
-def test_handle_invalid_task():
+def test_handle_invalid_task(app_client):
     """
     Given a session,
     when the task_dao.handle_task method is called with an invalid task,
@@ -237,7 +236,7 @@ def test_handle_invalid_task():
     assert 'result' in invalid_task_dict
     assert 'Error' in invalid_task_dict['result']
     
-def test_update_session_status(new_session):
+def test_update_session_status(app_client, new_session):
     """
     Given a session,
     when the session_dao.update_session_status is called,
@@ -253,7 +252,7 @@ def test_update_session_status(new_session):
     assert session is not None
     assert session.online == new_status
 
-def test_add_user_payload(new_user):
+def test_add_user_payload(app_client, new_user):
     """
     Given a user,
     when the payload_dao.add_user_payload method is called,
@@ -272,7 +271,7 @@ def test_add_user_payload(new_user):
     Payload.query.delete()
     db.session.commit()
 
-def test_get_user_payloads(new_user):
+def test_get_user_payloads(app_client, new_user):
     """
     Given a user,
     when the payload_dao.get_user_payloads method is called,
@@ -290,7 +289,7 @@ def test_get_user_payloads(new_user):
     Payload.query.delete()
     db.session.commit()
 
-def test_add_user_file(new_user, new_session):
+def test_add_user_file(app_client, new_user, new_session):
     """
     Given a user,
     when the file_dao.add_user_file method is called,
@@ -310,7 +309,7 @@ def test_add_user_file(new_user, new_session):
     ExfiltratedFile.query.delete()
     db.session.commit()
 
-def test_get_user_files(new_user, new_session):
+def test_get_user_files(app_client, new_user, new_session):
     """
     Given a user and session,
     when the file_dao.get_user_files method is called,

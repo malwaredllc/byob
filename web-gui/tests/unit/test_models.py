@@ -4,12 +4,11 @@ import json
 from hashlib import md5
 from random import getrandbits
 from datetime import datetime
-from buildyourownbotnet import db, bcrypt
-from buildyourownbotnet.models import User, Session, Task, Payload, ExfiltratedFile
-from ..conftest import new_user, new_session
+from buildyourownbotnet.models import db, bcrypt, User, Session, Task, Payload, ExfiltratedFile
+from ..conftest import app_client, new_user, new_session
 
 
-def test_new_user():
+def test_new_user(app_client):
     """
     Given a new user,
     when a new user is created, 
@@ -21,7 +20,7 @@ def test_new_user():
     assert new_user.username == 'test_user'
     assert new_user.password != 'test_password'
 
-def test_new_session(new_user):
+def test_new_session(app_client, new_user):
     """
     Given a new user,
     when a new session is created, 
@@ -52,7 +51,7 @@ def test_new_session(new_user):
     assert session.uid == uid
     assert session.owner == new_user.username
 
-def test_new_session_serialized(new_session):
+def test_new_session_serialized(app_client, new_session):
     """
     Given a new session,
     when the serialize method is called,
@@ -65,7 +64,7 @@ def test_new_session_serialized(new_session):
     except:
         pytest.fail("Session serialization failed.")
 
-def test_new_payload(new_user):
+def test_new_payload(app_client, new_user):
     """
     Given a new user,
     when a new payload is created, 
@@ -83,7 +82,7 @@ def test_new_payload(new_user):
     assert payload.architecture == 'x32'
     assert payload.owner == new_user.username
 
-def test_new_payload_serialized(new_user):
+def test_new_payload_serialized(app_client, new_user):
     """
     Given a new user,
     when a new payload is created for that user,
@@ -101,7 +100,7 @@ def test_new_payload_serialized(new_user):
     except:
         pytest.fail("Payload serialization failed.")
 
-def test_new_exfiltrated_file(new_session):
+def test_new_exfiltrated_file(app_client, new_session):
     """
     Given a session,
     when a new file is exfiltrated, 
@@ -119,7 +118,7 @@ def test_new_exfiltrated_file(new_session):
     assert exfiltrated_file.module == 'portscanner'
     assert exfiltrated_file.owner == new_session.owner
 
-def test_new_exfiltrated_file_serialized(new_session):
+def test_new_exfiltrated_file_serialized(app_client, new_session):
     """
     Given a new session,
     when a new exfiltrated file is created for that session,
@@ -137,7 +136,7 @@ def test_new_exfiltrated_file_serialized(new_session):
     except:
         pytest.fail("ExfiltratedFile serialization failed.")
 
-def test_new_task(new_session):
+def test_new_task(app_client, new_session):
     """
     Given a session,
     when a new task is created for that session, 
@@ -155,7 +154,7 @@ def test_new_task(new_session):
     assert task.result is None
     assert task.completed is None
 
-def test_new_task_serialized(new_session):
+def test_new_task_serialized(app_client, new_session):
     """
     Given a new session,
     when a new exfiltrated file is created for that session,
