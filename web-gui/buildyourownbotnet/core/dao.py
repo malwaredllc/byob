@@ -10,11 +10,9 @@ import hashlib
 import collections
 from datetime import datetime
 
+from flask import current_app
 from flask_login import login_user, logout_user, current_user, login_required
-
-# modules
-from buildyourownbotnet import app, db
-from buildyourownbotnet.models import User, Session, Task, Payload, ExfiltratedFile
+from buildyourownbotnet.models import db, User, Session, Task, Payload, ExfiltratedFile
 from buildyourownbotnet.modules import util
 
 

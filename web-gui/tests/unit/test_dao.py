@@ -2,7 +2,8 @@ import pytest
 from hashlib import md5
 from random import getrandbits
 from datetime import datetime
-from buildyourownbotnet import app, db, bcrypt
+from flask import current_app
+from buildyourownbotnet import db, bcrypt
 from buildyourownbotnet.core.dao import user_dao, session_dao, task_dao, payload_dao, file_dao
 from buildyourownbotnet.models import User, Payload, Session, Task, ExfiltratedFile
 from ..conftest import new_user, new_session

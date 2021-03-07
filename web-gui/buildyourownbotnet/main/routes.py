@@ -8,13 +8,13 @@ import json
 import shutil
 from datetime import datetime
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for, send_from_directory
+from flask import current_app, Blueprint, flash, redirect, render_template, request, url_for, send_from_directory
 from flask_login import login_user, logout_user, current_user, login_required
 
-from buildyourownbotnet import app, db, bcrypt, client, server
+from buildyourownbotnet import client, server
 from buildyourownbotnet.core.dao import file_dao, payload_dao, session_dao
 from buildyourownbotnet.users.forms import RegistrationForm, LoginForm, UpdateAccountForm
-from buildyourownbotnet.models import User, Session
+from buildyourownbotnet.models import db, bcrypt, User, Session
 from buildyourownbotnet.utils import get_sessions_serialized, get_tasks_serialized
 
 # Blueprint
@@ -59,8 +59,7 @@ def files():
 @main.route("/")
 def home():
 	"""Home page"""
-	total_users = len(User.query.all())
-	return render_template("home.html", total_users=total_users)
+	return render_template("home.html")
 
 
 @main.route("/docs")

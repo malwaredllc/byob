@@ -1,9 +1,9 @@
 import json
-from flask import Blueprint, request, redirect, url_for, flash
+from flask import current_app, Blueprint, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
-from buildyourownbotnet import app, db, c2
+from buildyourownbotnet import c2
 from buildyourownbotnet.core.dao import session_dao, task_dao
-from buildyourownbotnet.models import Session
+from buildyourownbotnet.models import db, Session
 
 
 # Blueprint

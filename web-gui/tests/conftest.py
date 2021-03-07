@@ -2,8 +2,15 @@ import pytest
 from hashlib import md5
 from random import getrandbits
 from datetime import datetime
+from flask import current_app
 from buildyourownbotnet import db, bcrypt
 from buildyourownbotnet.models import User, Payload, Session, Task, ExfiltratedFile
+
+@pytest.fixture(scope='function')
+def app_client():
+	with current_app.test_client() as client:
+		yield client
+	cleanup()
 
 @pytest.fixture(scope='function')
 def new_user():
