@@ -28,7 +28,7 @@ if sys.version_info[0] > 2:
     sys.path.append('core')
     sys.path.append('modules')
 
-from buildyourownbotnet import db
+from buildyourownbotnet.models import db
 from buildyourownbotnet.core import security, util
 from buildyourownbotnet.core.dao import session_dao
 

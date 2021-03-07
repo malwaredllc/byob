@@ -3,13 +3,11 @@ import json
 import string
 import random
 import requests
-
 from threading import Thread
 
 from buildyourownbotnet.core.dao import session_dao, task_dao
-from buildyourownbotnet import app
 
-from flask import url_for
+from flask import current_app, url_for
 from flask_mail import Message
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'output')
