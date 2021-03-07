@@ -11,8 +11,8 @@ Questions? [Join the Discord support server](https://discord.gg/8FsSrw7)
 __Disclaimer__: This project should be used for authorized testing or educational purposes only.
 
 BYOB is an open-source post-exploitation framework for students, researchers and developers. It includes features such as:
-- Pre-built C2 server
-- Custom payload generator
+- Command & control server with intuitive user-interface
+- Custom payload generator for multiple platforms
 - 12 post-exploitation modules
 
 It is designed to allow students and developers to easily implement their own code and add cool new
