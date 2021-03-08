@@ -100,6 +100,7 @@ def account():
 
 
 @users.route('/logout')
+@login_required
 def logout():
 	"""Log out"""
 	logout_user()
