@@ -49,7 +49,19 @@ def test_logout(app_client, new_user):
 def test_sessions_authenticated(app_client, new_user):
     """
     Given a logged in user,
-    when that user sends a GET request to /account,
+    when that user sends a GET request to /sessions,
     check that a HTTP 200 response is returned.
     """
-    pass
+    login(app_client, new_user.username, 'test_password')
+    response = app_client.get('/sessions')
+    assert response.status_code == 200
+
+def test_sessions_not_authenticated(app_client, new_user):
+    """
+    Given an unauthenticated user (not logged in),
+    when that user sends a GET request to /sessions,
+    check that a HTTP 302 response is returned, redirecting the user to the login page.
+    """
+    response = app_client.get('/sessions')
+    assert response.status_code == 302
+    assert '/login' in response.location
