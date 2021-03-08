@@ -61,3 +61,16 @@ def cleanup():
     Task.query.delete()
     ExfiltratedFile.query.delete()
     db.session.commit()
+
+def login(client, username, password):
+    return client.post('/login', 
+            data=dict(
+                username=username,
+                password=password
+            ), 
+            follow_redirects=True, 
+            headers = {"Content-Type":"application/x-www-form-urlencoded"}
+    )
+
+def logout(client):
+    return client.get('/logout', follow_redirects=True)
