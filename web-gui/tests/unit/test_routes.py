@@ -218,6 +218,8 @@ def test_shell_wrong_session_owner(app_client, new_user, new_session):
     when a GET request is sent to /shell but the session uid belongs to a different user,
     check that a HTTP 302 response is returned and they are redirected back to the /sessions page.
     """
+    login(app_client, new_user.username, 'test_password') 
+    
     # create dummy session with different owner
     dummy_session = SessionThread(id=1, c2=c2, connection=None)
     dummy_session.info = dict(new_session.serialize())
