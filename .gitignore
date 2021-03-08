@@ -6,3 +6,8 @@
 venv/
 byob/data/
 byob/modules/clients/
+
+# Test configs
+.coveralls.yaml
+.coverage
+.coveragerc
