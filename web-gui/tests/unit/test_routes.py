@@ -65,3 +65,44 @@ def test_sessions_not_authenticated(app_client, new_user):
     response = app_client.get('/sessions')
     assert response.status_code == 302
     assert '/login' in response.location
+
+def test_payloads_authenticated(app_client, new_user):
+    """
+    Given an authenticated user,
+    when that user sends a GET request to /payloads,
+    check that a HTTP 200 response is returned.
+    """ 
+    login(app_client, new_user.username, 'test_password')
+    response = app_client.get('/payloads')
+    assert response.status_code == 200
+
+def test_sessions_not_authenticated(app_client, new_user):
+    """
+    Given an unauthenticated user (not logged in),
+    when that user sends a GET request to /payloads,
+    check that a HTTP 302 response is returned, redirecting the user to the login page.
+    """
+    response = app_client.get('/payloads')
+    assert response.status_code == 302
+    assert '/login' in response.location
+
+def test_files_authenticated(app_client, new_user):
+    """
+    Given an authenticated user,
+    when that user sends a GET request to /files,
+    check that a HTTP 200 response is returned.
+    """ 
+    login(app_client, new_user.username, 'test_password')
+    response = app_client.get('/files')
+    assert response.status_code == 200
+
+def test_files_not_authenticated(app_client, new_user):
+    """
+    Given an unauthenticated user (not logged in),
+    when that user sends a GET request to /files,
+    check that a HTTP 302 response is returned, redirecting the user to the login page.
+    """
+    response = app_client.get('/files')
+    assert response.status_code == 302
+    assert '/login' in response.location
+
