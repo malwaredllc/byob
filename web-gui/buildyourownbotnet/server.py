@@ -228,7 +228,7 @@ class C2(threading.Thread):
                 if response.ok:
                     
                     session_metadata = response.json()
-                    session_uid = session.info.get('uid')
+                    session_uid = session_metadata.get('uid')
 
                     # display session information in terminal
                     session_metadata.pop('new', None)
