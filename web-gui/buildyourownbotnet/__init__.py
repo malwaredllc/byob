@@ -1,4 +1,4 @@
-import os
+import os, sys
 from flask import Flask
 
 # import configs
@@ -14,7 +14,8 @@ login_manager.login_message_category = 'info'
 
 # server and client generator
 from buildyourownbotnet import client, server
-c2 = server.C2()
+_debug = bool('--debug' in sys.argv)
+c2 = server.C2(debug=_debug)
 
 def create_app(test=False):
     # initialize app and configure global objects
