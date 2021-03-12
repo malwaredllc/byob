@@ -29,25 +29,26 @@ def create_app(test=False):
 
     from buildyourownbotnet.models import db, bcrypt
     db.init_app(app)
+    
     with app.app_context():
         db.create_all()
-    bcrypt.init_app(app)
-    login_manager.init_app(app)
+        bcrypt.init_app(app)
+        login_manager.init_app(app)
 
-    # import blueprints
-    from buildyourownbotnet.main.routes import main
-    from buildyourownbotnet.users.routes import users
-    from buildyourownbotnet.api.files.routes import files
-    from buildyourownbotnet.api.session.routes import session
-    from buildyourownbotnet.api.payload.routes import payload
-    from buildyourownbotnet.errors.handlers import errors
+        # import blueprints
+        from buildyourownbotnet.main.routes import main
+        from buildyourownbotnet.users.routes import users
+        from buildyourownbotnet.api.files.routes import files
+        from buildyourownbotnet.api.session.routes import session
+        from buildyourownbotnet.api.payload.routes import payload
+        from buildyourownbotnet.errors.handlers import errors
 
-    # register blueprints
-    app.register_blueprint(main)
-    app.register_blueprint(users)
-    app.register_blueprint(files)
-    app.register_blueprint(session)
-    app.register_blueprint(payload)
-    app.register_blueprint(errors)
+        # register blueprints
+        app.register_blueprint(main)
+        app.register_blueprint(users)
+        app.register_blueprint(files)
+        app.register_blueprint(session)
+        app.register_blueprint(payload)
+        app.register_blueprint(errors)
 
-    return app
+        return app

