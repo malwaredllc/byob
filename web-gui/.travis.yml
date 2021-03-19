@@ -4,9 +4,6 @@ cache: pip
 matrix:
   include:
     - python: 2.7
-    #- python: 3.4
-    #- python: 3.5
-    #- python: 3.6
     - python: 3.7
       dist: xenial    # required for Python >= 3.7 (travis-ci/travis-ci#9069)
       sudo: required  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
@@ -18,7 +15,7 @@ before_script:
   # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
   - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 script:
-  - true  # add other tests here
+  - pytest
 notifications:
   on_success: change
   on_failure: change  # `always` will be the setting once code changes slow down

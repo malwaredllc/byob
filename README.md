@@ -1,17 +1,19 @@
-<img src="https://raw.githubusercontent.com/malwaredllc/byob/master/byob/static/byob_logo_email-black.png" width="400px"></img>
+![Banner](https://github.com/malwaredllc/byob/blob/master/byob/static/byob_logo_black.svg)
 
 [![license](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://github.com/malwaredllc/byob/blob/master/LICENSE)
-[![version](https://img.shields.io/badge/version-1.0-lightgrey.svg)](https://github.com/malwaredllc/byob)
-[![build](https://img.shields.io/travis/com/malwaredllc/byob/master.svg)](https://travis-ci.com/malwaredllc/byob.svg?branch=master)
-[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=BYOB%20(Build%20Your%20Own%20Botnet)&url=https://github.com/malwaredllc/byob&via=malwaredllc&hashtags=botnet,python,infosec,github)
+[![version](https://img.shields.io/badge/version-2.0-blue.svg)](https://github.com/malwaredllc/byob)
+![build](https://github.com/malwaredllc/byob/workflows/build/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/malwaredllc/byob/badge.svg)](https://coveralls.io/github/malwaredllc/byob)
+<img alt="Discord" src="https://img.shields.io/discord/709150520446550097"/>
+[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=BYOB%20(Post-Exploitation%20Framework)&url=https://github.com/malwaredllc/byob&via=malwaredllc&hashtags=byob,python,security,github)
 
-Questions? [Join our Discord server](https://discord.gg/8FsSrw7)
+Questions? [Join the Discord support server](https://discord.gg/8FsSrw7)
 
 __Disclaimer__: This project should be used for authorized testing or educational purposes only.
 
 BYOB is an open-source post-exploitation framework for students, researchers and developers. It includes features such as:
-- Pre-built C2 server
-- Custom payload generator
+- Command & control server with intuitive user-interface
+- Custom payload generator for multiple platforms
 - 12 post-exploitation modules
 
 It is designed to allow students and developers to easily implement their own code and add cool new
@@ -117,7 +119,7 @@ packages not installed on the target machines
 4) __Payloads__ (`byob.core.payloads`): reverse TCP shell designed to remotely import dependencies, packages & modules
 5) __Stagers__ (`byob.core.stagers`): generate unique payload stagers to prevent analysis & detection   
 6) __Generators__ (`byob.core.generators`): functions which all dynamically generate code for the client generator
-7) __Database__ (`byob.core.database`): handles interaction between command & control server and the SQLite database
+7) __DAO__ (`byob.core.dao`): handles interaction between command & control server and the SQLite database
 8) __Handler__ (`byob.core.handler`): HTTP POST request handler for remote file uploads to the server
 
 ________________________________________________________________________________________________

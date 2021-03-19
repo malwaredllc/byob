@@ -1,7 +1,7 @@
-FROM i386/ubuntu:12.04
+FROM i386/ubuntu:18.04
 SHELL ["/bin/bash", "-i", "-c"]
 
-ARG PYTHON_VERSION=3.7.5
+ARG PYTHON_VERSION=3.7.9
 ARG PYINSTALLER_VERSION=3.6
 
 ENV PYPI_URL=https://pypi.python.org/
@@ -29,17 +29,16 @@ RUN \
         libffi-dev \
         #optional libraries
         libgdbm-dev \
-        libgdbm3 \
         uuid-dev \
         #upx
         upx \
-    # required because openSSL on Ubuntu 12.04 and 14.04 run out of support versions of OpenSSL
+    # do we really need to build openSSL on Ubuntu 20.04? Why not install from apt?
     && mkdir openssl \
     && cd openssl \
-    # latest version, there won't be anything newer for this
-    && wget https://www.openssl.org/source/openssl-1.0.2u.tar.gz \
-    && tar -xzvf openssl-1.0.2u.tar.gz \
-    && cd openssl-1.0.2u \
+    # latest version
+    && wget https://www.openssl.org/source/openssl-1.1.1h.tar.gz \
+    && tar -xzvf openssl-1.1.1h.tar.gz \
+    && cd openssl-1.1.1h \
     && ./Configure linux-generic32 --prefix=$HOME/openssl --openssldir=$HOME/openssl shared zlib \
     && make \
     && make install \

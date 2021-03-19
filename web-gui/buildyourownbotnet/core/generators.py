@@ -101,11 +101,11 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           name=${NAME},
-          debug=False,
+          debug=True,
           strip=False,
           upx=False,
           runtime_tmpdir=None,
-          console=False, icon=${ICON})
+          console=True, icon=${ICON})
 """)
 
 
@@ -255,6 +255,9 @@ def freeze(filename, icon=None, hidden=None, owner=None, operating_system=None, 
     imports = list(set(imports))
     if isinstance(hidden, list):
         imports.extend(hidden)
+
+    # hacky fix https://stackoverflow.com/questions/61574984/no-module-named-pkg-resources-py2-warn-pyinstaller
+    imports.append('pkg_resources.py2_warn')
 
     spec = template_spec.substitute(BASENAME=repr(basename), PATH=repr(path), IMPORTS=imports, NAME=repr(name), ICON=repr(icon))
     fspec = os.path.join(path, name + '.spec')

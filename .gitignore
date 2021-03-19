@@ -1,5 +1,13 @@
-*.pyc
+# Files
 *.db
+*.pyc
+
+# Directories
+venv/
 byob/data/
-byob/modules/payloads/
-byob/modules/stagers/
+byob/modules/clients/
+
+# Test configs
+.coveralls.yaml
+.coverage
+.coveragerc
