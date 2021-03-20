@@ -111,7 +111,7 @@ class SessionDAO:
             session_dict['joined'] = datetime.utcnow()
 
         # upddate session status to online
-        session_dict['online'] = 1
+        session_dict['online'] = True
         session_dict['last_online'] = datetime.utcnow()
 
         # check if session metadata already exists in database

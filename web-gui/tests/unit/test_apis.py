@@ -31,9 +31,11 @@ def test_api_session_new(app_client, new_user):
 	}
     res = app_client.post('/api/session/new', json=session_dict)
     assert res.status_code == 200
-    assert isinstance(res.json, dict)
+
+    session_metadata = res.json
+    assert isinstance(session_metadata, dict)
     for key, val in session_dict.items():
-        assert res.json.get(key) == val
+        assert session_metadata.get(key) == val
     cleanup()
 
 def test_api_session_remove(app_client, new_user, new_session):
@@ -80,3 +82,37 @@ def test_api_session_remove_unauthenticated(app_client, new_user, new_session):
     )
     assert res.status_code == 403
     assert Session.query.get(new_session.uid) is not None
+
+
+def test_api_session_poll(app_client, new_user, new_session):
+    """
+    Given an authenticated user with at least 1 session,
+    when a GET request is sent to /api/session/poll,
+    check that any new sessions' metadata is returned in JSON format, 
+    and that the sessions are marked as no longer being new in the database.
+    """
+    login(app_client, new_user.username, 'test_password')
+
+    # check valid response
+    res = app_client.get("/api/session/poll")
+    assert res.status_code == 200
+
+    # check correct data type returned with correct number of new sessions
+    sessions_list = res.json
+    assert isinstance(sessions_list, list)
+    assert len(sessions_list) == 1
+
+    # check session metadata is accurate
+    session_metadata = sessions_list[0]
+    for key, val in session_metadata.items():
+        assert session_metadata.get(key) == val
+    
+    # check subsequent polls don't return the same old session
+    res = app_client.get("/api/session/poll")
+    assert res.status_code == 200 
+    
+    # check correct data type returned with correct number of new sessions
+    sessions_list = res.json
+    assert isinstance(sessions_list, list)
+    assert len(sessions_list) == 0
+

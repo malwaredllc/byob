@@ -83,4 +83,4 @@ def session_poll():
 		new_sessions.append(s.serialize())
 		s.new = False
 		db.session.commit()
-	return json.dumps(new_sessions)
+	return jsonify(new_sessions)
