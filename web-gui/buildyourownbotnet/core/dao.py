@@ -103,14 +103,15 @@ class SessionDAO:
 
         Returns the session information as a dictionary.
         """
+        # assign new session UID
         if not session_dict.get('uid'):
             # use unique hash of session characteristics to identify machine if possible
             identity = str(session_dict['public_ip'] + session_dict['mac_address'] + session_dict['owner']).encode()
             session_dict['uid'] = hashlib.md5(identity).hexdigest()
             session_dict['joined'] = datetime.utcnow()
 
-        # udpdate session status to online
-        session_dict['online'] = 1
+        # upddate session status to online
+        session_dict['online'] = True
         session_dict['last_online'] = datetime.utcnow()
 
         # check if session metadata already exists in database
@@ -127,6 +128,12 @@ class SessionDAO:
                     session_dict['id'] = 1 + max([s.id for s in sessions])
                 else:
                     session_dict['id'] = 1
+
+                # convert str dates to datetime objects if necessary (should never happen but just in case)
+                if not isinstance(session_dict['joined'], datetime):
+                    session_dict['joined'] = datetime.utcnow() 
+                if not isinstance(session_dict['last_online'], datetime):
+                    session_dict['last_online'] = datetime.utcnow()
 
                 session = Session(**session_dict)
                 db.session.add(session)
