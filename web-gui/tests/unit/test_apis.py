@@ -3,7 +3,8 @@ from hashlib import md5
 from datetime import datetime
 from random import getrandbits
 from buildyourownbotnet.server import SessionThread
-from ..conftest import app_client, new_user, cleanup
+from buildyourownbotnet.models import Session
+from ..conftest import app_client, new_user, login, cleanup
 
 
 def test_api_session_new(app_client, new_user):
@@ -34,3 +35,19 @@ def test_api_session_new(app_client, new_user):
     for key, val in session_dict.items():
         assert res.json.get(key) == val
     cleanup()
+
+def test_api_session_remove(app_client, new_user, new_session):
+    """
+    Given a user and a session,
+    when a POST request is sent to /api/session/remove with a valid session UID,
+    check the session metadata is correctly removed from the database.
+    """
+    login(app_client, new_user.username, 'test_password')
+    res = app_client.post('/api/session/remove', 
+            data={'session_uid': new_session.uid}, 
+            follow_redirects=True, 
+            headers = {"Content-Type":"application/x-www-form-urlencoded"}
+    )
+    assert res.status_code == 200
+    assert Session.query.get(new_session.uid) is None
+
