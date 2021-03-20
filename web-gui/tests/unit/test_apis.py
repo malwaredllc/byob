@@ -51,3 +51,32 @@ def test_api_session_remove(app_client, new_user, new_session):
     assert res.status_code == 200
     assert Session.query.get(new_session.uid) is None
 
+def test_api_session_remove_invalid(app_client, new_user, new_session):
+    """
+    Given a user and a session,
+    when a POST request is sent to /api/session/remove with invalid/missing session UID,
+    check the session metadata is correctly removed from the database.
+    """
+    login(app_client, new_user.username, 'test_password')
+
+    # invalid uid
+    res = app_client.post('/api/session/remove', 
+            data={'session_uid': '123'}, 
+            follow_redirects=True, 
+            headers = {"Content-Type":"application/x-www-form-urlencoded"}
+    )
+    assert res.status_code == 200
+
+def test_api_session_remove_unauthenticated(app_client, new_user, new_session):
+    """
+    Given an unauthenticated user and a session,
+    when a POST request is sent to /api/session/remove, 
+    check that a HTTP 403 forbidden status is returned and the session is not removed.
+    """
+    res = app_client.post('/api/session/remove', 
+            data={'session_uid': new_session.uid}, 
+            follow_redirects=True, 
+            headers = {"Content-Type":"application/x-www-form-urlencoded"}
+    )
+    assert res.status_code == 403
+    assert Session.query.get(new_session.uid) is not None
