@@ -33,8 +33,11 @@ def file_add():
 	try:
 		session = base64.b64decode(session)
 	except:
-		if session.startswith('_b64'):
-			session = base64.b64decode(session[6:]).decode('ascii')
+		try:
+			if session.startswith('_b64'):
+				session = base64.b64decode(session[6:]).decode('ascii')
+		except:
+			pass
 
 	# add . to file extension if necessary
 	if not filetype:
