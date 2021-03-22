@@ -83,6 +83,7 @@ def cleanup():
 	User.query.delete()
 	Session.query.delete()
 	Task.query.delete()
+	Payload.query.delete()
 	ExfiltratedFile.query.delete()
 	db.session.commit()
 

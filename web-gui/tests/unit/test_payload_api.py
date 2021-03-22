@@ -5,8 +5,7 @@ import shutil
 from hashlib import md5
 from datetime import datetime
 from random import getrandbits
-from buildyourownbotnet.server import SessionThread
-from buildyourownbotnet.models import Session
+from buildyourownbotnet.core.dao import payload_dao
 from ..conftest import app_client, new_user, login, cleanup
 
 
@@ -22,7 +21,16 @@ def test_api_payload_generate(app_client, new_user):
             follow_redirects=True, 
             headers = {"Content-Type":"application/x-www-form-urlencoded"}
     )
+    # check request was successful
     assert res.status_code == 200
+
+    # check payload metadata stored in database correctly
+    user_payloads = payload_dao.get_user_payloads(new_user.id)
+    assert len(user_payloads) == 1
+    user_payload = user_payloads[0]
+    assert (datetime.utcnow() - user_payload.created).seconds <= 30
+
+    # check payload written to disk correctly
     user_dir = os.path.join('./buildyourownbotnet/output/', new_user.username)
     src_dir = os.path.join(user_dir, 'src')
     user_files = os.listdir(src_dir)
