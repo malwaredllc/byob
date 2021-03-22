@@ -22,8 +22,7 @@ def test_api_payload_generate(app_client, new_user):
             follow_redirects=True, 
             headers = {"Content-Type":"application/x-www-form-urlencoded"}
     )
-    # if successful, user will be redirected back to payload generator where they will see a success message
-    #assert res.status_code == 302 
+    assert res.status_code == 200
     user_dir = os.path.join('./buildyourownbotnet/output/', new_user.username)
     src_dir = os.path.join(user_dir, 'src')
     user_files = os.listdir(src_dir)
