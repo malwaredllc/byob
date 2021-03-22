@@ -39,7 +39,7 @@ def test_api_file_add(app_client, new_user, new_session):
     assert user_file.module == file_metadata['module']
     assert user_file.owner == file_metadata['owner']
     assert user_file.session == base64.b64decode(file_metadata['session'])
-    assert (datetime.utcnow() - user_file.created).seconds <= 5
+    assert (datetime.utcnow() - user_file.created).seconds <= 30
 
     # check file was stored in filesystem correctly
     user_dir = os.path.join('./buildyourownbotnet/output/', new_user.username)
@@ -50,4 +50,3 @@ def test_api_file_add(app_client, new_user, new_session):
 
     # cleanup
     os.remove(os.path.join(files_dir, file_metadata['filename']))
-    
