@@ -1,5 +1,6 @@
 import os
 import pytest
+import shutil
 from flask_login import current_user
 from buildyourownbotnet import c2
 from buildyourownbotnet.core.dao import user_dao
@@ -281,3 +282,6 @@ def test_register(app_client):
     # clean up
     User.query.delete()
     db.session.commit()
+
+    # clean up filesystem
+    shutil.rmtree(user_dir)
