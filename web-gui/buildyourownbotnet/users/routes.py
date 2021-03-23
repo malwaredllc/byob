@@ -25,7 +25,6 @@ def register():
 	"""Register user"""
 
 	form = RegistrationForm()
-
 	if form.validate_on_submit():
 		# only allow 1 user on locally hosted version
 		if len(User.query.all()) == 0:
