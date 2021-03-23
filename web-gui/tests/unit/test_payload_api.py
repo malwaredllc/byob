@@ -31,7 +31,7 @@ def test_api_payload_generate(app_client, new_user):
     # assert (datetime.utcnow() - user_payload.created).seconds <= 30
 
     # check payload written to disk correctly
-    user_dir = os.path.join('./buildyourownbotnet/output/', new_user.username)
+    user_dir = os.path.join('./web-gui/buildyourownbotnet/output/', new_user.username)
     src_dir = os.path.join(user_dir, 'src')
     user_files = os.listdir(src_dir)
 

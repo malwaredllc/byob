@@ -273,7 +273,7 @@ def test_register(app_client):
     assert bcrypt.check_password_hash(user.password, test_password)
 
     # check user directory created in filesystem
-    user_dir = os.path.join('./buildyourownbotnet/output/', test_username)
+    user_dir = os.path.join('./web-gui/buildyourownbotnet/output/', test_username)
     assert os.path.isdir(user_dir)
 
     # check user added to c2 session hashmap

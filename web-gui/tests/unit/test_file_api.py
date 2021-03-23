@@ -14,7 +14,7 @@ def test_api_file_add(app_client, new_user, new_session):
     check that the file metadata is stored in the database correctly.
     """
     login(app_client, new_user.username, 'test_password')
-    with open('./buildyourownbotnet/assets/images/crying-cat.jpg', 'rb') as fp:
+    with open('./web-gui/buildyourownbotnet/assets/images/crying-cat.jpg', 'rb') as fp:
         raw_img_data = fp.read()
     b64_data = base64.b64encode(raw_img_data)
     b64_session = base64.b64encode(new_session.public_ip.encode())
