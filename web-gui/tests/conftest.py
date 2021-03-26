@@ -44,7 +44,6 @@ def new_user():
 	if not os.path.exists(files_dir):
 		os.makedirs(files_dir)
 
-	print(src_dir)
 	yield user
 	cleanup()
 

@@ -52,4 +52,7 @@ def create_app(test=False):
         app.register_blueprint(payload)
         app.register_blueprint(errors)
 
+        # bind app to server
+        c2.bind_app(app)
+        
         return app

