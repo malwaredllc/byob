@@ -2,6 +2,7 @@ import pytest
 from hashlib import md5
 from datetime import datetime
 from random import getrandbits
+from buildyourownbotnet import c2
 from buildyourownbotnet.server import SessionThread
 from buildyourownbotnet.models import Session
 from ..conftest import app_client, new_user, login, cleanup
@@ -45,6 +46,12 @@ def test_api_session_remove(app_client, new_user, new_session):
     check the session metadata is correctly removed from the database.
     """
     login(app_client, new_user.username, 'test_password')
+
+    # create dummy session
+    dummy_session = SessionThread(id=1, c2=c2, connection=None)
+    dummy_session.info = dict(new_session.serialize())
+    c2.sessions[new_user.username] = {new_session.uid: dummy_session}
+
     res = app_client.post('/api/session/remove', 
             data={'session_uid': new_session.uid}, 
             follow_redirects=True, 
@@ -52,6 +59,7 @@ def test_api_session_remove(app_client, new_user, new_session):
     )
     assert res.status_code == 200
     assert Session.query.get(new_session.uid) is None
+    assert new_session.uid not in c2.sessions[new_user.username]
 
 def test_api_session_remove_invalid(app_client, new_user, new_session):
     """
@@ -115,4 +123,3 @@ def test_api_session_poll(app_client, new_user, new_session):
     sessions_list = res.json
     assert isinstance(sessions_list, list)
     assert len(sessions_list) == 0
-
