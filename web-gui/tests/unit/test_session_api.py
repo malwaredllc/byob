@@ -52,14 +52,17 @@ def test_api_session_remove(app_client, new_user, new_session):
     dummy_session.info = dict(new_session.serialize())
     c2.sessions[new_user.username] = {new_session.uid: dummy_session}
 
+    # save session uid because new_session will be deleted
+    uid = new_session.uid
+
     res = app_client.post('/api/session/remove', 
-            data={'session_uid': new_session.uid}, 
+            data={'session_uid': uid}, 
             follow_redirects=True, 
             headers = {"Content-Type":"application/x-www-form-urlencoded"}
     )
     assert res.status_code == 200
-    assert session_dao.get_session(new_session.uid) is None
-    assert new_session.uid not in c2.sessions[new_user.username]
+    assert session_dao.get_session(uid) is None
+    assert uid not in c2.sessions[new_user.username]
 
 def test_api_session_remove_invalid(app_client, new_user, new_session):
     """
