@@ -1754,7 +1754,7 @@ class Payload():
             else:
                 return self.show.usage
         except Exception as e:
-            log("'{}' error: {}".format(_threads.__name__, str(e)))
+            log("'{}' error: {}".format(self.show.__name__, str(e)))
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='abort')
     def abort(self, *args):
