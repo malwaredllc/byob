@@ -58,7 +58,7 @@ def test_api_session_remove(app_client, new_user, new_session):
             headers = {"Content-Type":"application/x-www-form-urlencoded"}
     )
     assert res.status_code == 200
-    assert Session.query.get(new_session.uid) is None
+    assert Session.query.filter_by(uid=new_session.uid).first() is None
     assert new_session.uid not in c2.sessions[new_user.username]
 
 def test_api_session_remove_invalid(app_client, new_user, new_session):
