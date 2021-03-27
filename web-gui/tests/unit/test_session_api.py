@@ -3,8 +3,8 @@ from hashlib import md5
 from datetime import datetime
 from random import getrandbits
 from buildyourownbotnet import c2
+from buildyourownbotnet.core.dao import session_dao
 from buildyourownbotnet.server import SessionThread
-from buildyourownbotnet.models import Session
 from ..conftest import app_client, new_user, login, cleanup
 
 
@@ -58,7 +58,7 @@ def test_api_session_remove(app_client, new_user, new_session):
             headers = {"Content-Type":"application/x-www-form-urlencoded"}
     )
     assert res.status_code == 200
-    assert Session.query.filter_by(uid=new_session.uid).first() is None
+    assert session_dao.get_session(new_session.uid) is None
     assert new_session.uid not in c2.sessions[new_user.username]
 
 def test_api_session_remove_invalid(app_client, new_user, new_session):
@@ -89,7 +89,7 @@ def test_api_session_remove_unauthenticated(app_client, new_user, new_session):
             headers = {"Content-Type":"application/x-www-form-urlencoded"}
     )
     assert res.status_code == 403
-    assert Session.query.get(new_session.uid) is not None
+    assert session_dao.get_session(new_session.uid) is not None
 
 
 def test_api_session_poll(app_client, new_user, new_session):
