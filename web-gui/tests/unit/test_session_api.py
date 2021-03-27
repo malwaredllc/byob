@@ -2,8 +2,9 @@ import pytest
 from hashlib import md5
 from datetime import datetime
 from random import getrandbits
+from buildyourownbotnet import c2
+from buildyourownbotnet.core.dao import session_dao
 from buildyourownbotnet.server import SessionThread
-from buildyourownbotnet.models import Session
 from ..conftest import app_client, new_user, login, cleanup
 
 
@@ -45,13 +46,23 @@ def test_api_session_remove(app_client, new_user, new_session):
     check the session metadata is correctly removed from the database.
     """
     login(app_client, new_user.username, 'test_password')
+
+    # create dummy session
+    dummy_session = SessionThread(id=1, c2=c2, connection=None)
+    dummy_session.info = dict(new_session.serialize())
+    c2.sessions[new_user.username] = {new_session.uid: dummy_session}
+
+    # save session uid because new_session will be deleted
+    uid = new_session.uid
+
     res = app_client.post('/api/session/remove', 
-            data={'session_uid': new_session.uid}, 
+            data={'session_uid': uid}, 
             follow_redirects=True, 
             headers = {"Content-Type":"application/x-www-form-urlencoded"}
     )
     assert res.status_code == 200
-    assert Session.query.get(new_session.uid) is None
+    assert session_dao.get_session(uid) is None
+    assert uid not in c2.sessions[new_user.username]
 
 def test_api_session_remove_invalid(app_client, new_user, new_session):
     """
@@ -81,7 +92,7 @@ def test_api_session_remove_unauthenticated(app_client, new_user, new_session):
             headers = {"Content-Type":"application/x-www-form-urlencoded"}
     )
     assert res.status_code == 403
-    assert Session.query.get(new_session.uid) is not None
+    assert session_dao.get_session(new_session.uid) is not None
 
 
 def test_api_session_poll(app_client, new_user, new_session):
@@ -115,4 +126,3 @@ def test_api_session_poll(app_client, new_user, new_session):
     sessions_list = res.json
     assert isinstance(sessions_list, list)
     assert len(sessions_list) == 0
-
