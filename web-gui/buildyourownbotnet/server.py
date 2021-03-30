@@ -249,7 +249,6 @@ class C2(threading.Thread):
 
                     self.sessions[owner][session_uid] = session
                     util.log('New session {}:{} connected'.format(owner, session_uid))
-
             else:
                 util.log("Failed Connection: {}".format(address[0]))
 
@@ -410,6 +409,7 @@ class SessionThread(threading.Thread):
             task['session'] = self.id
         data = security.encrypt_aes(json.dumps(task), self.key)
         msg  = struct.pack('!L', len(data)) + data
+
         self.connection.sendall(msg)
         return True
 

