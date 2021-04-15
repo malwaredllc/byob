@@ -82,7 +82,9 @@ class Method():
         self.result = None
         self.established = False
         self.platforms = platforms
-        [util.__logger__.warn("required method '_{}_{}' not found".format(_, self.name)) for _ in ('add','remove') if '_{}_{}'.format(_, self.name) not in globals()]
+        for _ in ('add','remove'):
+               if '_{}_{}'.format(_, self.name) not in globals():
+                    util.log("required method '_{}_{}' not found".format(_, self.name))
 
     def add(self):
         """
