@@ -126,7 +126,10 @@ class C2(threading.Thread):
 
     def _execute(self, args):
         # ugly method that should be refactored at some point
-        path, args = [i.strip() for i in args.split('"') if i if not i.isspace()] if args.count('"') == 2 else [i for i in args.partition(' ') if i if not i.isspace()]
+        if args.count('"') == 2:
+            path, args = [i.strip() for i in args.split('"') if i if not i.isspace()]
+        else:
+            path, args = [i for i in args.partition(' ') if i if not i.isspace()]
         args = [path] + args.split()
         if os.path.isfile(path):
             name = os.path.splitext(os.path.basename(path))[0]
