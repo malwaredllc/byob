@@ -19,7 +19,7 @@ $ apt install cmake build-essential python3-dev
 # Upgrade Pip and install its tools
 $ python3 -m pip install --upgrade pip setuptools wheel
 # Finally, install all the requirements
-$ python3 -m pip -r requirements.txt
+$ python3 -m pip install -r requirements.txt
 # Try if everything worked
 $ python3 server.py --version
 # Should print a float number (0.5, for example)
@@ -39,7 +39,7 @@ $ brew install cmake
 # Upgrade Pip and install its tools
 $ python3 -m pip install --upgrade pip setuptools wheel
 # Finally, install all the requirements
-$ python3 -m pip -r requirements.txt
+$ python3 -m pip install -r requirements.txt
 # Try if everything worked
 $ python3 server.py --version
 # Should print a float number (0.5, for example)
