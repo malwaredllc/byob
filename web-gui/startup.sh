@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 echo "WARNING: This script will install docker AND add it as an apt source."
 echo ""
 echo "If you do not want this, please press ctrl + C to cancel the script."
