@@ -5,6 +5,7 @@
 *.txt
 *.pcap
 *.avi
+.vscode/
 payloads/
 stagers/
 output/
