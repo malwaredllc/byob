@@ -307,7 +307,7 @@ class Payload():
                     output.append(line)
                 else:
                     break
-        return '\n'.join(output)
+        return b'\n'.join(output).decode(errors="ignore")
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='pwd')
