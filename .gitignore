@@ -11,3 +11,5 @@ byob/modules/clients/
 .coveralls.yaml
 .coverage
 .coveragerc
+web-gui/buildyourownbotnet/assets/js/jquery-terminal/package-lock.json
+*.json
