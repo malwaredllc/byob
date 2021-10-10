@@ -394,7 +394,7 @@ td {
 }
 
 .black-canvas {
-  height: 40px; 
+  height: 500px; 
   z-index: unset;
   background-attachment: fixed;
   background-position: center;
