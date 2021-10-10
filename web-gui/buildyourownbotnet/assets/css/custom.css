@@ -320,7 +320,7 @@ td {
     ),
     url(/assets/images/AdobeStock_239170812.jpg);
 
-  height: 500px; 
+  height: 40px; 
   z-index: 0;
   background-attachment: fixed;
   background-position: center;
@@ -394,8 +394,8 @@ td {
 }
 
 .black-canvas {
-  height: 500px; 
-  z-index: 0;
+  height: 40px; 
+  z-index: unset;
   background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;

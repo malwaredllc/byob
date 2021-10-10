@@ -3,7 +3,7 @@
 {% block slider %}
 <div class="demo-1 black-canvas" style="z-index: 0">
 	<div class="content">
-		<div id="large-header" class="large-header">
+		<div id="large-header" class="large-header" style="z-index: unset;">
 			<canvas id="demo-canvas"></canvas>
 			<h1></h1>
 		</div>
@@ -14,28 +14,21 @@
 
 {% block main %}
 
-<div class="container" style="z-index: 1; position: absolute; top: 0; transform: translateY(-410px);">
-	
+<div class="container" style="z-index: 1; top: 0;">
 	<h1 align="center" style="color: white;">Control Panel</h1>
-
 	<hr/>
 	<br/>
-
 		<!-- Row 1 (bulk actions, Module descriptions) -->
-		<div class="row" style="height: 460px">
+		<div class="row" style="height: 390px">
 
 				<div class="tile-group" style="background-color: transparent; color: gray;">
 
-	 				<div class="tile-left" style="height: 450px;">
-
-
+	 				<div class="tile-left" style="height: 390px;">
 						<div class="panel panel-dark">
 							<div class="panel-heading">
 								<div class="panel-title" id="bulk-actions">Post-Exploitation Modules</div>
 							</div>
-
 							<div class="panel-body">
-
 								<div class="form-group" align="left">
 									<select required class="selectboxit" data-first-option="false" id="module" name="module" style="overflow: visible;">
 										<option>Select module</option>
@@ -194,7 +187,7 @@
 		
 					<div class="tile-right">
 		
-						<div id="map-2" class="map" style="height: 452px"></div>
+						<div id="map-2" class="map" style="height: 390px"></div>
 		
 					</div>
 

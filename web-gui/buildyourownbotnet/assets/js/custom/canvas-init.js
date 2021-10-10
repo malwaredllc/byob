@@ -17,6 +17,7 @@
 
         canvas = document.getElementById('demo-canvas');
         canvas.width = width;
+        canvas.z-index = width;
         canvas.height = 500;
         ctx = canvas.getContext('2d');
 
