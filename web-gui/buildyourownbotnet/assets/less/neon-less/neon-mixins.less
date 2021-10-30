@@ -1,0 +1,174 @@
+.bs() {
+	.box-sizing(border-box);
+}
+
+.rounded(@radius: @border_radius) {
+	.border-radius(@radius);
+}
+
+.transall(@time: 300ms) {
+	.transition(~"all @{time} ease-in-out");
+}
+
+.transnone() {
+	.transition(~"none");
+}
+
+.input-reset() {
+	background: none;
+	padding: 0;
+	margin: 0;
+	border: none;
+	outline: none;
+}
+
+.placeholder-color(@color) {
+	
+	::-webkit-input-placeholder {
+		color:@color;
+	}
+	
+	:-moz-placeholder {
+		color:@color;
+	}
+	
+	::-moz-placeholder {
+		color:@color;
+	}
+	
+	:-ms-input-placeholder {
+		color: @color;
+	}
+}
+
+
+// Combinations
+.default() {
+	background-color: @default;
+	color: @default_text;
+}
+
+.primary() {
+	background-color: @primary;
+	color: @primary_text;
+}
+
+.secondary() {
+	background-color: @secondary;
+	color: @secondary_text;
+}
+
+.success() {
+	background-color: @success;
+	color: @success_text;
+}
+
+.info() {
+	background-color: @info;
+	color: @info_text;
+}
+
+.warning() {
+	background-color: @warning;
+	color: @warning_text;
+}
+
+.danger() {
+	background-color: @danger;
+	color: @danger_text;
+}
+
+
+
+
+// Scrollbar Styling
+.custom-scrollbar() {
+    // http://css-tricks.com/custom-scrollbars-in-webkit/
+    &::-webkit-scrollbar {
+            width: 5px;
+    }
+    &::-webkit-scrollbar-track {
+            width: 5px;
+            background-color: @hover_bg;
+    }
+    &::-webkit-scrollbar-thumb {
+            background-color: darken(@default, 10%);
+    }
+    //&::-webkit-scrollbar-button {}
+    //&::-webkit-scrollbar-track-piece {}
+    //&::-webkit-scrollbar-corner {}
+    //&::-webkit-resizer {}
+}
+
+// Just to ignore warnings
+.clearfix {
+}
+
+
+// Slider Variant
+.slider-variant(@bg; @range-bg; @border)
+{
+	background: @bg;
+	
+	.ui-slider-handle {
+		background: @range-bg;
+		border: 2px solid @border;
+	}
+	
+	.ui-slider-range, .ui-fill {
+		background: @range-bg;
+	}
+}
+
+.tab-focus() {
+	outline: none !important;
+}
+
+
+// Tooltip Variant
+.tooltip-variant(@tooltip_bg; @tooltip_text)
+{  
+  .tooltip-inner {
+	  background-color: @tooltip_bg;
+	  color: @tooltip_text;
+  }
+  
+  &.top .tooltip-arrow { border-top-color: @tooltip_bg; }
+  &.top-left .tooltip-arrow { border-top-color: @tooltip_bg; }
+  
+  &.top-right .tooltip-arrow { border-top-color: @tooltip_bg; }
+  &.right .tooltip-arrow { border-right-color: @tooltip_bg; }
+  
+  &.left .tooltip-arrow { border-left-color: @tooltip_bg; }
+  &.bottom .tooltip-arrow { border-bottom-color: @tooltip_bg; }
+  
+  &.bottom-left .tooltip-arrow { border-bottom-color: @tooltip_bg; }
+  &.bottom-right .tooltip-arrow { border-bottom-color: @tooltip_bg; }
+}
+
+
+// Popover Variant
+.popup-variant(@popover_bg; @popover_heading_bg; @popover_heading_text; @popover_border; @popover_text_color)
+{
+	background-color: @popover_bg;
+	color: @popover_text_color;
+	border-color: @popover_bg;//@popover_border;
+	
+	.popover-title {
+		background-color: @popover_heading_bg;
+		border-bottom-color: @popover_bg;//@popover_border;
+		color: @popover_heading_text;
+		.rounded;
+	}
+	
+	/*&.top .arrow { border-top-color: @popover_bg; &:after { border-top-color: @popover_border; } }
+	&.bottom .arrow { border-top-color: @popover_bg; &:after { border-bottom-color: @popover_border; } }
+	&.left .arrow { border-right-color: @popover_bg; &:after { border-left-color: @popover_border; } }
+	&.right .arrow { border-left-color: @popover_bg; &:after { border-right-color: @popover_border; } }
+	*/
+	
+	&.top .arrow { border-top-color: @popover_bg; &:after { border-top-color: @popover_bg; } }
+	&.bottom .arrow { border-bottom-color: @popover_bg; &:after { border-bottom-color: @popover_bg; } }
+	&.left .arrow { border-left-color: @popover_bg; &:after { border-left-color: @popover_bg; } }
+	&.right .arrow { border-right-color: @popover_bg; &:after { border-right-color: @popover_bg; } }
+}

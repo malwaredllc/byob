@@ -1,0 +1,37 @@
+.draggable-portlets {
+	
+	.sorted {
+		min-height: 100px;
+		
+		.ui-sortable-placeholder {
+			background: fade(#ffffcc, 70%);
+			border: 1px dashed @default;
+			visibility: visible !important;
+		}
+		
+		
+		> .panel {
+			.transition(~"opacity 300ms ease-in-out, transform 300ms ease-in-out");
+			
+			.panel-heading {
+				cursor: pointer;
+			}
+		}
+	}
+	
+	&.dragging {
+		
+		.sorted {
+			
+			> .panel {
+				.transform(~"scale(.9)");
+				.opacity(.9);
+				
+				&.ui-sortable-helper {
+					.transform(~"scale(1.1)");
+					.opacity(1);
+				}
+			}
+		}
+	}
+}

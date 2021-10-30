@@ -1,0 +1,123 @@
+
+body {
+    margin:0;
+    padding:10px;
+    color: #000;
+}
+body>div {
+    margin-bottom:100px;
+    overflow:auto;
+}
+body * {
+    font-family:Verdana, Geneva, sans-serif;
+    font-size:12px;
+}
+.aciTree {
+    width:300px;
+    height:400px;
+    overflow:auto;
+    padding:10px;
+    border:1px solid #ccc;
+    float:left;
+    margin:0 20px 20px 0;
+    position:relative;
+}
+.aciTree>div {
+    font-size:11px;
+    line-height:20px;
+}
+.aciTree.selected {
+    background-color:#FFDFFF;
+}
+.aciTreeItem.selected {
+    background-color:#FFDFFF;
+}
+.aciTree .aciTreeLi.aciTreeHidden {
+    display:block;
+    background-color:#ccc;
+}
+.aciTree .aciTreeLi.aciTreeHidden .aciTreeLine {
+    background:none !important;
+}
+form {
+    padding:0 10px 0 10px;
+}
+.form {
+    width:770px;
+    float:left;
+    border:1px solid #ccc;
+    margin:0 20px 20px 0;
+}
+label {
+    vertical-align:middle;
+}
+.log {
+    width:400px;
+    height:400px;
+    float:left;
+    border:1px solid #ccc;
+    margin:0 20px 20px 0;
+    padding:10px;
+    overflow-y: scroll;
+}
+.log a {
+    float:right;
+}
+#info {
+    min-height:300px;
+    border:1px solid 000;
+    padding:5px;
+    background-color:#eee;
+    width:auto;
+    font-size:10px;
+}
+.eyes {
+    position:absolute;
+    top:0;
+    right:0;
+    width:60px;
+    height:48px;
+    background:url(../image/eyes.png) 0 0 no-repeat;
+}
+[dir=rtl] .eyes {
+    right:80%;
+}
+em {
+    font-size:9px;
+    color:#777;
+    padding:2px 0 2px 0;
+    display:block;
+}
+pre {
+    line-height:150%;
+}
+.drop {
+    width:300px;
+    height:200px;
+    border:1px dashed #000;
+    float:left;
+    margin-right:20px;
+    padding:5px 10px 5px 10px;
+}
+.drop:hover {
+    border:1px dashed red;
+}
+.drop ul {
+    list-style-type:none;
+    height:150px;
+    padding:0;
+    overflow:auto;
+}
+.drop li {
+    line-height:20px;
+    height:20px;
+}
+.drop .aciSortablePlaceholder {
+    background-color:#eee;
+    border:1px dashed #ddd;
+}
+.drop.any .aciSortablePlaceholder {
+    height:0;
+    line-height:0;
+    border:none;
+}

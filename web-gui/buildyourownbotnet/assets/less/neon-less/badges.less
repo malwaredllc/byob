@@ -1,0 +1,23 @@
+// Base classes
+.badge {
+	
+  // NEON
+  .default;
+  
+  &.badge-primary { .primary(); }
+  &.badge-secondary { .secondary(); }
+  &.badge-success { .success(); }
+  &.badge-info { .info(); }
+  &.badge-warning { .warning(); }
+  &.badge-danger { .danger(); }
+  
+  &.badge-roundless {
+	  .rounded(1px);
+	  //.rounded;
+  }
+  
+  // Empty badges collapse automatically (not available in IE8)
+  &:empty {
+    display: none;
+  }
+}

@@ -1,0 +1,354 @@
+{% extends "layout.html" %}
+
+<link rel="stylesheet" href="/assets/js/jquery-ui/css/no-theme/jquery-ui-1.10.3.custom.min.css">
+<link rel="stylesheet" href="/assets/css/font-icons/entypo/css/entypo.css">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noto+Sans:400,700,400italic">
+<link rel="stylesheet" href="/assets/css/bootstrap.css">
+<link rel="stylesheet" href="/assets/css/neon-core.css">
+<link rel="stylesheet" href="/assets/css/neon-theme.css">
+<link rel="stylesheet" href="/assets/css/neon-forms.css">
+<link rel="stylesheet" href="/assets/css/custom.css">
+
+<script src="/assets/js/jquery-1.11.3.min.js"></script>
+
+{% block slider %}
+<div class="demo-1 black-canvas" style="z-index: 0;">
+	<div class="content">
+		<div id="large-header" class="large-header">
+			<canvas id="demo-canvas"></canvas>
+			<h1></h1>
+		</div>
+	</div>
+</div>
+{% endblock slider %}
+
+
+{% block main %}
+<style>
+	a {
+		color: #4497fc;
+	}
+
+	a:hover {
+		color: gray;
+	}
+</style>
+
+<div class="container" style="z-index: 1; position: absolute; top: 100px; left: 50%; transform: translate(-50%, -500px);">
+
+	<h1 align="center" style="color: white;">Payloads</h1>
+	
+	<hr/>
+	<br/>
+
+	<!-- Row 1 -->
+	<div class="row">
+
+		<!-- Column 1 (Payload Generator) -->
+		<div class="col-md-6">
+
+			<div class="panel panel-dark" data-collapsed="0" id="payload-panel">
+
+				<!-- panel head -->
+				<div class="panel-heading">
+					<div class="panel-title" id="module-name">Generate Payload</div>
+				</div>
+
+				<!-- panel body -->
+				<div class="panel-body">
+					<form action="{{ url_for('payload.payload_generate') }}" method="post">
+						<div class="form-group" align="left">
+
+							<!-- Select payload format -->
+							<label for="format" id="format-label" style="padding: 5px">Format</label>
+
+							<select required class="selectboxit" data-first-option="false" id="format" name="format">
+								<option>Select Format</option>
+								<option value="py">Python</option>
+								<option value="exe">Executable</option>
+							</select>
+
+							<!-- Select payload operating system (if executable format) -->
+							<label for="operating_system" id="os-label" style="padding: 5px;">Operating System</label>
+
+							<select class="selectboxit" data-first-option="false" id="os" name="operating_system" onclick="updateArchOptions()">
+							  <option>Select Operating System</option>
+							  <option value="win">Windows</option>
+							  <option value="nix">Linux</option>
+							</select>
+
+							<!-- Select payload architecture (if executable format) -->
+							<label for="architecture" id="arch-label" style="padding: 5px">Architecture</label>
+
+							<select class="selectboxit" data-first-option="false" id="arch" name="architecture">
+								<option>Select Architecture</option>
+								<option value="x32">x32</option>
+								<option value="amd64">amd64</option>
+								<option value="i386">i386</option>
+							</select>
+
+							<br/>
+
+							<!-- Generate button -->
+							<button class="btn btn-green entypo-plus-circled" data-loading-text="Generating..." type="submit" id="generate-button" onclick="$('#patient').show(); show_loading_bar(78);"> Generate</button>
+
+							<span id="patient">This can take a few minutes, please be patient.</span>
+						 </div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!-- Column 2 (Instructions) -->
+		<div class="col-md-6">
+			<div class="panel panel-dark" data-collapsed="0" style="height: 325px">
+				
+				<!-- panel head -->
+				<div class="panel-heading">
+					{% if not payloads %}
+						<div class="panel-title" id="module-name">You have no payloads yet!</div>
+					{% else %}
+						<div class="panel-title" id="module-name">How to generate a payload</div>
+					{% endif %}
+				</div>
+				
+				<!-- panel body -->
+				<div class="panel-body">
+
+					<!-- Module Description -->
+					<div id="payloads-description" style="padding-bottom: 5px">
+						<span style="font-size: 15px;">Select a payload <strong>format</strong> to get started.</span>	
+					</div>
+
+					<!-- Module Info -->
+				 	<ul name="payloads-info" id="payloads-info">
+					 		
+				  		<li style="padding: 10px">
+				 			<strong>Python</strong> - Obfuscated Python script. The file size is quite small, however, it requires Python be installed on the target system to run.
+				 		</li>
+				 		<li style="padding: 10px">
+				 			<strong>Executable</strong> - Compile a binary executable for a target operating system and architecture. This will run on systems which do not have Python installed, however, the file size is larger.
+				 		</li>
+				 		<li style="padding: 10px">
+				 			<strong>Need help?</strong> Check out the <a href="{{ url_for('main.faq') }}">FAQ</a> page.
+				 		</li>
+				 	</ul>
+
+					<!-- Module Platforms -->
+					<div id="module-platforms"></div>
+					
+				</div>
+				
+			</div>
+		</div>
+	</div>
+
+
+	<!-- Row 2 -->
+	<div class="row-md-12">
+
+		<!-- Payloads Table -->
+		<div name="existing-payloads">
+
+			<script type="text/javascript">
+			jQuery( document ).ready( function( $ ) {
+				var $table3 = jQuery("#payloads-table");
+				
+				var table3 = $table3.DataTable( {
+					"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
+				} );
+				
+				// Initalize Select Dropdown after DataTables is created
+				$table3.closest( '.dataTables_wrapper' ).find( 'select' ).select2( {
+					minimumResultsForSearch: -1
+				});
+				
+				// Setup - add a text input to each footer cell
+				// $( '#sessions-table tfoot th' ).each( function () {
+				// 	var title = $('#sessions-table thead th').eq( $(this).index() ).text();
+				// 	$(this).html( '<input type="text" class="form-control" placeholder="Search" />' );
+				// });
+				
+				// Apply the search
+				table3.columns().every( function () {
+					var that = this;
+				
+					$( 'input', this.header() ).on( 'keyup change', function () {
+						if ( that.search() !== this.value ) {
+							that
+								.search( this.value )
+								.draw();
+						}
+					});
+				});
+			} );
+			</script>
+
+			<table class="table table-bordered datatable" id="payloads-table" style="opacity: 1.0;">
+				<thead>
+					<tr class="replace-inputs"">
+						<th class="text-center" style="color: black; text-align: center; vertical-align: middle;">Filename</th>
+						<th class="text-center" style="color: black; text-align: center; vertical-align: middle;">Format</th>
+						<th class="text-center" style="color: black; text-align: center; vertical-align: middle;">Architecture</th>
+						<th class="text-center" style="color: black; text-align: center; vertical-align: middle;">Created</th>
+						<th class="text-center" style="color: black; text-align: center; vertical-align: middle;">Download</th>
+					</tr>
+				</thead>
+				<tbody id="payloads-table-body">
+					{% for f in payloads %}
+						<tr style="background-color: white; color: grey;">
+							<td class="text-center" style="text-align: center; vertical-align: middle;">{{ f.filename }}</td>
+							<td class="text-center" style="text-align: center; vertical-align: middle;"><img src="/assets/images/os/{{ f.operating_system }}.png" width="20" height="20"></td>
+							<td class="text-center" style="text-align: center; vertical-align: middle;">{{ f.architecture }}</td>
+							<td class="text-center" style="text-align: center; vertical-align: middle;">{{ f.created }}</td>					
+							<td class="text-center" style="text-align: center; vertical-align: middle;">
+								<i class="entypo-download" owner="{{ f.owner }}" filename="{{ f.filename }}" os="{{ f.operating_system }}" arch="{{ f.architecture }}" onclick="download(this)" style="cursor: pointer;"></i>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<script>
+
+		function download(element) {
+			var path = 'output/' + element.getAttribute('owner') + '/src/';
+
+			if (element.getAttribute('os') === 'nix') {
+				path += 'dist/linux/';
+			} else if (element.getAttribute('os') === 'win') {
+				path += 'dist/windows/';
+			}
+
+			path += element.getAttribute('filename');
+			
+			location.href = path;
+		}
+
+		function updateOSOptions() {
+			var el = $("#formatSelectBoxItText");
+
+			if (el.attr('data-val') === "exe") {
+				$('#osSelectBoxItContainer').slideDown();
+				$('#archSelectBoxItContainer').slideDown();
+				$('#os-label').slideDown();
+				$('#arch-label').slideDown();
+			} else {
+				$('#osSelectBoxItContainer').slideUp();
+				$('#archSelectBoxItContainer').slideUp();
+				$('#os-label').slideUp();
+				$('#arch-label').slideUp();
+			}
+		}
+
+		function updateArchOptions() {
+		    var el = $("#osSelectBoxItText");
+
+		    if(el.attr('data-val') === "nix" ) {
+
+		    	// update options
+		    	$("#arch").children().remove()
+		    	$("#arch").append('<option value="amd64">amd64</option>');
+		    	$("#arch").append('<option value="i386">i386</option>');
+
+		    	// update selectBoxIt options
+		    	$("#archSelectBoxItOptions").children().remove();
+		    	$("#archSelectBoxItOptions").append('<li id="arch0" data-id="1" value="amd64" data-val="amd64" data-disabled="false" class="selectboxit-option" role="option"><a class="selectboxit-option-anchor"><span class="selectboxit-option-icon-container"><i class="selectboxit-option-icon  selectboxit-container"></i></span>amd64</a></li>');
+		    	$("#archSelectBoxItOptions").append('<li id="arch2" data-id="2" value="i386" data-val="i386" data-disabled="false" class="selectboxit-option" role="option"><a class="selectboxit-option-anchor"><span class="selectboxit-option-icon-container"><i class="selectboxit-option-icon  selectboxit-container"></i></span>i386</a></li>');
+		    } else {
+		    	//update options
+		    	$("#arch").children().remove();
+		    	$("#arch").append('<option value="x32">x32</option>');
+
+		    	// update selectBoxIt options
+		    	$("#archSelectBoxItOptions").children().remove();
+		    	$("#archSelectBoxItOptions").append('<li id="arch1" data-id="0" value="x32" data-val="x32" data-disabled="false" class="selectboxit-option" role="option"><a class="selectboxit-option-anchor"><span class="selectboxit-option-icon-container"><i class="selectboxit-option-icon  selectboxit-container"></i></span>x32</a></li>');
+		   	}
+		}
+			
+	</script>
+
+	<!-- Imported styles on this page -->
+	<link rel="stylesheet" href="/assets/js/datatables/datatables.css">
+	<link rel="stylesheet" href="/assets/js/select2/select2-bootstrap.css">
+	<link rel="stylesheet" href="/assets/js/select2/select2.css">
+	<link rel="stylesheet" href="/assets/js/selectboxit/jquery.selectBoxIt.css">
+
+	<!-- Bottom scripts (common) -->
+	<script src="assets/js/gsap/TweenMax.min.js"></script>
+	<script src="assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+	<script src="assets/js/bootstrap.js"></script>
+	<script src="assets/js/joinable.js"></script>
+	<script src="assets/js/resizeable.js"></script>
+	<script src="assets/js/neon-api.js"></script>
+	<script src="/assets/js/selectboxit/jquery.selectBoxIt.min.js"></script>
+
+
+	<!-- Imported scripts on this page -->
+	<script src="assets/js/datatables/datatables.js"></script>
+	<script src="assets/js/select2/select2.min.js"></script>
+	<script src="assets/js/neon-chat.js"></script>
+
+
+	<!-- JavaScripts initializations and stuff -->
+	<script src="assets/js/neon-custom.js"></script>
+
+
+
+
+	<!-- Imported styles on this page -->
+	<link rel="stylesheet" href="/assets/js/select2/select2-bootstrap.css">
+	<link rel="stylesheet" href="/assets/js/select2/select2.css">
+	<link rel="stylesheet" href="/assets/js/selectboxit/jquery.selectBoxIt.css">
+	<link rel="stylesheet" href="/assets/js/daterangepicker/daterangepicker-bs3.css">
+	<link rel="stylesheet" href="/assets/js/icheck/skins/minimal/_all.css">
+	<link rel="stylesheet" href="/assets/js/icheck/skins/square/_all.css">
+	<link rel="stylesheet" href="/assets/js/icheck/skins/flat/_all.css">
+	<link rel="stylesheet" href="/assets/js/icheck/skins/futurico/futurico.css">
+	<link rel="stylesheet" href="/assets/js/icheck/skins/polaris/polaris.css">
+
+	<!-- Bottom scripts (common) -->
+	<script src="/assets/js/gsap/TweenMax.min.js"></script>
+	<script src="/assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+	<script src="/assets/js/bootstrap.js"></script>
+	<script src="/assets/js/joinable.js"></script>
+	<script src="/assets/js/resizeable.js"></script>
+	<script src="/assets/js/neon-api.js"></script>
+
+
+	<!-- Imported scripts on this page -->
+	<script src="/assets/js/select2/select2.min.js"></script>
+	<script src="/assets/js/bootstrap-tagsinput.min.js"></script>
+	<script src="/assets/js/typeahead.min.js"></script>
+	<script src="/assets/js/selectboxit/jquery.selectBoxIt.min.js"></script>
+	<script src="/assets/js/bootstrap-datepicker.js"></script>
+	<script src="/assets/js/bootstrap-timepicker.min.js"></script>
+	<script src="/assets/js/bootstrap-colorpicker.min.js"></script>
+	<script src="/assets/js/moment.min.js"></script>
+	<script src="/assets/js/daterangepicker/daterangepicker.js"></script>
+	<script src="/assets/js/jquery.multi-select.js"></script>
+	<script src="/assets/js/icheck/icheck.min.js"></script>
+	<script src="/assets/js/neon-chat.js"></script>
+
+
+	<!-- JavaScripts initializations and stuff -->
+	<script src="/assets/js/neon-custom.js"></script>
+
+
+	<script>
+		$(document).ready(function(){
+			$('#format').selectBoxIt().change(function(){
+				updateOSOptions();
+			});
+
+			$('#os').selectBoxIt().change(function(){
+				updateArchOptions();
+			});
+
+			$('#patient').hide();
+		});
+	</script>
+</div>
+{% endblock main %}

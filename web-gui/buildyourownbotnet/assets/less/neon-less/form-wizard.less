@@ -1,0 +1,136 @@
+.form-wizard {
+	@inactive_text: #8e9094;
+	@step_size: 35px;
+	@active_border_size: 5px;
+	@spacing: 70px;
+	
+	margin-top: @step_size + @base_padding;
+			
+	.steps-progress {
+		display: block;
+		background: @default;
+		width: auto;
+		height: 10px;
+		margin: 0 @spacing;
+		.rounded;
+		
+		.progress-indicator {
+			background: @brand-success;
+			width: 0%;
+			height: 10px;
+			.rounded;
+			.transall;
+		}
+	}
+	
+	&.no-margin {
+		
+		.tab-content {
+			margin-left: 0 !important;
+			margin-right: 0 !important;
+		}
+	}
+	
+			
+	> ul {
+		display: table;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		
+		> li {
+			display: table-cell;
+			width: 1%;
+			text-align: center;
+			position: relative;
+			
+			a {
+				position: relative;
+				display: block;
+				padding-top: @step_size;
+				font-weight: bold;
+				color: darken(@default, 25%);
+				.transall;
+				
+				span {
+					position: absolute;
+					display: block;
+					background: @default;
+					color: @inactive_text;
+					line-height: @step_size;
+					text-align: center;
+					margin-top: -@step_size/2 - 5px - @step_size;
+					left: 50%;
+					margin-left: -@step_size/2;
+					.size(@step_size);
+					.border-radius(50%);
+					.transall;
+				}
+			}
+			
+			&.completed {
+				
+				a {
+					color: @brand-success;
+					
+					span {
+						background: @brand-success;
+						color: #fff;
+						.box-shadow(~"0px 0px 0px @{active_border_size} @{brand-success}");
+					}
+				}
+			}
+			
+			&.disabled {
+				
+				a {
+					color: fade(@inactive_text, 50%);
+					
+					span {
+						background: @hover_bg;
+						color: fade(@inactive_text, 50%);
+						.box-shadow(~"0px 0px 0px @{active_border_size} @{hover_bg}");
+					}
+				}
+			}
+			
+			&.active, &.current {
+				
+				a {
+					@active_color: darken(@default, 15%);
+					@active_color_text: darken(@active_color, 45%);
+					
+					color: @active_color;
+					font-weight: bold;
+					color: @main_color;
+					
+					span {
+						background: @active_color;
+						background: #fff;
+						color: @active_color_text;
+						.box-shadow(~"0px 0px 0px @{active_border_size} @{default}");
+					}
+				}
+			}
+		}
+	}
+	
+	
+	.tab-content {
+		margin: 0 (@spacing - @step_size/2);
+		margin-top: @step_size;
+		
+		.pager {
+			margin-top: @step_size;
+			
+			.first a {
+				margin-right: @base_padding;
+			}
+			
+			.last a {
+				margin-left: @base_padding;
+			}
+		}
+	}
+			
+}

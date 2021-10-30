@@ -1,0 +1,288 @@
+{% extends "layout.html" %}
+
+{% block slider %}
+<div class="demo-1 black-canvas" style="z-index: 0;">
+	<div class="content">
+		<div id="large-header" class="large-header">
+			<canvas id="demo-canvas"></canvas>
+			<h1></h1>
+		</div>
+	</div>
+</div>
+{% endblock slider %}
+
+
+{% block main %}
+
+<style>
+	p {
+/*		padding-left: 30px;*/
+		font-size: 15px;
+	}
+
+	h2 {
+		font-family: titillium;
+		padding-bottom: 10px;
+	}
+
+	h3 {
+		padding-left: 20px;
+	}
+
+/*	h4 {
+		padding-left: 30px;
+	}*/
+
+	li {
+		font-size: 15px;
+	}
+
+
+	a {
+		color: #4497fc;
+	}
+
+	a:hover {
+		color: gray;
+	}
+
+</style>
+
+<div class="container" style="z-index: 2; position: relative">
+
+	<div class="row">
+
+		<div class="col-sm-2">
+
+			<div class="tocify" id="toc" style="position: fixed; top: 200px; left: 40px"></div>
+			
+		</div>
+
+		<div class="col-md-10" style="color: white; transform: translateY(-10%);">
+
+			<h1 style="color: white;" align="center">Getting Started</h1>
+
+			<br/>
+			<hr/>
+			<br/>
+
+			<div class="tocify-content">
+
+			<h2 style="font-weight: bold; color: white;">Step 0: Installation and Setup</h2>
+	
+				<div class="row">
+					<div class="col-sm-12">
+						<p>The first thing you need to do to start building a botnet is <a class="link" href="https://github.com/malwaredllc/byob">download</a> the code from Github.</p>
+						<p>You will need to install <a class="link" href="https://docs.docker.com/get-docker/">Docker</a> and <a class="link" href="https://www.python.org/downloads/">Python</a> to use this software.</p>
+						<p>Once you have downloaded the code from Github and installed the necessary software, navigate to the <strong>/byob/web-gui</strong> directory and run the <strong>setup.sh</strong> script. This will build some Docker images that are used by the payload generator to cross-compile executables.</p>
+						<p>After completing the installation and setup, you can now launch the web GUI by running the command <strong>python3 run.py</strong> from the <strong>/byob/web-gui</strong> directory.</p>
+						<p>Once it is running, you can now open your browser and go to http://0.0.0.0:5000 to use the web GUI.</p>
+					</div>
+				</div>
+
+			<br/>
+			<hr/>
+			<br/>
+
+			<h2 style="font-weight: bold; color: white;">Step 1: Create an Account</h2>
+	
+				<div class="row">
+					<div class="col-sm-2">
+						<button class="btn signup"><i class="fa fa-user"></i> Register</button>
+					</div>
+					<div class="col-sm-10 pull-right">
+						<p>Once the web app is up and running, you are now ready to create an account. You can do this clicking on the register button at the top right.</p>
+						<p>This will you up as the sole administrator of the command & control server and restrict others from accessing it.</p>
+					</div>
+				</div>
+
+			<br/>
+			<hr/>
+			<br/>
+
+
+			<h2 style="font-weight: bold; color: white;">Step 2: Generate a Payload</h2>
+	
+				<div class="row">
+					<div class="col-sm-2">
+						<button class="btn signup"><i class="fa fa-code"></i> Payloads</button>
+					</div>
+
+					<div class="col-sm-10 pull-right">
+						<p>Once you are logged in, the first thing you need to do is generate a payload. To get started, click the Payloads button at the top of the screen to navigate to the payloads page.</p>
+
+						<p>The payloads page has 2 main parts: </p>
+						<ul>
+							<li>Payload Generator</li>
+							<li>Payloads Table</li>
+						</ul>
+					</div>
+				</div>
+
+					<div class="row responsive">
+		
+						<h3 style="font-family: titillium; font-weight: bold; color: white;">Payload Generator</h3>
+
+						<div class="col-sm-6 pull-left" style="padding-bottom: 5%;">
+							<img src="/assets/images/previews/preview-payload-generator.png" style="width: 100%;" class="responsive"/>
+						</div>
+
+						<div class="col-sm-6 pull-right">
+							<span style="font-size: 18px; font-weight: bold; color: white; padding-left: 15px">Python</span>
+								<p style="padding-left: 15px">Select "Python" format as the format to generate an obfuscated Python script.</p>
+
+								<p style="padding-left: 15px">Python is platform independent, so you will not need to select a target operating system and architecture.</p>
+
+								<p style="padding-left: 15px"> The file size is small, however, Python must be installed on the target machine to execute it.</p>
+
+							<br/>
+
+							<span style="font-size: 18px; font-weight: bold; color: white; padding-left: 15px">Executable</span>
+								<p style="padding-left: 15px">Select "Executable" format to compile a binary executable for a target operating system and architecture.</p>
+
+								<p style="padding-left: 15px">You must select the operating system and architecture of the target machine(s) in order to compile an executable.</p>
+
+								<p style="padding-left: 15px">This will run on systems which do not have Python installed, however, the file size is substantially larger.</p>
+						</div>
+					</div>
+
+					<div class="row">
+						<h3 style="font-family: titillium; font-weight: bold; color: white;">Payloads Table</h3>
+
+						<img src="/assets/images/previews/preview-payload-table.png" style="padding-bottom: 2%; padding-left: 2%" class="responsive"/>
+						
+						<p style="padding-left: 15px">Below the payload generator you can see the payloads table, where you can download payloads you have generated by selecting the "download" icon on the right as seen below.</p>
+
+						<p style="padding-left: 15px">You can use the sort by "created" to find the most recently generated payload. There is also a search bar at the top right of the table that you can use to view only your Windows payloads, for example.</p>
+					</div>
+
+				<br/>
+
+			<br/>
+			<hr/>
+			<br/>
+
+			<h2 style="font-weight: bold; color: white;">Step 3: Create Bots</h2>
+				<p>After downloading a payload, you can create bots by executing the payload on target machines.</p>
+
+				<p>This platform is strictly for authorized testing and education purposes, so this is done by simply downloading the payload onto your virtual machine or testing environment.</p>
+
+				<p>In a real world scenario an attacker would most likely use a social-engineering trick to get the target to execute the payload, such as sending it as an email attachment disguised as a software update.</p>
+
+			<br/>
+			<hr/>
+			<br/>
+
+			<h2 style="font-weight: bold; color: white;">Step 4: Command & Control</h2>
+		
+				<div class="row">
+					<div class="col-sm-3">
+						<button class="btn signup"><i class="entypo-monitor"></i> Control Panel</button>
+					</div>
+					<div class="col-sm-9">
+						<p>Once you have a payload running on a target machine, you are ready to command and control your bots!</p>
+
+						<p>To get started, click the Control Panel button at the top of the screen to navigate to your command and control dashboard.</p>
+
+						<p>The control panel dashboard is designed to provide an intuitive command & control interface. It has 3 main parts: </p>
+							<ul style="padding-left: 70px">
+								<li>Post-Exploitation Modules</li>
+								<li>Bots Table</li>
+								<li>Shell Access</li>
+							</ul>
+					</div>
+				</div>
+
+				<br/>
+
+				<div class="row">
+	
+					<h3 style="font-family: titillium; font-weight: bold; color: white;">Post-Exploitation Modules</h3>
+	
+					<div class="col-sm-6 pull-left">
+
+						<img src="/assets/images/previews/preview-modules-panel.png" class="responsive" style="padding-left: 1%"/>
+					</div>
+
+					<div class="col-sm-6 pull-right">
+						<p>Select a post-exploitation module using the panel on the left. Each module contains a description and a list of supported platforms.</p>
+
+						<p>Next, select the bots to execute it on by either clicking "select all bots" or selecting bots from the Bots Table below.</p>
+
+						<p>Now click execute and watch the results stream in!</p>
+					</div>
+
+				</div>
+
+				<br/>
+
+				<div class="row">
+						<h3 style="font-family: titillium; font-weight: bold; color: white;">Bots Table</h3>
+
+						<img src="/assets/images/previews/preview-bots-table.png" style="padding-left: 1%; padding-bottom: 2%"; class="responsive"/>
+						
+						<p style="padding-left: 15px">The bots table contains identifying information about your bots and allows you to monitor their status and interact with them directly. It is fully searchable and sortable by column for your convenience.</p>
+
+						<p style="padding-left: 15px">If your bots are mining monero, the "Hashes/Second" column and "Hashrate Graph" will update every second so you monitor their progress in real time.</p>
+
+						<p style="padding-left: 15px">You can view a bot's history of commands and results by clicking the "Results" button on the right, or kill the bot by clicking the Trash icon.</p>
+
+						<p style="padding-left: 15px">And yes, clicking the terminal icon provides direct shell access to the bot!</p>
+				</div>
+
+				<br/>
+
+				<div class="row">
+					<h3 style="font-family: titillium; font-weight: bold; color: white;">Shell Access</h3>
+	
+					<div class="col-sm-4 pull-left">
+						<p style="padding-left: 5px">Click the terminal icon for any bot to connect directly to the bot via reverse TCP shell.</p>
+
+						<p style="padding-left: 5px">A fully-featured terminal emulator runs in the browser which behaves exactly the same as the terminal on the machine.</p>
+
+						<p style="padding-left: 5px">This provides you with direct access full control over the machine so you can run standard red team operations which require terminal access.</p>
+					</div>
+					<div class="col-sm-8 pull-right">
+						<img src="/assets/images/previews/preview-shell.png" class="responsive"/>
+					</div>
+				</div>
+
+				<br/>
+			<hr/>
+			<br/>
+		</div>
+			<div class="row" align="center">
+				<!-- Discord server -->
+					<h2 style="color: white; font-family: titillium">Need help?</h2>
+					<br/>
+					<div class="join-discord" onclick="openInNewTab('https://discord.gg/8FsSrw7');">
+						<img src="/assets/images/discord.png" style="width: 50px; padding-right: 10px"/>
+						<span>Join our Discord server</span>
+					</div>
+
+			</div>
+	</div>
+</div>
+
+<!-- Import tocify -->
+	<script src="/assets/js/gsap/TweenMax.min.js"></script>
+	<script src="/assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+	<script src="/assets/js/bootstrap.js"></script>
+	<script src="/assets/js/joinable.js"></script>
+	<script src="/assets/js/resizeable.js"></script>
+	<script src="/assets/js/neon-api.js"></script>
+
+
+	<!-- Imported scripts on this page -->
+	<script src="/assets/js/tocify/jquery.tocify.min.js"></script>
+	<script src="/assets/js/neon-chat.js"></script>
+
+
+	<!-- JavaScripts initializations and stuff -->
+	<script src="/assets/js/neon-custom.js"></script>
+
+
+	<!-- Demo Settings -->
+	<script src="/assets/js/neon-demo.js"></script>
+
+{% endblock main %}

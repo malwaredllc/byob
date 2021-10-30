@@ -1,0 +1,63 @@
+@vertical_space:	0px;
+@layout_width: 		80%;
+@background: 		url(../images/boxed-pattern-3.png);
+@shadow: 			0 0 2px fade(#000, 10%);
+
+.boxed-layout {
+	background: @background;
+	padding-bottom: @vertical_space;
+	
+	&.page-fade,
+	&.page-fade-only,
+	&.page-left-in,
+	&.page-right-in {
+		background: @background;
+	}
+		
+	.page-container {
+		position: relative;
+		width: @layout_width;
+		margin: 0 auto;
+		margin-top: @vertical_space;
+		.box-shadow(@shadow);
+		.clearfix;
+	
+		&.horizontal-menu {
+			
+			> header.navbar {
+				width: @layout_width;
+				margin: 0 auto;
+				.box-shadow(@shadow);
+			}
+			
+			.main-content {
+				padding-left: 0;
+				padding-right: 0;
+				
+				.container {
+					width: 100%;
+				}
+			}
+		}
+	}
+	
+	#chat {
+		position: absolute;
+	}
+}
+
+@media screen and (max-width: @screen-md)
+{
+	.boxed-layout {
+		
+		.page-container {
+			position: absolute;
+			width: 100%;
+			overflow-x: visible;
+		}
+		
+		#chat {
+			position: fixed;
+		}
+	}
+}

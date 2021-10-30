@@ -1,0 +1,189 @@
+{% extends "layout.html" %}
+
+{% block slider %}
+<div class="demo-1 black-canvas" style="z-index: 0;">
+	<div class="content">
+		<div id="large-header" class="large-header">
+			<canvas id="demo-canvas"></canvas>
+			<h1></h1>
+		</div>
+	</div>
+</div>
+{% endblock slider %}
+
+{% block main %}
+
+<div class="container" style="z-index: 1; position: absolute; top: 0; left: 50%; transform: translate(-50%, -120%);">
+	<h1 style="color: white;" align="center">Support Forum</h1>
+
+	<!-- Row 1 (New post button)-->
+	<div class="row-md-12">
+		<div class="col-md-12">
+			<button class="btn btn-green btn-lg btn-block entypo-plus" onclick="location.href='/support/new';" style="width: 10%; padding-bottom: 10px; justify-content: left;">
+		<!-- 		<i class="entypo-plus"></i> -->
+				New
+			</button>
+
+			<br/>
+
+		</div>
+	</div>
+
+	<!-- Row 2 (support threads table) -->
+	<div class="row-md-12">
+		<div class="col-md-12">
+
+			<!-- Table sorting and search functions -->
+			<script type="text/javascript">
+			jQuery( document ).ready( function( $ ) {
+				var $table3 = jQuery("#posts-table");
+				
+				var table3 = $table3.DataTable( {
+					"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
+				} );
+				
+				// Initalize Select Dropdown after DataTables is created
+				$table3.closest( '.dataTables_wrapper' ).find( 'select' ).select2( {
+					minimumResultsForSearch: -1
+				});
+				
+				// // Setup - add a text input to each footer cell
+				// $( '#posts-table tfoot th' ).each( function () {
+				// 	var title = $('#posts-table thead th').eq( $(this).index() ).text();
+				// 	$(this).html( '<input type="text" class="form-control" placeholder="Search" />' );
+				// });
+				
+				// Apply the search
+				table3.columns().every( function () {
+					var that = this;
+				
+					$( 'input', this.header() ).on( 'keyup change', function () {
+						if ( that.search() !== this.value ) {
+							that
+								.search( this.value )
+								.draw();
+						}
+					});
+				});
+			} );
+			</script>
+
+			<!-- Files table -->
+			<table class="table table-bordered datatable" id="posts-table" style="opacity: 1.0;">
+				<thead>
+					<tr class="replace-inputs"">
+						<td class="text-center" style="color: black;"><input type="text" class="form-control" placeholder="Title" /></td>
+				
+						<td class="text-center" style="color: black; text-align: center;"><input type="text" class="form-control" placeholder="Author" /></td>
+				
+						<td class="text-center" style="color: black; text-align: center;" width="10%"><input type="text" class="form-control" placeholder="Created" /></td>
+				
+						<td class="text-center" style="color: black; text-align: center;" width="10%"><input type="text" class="form-control" placeholder="Activity" /></td>
+				
+						<td class="text-center" style="color: black; text-align: center;" 
+						width="5%"><input type="text" class="form-control" placeholder="Comments" /></td>
+					</tr>
+				</thead>
+				<tbody id="posts-table-body">
+					{% for post in posts %}
+					<tr style="background-color: white; color: black; cursor: pointer;" id="post-row-{{ post['id'] }}" name="{{ post['id'] }}" onclick="viewPost(this);">
+
+						<!-- Title -->
+						<td style="font-size: 15px"><strong>{{ post['title'] }}</strong></td>
+
+						<!-- Author -->
+						<td style="text-align: center;" width="15%">{{ post['author'] }}</td>
+
+						<!-- Created timestamp -->
+						<td style="text-align: center;" width="15%">{{ post['created'] }}</td>
+
+						<!-- Last activity timer -->
+						<td style="text-align: center;" width="15%">{{ post['activity'] }}</td>
+
+
+						<!-- Comments -->
+						<td style="text-align: center;" width="15%">{{ post['comments'] }}</td>
+
+					</tr>
+					{% endfor %}
+				</tbody>
+
+			</table>
+		</div>
+	</div>
+</div>
+
+<!-- Imported styles on this page -->
+<link rel="stylesheet" href="/assets/js/datatables/datatables.css">
+<link rel="stylesheet" href="/assets/js/select2/select2-bootstrap.css">
+<link rel="stylesheet" href="/assets/js/select2/select2.css">
+<link rel="stylesheet" href="/assets/js/selectboxit/jquery.selectBoxIt.css">
+
+<!-- Bottom scripts (common) -->
+<script src="assets/js/gsap/TweenMax.min.js"></script>
+<script src="assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+<script src="assets/js/bootstrap.js"></script>
+<script src="assets/js/joinable.js"></script>
+<script src="assets/js/resizeable.js"></script>
+<script src="assets/js/neon-api.js"></script>
+<script src="/assets/js/selectboxit/jquery.selectBoxIt.min.js"></script>
+
+
+<!-- Imported scripts on this page -->
+<script src="assets/js/datatables/datatables.js"></script>
+<script src="assets/js/select2/select2.min.js"></script>
+<script src="assets/js/neon-chat.js"></script>
+
+
+<!-- JavaScripts initializations and stuff -->
+<script src="assets/js/neon-custom.js"></script>
+
+
+
+
+<!-- Imported styles on this page -->
+<link rel="stylesheet" href="/assets/js/select2/select2-bootstrap.css">
+<link rel="stylesheet" href="/assets/js/select2/select2.css">
+<link rel="stylesheet" href="/assets/js/selectboxit/jquery.selectBoxIt.css">
+<link rel="stylesheet" href="/assets/js/daterangepicker/daterangepicker-bs3.css">
+<link rel="stylesheet" href="/assets/js/icheck/skins/minimal/_all.css">
+<link rel="stylesheet" href="/assets/js/icheck/skins/square/_all.css">
+<link rel="stylesheet" href="/assets/js/icheck/skins/flat/_all.css">
+<link rel="stylesheet" href="/assets/js/icheck/skins/futurico/futurico.css">
+<link rel="stylesheet" href="/assets/js/icheck/skins/polaris/polaris.css">
+
+<!-- Bottom scripts (common) -->
+<script src="/assets/js/gsap/TweenMax.min.js"></script>
+<script src="/assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+<script src="/assets/js/bootstrap.js"></script>
+<script src="/assets/js/joinable.js"></script>
+<script src="/assets/js/resizeable.js"></script>
+<script src="/assets/js/neon-api.js"></script>
+
+
+<!-- Imported scripts on this page -->
+<script src="/assets/js/select2/select2.min.js"></script>
+<script src="/assets/js/bootstrap-tagsinput.min.js"></script>
+<script src="/assets/js/typeahead.min.js"></script>
+<script src="/assets/js/selectboxit/jquery.selectBoxIt.min.js"></script>
+<script src="/assets/js/bootstrap-datepicker.js"></script>
+<script src="/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/assets/js/bootstrap-colorpicker.min.js"></script>
+<script src="/assets/js/moment.min.js"></script>
+<script src="/assets/js/daterangepicker/daterangepicker.js"></script>
+<script src="/assets/js/jquery.multi-select.js"></script>
+<script src="/assets/js/icheck/icheck.min.js"></script>
+<script src="/assets/js/neon-chat.js"></script>
+
+
+<!-- JavaScripts initializations and stuff -->
+<script src="/assets/js/neon-custom.js"></script>
+
+
+<script>
+	function viewPost(element) {
+		location.href = '/support/view?id=' + element.getAttribute('name');
+	}
+</script>
+
+{% endblock main %}

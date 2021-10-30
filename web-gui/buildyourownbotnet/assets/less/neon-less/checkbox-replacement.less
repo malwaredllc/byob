@@ -1,0 +1,132 @@
+.radio label, 
+.checkbox label {
+	
+	input {
+		position: relative;
+		top: 4px;
+	}
+}
+
+.checkbox-replace, 
+.radio-replace {
+	@s: 16px;
+	position: relative;	
+	padding-left: 0;
+	margin: 0;
+	
+	input[type="checkbox"],
+	input[type="radio"] {
+		visibility: hidden;
+	}
+	
+	.cb-wrapper {
+		position: relative;
+		display: inline-block;
+		border: 1px solid @default;
+		padding: 0;
+		padding-right: 16px;
+		margin-bottom: 0;
+		.size(@s, @s - 1);
+		.bs;
+		.rounded;
+		.transall;
+		
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+		
+		input {
+			position: absolute;
+			display: block;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			margin: 0;
+			visibility: hidden;
+		}
+		
+		&.disabled {
+			.opacity(.3);
+		}
+		
+		.checked {
+			@m: 2px;
+			
+			position: absolute;
+			background: @default;
+			display: block;
+			left: @m;
+			right: @m;
+			bottom: @m;
+			top: @m;
+			
+			.rounded(@border_radius - 1);
+			.opacity(0);
+			.transition(~"250ms all cubic-bezier(0.455, 0.030, 0.515, 0.955)");
+		}
+		
+		+ label {
+			position: relative;
+			top: -5px;
+			margin-left: 6px;
+			padding-left: 0;
+		}
+	}
+	
+	&:hover .cb-wrapper {
+		.box-shadow(~"0 0 0 2px rgba(0,0,0,.03)");
+	}
+	
+	// Radio
+	&.radio-replace {
+		
+		.cb-wrapper {
+			.border-radius(@s);
+			
+			.checked {
+				.border-radius(@s);
+			}
+		}
+	}
+	
+	
+	// Checked	
+	&.checked .cb-wrapper .checked {
+		.opacity(1);
+	}
+	
+	
+	// Skins
+	.replaced-checkbox-variant(darken(@default, 10%); #fff);
+	
+	&.color-primary { .replaced-checkbox-variant(@main_color; @secondary_text); }
+	&.color-red { .replaced-checkbox-variant(@secondary; @secondary_text); }
+	&.color-blue { .replaced-checkbox-variant(@info; @info_text); }
+	&.color-green { .replaced-checkbox-variant(@success; @success_text); }
+	&.color-gold { .replaced-checkbox-variant(@warning; @warning_text); }
+	&.color-white { .replaced-checkbox-variant(#fff; #fff); }
+}
+
+.replaced-checkbox-variant(@color-1; @color-2)
+{
+	.cb-wrapper {
+		border: 1px solid @color-1;
+		
+		
+		.checked {
+			background: @color-1;
+		}
+	}
+	
+	&:hover .cb-wrapper {
+		@r: red(@color-1);
+		@g: green(@color-1);
+		@b: blue(@color-1);
+		
+		.box-shadow(~"0 0 0 2px rgba(@{r},@{g},@{b},.1)");
+	}
+}

@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+
+{% block slider %}
+<div class="demo-1 black-canvas" style="z-index: 0;">
+	<div class="content">
+		<div id="large-header" class="large-header">
+			<canvas id="demo-canvas"></canvas>
+			<h1></h1>
+		</div>
+	</div>
+</div>
+{% endblock slider %}
+
+{% block main %}
+
+<style>
+	p {
+		font-size: 13px;
+	}
+	a {
+		color: #4497fc;
+	}
+
+	a:hover {
+		color: gray;
+	}
+</style>
+
+<div class="container" style="z-index: 1; position: absolute; top: 0; left: 50%; transform: translate(-50%, -400px);">
+	<h1 style="color: white;" align="center">Oops! This page does not exist (404)</h1>
+
+	<hr/>
+	<br/>
+
+	<div class="row">
+
+		<div class="col-md-12" align="center">
+			<h2 style="color: white; font-family: titillium; padding-left: 5px">Need help?</h2>
+			<br/>
+			<div class="join-discord" onclick="openInNewTab('https://discord.gg/8FsSrw7');">
+				<img src="/assets/images/discord.png" style="width: 50px; padding-right: 10px"/>
+				<span>Join our Discord server</span>
+			</div>
+
+		</div>
+
+	</div>
+
+</div>
+
+<script>
+	function openInNewTab(url) {
+	  var win = window.open(url, '_blank');
+	  win.focus();
+	}
+</script>
+
+<!-- Imported styles on this page -->
+<link rel="stylesheet" href="/assets/js/datatables/datatables.css">
+<link rel="stylesheet" href="/assets/js/select2/select2-bootstrap.css">
+<link rel="stylesheet" href="/assets/js/select2/select2.css">
+<link rel="stylesheet" href="/assets/js/selectboxit/jquery.selectBoxIt.css">
+
+<!-- Bottom scripts (common) -->
+<script src="assets/js/gsap/TweenMax.min.js"></script>
+<script src="assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+<script src="assets/js/bootstrap.js"></script>
+<script src="assets/js/joinable.js"></script>
+<script src="assets/js/resizeable.js"></script>
+<script src="assets/js/neon-api.js"></script>
+<script src="/assets/js/selectboxit/jquery.selectBoxIt.min.js"></script>
+
+
+<!-- Imported scripts on this page -->
+<script src="assets/js/datatables/datatables.js"></script>
+<script src="assets/js/select2/select2.min.js"></script>
+<script src="assets/js/neon-chat.js"></script>
+
+
+<!-- JavaScripts initializations and stuff -->
+<script src="assets/js/neon-custom.js"></script>
+
+
+
+
+<!-- Imported styles on this page -->
+<link rel="stylesheet" href="/assets/js/select2/select2-bootstrap.css">
+<link rel="stylesheet" href="/assets/js/select2/select2.css">
+<link rel="stylesheet" href="/assets/js/selectboxit/jquery.selectBoxIt.css">
+<link rel="stylesheet" href="/assets/js/daterangepicker/daterangepicker-bs3.css">
+<link rel="stylesheet" href="/assets/js/icheck/skins/minimal/_all.css">
+<link rel="stylesheet" href="/assets/js/icheck/skins/square/_all.css">
+<link rel="stylesheet" href="/assets/js/icheck/skins/flat/_all.css">
+<link rel="stylesheet" href="/assets/js/icheck/skins/futurico/futurico.css">
+<link rel="stylesheet" href="/assets/js/icheck/skins/polaris/polaris.css">
+
+<!-- Bottom scripts (common) -->
+<script src="/assets/js/gsap/TweenMax.min.js"></script>
+<script src="/assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+<script src="/assets/js/bootstrap.js"></script>
+<script src="/assets/js/joinable.js"></script>
+<script src="/assets/js/resizeable.js"></script>
+<script src="/assets/js/neon-api.js"></script>
+
+
+<!-- Imported scripts on this page -->
+<script src="/assets/js/select2/select2.min.js"></script>
+<script src="/assets/js/bootstrap-tagsinput.min.js"></script>
+<script src="/assets/js/typeahead.min.js"></script>
+<script src="/assets/js/selectboxit/jquery.selectBoxIt.min.js"></script>
+<script src="/assets/js/bootstrap-datepicker.js"></script>
+<script src="/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/assets/js/bootstrap-colorpicker.min.js"></script>
+<script src="/assets/js/moment.min.js"></script>
+<script src="/assets/js/daterangepicker/daterangepicker.js"></script>
+<script src="/assets/js/jquery.multi-select.js"></script>
+<script src="/assets/js/icheck/icheck.min.js"></script>
+<script src="/assets/js/neon-chat.js"></script>
+
+
+<!-- JavaScripts initializations and stuff -->
+<script src="/assets/js/neon-custom.js"></script>
+
+
+{% endblock main %}

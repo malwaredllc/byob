@@ -1,0 +1,87 @@
+input.typeahead {
+	display: block;
+}
+
+.twitter-typeahead{
+width:100%;
+}
+
+.twitter-typeahead .tt-query,
+.twitter-typeahead .tt-hint {
+  margin-bottom: 0;
+}
+.tt-dropdown-menu {
+  min-width: 160px;
+  margin-top: 2px;
+  padding: 5px 0;
+  background-color: #fff;
+  border: 1px solid @default;
+  *border-right-width: 2px;
+  *border-bottom-width: 2px;
+  .rounded;
+  width:100%;        
+}
+
+.tt-suggestion {
+  display: block;
+  padding: 4px @padding-base-horizontal;
+  
+  p {
+	  .text-overflow();
+	  height: @line-height-computed;
+  }
+  
+  .thumb-entry {
+	  .clearfix;
+	  
+  	 > span.image {
+	     float: left;
+	   
+	     img {
+  	     }
+	  }
+	  
+	  > span.text {
+		  float: left;
+		  width: 80%;
+		  margin-left: @padding-base-horizontal;
+		  
+		  strong {
+			  display: block;
+			  color: @main_color;
+		  }
+		  
+		  em {
+			  font-style: normal;
+			  font-size: 10px;
+			  color: lighten(@text_color_light, 1%);
+			  display: block;
+			  padding-top: 4px;
+			  .text-overflow();
+		  }
+	  }
+  }
+}
+
+.tt-suggestion.tt-is-under-cursor {
+  color: @main_color;
+  background: #f3f3f3;
+}
+
+.tt-suggestion.tt-is-under-cursor a {
+  color: @main_color;
+}
+
+.tt-suggestion p {
+  margin: 0;
+}
+
+.twitter-typeahead .tt-hint {
+	padding: @padding-base-vertical @padding-base-horizontal;
+	color: @text_disabled;
+	line-height: @line-height-base;
+	margin: 0;
+	padding-top: @padding-base-vertical - 0.5px;
+	width: 100%;
+	.bs;
+}

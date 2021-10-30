@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8"/>
+	<title>vanilla</title>
+	<meta name="viewport" content="width=device-width"/>
+	<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+	<ul>
+		<li><a href="index.html" class="active">Vanilla JS</a></li>
+		<li><a href="jquery.html">jQuery plugin</a></li>
+		<li><a href="angular.html">Angular module</a></li>
+		<li><a href="requirejs.html">RequireJS module</a></li>
+	</ul>
+
+	<span class="chart" data-percent="86">
+		<span class="percent"></span>
+	</span>
+
+	<span class="btn js_update">Update chart</span>
+
+	<script src="../dist/easypiechart.js"></script>
+	<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		var chart = window.chart = new EasyPieChart(document.querySelector('span'), {
+			easing: 'easeOutElastic',
+			delay: 3000,
+			barColor: '#69c',
+			trackColor: '#ace',
+			scaleColor: false,
+			lineWidth: 20,
+			trackWidth: 16,
+			lineCap: 'butt',
+			onStep: function(from, to, percent) {
+				this.el.children[0].innerHTML = Math.round(percent);
+			}
+		});
+
+		document.querySelector('.js_update').addEventListener('click', function(e) {
+			chart.update(Math.random()*200-100);
+		});
+
+	});
+	</script>
+</body>
+</html>

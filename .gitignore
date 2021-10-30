@@ -1,0 +1,15 @@
+# Files
+*.db
+*.pyc
+
+# Directories
+venv/
+byob/data/
+byob/modules/clients/
+
+# Test configs
+.coveralls.yaml
+.coverage
+.coveragerc
+web-gui/buildyourownbotnet/assets/js/jquery-terminal/package-lock.json
+*.json

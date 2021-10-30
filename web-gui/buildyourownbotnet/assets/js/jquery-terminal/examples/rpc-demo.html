@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>JSON-RPC Demo for JQuery Terminal Emulator</title>
+    <meta name="author" content="Jakub Jankiewicz - jcubic&#64;onet.pl"/>
+    <meta name="Description" content="Demonstration for JQuery Terminal Emulator using call automaticly JSON-RPC service (in php) with authentication."/>
+    <script src="https://code.jquery.com/jquery-1.7.2.min.js"></script>
+    <script src="../js/jquery.mousewheel-min.js"></script>
+    <script src="../js/jquery.terminal.min.js"></script>
+    <link href="../css/jquery.terminal.min.css" rel="stylesheet"/>
+    <script src="https://unpkg.com/js-polyfills/keyboard.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script>
+    jQuery(document).ready(function($) {
+        $('body').terminal("json-rpc-service-demo.php", {
+            login: true,
+            greetings: "You are authenticated",
+            completion: true,
+            processRPCResponse: function(data) {
+                if (typeof data === 'string' || data instanceof Array) {
+                    this.echo(data);
+                } else if (data && typeof data === 'object') {
+                    var str = Object.keys(data).map(function(key) {
+                        return '[[b;#fff;]' + key + ']: ' + data[key];
+                    }).join('\n');
+                    this.echo(str);
+                }
+            }
+        });
+    });
+    </script>
+  </head>
+<body>
+</html>

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8"/>
+	<title>Angular</title>
+	<meta name="viewport" content="width=device-width"/>
+	<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+	<ul>
+		<li><a href="index.html">Vanilla JS</a></li>
+		<li><a href="jquery.html">jQuery plugin</a></li>
+		<li><a href="angular.html">Angular module</a></li>
+		<li><a href="requirejs.html" class="active">RequireJS module</a></li>
+	</ul>
+
+	<div class="span6">
+		<h2>Angular module</h2>
+		<div class="angular" ng-controller="chartCtrl">
+			<span class="chart" easypiechart ng-init="options = { animate:false, barColor:'#E67E22', scaleColor:false, lineWidth:3, lineCap:'butt' }" percent="percent" options="options">
+				<span class="percent" ng-bind="percent"></span>
+			</span>
+			<input type="range" min="-100" max="100" step="1" ng-model="percent" />
+		</div>
+	</div>
+
+	<div class="span6">
+		<h2>jQuery module</h2>
+		<span id="chart" class="chart" data-percent="12">
+			<span class="percent"></span>
+		</span>
+		<input type="range" min="-100" max="100" step="1" id="updater" />
+	</div>
+
+	<script src="../bower_components/requirejs/require.js"></script>
+	<script>
+		require.config({
+			paths: {
+				'jquery': 'https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery',
+				'angular': 'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular',
+				'angular-easypiechart': '../dist/angular.easypiechart',
+				'jquery-easypiechart': '../dist/jquery.easypiechart'
+			},
+			shim: {
+				'angular': { 'exports': 'angular' }
+			}
+		});
+
+		require([
+			'angular-easypiechart'
+		], function () {
+			angular.module('app', ['easypiechart'])
+
+				.controller('chartCtrl', ['$scope', function ($scope) {
+					$scope.percent = 65;
+				}]);
+
+			angular.bootstrap(document.getElementsByTagName('html')[0], ['app']);
+		});
+
+		require([
+			'jquery-easypiechart'
+		], function () {
+			var chart = $('#chart').easyPieChart({
+				onStep: function(from, to, percent) {
+					$(this.el).find('.percent').text(Math.round(percent));
+				}
+			}).data('easyPieChart');
+
+			$('#updater').on('change', function() {
+				chart.update($(this).val());
+			});
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+FROM ubuntu:20.04
+ENV DEBIAN_FRONTEND noninteractive
+
+ARG WINE_VERSION=winehq-stable
+ARG PYTHON_VERSION=3.7.9
+ARG PYINSTALLER_VERSION=3.6
+
+# we need wine for this to work, so we'll use the PPA
+RUN set -x \
+    && dpkg --add-architecture i386 \
+    && apt-get update -qy \
+    && apt-get install --no-install-recommends -qfy gpg-agent rename apt-transport-https software-properties-common winbind cabextract wget curl zip unzip xvfb xdotool x11-utils xterm \
+    && wget -nv https://dl.winehq.org/wine-builds/winehq.key \
+    && apt-key add winehq.key \
+    && add-apt-repository 'https://dl.winehq.org/wine-builds/ubuntu/' \
+    && apt-get update -qy \
+    && apt-get install --install-recommends -qfy $WINE_VERSION \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && wget -nv https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks \
+    && chmod +x winetricks \
+    && mv winetricks /usr/local/bin
+
+# wine-gecko
+RUN mkdir -p /usr/share/wine/gecko
+RUN curl -o /usr/share/wine/gecko/wine_gecko-2.47-x86.msi http://dl.winehq.org/wine/wine-gecko/2.47/wine_gecko-2.47-x86.msi
+
+# wine settings
+ENV WINEARCH win32
+ENV WINEDEBUG fixme-all
+ENV WINEPREFIX /wine
+
+### The following didn't work as expected. Left them here for future reference
+
+# xvfb settings
+# ENV DISPLAY :0
+# RUN set -x \
+#     && echo 'export DISPLAY=:0' >> /root/.bashrc \
+#     && echo 'Xvfb $DISPLAY -screen 0 1024x768x24 &' >> /root/.bashrc
+# RUN set -x \
+#     && ( Xvfb :0 -screen 0 1024x768x16 & ) \
+#     && sleep 5
+
+# default for X Virtual Frame Buffer
+# ARG DISPLAY=:99
+# ENV DISPLAY=${DISPLAY}
+# RUN echo "DISPLAY: ${DISPLAY}"
+
+# RUN set -x \
+#     && ( Xvfb :99 & )
+
+# xvfb settings
+ENV DISPLAY :0
+RUN set -x \
+    && echo 'Xvfb $DISPLAY -screen 0 1024x768x24 &' >> /root/.bashrc
+# RUN set -x \
+#     && ( Xvfb :0 -screen 0 1024x768x16 & ) \
+#     && sleep 5
+
+# windows 10 environment
+RUN set -x \
+    && winetricks -q win10
+
+# PYPI repository location
+ENV PYPI_URL=https://pypi.python.org/
+# PYPI index location
+ENV PYPI_INDEX_URL=https://pypi.python.org/simple
+
+# install python in wine, using the msi packages to install, extracting
+# the files directly, since installing isn't running correctly.
+
+RUN set -x \
+    && for msifile in `echo core dev exe lib path pip tcltk tools`; do \
+        wget -nv "https://www.python.org/ftp/python/$PYTHON_VERSION/win32/${msifile}.msi"; \
+        wine msiexec /i "${msifile}.msi" /qb TARGETDIR=C:/Python37; \
+        rm ${msifile}.msi; \
+    done \
+    && cd /wine/drive_c/Python37 \
+    && echo 'wine '\''C:\Python37\python.exe'\'' "$@"' > /usr/bin/python \
+    && echo 'wine '\''C:\Python37\Scripts\easy_install.exe'\'' "$@"' > /usr/bin/easy_install \
+    && echo 'wine '\''C:\Python37\Scripts\pip.exe'\'' "$@"' > /usr/bin/pip \
+    && echo 'wine '\''C:\Python37\Scripts\pyinstaller.exe'\'' "$@"' > /usr/bin/pyinstaller \
+    && echo 'wine '\''C:\Python37\Scripts\pyupdater.exe'\'' "$@"' > /usr/bin/pyupdater \
+    && echo 'assoc .py=PythonScript' | wine cmd \
+    && echo 'ftype PythonScript=c:\Python37\python.exe "%1" %*' | wine cmd \
+    && while pgrep wineserver >/dev/null; do echo "Waiting for wineserver"; sleep 1; done \
+    && chmod +x /usr/bin/python /usr/bin/easy_install /usr/bin/pip /usr/bin/pyinstaller /usr/bin/pyupdater \
+    && (pip install -U pip || true) \
+    && rm -rf /tmp/.wine-*
+
+ENV W_DRIVE_C=/wine/drive_c
+ENV W_WINDIR_UNIX="$W_DRIVE_C/windows"
+ENV W_SYSTEM_DLLS="$W_WINDIR_UNIX/system32"
+ENV W_TMP="$W_DRIVE_C/windows/temp/_$0"
+
+# install Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019 dll files
+RUN set -x \
+    && rm -f "$W_TMP"/* \
+    && wget -P "$W_TMP" https://aka.ms/vs/16/release/vc_redist.x86.exe \
+    && cabextract -q --directory="$W_TMP" "$W_TMP"/vc_redist.x86.exe \
+    && cabextract -q --directory="$W_TMP" "$W_TMP/a10" \
+    && cabextract -q --directory="$W_TMP" "$W_TMP/a11" \
+    && cd "$W_TMP" \
+    && rename 's/_/\-/g' *.dll \
+    && cp "$W_TMP"/*.dll "$W_SYSTEM_DLLS"/
+
+# install pyinstaller
+RUN /usr/bin/pip install pyinstaller==$PYINSTALLER_VERSION
+
+# put the src folder inside wine
+RUN mkdir /src/ && ln -s /src /wine/drive_c/src
+VOLUME /src/
+WORKDIR /wine/drive_c/src/
+RUN mkdir -p /wine/drive_c/tmp
+
+COPY entrypoint-windows.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

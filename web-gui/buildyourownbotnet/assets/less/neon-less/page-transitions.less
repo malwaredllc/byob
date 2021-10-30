@@ -1,0 +1,94 @@
+// Page Fade - TRANSITION
+body.page-fade {
+	background: @main_color;
+	.transition(~"400ms all ease-in-out");
+	.transform-origin(50% 30%);
+	
+	> .page-container {
+		.transform(~"scale(0.9) translateY(100px)");
+		.transition(~"400ms all ease-in-out");
+		.opacity(0);
+	}
+	
+	&-init {
+		background: @background_color;
+		
+		> .page-container { 
+			.transform(~"scale(1) translateY(0)");
+			.opacity(1);
+		}
+	}
+}
+
+
+
+// Left In - TRANSITION
+body.page-left-in {
+	background: @main_color;
+	.transition(~"400ms all ease-in-out");
+	.transform-origin(0% 50%);
+	.perspective(1000);
+	
+	> .page-container {
+		.transform(~"rotateY(8deg) translateX(-100px)");
+		.transition(~"400ms all ease-in-out");
+		.opacity(0);
+	}
+	
+	&-init {
+		background: @background_color;
+		
+		> .page-container {
+			.transform(~"rotateY(0deg) translateX(0px)");
+			.opacity(1);
+		}
+	}
+}
+
+
+
+// Right In - TRANSITION
+body.page-right-in {
+	background: @main_color;
+	overflow-x: hidden;
+	.transition(~"400ms all ease-in-out");
+	.transform-origin(100% 50%);
+	.perspective(1000);
+	
+	> .page-container {
+		.transform(~"rotateY(-8deg) translateX(100px)");
+		.transition(~"400ms all ease-in-out");
+		.opacity(0);
+	}
+	
+	&-init {
+		background: @background_color;
+		
+		> .page-container {
+			.transform(~"rotateY(0deg) translateX(0px)");
+			.opacity(1);
+		}
+	}
+}
+
+
+
+// Fade Only - TRANSITION
+body.page-fade-only {
+	background: @main_color;
+	.transition(~"900ms all cubic-bezier(0.445, 0.050, 0.550, 0.950)");
+	.transform-origin(50% 30%);
+	
+	> .page-container {
+		.transition(~"900ms all cubic-bezier(0.445, 0.050, 0.550, 0.950)");
+		.opacity(0);
+	}
+	
+	&-init {
+		background: @background_color;
+		
+		> .page-container { 
+			.opacity(1);
+		}
+	}
+}

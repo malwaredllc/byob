@@ -1,0 +1,9 @@
+table.fixedHeader-floating {
+  position: fixed;
+  background-color: white;
+}
+
+table.fixedHeader-locked {
+  position: absolute;
+  background-color: white;
+}

@@ -1,0 +1,174 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="robots" content="index, follow">
+        <title>aciTree drag & drop outside tree demo - A treeview control with jQuery</title>
+        <meta name="description" content="A demo to show you how aciTree can be used with aciSortable, check the plugin page to see all the functions exposed by the API">
+        <meta name="keywords" content="aciTree, treeview, control, tree view, javascript, jQuery">
+        <link rel="stylesheet" type="text/css" href="css/aciTree.css" media="all">
+        <link rel="stylesheet" type="text/css" href="css/demo.css" media="all">
+        <script type="text/javascript" src="js/jquery.min.js"></script>
+        <script type="text/javascript" src="js/jquery.aciPlugin.min.js"></script>
+        <script type="text/javascript" src="js/jquery.aciSortable.min.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.dom.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.core.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.utils.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.selectable.js"></script>
+        <script type="text/javascript" src="js/jquery.aciTree.sortable.js"></script>
+    </head>
+    <body>
+
+        <div>
+
+            <p>Note that this demo is using aciSortable to process the drag & drop (see the aciSortable docs to understand how to use it).</p>
+
+            <p>For ordering tree items in a drag & drop style - check <a href="aciTree-drag-drop.html" target="_blank" title="Sorting tree items">this</a> demo.</p>
+
+            <div id="tree1" class="aciTree"><div>
+                    <a style="font-size:10px" href="/source/php/niceJson.php?file=source/aciTree/json/checkbox.json" title="See the JSON data" target="_blank">see the JSON behind this tree</a>
+                    <br>The easy way to find a car that's right for you</div></div>
+
+            <div class="log">Tree Log... <a class="clear_log" style="font-size:10px" href="#" title="Clear the LOG" target="_blank">clear log</a>
+                <div></div></div>
+
+            <div style="clear:both"></div>
+
+            <div class="drop brand"><p>Brand (drag a brand from the above tree)</p>
+                <ul></ul>
+            </div>
+            <div class="drop body"><p>Body (drag a body type from the above tree)</p>
+                <ul></ul>
+            </div>
+
+            <div class="drop any"><p>Drag one brand or body type here</p>
+                <ul></ul>
+            </div>
+
+            <script class="code" type="text/javascript">
+
+                $(function() {
+
+                    // listen for the events
+                    $('#tree1').on('acitree', function(event, api, item, eventName, options) {
+                        switch (eventName) {
+                            case 'beforedrag':
+                                if (!api.isLeaf(item)) {
+                                    // only drag leaf items
+                                    return false;
+                                }
+                                var parent = api.parent(item);
+                                if ((api.getLabel(parent) != 'Brand') && (api.getLabel(parent) != 'Body Type & Size')) {
+                                    // only drag from brand & body type
+                                    return false;
+                                }
+                                break;
+                            case 'checkdrop':
+                                // cancel tree item sorting
+                                return false;
+                        }
+                    });
+
+                    // init the tree
+                    $('#tree1').aciTree({
+                        ajax: {
+                            url: 'json/checkbox-radio-button.json'
+                        },
+                        sortable: true
+                    });
+
+                    // connect with the drop targets
+                    $('#tree1').aciSortable('option', 'connectDrop', '.drop');
+
+                    // init the drop targets
+                    $('.drop').aciSortable({
+                        dropPosition: 1,
+                        valid: function(item, hover, before, isContainer, placeholder, helper) {
+                            var tree = $('#tree1').aciTree('api');
+                            if (tree.isItem(item)) {
+                                var parent = tree.parent(item);
+                                if (!this._instance.jQuery.hasClass('any')) {
+                                    // test for a valid destination
+                                    if (((tree.getLabel(parent) == 'Brand') && !this._instance.jQuery.hasClass('brand')) ||
+                                            ((tree.getLabel(parent) == 'Body Type & Size') && !this._instance.jQuery.hasClass('body'))) {
+                                        return false;
+                                    }
+                                }
+                                var id = tree.getId(item);
+                                // test if the item was dragged already
+                                if (this._instance.jQuery.find('#item-' + id).length) {
+                                    return false;
+                                }
+                                return true;
+                            }
+                            return false;
+                        },
+                        end: function(item, hover, placeholder, helper) {
+                            if (placeholder.parent().length) {
+                                var tree = $('#tree1').aciTree('api');
+                                if (tree.isItem(item)) {
+                                    var id = tree.getId(item);
+                                    var label = tree.getLabel(item);
+                                    if (this._instance.jQuery.hasClass('any')) {
+                                        // keep only one item
+                                        this._instance.jQuery.find('li:not(.aciSortablePlaceholder)').remove();
+                                    }
+                                    var item = $('<li id="item-' + id + '">' + label + '</li>');
+                                    placeholder.after(item).detach();
+                                } else {
+                                    placeholder.detach();
+                                }
+                            }
+                            helper.detach();
+                        }
+                    });
+
+                    // connect together so we can drag the item around
+                    $('.brand').aciSortable('option', 'connectDrop', '.body,.any');
+                    $('.body').aciSortable('option', 'connectDrop', '.brand,.any');
+                    $('.any').aciSortable('option', 'connectDrop', '.body,.brand');
+
+                });
+
+            </script>
+
+            <script type="text/javascript">
+
+                $(function() {
+
+                    // write to log
+                    $('[id^=tree]').on('acitree', function(event, api, item, eventName, options) {
+                        var log = $(this).next('.log').find('div');
+                        if (api.isItem(item)) {
+                            log.prepend('<p>' + eventName + ' [' + api.getId(item) + ']</p>');
+                        } else {
+                            log.prepend('<p>' + eventName + ' [tree]</p>');
+                        }
+                    });
+
+                    $('.clear_log').click(function() {
+                        $(this).closest('.log').find('div').html('');
+                        return false;
+                    });
+
+                });
+
+            </script>
+
+        </div>
+
+        <script type="text/javascript">
+
+            $(function() {
+
+                $('script.code').each(function() {
+                    $(this).before('<div style="clear:both;margin:10px 0 10px 0"><pre style="padding:20px;border:1px dashed #000;background:#f6f6f6;display:inline-block;"></pre></div>');
+                    $(this).prev('div').find('pre').text($(this).html());
+                });
+
+            });
+
+        </script>
+
+    </body>
+</html>

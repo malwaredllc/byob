@@ -1,0 +1,203 @@
+/**
+ * Nestable
+ */
+
+.dd { 
+	position: relative;
+	display: block;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.dd-list { 
+	display: block;
+	position: relative;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.dd-list .dd-list {
+	padding-left: 30px;
+}
+
+.dd-collapsed .dd-list {
+	display: none;
+}
+
+.dd-item,
+.dd-empty,
+.dd-placeholder { 
+	display: block;
+	position: relative;
+	margin: 0;
+	padding: 0;
+	min-height: 20px;
+	font-size: 13px;
+	line-height: 20px;
+}
+
+.dd-handle, .dd-content { 
+	display: block;
+	margin: 0px 0;
+	padding: 5px 10px;
+	background: #fafafa;
+	.box-sizing(border-box);
+	border: 1px solid @default;
+	.transall;
+}
+
+dd-content, .dd-content:hover { 
+	background: #fff;
+}
+
+.dd-item > button { 
+	display: block;
+	position: relative;
+	cursor: pointer;
+	float: left;
+	width: 25px;
+	height: 20px;
+	margin: 5px 0;
+	padding: 0;
+	text-indent: -9999px;
+	white-space: nowrap;
+	overflow: visible;
+	border: 0;
+	background: transparent;
+	font-size: 12px;
+	line-height: 1;
+	text-align: center;
+	font-weight: bold;
+	margin-right: @base_padding;
+	outline: 0;
+	
+	&:after {
+		content: '';
+		display: block;
+		position: absolute;
+		right: 0px;
+		top: -5px;
+		bottom: -6px;
+		width: 1px;
+		background: @default;
+	}
+}
+
+.dd-item > button:before { 
+	content: '+';
+	display: block;
+	position: absolute;
+	width: 100%;
+	text-align: center;
+	text-indent: 0;
+}
+
+.dd-item > button[data-action="collapse"]:before { 
+	content: '-';
+}
+
+.dd-placeholder,
+.dd-empty { 
+	margin: 0px 0;
+	padding: 0;
+	min-height: 30px;
+	background: fade(@hover_bg, 30%);
+	border: 1px dotted @default;
+	.box-sizing(border-box);
+}
+
+.dd-empty { 
+	border: 1px dashed #bbb;
+	min-height: 100px;
+	background-color: #e5e5e5;
+}
+
+.dd-dragel { 
+	position: absolute;
+	pointer-events: none;
+	z-index: 9999;
+}
+
+.dd-dragel > .dd-item .dd-handle,
+.dd-dragel > .dd-item .dd-content {
+	margin-top: 0;
+}
+
+.dd-dragel .dd-handle,
+.dd-dragel .dd-content {
+	.box-shadow(2px 4px 6px 0 rgba(0,0,0,.1));
+}
+
+
+// Styled by Laborator
+.nested-list {
+	
+	.dd-list {
+		
+		> .dd-item {
+			
+		}
+	}
+	
+	&.with-margins {
+		
+		.dd-item .dd-handle,
+		.dd-item .dd-content {
+			margin: 5px 0;
+		}
+	}
+	
+	&.custom-drag-button {
+		.custom-handler > .dd-item;
+		
+	
+		&.drag-button-on-hover {
+			
+			.dd-item > .dd-handle {
+				.opacity(0);
+			}
+			
+			.dd-item:hover > .dd-handle {
+				.opacity(1);
+			}
+		}
+	}
+}
+
+.custom-handler {
+	
+	.dd-item {
+		
+		.dd-handle {
+			position: absolute !important;
+			margin: 0 !important;
+			width: 15px;
+			height: 32px;
+			padding-left: 5px;
+			padding-right: 4px;
+			cursor: pointer;
+			padding-top: 7px;
+			.box-shadow(none);
+			
+			span {
+				display: block;
+				line-height: 3px;
+				color: fade(@text_color_light, 70%);
+			}
+		}
+		
+		.dd-content {
+			padding-left: @base_margin - @base_padding/2;
+		}
+		
+		button + .dd-handle {
+			left: 24px;
+			
+			+ .dd-content {
+				padding-left: (@base_margin - @base_padding/2) * 2;
+			}
+		}
+	}
+}

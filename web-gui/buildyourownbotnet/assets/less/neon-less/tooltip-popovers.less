@@ -1,0 +1,48 @@
+// Base class
+.tooltip {
+  
+  // Skins
+  &.tooltip-primary { .tooltip-variant(@main_color; @menu_active_text_color); }
+  &.tooltip-secondary { .tooltip-variant(@secondary_color; @secondary_text_color); }
+  &.tooltip-default { .tooltip-variant(@default; @main_color); }
+  
+}
+//
+// Popovers
+// --------------------------------------------------
+
+
+.popover {
+  .box-shadow(none);
+	
+  // Skins
+  &.popover-primary {
+  	  @popover_bg: @main_color;
+  	  @popover_heading_bg: lighten(@main_color, 5%);
+  	  @popover_heading_text: #FFF;
+  	  @popover_border: @main_border_color;
+  	  @popover_text_color: @main_text_acitve_color;
+  	  
+	  .popup-variant(@popover_bg; @popover_heading_bg; @popover_heading_text; @popover_border; @popover_text_color);
+  }
+  
+  &.popover-secondary {
+  	  @popover_bg: @secondary_color;
+  	  @popover_heading_bg: darken(@secondary_color, 5%);
+  	  @popover_heading_text: @secondary_text_color;
+  	  @popover_border: darken(@secondary_color, 7%);
+  	  @popover_text_color: @secondary_text_color;
+  	  
+	  .popup-variant(@popover_bg; @popover_heading_bg; @popover_heading_text; @popover_border; @popover_text_color);
+  }
+  
+  &.popover-default {
+  	  @popover_bg: #ebebeb;
+  	  @popover_heading_bg: darken(@default, 10%);
+  	  @popover_heading_text: @main_color;
+  	  @popover_border: @default;
+  	  @popover_text_color: @default_text;
+  	  
+	  .popup-variant(@popover_bg; @popover_heading_bg; @popover_heading_text; @popover_border; @popover_text_color);
+  }
+}
