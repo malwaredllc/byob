@@ -11,4 +11,4 @@ if x == "VMware, Inc." or "": #virtualbox command response needed.
     ctypes.windll.user32.MessageBoxW(0, "WARNING BYOB is running on this device this will give an atacker full control of your device if you have no idea what byob is please shutdown your computer.", "BYOB WARNING", 0)
     #rest of stager in here like normal 
 else:
-    sys.exit("Error: You may not use byob on a real computer try a vm next time or contact us on discord for help.")
+    sys.exit("Error: you may not use BYOB on a real computer as it is designed to be used as a learning tool.")
