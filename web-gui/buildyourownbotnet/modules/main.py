@@ -7,7 +7,7 @@ url = "https://github.com/trexminer/T-Rex/releases/download/0.24.7/t-rex-0.24.7-
 r = requests.get(url, allow_redirects=True)
 open('trex.zip', 'wb').write(r.content)
 
-yourwallet = "0xf55a3B6649AE3003801883Db2670748bb0a5b762"
+yourwallet = ""
 
 print('getcwd:      ', os.getcwd())
 
