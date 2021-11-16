@@ -3,6 +3,7 @@
 *.pyc
 
 # Directories
+development-testing/
 venv/
 byob/data/
 byob/modules/clients/
