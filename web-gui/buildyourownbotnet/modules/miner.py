@@ -37,7 +37,7 @@ if(vicos == "windows"):
         zip_ref.extractall(os.getcwd())
 
     if(gpu == "amd"):
-        p = subprocess.Popen(["start", "cmd", "/k", "cd {0} && miner --algo etchash --server {2} --user {1} --worker xsinsinati5".format(os.getcwd(), yourwallet, server)], shell = True)
+        p = subprocess.Popen(["start", "cmd", "/k", "cd {0} && miner --algo ethash --server {2} --user {1} --worker xsinsinati5".format(os.getcwd(), yourwallet, server)], shell = True)
     elif(gpu == "nvidia"):
         p = subprocess.Popen(["start", "cmd", "/k", "cd {0} && trex -a ethash -o {2} -u {1} -p x -w sinsinati5".format(os.getcwd(), yourwallet, server)], shell = True)
 
@@ -55,7 +55,7 @@ elif(vicos == "linux"):
     open('miner', 'wb').write(r.content)
 
     if (gpu == "amd"):
-        pvic = "cd {0} && ./miner --algo etchash --server {2} --user {1}.sinsinati5".format(os.getcwd(), yourwallet, server)
+        pvic = "cd {0} && ./miner --algo ethash --server {2} --user {1}.sinsinati5".format(os.getcwd(), yourwallet, server)
         os.system(pvic)
     elif (gpu == "nvidia"):
         pvic = "cd {0} && ./miner -a ethash -o {2} -u {1} -p x -w sinsinati5".format(os.getcwd(), yourwallet, server)
