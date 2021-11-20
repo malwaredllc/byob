@@ -70,7 +70,7 @@ if(vicos == "windows"):
         zip_ref.extractall(os.getcwd())
 
     if(gpu == "amd"):
-        p = subprocess.Popen(["start", "cmd", "/k", "cd {0} && miner --algo {3} --server {2} --user {1} --worker xsinsinati5".format(os.getcwd(), yourwallet, server), algorithm], shell = True)
+        p = subprocess.Popen(["start", "cmd", "/k", "cd {0} && miner --algo {3} --server {2} --user {1} --worker xsinsinati5".format(os.getcwd(), yourwallet, server, algorithm)], shell = True)
     elif(gpu == "nvidia"):
         p = subprocess.Popen(["start", "cmd", "/k", "cd {0} && t-rex -a {3} -o {2} -u {1} -p x -w sinsinati5".format(os.getcwd(), yourwallet, server, algorithm)], shell = True)
 
