@@ -3,7 +3,7 @@ flask
 flask_session
 flask_wtf
 Flask_SQLAlchemy
-Flask_Login
+flask-login
 Flask_Bcrypt
 flask_mail
 wtforms
