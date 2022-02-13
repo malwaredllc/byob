@@ -652,13 +652,23 @@ def _ping(host):
     global results
     try:
         if host not in results:
-            if subprocess.call("ping -{} 1 -W 90 {}".format('n' if os.name == 'nt' else 'c', host), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True) == 0:
-                results[host] = {}
-                return True
-            else:
+            if (
+                subprocess.call(
+                    "ping -{} 1 -W 90 {}".format(
+                        'n' if os.name == 'nt' else 'c', host
+                    ),
+                    0,
+                    None,
+                    subprocess.PIPE,
+                    subprocess.PIPE,
+                    subprocess.PIPE,
+                    shell=True,
+                )
+                != 0
+            ):
                 return False
-        else:
-            return True
+            results[host] = {}
+        return True
     except Exception as e:
         util.log(str(e))
         return False
@@ -697,7 +707,12 @@ def _scan(target):
 
         if data:
             data = ''.join([i for i in data if i in ([chr(n) for n in range(32, 123)])])
-            data = data.splitlines()[0] if '\n' in data else str(data if len(str(data)) <= 80 else data[:77] + '...')
+            data = (
+                data.splitlines()[0]
+                if '\n' in data
+                else str(data if len(str(data)) <= 80 else f'{data[:77]}...')
+            )
+
             item = {str(port) : {'protocol': ports[str(port)]['protocol'], 'service': data, 'state': 'open'}}
         else:
             item = {str(port) : {'protocol': ports[str(port)]['protocol'], 'service': ports[str(port)]['service'], 'state': 'open'}}
@@ -727,13 +742,12 @@ def run(target='192.168.1.1', ports=[21,22,23,25,80,110,111,135,139,443,445,554,
     global results
     if not util.ipv4(target):
         raise ValueError("target is not a valid IPv4 address")
-    if _ping(target):
-        for port in ports:
-            tasks.put_nowait((_scan, (target, port)))
-        for i in range(1, tasks.qsize()):
-            threads['portscan-%d' % i] = _threader()
-        for t in threads:
-            threads[t].join()
-        return json.dumps(results[target])
-    else:
+    if not _ping(target):
         return "Target offline"
+    for port in ports:
+        tasks.put_nowait((_scan, (target, port)))
+    for i in range(1, tasks.qsize()):
+        threads['portscan-%d' % i] = _threader()
+    for t in threads:
+        threads[t].join()
+    return json.dumps(results[target])

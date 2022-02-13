@@ -151,7 +151,15 @@ def variable(length=6):
     Returns variable as a string
 
     """
-    return random.choice([chr(n) for n in range(97,123)]) + str().join(random.choice([chr(n) for n in range(97,123)] + [chr(i) for i in range(48,58)] + [chr(i) for i in range(48,58)] + [chr(z) for z in range(65,91)]) for x in range(int(length)-1))
+    return random.choice([chr(n) for n in range(97, 123)]) + str().join(
+        random.choice(
+            [chr(n) for n in range(97, 123)]
+            + [chr(i) for i in range(48, 58)]
+            + [chr(i) for i in range(48, 58)]
+            + [chr(z) for z in range(65, 91)]
+        )
+        for _ in range(int(length) - 1)
+    )
 
 def main(function, *args, **kwargs):
     """
@@ -251,8 +259,9 @@ def freeze(filename, icon=None, hidden=None, debug=False):
             if 'EXE' in line and 'complete' in line:
                 break
         time.sleep(0.25)
-    output = os.path.join(path, 'dist', name + str('.exe' if os.name == 'nt' else ''))
-    return output
+    return os.path.join(
+        path, 'dist', name + str('.exe' if os.name == 'nt' else '')
+    )
 
 def app(filename, icon=None):
     """
@@ -276,8 +285,8 @@ def app(filename, icon=None):
     plistPath = os.path.join(rsrcPath, 'Info.plist')
     iconPath = os.path.basename(icon) if icon else ''
     executable = os.path.join(distPath, filename)
-    bundleVersion = bundleName + ' ' + version
-    bundleIdentity = 'com.' + bundleName
+    bundleVersion = f'{bundleName} {version}'
+    bundleIdentity = f'com.{bundleName}'
     infoPlist = template_plist.substitute(BASE_NAME=baseName, BUNDLE_VERSION=bundleVersion, ICON_PATH=iconPath, BUNDLE_ID=bundleIdentity, BUNDLE_NAME=bundleName, VERSION=version)
     os.makedirs(distPath)
     os.mkdir(rsrcPath)

@@ -43,7 +43,7 @@ def file_add():
 	if not filetype:
 		filetype = '.dat'
 	elif not filetype.startswith('.'):
-		filetype = '.' + filetype
+		filetype = f'.{filetype}'
 
 	# generate random filename if not specified
 	if not filename:

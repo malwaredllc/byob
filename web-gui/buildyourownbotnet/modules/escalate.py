@@ -34,15 +34,13 @@ def run(filename):
 
     """
     try:
-        if isinstance(filename, str) and os.path.isfile(filename):
-            if bool(ctypes.windll.shell32.IsUserAnAdmin() if os.name == 'nt' else os.getuid() == 0):
-                return "Current user has administrator privileges"
-            else:
-                if os.name == 'nt':
-                    return win32com.shell.shell.ShellExecuteEx(lpVerb='runas', lpFile=sys.executable, lpParameters='{} asadmin'.format(filename))
-                else:
-                    return "Privilege escalation not yet available on '{}'".format(sys.platform)
-        else:
+        if not isinstance(filename, str) or not os.path.isfile(filename):
             return "Error: argument 'filename' must be a valid filename"
+        if bool(ctypes.windll.shell32.IsUserAnAdmin() if os.name == 'nt' else os.getuid() == 0):
+            return "Current user has administrator privileges"
+        if os.name == 'nt':
+            return win32com.shell.shell.ShellExecuteEx(lpVerb='runas', lpFile=sys.executable, lpParameters='{} asadmin'.format(filename))
+        else:
+            return "Privilege escalation not yet available on '{}'".format(sys.platform)
     except Exception as e:
         return "{} erorr: {}".format(__name__, str(e))

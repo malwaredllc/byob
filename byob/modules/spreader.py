@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 'Email Spreader (Build Your Own Botnet)'
 
+
 # standard library
 import os
 import re
@@ -31,27 +32,39 @@ WSP = r'[ \t]'
 CRLF = r'(?:\r\n)'
 NO_WS_CTL = r'\x01-\x08\x0b\x0c\x0f-\x1f\x7f'
 QUOTED_PAIR = r'(?:\\.)'
-FWS = r'(?:(?:' + WSP + r'*' + CRLF + r')?' + WSP + r'+)'
-CTEXT = r'[' + NO_WS_CTL + r'\x21-\x27\x2a-\x5b\x5d-\x7e]'
-CCONTENT = r'(?:' + CTEXT + r'|' + QUOTED_PAIR + r')'
-COMMENT = r'\((?:' + FWS + r'?' + CCONTENT + r')*' + FWS + r'?\)'
-CFWS = r'(?:' + FWS + r'?' + COMMENT + ')*(?:' + FWS + '?' + COMMENT + '|' + FWS + ')'
+FWS = f'(?:(?:{WSP}*{CRLF})?{WSP}+)'
+CTEXT = f'[{NO_WS_CTL}\\x21-\\x27\\x2a-\\x5b\\x5d-\\x7e]'
+CCONTENT = f'(?:{CTEXT}|{QUOTED_PAIR})'
+COMMENT = f'\\((?:{FWS}?{CCONTENT})*{FWS}?\\)'
+CFWS = f'(?:{FWS}?{COMMENT})*(?:{FWS}?{COMMENT}|{FWS})'
 ATEXT = r'[\w!#$%&\'\*\+\-/=\?\^`\{\|\}~]'
-ATOM = CFWS + r'?' + ATEXT + r'+' + CFWS + r'?'
-DOT_ATOM_TEXT = ATEXT + r'+(?:\.' + ATEXT + r'+)*'
-DOT_ATOM = CFWS + r'?' + DOT_ATOM_TEXT + CFWS + r'?'
-QTEXT = r'[' + NO_WS_CTL + r'\x21\x23-\x5b\x5d-\x7e]'
-QCONTENT = r'(?:' + QTEXT + r'|' + QUOTED_PAIR + r')'
-QUOTED_STRING = CFWS + r'?' + r'"(?:' + FWS + r'?' + QCONTENT + r')*' + FWS + r'?' + r'"' + CFWS + r'?'
-LOCAL_PART = r'(?:' + DOT_ATOM + r'|' + QUOTED_STRING + r')'
-DTEXT = r'[' + NO_WS_CTL + r'\x21-\x5a\x5e-\x7e]'
-DCONTENT = r'(?:' + DTEXT + r'|' + QUOTED_PAIR + r')'
-DOMAIN_LITERAL = CFWS + r'?' + r'\[' + r'(?:' + FWS + r'?' + DCONTENT + r')*' + FWS + r'?\]' + CFWS + r'?'
-DOMAIN = r'(?:' + DOT_ATOM + r'|' + DOMAIN_LITERAL + r')'
-ADDR_SPEC = LOCAL_PART + r'@' + DOMAIN
-VALID_ADDRESS_REGEXP = '^' + ADDR_SPEC + '$'
+ATOM = f'{CFWS}?{ATEXT}+{CFWS}?'
+DOT_ATOM_TEXT = f'{ATEXT}+(?:\\.{ATEXT}+)*'
+DOT_ATOM = f'{CFWS}?{DOT_ATOM_TEXT}{CFWS}?'
+QTEXT = f'[{NO_WS_CTL}\\x21\\x23-\\x5b\\x5d-\\x7e]'
+QCONTENT = f'(?:{QTEXT}|{QUOTED_PAIR})'
+QUOTED_STRING = (
+    f'{CFWS}?'
+    + r'"(?:'
+    + FWS
+    + r'?'
+    + QCONTENT
+    + r')*'
+    + FWS
+    + r'?'
+    + r'"'
+    + CFWS
+    + r'?'
+)
 
-# errors
+LOCAL_PART = f'(?:{DOT_ATOM}|{QUOTED_STRING})'
+DTEXT = f'[{NO_WS_CTL}\\x21-\\x5a\\x5e-\\x7e]'
+DCONTENT = f'(?:{DTEXT}|{QUOTED_PAIR})'
+DOMAIN_LITERAL = f'{CFWS}?\\[(?:{FWS}?{DCONTENT})*{FWS}?\\]{CFWS}?'
+DOMAIN = f'(?:{DOT_ATOM}|{DOMAIN_LITERAL})'
+ADDR_SPEC = f'{LOCAL_PART}@{DOMAIN}'
+VALID_ADDRESS_REGEXP = f'^{ADDR_SPEC}$'
+
 class AddressError(Exception):
     """
     Address was given in an invalid format.
@@ -70,7 +83,6 @@ class InvalidEmailAddress(Exception):
     """
     pass
 
-# utilities
 class raw(str):
     """
     Ensure that a string is treated as text and will not receive 'magic'
@@ -137,17 +149,16 @@ def make_addr_alias_user(email_addr):
         if "@" not in email_addr:
             email_addr += "@gmail.com"
         return (email_addr, email_addr)
-    if isinstance(email_addr, dict):
-        if len(email_addr) == 1:
-            return (list(email_addr.keys())[0], list(email_addr.values())[0])
+    if isinstance(email_addr, dict) and len(email_addr) == 1:
+        return (list(email_addr.keys())[0], list(email_addr.values())[0])
     raise AddressError
 
 def make_addr_alias_target(x, addresses, which):
     if isinstance(x, string_types):
         addresses["recipients"].append(x)
         addresses[which] = x
-    elif isinstance(x, list) or isinstance(x, tuple):
-        if not all([isinstance(k, string_types) for k in x]):
+    elif isinstance(x, (list, tuple)):
+        if not all(isinstance(k, string_types) for k in x):
             raise AddressError
         addresses["recipients"].extend(x)
         addresses[which] = "; ".join(x)
@@ -166,10 +177,7 @@ def add_subject(msg, subject):
 
 def add_recipients_headers(user, useralias, msg, addresses):
     msg["From"] = '"{0}" <{1}>'.format(useralias.replace("\\", "\\\\").replace('"', '\\"'), user)
-    if "To" in addresses:
-        msg["To"] = addresses["To"]
-    else:
-        msg["To"] = useralias
+    msg["To"] = addresses["To"] if "To" in addresses else useralias
     if "Cc" in addresses:
         msg["Cc"] = addresses["Cc"]
 
@@ -228,19 +236,18 @@ def prepare_message(user, useralias, addresses, subject, contents, attachments, 
                 else:
                     msg.attach(content_object["mime_object"])
 
+            elif content_object["encoding"] == "base64":
+                email.encoders.encode_base64(content_object["mime_object"])
+                msg.attach(content_object["mime_object"])
+            elif content_object["sub_type"] not in ["html", "plain"]:
+                msg.attach(content_object["mime_object"])
             else:
-                if content_object["encoding"] == "base64":
-                    email.encoders.encode_base64(content_object["mime_object"])
-                    msg.attach(content_object["mime_object"])
-                elif content_object["sub_type"] not in ["html", "plain"]:
-                    msg.attach(content_object["mime_object"])
-                else:
-                    content_string = content_string.replace("\n", "<br>")
-                    try:
-                        htmlstr += "<div>{0}</div>".format(content_string)
-                    except UnicodeEncodeError:
-                        htmlstr += u"<div>{0}</div>".format(content_string)
-                    altstr.append(content_string)
+                content_string = content_string.replace("\n", "<br>")
+                try:
+                    htmlstr += "<div>{0}</div>".format(content_string)
+                except UnicodeEncodeError:
+                    htmlstr += u"<div>{0}</div>".format(content_string)
+                altstr.append(content_string)
 
     msg_related.get_payload()[0] = email.MIMEText.MIMEText(htmlstr, "html", _charset=encoding)
     msg_alternative.attach(email.MIMEText.MIMEText("\n".join(altstr), _charset=encoding))
@@ -293,10 +300,12 @@ def get_mime_object(content_string, encoding):
         if content_type is not None:
             content_object["main_type"], content_object["sub_type"] = content_type.split("/")
 
-    if content_object["main_type"] is None or content_object["encoding"] is not None:
-        if content_object["encoding"] != "base64":
-            content_object["main_type"] = "application"
-            content_object["sub_type"] = "octet-stream"
+    if (
+        content_object["main_type"] is None
+        or content_object["encoding"] is not None
+    ) and content_object["encoding"] != "base64":
+        content_object["main_type"] = "application"
+        content_object["sub_type"] = "octet-stream"
 
     mime_object = email.MIMEBase.MIMEBase(
         content_object["main_type"], content_object["sub_type"], name=content_name
@@ -358,9 +367,7 @@ class SMTPBase:
 
     @property
     def starttls(self):
-        if self.smtp_starttls is None:
-            return False if self.ssl else True
-        return self.smtp_starttls
+        return not self.ssl if self.smtp_starttls is None else self.smtp_starttls
 
     def set_logging(self, log_level=logging.ERROR, file_path_name=None):
         self.log = get_logger(log_level, file_path_name)

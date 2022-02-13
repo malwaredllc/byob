@@ -56,7 +56,7 @@ class Handler(BaseHTTPRequestHandler):
 
 		# add . to file extension if necessary
 		if not filetype.startswith('.'):
-			filetype = '.' + filetype
+			filetype = f'.{filetype}'
 
 		# generate random filename if not specified
 		if not filename:

@@ -71,8 +71,7 @@ class SessionDAO:
 
         Returns list of sessions for the specified user.
         """
-        user = self.user_dao.get_user(user_id=user_id)
-        if user:
+        if user := self.user_dao.get_user(user_id=user_id):
             return user.sessions
         return []
 
@@ -117,38 +116,33 @@ class SessionDAO:
         # check if session metadata already exists in database
         session = self.get_session(session_dict['uid'])
 
-        # if session for this machine not found, assign this machine to the listed owner 
-        if not session:
-            user = self.user_dao.get_user(username=session_dict['owner'])
-            if user:
-                sessions = user.sessions
-
-                # increment session id if necessary (TODO: db autoincrement?)
-                if sessions:
-                    session_dict['id'] = 1 + max([s.id for s in sessions])
-                else:
-                    session_dict['id'] = 1
-
-                # convert str dates to datetime objects if necessary (should never happen but just in case)
-                if not isinstance(session_dict['joined'], datetime):
-                    session_dict['joined'] = datetime.utcnow() 
-                if not isinstance(session_dict['last_online'], datetime):
-                    session_dict['last_online'] = datetime.utcnow()
-
-                session = Session(**session_dict)
-                db.session.add(session)
-                user.bots += 1
-                db.session.commit()
-
-            else:
-                # if user doesn't exist don't add anything
-                util.log("User not found: " + session_dict['owner'])
-        else:
+        # if session for this machine not found, assign this machine to the listed owner
+        if session:
             # if session metadata found, set session status to online
             session.online = True
             session.last_online = datetime.utcnow()
             db.session.commit()
 
+        elif user := self.user_dao.get_user(username=session_dict['owner']):
+            if sessions := user.sessions:
+                session_dict['id'] = 1 + max(s.id for s in sessions)
+            else:
+                session_dict['id'] = 1
+
+            # convert str dates to datetime objects if necessary (should never happen but just in case)
+            if not isinstance(session_dict['joined'], datetime):
+                session_dict['joined'] = datetime.utcnow()
+            if not isinstance(session_dict['last_online'], datetime):
+                session_dict['last_online'] = datetime.utcnow()
+
+            session = Session(**session_dict)
+            db.session.add(session)
+            user.bots += 1
+            db.session.commit()
+
+        else:
+                # if user doesn't exist don't add anything
+            util.log(f'User not found: {session_dict["owner"]}')
         if session:
             session.new = True
             session_dict['id'] = session.id
@@ -164,8 +158,11 @@ class SessionDAO:
         :param int session_id:      Session UID
         :param bool status:         True (online), False (offline)
         """
-        session = db.session.query(self.model).filter_by(uid=session_uid).first()
-        if session:
+        if (
+            session := db.session.query(self.model)
+            .filter_by(uid=session_uid)
+            .first()
+        ):
             session.online = bool(status)
             db.session.commit()
 
@@ -176,8 +173,7 @@ class SessionDAO:
         `Required`
         :param int session_id:      Session UID
         """
-        session = db.session.query(self.model).filter_by(uid=session_uid)
-        if session:
+        if session := db.session.query(self.model).filter_by(uid=session_uid):
             session.delete()
             db.session.commit()
 
@@ -198,8 +194,7 @@ class TaskDAO:
         `Optional`
         :param int session_id:  Session ID 
         """
-        session = session_dao.get_session(session_uid)
-        if session:
+        if session := session_dao.get_session(session_uid):
             return session.tasks
         return []
 
@@ -212,13 +207,16 @@ class TaskDAO:
 
         Returns list of tasks for the specified session, and total pages of tasks.
         """
-        session = db.session.query(self.model).filter_by(id=session_id).first()
-        if session:
+        if (
+            session := db.session.query(self.model)
+            .filter_by(id=session_id)
+            .first()
+        ):
             tasks = session.tasks
             # janky manual pagination
             pages = int(math.ceil(float(len(tasks))/20.0))
-            blocks = [i for i in range(0, len(tasks), 20)]
-            if (page - 1 >= 0) and (page + 1 <= len(blocks)):
+            blocks = list(range(0, len(tasks), 20))
+            if page >= 1 and page + 1 <= len(blocks):
                 start, end = blocks[page - 1:page + 1]
                 if (start >= 0) and (end <= len(tasks)):
                     return tasks[start:end], pages
@@ -250,11 +248,9 @@ class TaskDAO:
             db.session.add(task)
             # encode datetime object as string so it will be JSON serializable
             task_dict['issued'] = task_dict.get('issued').__str__()
-        else:
-            task = self.get_task(task_dict.get('uid'))
-            if task:
-                task.result = task_dict.get('result')
-                task.completed = datetime.utcnow()
+        elif task := self.get_task(task_dict.get('uid')):
+            task.result = task_dict.get('result')
+            task.completed = datetime.utcnow()
         db.session.commit()
         return task_dict
 
@@ -274,8 +270,7 @@ class FileDAO:
         :param str session:         public IP of session
         :param str module:          module name (keylogger, screenshot, upload, etc.)
         """
-        user = self.user_dao.get_user(username=owner)
-        if user:
+        if user := self.user_dao.get_user(username=owner):
             exfiltrated_file = ExfiltratedFile(filename=filename,
                                             session=session,
                                             module=module,
@@ -291,10 +286,7 @@ class FileDAO:
         `Required`
         :param int user_id:         user ID
         """
-        user = self.user_dao.get_user(user_id=user_id)
-        if user:  
-            return user.files
-        return []
+        return user.files if (user := self.user_dao.get_user(user_id=user_id)) else []
 
 
 class PayloadDAO:
@@ -309,8 +301,7 @@ class PayloadDAO:
         `Required`
         :param int user_id:         user ID
         """
-        user = self.user_dao.get_user(user_id=user_id)
-        if user:
+        if user := self.user_dao.get_user(user_id=user_id):
             return user.payloads
         return []
 
@@ -324,8 +315,7 @@ class PayloadDAO:
         :param str operating_system:    nix, win, mac
         :param str architecture:        x32, x64, arm64v8/debian, arm32v7/debian, i386/debian
         """
-        user = self.user_dao.get_user(user_id=user_id)
-        if user:
+        if user := self.user_dao.get_user(user_id=user_id):
             payload = Payload(filename=filename, 
                             operating_system=operating_system,
                             architecture=architecture,

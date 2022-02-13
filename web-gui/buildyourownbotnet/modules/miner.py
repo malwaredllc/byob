@@ -102,11 +102,12 @@ def swap_endian_word(hex_word):
 
 
 def swap_endian_words(hex_words):
-  '''Swaps the endianness of a hexidecimal string of words and converts to binary string.'''
+	'''Swaps the endianness of a hexidecimal string of words and converts to binary string.'''
 
-  message = unhexlify(hex_words)
-  if len(message) % 4 != 0: raise ValueError('Must be 4-byte word aligned')
-  return ''.join([ message[4 * i: 4 * i + 4][::-1] for i in range(0, len(message) // 4) ])
+	message = unhexlify(hex_words)
+	if len(message) % 4 != 0: raise ValueError('Must be 4-byte word aligned')
+	return ''.join(
+	    [message[4 * i:4 * i + 4][::-1] for i in range(len(message) // 4)])
 
 
 def human_readable_hashrate(hashrate):
@@ -156,18 +157,18 @@ def scrypt(password, salt, N, r, p, dkLen):
     '''
 
     def f(block_number):
-      '''The function "f".'''
+    	'''The function "f".'''
 
-      U = prf(passphrase, salt + struct.pack('>L', block_number))
+    	U = prf(passphrase, salt + struct.pack('>L', block_number))
 
-      # Not used for scrpyt-based coins, could be removed, but part of a more general solution
-      if count > 1:
-        U = [ c for c in U ]
-        for i in xrange(2, 1 + count):
-          blockxor(prf(passphrase, ''.join(U)), 0, U, 0, len(U))
-        U = ''.join(U)
+    	  # Not used for scrpyt-based coins, could be removed, but part of a more general solution
+    	if count > 1:
+    		U = list(U)
+    		for _ in xrange(2, 1 + count):
+    			blockxor(prf(passphrase, ''.join(U)), 0, U, 0, len(U))
+    		U = ''.join(U)
 
-      return U
+    	return U
 
     # PBKDF2 implementation
     size = 0
@@ -186,18 +187,19 @@ def scrypt(password, salt, N, r, p, dkLen):
     return ''.join(blocks)[:dkLen]
 
   def integerify(B, Bi, r):
-    '''"A bijective function from ({0, 1} ** k) to {0, ..., (2 ** k) - 1".'''
+  	'''"A bijective function from ({0, 1} ** k) to {0, ..., (2 ** k) - 1".'''
 
-    Bi += (2 * r - 1) * 64
-    n  = ord(B[Bi]) | (ord(B[Bi + 1]) << 8) | (ord(B[Bi + 2]) << 16) | (ord(B[Bi + 3]) << 24)
-    return n
+  	Bi += (2 * r - 1) * 64
+  	return (ord(B[Bi])
+  	        | (ord(B[Bi + 1]) << 8)
+  	        | (ord(B[Bi + 2]) << 16)
+  	        | (ord(B[Bi + 3]) << 24))
 
 
   def make_int32(v):
-    '''Converts (truncates, two's compliments) a number to an int32.'''
+  	'''Converts (truncates, two's compliments) a number to an int32.'''
 
-    if v > 0x7fffffff: return -1 * ((~v & 0xffffffff) + 1)
-    return v
+  	return -1 * ((~v & 0xffffffff) + 1) if v > 0x7fffffff else v
 
 
   def R(X, destination, a1, a2, b):
@@ -208,32 +210,56 @@ def scrypt(password, salt, N, r, p, dkLen):
 
 
   def salsa20_8(B):
-    '''Salsa 20/8 stream cypher; Used by BlockMix. See http://en.wikipedia.org/wiki/Salsa20'''
+  	'''Salsa 20/8 stream cypher; Used by BlockMix. See http://en.wikipedia.org/wiki/Salsa20'''
 
-    # Convert the character array into an int32 array
-    B32 = [ make_int32((ord(B[i * 4]) | (ord(B[i * 4 + 1]) << 8) | (ord(B[i * 4 + 2]) << 16) | (ord(B[i * 4 + 3]) << 24))) for i in xrange(0, 16) ]
-    x = [ i for i in B32 ]
+  	# Convert the character array into an int32 array
+  	B32 = [ make_int32((ord(B[i * 4]) | (ord(B[i * 4 + 1]) << 8) | (ord(B[i * 4 + 2]) << 16) | (ord(B[i * 4 + 3]) << 24))) for i in xrange(0, 16) ]
+  	x = list(B32)
 
-    # Salsa... Time to dance.
-    for i in xrange(8, 0, -2):
-      R(x, 4, 0, 12, 7);   R(x, 8, 4, 0, 9);    R(x, 12, 8, 4, 13);   R(x, 0, 12, 8, 18)
-      R(x, 9, 5, 1, 7);    R(x, 13, 9, 5, 9);   R(x, 1, 13, 9, 13);   R(x, 5, 1, 13, 18)
-      R(x, 14, 10, 6, 7);  R(x, 2, 14, 10, 9);  R(x, 6, 2, 14, 13);   R(x, 10, 6, 2, 18)
-      R(x, 3, 15, 11, 7);  R(x, 7, 3, 15, 9);   R(x, 11, 7, 3, 13);   R(x, 15, 11, 7, 18)
-      R(x, 1, 0, 3, 7);    R(x, 2, 1, 0, 9);    R(x, 3, 2, 1, 13);    R(x, 0, 3, 2, 18)
-      R(x, 6, 5, 4, 7);    R(x, 7, 6, 5, 9);    R(x, 4, 7, 6, 13);    R(x, 5, 4, 7, 18)
-      R(x, 11, 10, 9, 7);  R(x, 8, 11, 10, 9);  R(x, 9, 8, 11, 13);   R(x, 10, 9, 8, 18)
-      R(x, 12, 15, 14, 7); R(x, 13, 12, 15, 9); R(x, 14, 13, 12, 13); R(x, 15, 14, 13, 18)
+  	  # Salsa... Time to dance.
+  	for _ in xrange(8, 0, -2):
+  		R(x, 4, 0, 12, 7)
+  		R(x, 8, 4, 0, 9)
+  		R(x, 12, 8, 4, 13)
+  		R(x, 0, 12, 8, 18)
+  		R(x, 9, 5, 1, 7)
+  		R(x, 13, 9, 5, 9)
+  		R(x, 1, 13, 9, 13)
+  		R(x, 5, 1, 13, 18)
+  		R(x, 14, 10, 6, 7)
+  		R(x, 2, 14, 10, 9)
+  		R(x, 6, 2, 14, 13)
+  		R(x, 10, 6, 2, 18)
+  		R(x, 3, 15, 11, 7)
+  		R(x, 7, 3, 15, 9)
+  		R(x, 11, 7, 3, 13)
+  		R(x, 15, 11, 7, 18)
+  		R(x, 1, 0, 3, 7)
+  		R(x, 2, 1, 0, 9)
+  		R(x, 3, 2, 1, 13)
+  		R(x, 0, 3, 2, 18)
+  		R(x, 6, 5, 4, 7)
+  		R(x, 7, 6, 5, 9)
+  		R(x, 4, 7, 6, 13)
+  		R(x, 5, 4, 7, 18)
+  		R(x, 11, 10, 9, 7)
+  		R(x, 8, 11, 10, 9)
+  		R(x, 9, 8, 11, 13)
+  		R(x, 10, 9, 8, 18)
+  		R(x, 12, 15, 14, 7)
+  		R(x, 13, 12, 15, 9)
+  		R(x, 14, 13, 12, 13)
+  		R(x, 15, 14, 13, 18)
 
-    # Coerce into nice happy 32-bit integers
-    B32 = [ make_int32(x[i] + B32[i]) for i in xrange(0, 16) ]
+  	# Coerce into nice happy 32-bit integers
+  	B32 = [ make_int32(x[i] + B32[i]) for i in xrange(0, 16) ]
 
-    # Convert back to bytes
-    for i in xrange(0, 16):
-      B[i * 4 + 0] = chr((B32[i] >> 0) & 0xff)
-      B[i * 4 + 1] = chr((B32[i] >> 8) & 0xff)
-      B[i * 4 + 2] = chr((B32[i] >> 16) & 0xff)
-      B[i * 4 + 3] = chr((B32[i] >> 24) & 0xff)
+  	# Convert back to bytes
+  	for i in xrange(0, 16):
+  	  B[i * 4 + 0] = chr((B32[i] >> 0) & 0xff)
+  	  B[i * 4 + 1] = chr((B32[i] >> 8) & 0xff)
+  	  B[i * 4 + 2] = chr((B32[i] >> 16) & 0xff)
+  	  B[i * 4 + 3] = chr((B32[i] >> 24) & 0xff)
 
 
   def blockmix_salsa8(BY, Bi, Yi, r):
@@ -255,20 +281,20 @@ def scrypt(password, salt, N, r, p, dkLen):
 
 
   def smix(B, Bi, r, N, V, X):
-    '''SMix; a specific case of ROMix. See scrypt.pdf in the links above.'''
+  	'''SMix; a specific case of ROMix. See scrypt.pdf in the links above.'''
 
-    array_overwrite(B, Bi, X, 0, 128 * r)               # ROMix - 1
+  	array_overwrite(B, Bi, X, 0, 128 * r)               # ROMix - 1
 
-    for i in xrange(0, N):                              # ROMix - 2
-      array_overwrite(X, 0, V, i * (128 * r), 128 * r)  # ROMix - 3
-      blockmix_salsa8(X, 0, 128 * r, r)                 # ROMix - 4
+  	for i in xrange(0, N):                              # ROMix - 2
+  	  array_overwrite(X, 0, V, i * (128 * r), 128 * r)  # ROMix - 3
+  	  blockmix_salsa8(X, 0, 128 * r, r)                 # ROMix - 4
 
-    for i in xrange(0, N):                              # ROMix - 6
-      j = integerify(X, 0, r) & (N - 1)                 # ROMix - 7
-      blockxor(V, j * (128 * r), X, 0, 128 * r)         # ROMix - 8(inner)
-      blockmix_salsa8(X, 0, 128 * r, r)                 # ROMix - 9(outer)
+  	for _ in xrange(0, N):
+  		j = integerify(X, 0, r) & (N - 1)                 # ROMix - 7
+  		blockxor(V, j * (128 * r), X, 0, 128 * r)         # ROMix - 8(inner)
+  		blockmix_salsa8(X, 0, 128 * r, r)                 # ROMix - 9(outer)
 
-    array_overwrite(X, 0, B, Bi, 128 * r)               # ROMix - 10
+  	array_overwrite(X, 0, B, Bi, 128 * r)               # ROMix - 10
 
 
   # Scrypt implementation. Significant thanks to https://github.com/wg/scrypt
@@ -332,30 +358,30 @@ class Job(object):
 
   def __init__(self, job_id, prevhash, coinb1, coinb2, merkle_branches, version, nbits, ntime, target, extranounce1, extranounce2_size, proof_of_work):
 
-    # Job parts from the mining.notify command
-    self._job_id = job_id
-    self._prevhash = prevhash
-    self._coinb1 = coinb1
-    self._coinb2 = coinb2
-    self._merkle_branches = [ b for b in merkle_branches ]
-    self._version = version
-    self._nbits = nbits
-    self._ntime = ntime
+  	# Job parts from the mining.notify command
+  	self._job_id = job_id
+  	self._prevhash = prevhash
+  	self._coinb1 = coinb1
+  	self._coinb2 = coinb2
+  	self._merkle_branches = list(merkle_branches)
+  	self._version = version
+  	self._nbits = nbits
+  	self._ntime = ntime
 
-    # Job information needed to mine from mining.subsribe
-    self._target = target
-    self._extranounce1 = extranounce1
-    self._extranounce2_size = extranounce2_size
+  	# Job information needed to mine from mining.subsribe
+  	self._target = target
+  	self._extranounce1 = extranounce1
+  	self._extranounce2_size = extranounce2_size
 
-    # Proof of work algorithm
-    self._proof_of_work = proof_of_work
+  	# Proof of work algorithm
+  	self._proof_of_work = proof_of_work
 
-    # Flag to stop this job's mine coroutine
-    self._done = False
+  	# Flag to stop this job's mine coroutine
+  	self._done = False
 
-    # Hash metrics (start time, delta time, total hashes)
-    self._dt = 0.0
-    self._hash_count = 0
+  	# Hash metrics (start time, delta time, total hashes)
+  	self._dt = 0.0
+  	self._hash_count = 0
 
   # Accessors
   id = property(lambda s: s._job_id)
@@ -376,10 +402,9 @@ class Job(object):
 
   @property
   def hashrate(self):
-    '''The current hashrate, or if stopped hashrate for the job's lifetime.'''
+  	'''The current hashrate, or if stopped hashrate for the job's lifetime.'''
 
-    if self._dt == 0: return 0.0
-    return self._hash_count / self._dt
+  	return 0.0 if self._dt == 0 else self._hash_count / self._dt
 
 
   def merkle_root_bin(self, extranounce2_bin):
@@ -594,45 +619,45 @@ class SimpleJsonRpcClient(object):
     pass
 
   def __init__(self):
-    self._socket = None
-    self._lock = threading.RLock()
-    self._rpc_thread = None
-    self._message_id = 1
-    self._requests = dict()
+  	self._socket = None
+  	self._lock = threading.RLock()
+  	self._rpc_thread = None
+  	self._message_id = 1
+  	self._requests = {}
 
 
   def _handle_incoming_rpc(self):
-    data = ""
-    while True:
-      # Get the next line if we have one, otherwise, read and block
-      if '\n' in data:
-        (line, data) = data.split('\n', 1)
-      else:
-        chunk = self._socket.recv(1024)
-        data += chunk
-        continue
+  	data = ""
+  	while True:
+  		# Get the next line if we have one, otherwise, read and block
+  		if '\n' in data:
+  		  (line, data) = data.split('\n', 1)
+  		else:
+  		  chunk = self._socket.recv(1024)
+  		  data += chunk
+  		  continue
 
-      log('JSON-RPC Server > ' + line, LEVEL_PROTOCOL)
+  		log(f'JSON-RPC Server > {line}', LEVEL_PROTOCOL)
 
-      # Parse the JSON
-      try:
-        reply = json.loads(line)
-      except Exception as e:
-        log("JSON-RPC Error: Failed to parse JSON %r (skipping)" % line, LEVEL_ERROR)
-        continue
+  		# Parse the JSON
+  		try:
+  		  reply = json.loads(line)
+  		except Exception as e:
+  		  log("JSON-RPC Error: Failed to parse JSON %r (skipping)" % line, LEVEL_ERROR)
+  		  continue
 
-      try:
-        request = None
-        with self._lock:
-          if 'id' in reply and reply['id'] in self._requests:
-            request = self._requests[reply['id']]
-          self.handle_reply(request = request, reply = reply)
-      except self.RequestReplyWarning as e:
-        output = e.message
-        if e.request:
-          output += '\n  ' + e.request
-        output += '\n  ' + e.reply
-        log(output, LEVEL_ERROR)
+  		try:
+  		  request = None
+  		  with self._lock:
+  		    if 'id' in reply and reply['id'] in self._requests:
+  		      request = self._requests[reply['id']]
+  		    self.handle_reply(request = request, reply = reply)
+  		except self.RequestReplyWarning as e:
+  		  output = e.message
+  		  if e.request:
+  		    output += '\n  ' + e.request
+  		  output += '\n  ' + e.reply
+  		  log(output, LEVEL_ERROR)
 
 
   def handle_reply(self, request, reply):
@@ -641,21 +666,21 @@ class SimpleJsonRpcClient(object):
 
 
   def send(self, method, params):
-    '''Sends a message to the JSON-RPC server'''
+  	'''Sends a message to the JSON-RPC server'''
 
-    if not self._socket:
-      raise self.ClientException('Not connected')
+  	if not self._socket:
+  	  raise self.ClientException('Not connected')
 
-    request = dict(id = self._message_id, method = method, params = params)
-    message = json.dumps(request)
-    with self._lock:
-      self._requests[self._message_id] = request
-      self._message_id += 1
-      self._socket.send(message + '\n')
+  	request = dict(id = self._message_id, method = method, params = params)
+  	message = json.dumps(request)
+  	with self._lock:
+  	  self._requests[self._message_id] = request
+  	  self._message_id += 1
+  	  self._socket.send(message + '\n')
 
-    log('JSON-RPC Server < ' + message, LEVEL_PROTOCOL)
+  	log(f'JSON-RPC Server < {message}', LEVEL_PROTOCOL)
 
-    return request
+  	return request
 
 
   def connect(self, socket):
@@ -677,7 +702,8 @@ class Miner(SimpleJsonRpcClient):
 
   class MinerWarning(SimpleJsonRpcClient.RequestReplyWarning):
     def __init__(self, message, reply, request = None):
-      SimpleJsonRpcClient.RequestReplyWarning.__init__(self, 'Mining Sate Error: ' + message, reply, request)
+    	SimpleJsonRpcClient.RequestReplyWarning.__init__(
+    	    self, f'Mining Sate Error: {message}', reply, request)
 
   class MinerAuthenticationException(SimpleJsonRpcClient.RequestReplyException): pass
 
@@ -867,7 +893,7 @@ def test_subscription():
 
 
 def run(url, username, password):
-  """
+	"""
   Run the crytocurrency miner in the background
 
   `Required`
@@ -876,13 +902,12 @@ def run(url, username, password):
   :param str password:	password for mining server
 
   """
-  global ALGORITHM_SHA256D
-  pid = os.fork()
-  if pid:
-    miner = Miner(url, username, password, ALGORITHM_SHA256D)
-    t = threading.Thread(target=miner.serve_forever)
-    t.daemon = True
-    t.start()
-    return pid
-  else:
-    sys.exit(0)
+	global ALGORITHM_SHA256D
+	if pid := os.fork():
+		miner = Miner(url, username, password, ALGORITHM_SHA256D)
+		t = threading.Thread(target=miner.serve_forever)
+		t.daemon = True
+		t.start()
+		return pid
+	else:
+		sys.exit(0)

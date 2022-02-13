@@ -109,25 +109,17 @@ def shell():
 		flash("Invalid bot UID: " + str(session_uid))
 		return redirect(url_for('main.sessions'))
 
-	# get requested session
-	session_thread = owner_sessions.get(session_uid)
-
-	# if session is online, authenticate user and enter shell
-	if session_thread:
+	if session_thread := owner_sessions.get(session_uid):
 		if session_thread.info['owner'] == current_user.username:
 			return render_template("shell.html", 
 									session_uid=session_uid, 
 									info=session_thread.info, 
 									title="Shell")
-		else:
-			flash("Bot not owned by current user.", "danger")
-			return redirect(url_for('main.sessions'))
-
-	# if bot is offline, update status in database and notify user
+		flash("Bot not owned by current user.", "danger")
 	else:
 		session_dao.update_session_status(session_uid, 0)
 		flash("Bot is offline.", "danger")
-		return redirect(url_for('main.sessions'))
+	return redirect(url_for('main.sessions'))
 
 
 @main.route("/tasks", methods=["GET"])

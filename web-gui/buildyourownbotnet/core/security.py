@@ -18,7 +18,7 @@ def _compact_word(word):
     return (word[0] << 24) | (word[1] << 16) | (word[2] << 8) | word[3]
 
 def _string_to_bytes(text):
-    return list(ord(c) for c in text)
+    return [ord(c) for c in text]
 
 def _bytes_to_string(binary):
     return "".join(chr(b) for b in binary)
@@ -35,9 +35,7 @@ except NameError:
 
     # Python 3 supports bytes, which is already an array of integers
     def _string_to_bytes(text):
-        if isinstance(text, bytes):
-            return text
-        return [ord(c) for c in text]
+        return text if isinstance(text, bytes) else [ord(c) for c in text]
 
     # In Python 3, we return bytes
     def _bytes_to_string(binary):
@@ -90,10 +88,10 @@ class AES(object):
         rounds = self.number_of_rounds[len(key)]
 
         # Encryption round keys
-        self._Ke = [[0] * 4 for i in xrange(rounds + 1)]
+        self._Ke = [[0] * 4 for _ in xrange(rounds + 1)]
 
         # Decryption round keys
-        self._Kd = [[0] * 4 for i in xrange(rounds + 1)]
+        self._Kd = [[0] * 4 for _ in xrange(rounds + 1)]
 
         round_key_count = (rounds + 1) * 4
         KC = len(key) // 4
@@ -186,10 +184,14 @@ class AES(object):
         result = [ ]
         for i in xrange(0, 4):
             tt = self._Ke[rounds][i]
-            result.append((self.S[(t[ i          ] >> 24) & 0xFF] ^ (tt >> 24)) & 0xFF)
-            result.append((self.S[(t[(i + s1) % 4] >> 16) & 0xFF] ^ (tt >> 16)) & 0xFF)
-            result.append((self.S[(t[(i + s2) % 4] >>  8) & 0xFF] ^ (tt >>  8)) & 0xFF)
-            result.append((self.S[ t[(i + s3) % 4]        & 0xFF] ^  tt       ) & 0xFF)
+            result.extend(
+                (
+                    (self.S[(t[i] >> 24) & 0xFF] ^ (tt >> 24)) & 0xFF,
+                    (self.S[(t[(i + s1) % 4] >> 16) & 0xFF] ^ (tt >> 16)) & 0xFF,
+                    (self.S[(t[(i + s2) % 4] >> 8) & 0xFF] ^ (tt >> 8)) & 0xFF,
+                    (self.S[t[(i + s3) % 4] & 0xFF] ^ tt) & 0xFF,
+                )
+            )
 
         return result
 
@@ -225,10 +227,14 @@ class AES(object):
         result = [ ]
         for i in xrange(0, 4):
             tt = self._Kd[rounds][i]
-            result.append((self.Si[(t[ i          ] >> 24) & 0xFF] ^ (tt >> 24)) & 0xFF)
-            result.append((self.Si[(t[(i + s1) % 4] >> 16) & 0xFF] ^ (tt >> 16)) & 0xFF)
-            result.append((self.Si[(t[(i + s2) % 4] >>  8) & 0xFF] ^ (tt >>  8)) & 0xFF)
-            result.append((self.Si[ t[(i + s3) % 4]        & 0xFF] ^  tt       ) & 0xFF)
+            result.extend(
+                (
+                    (self.Si[(t[i] >> 24) & 0xFF] ^ (tt >> 24)) & 0xFF,
+                    (self.Si[(t[(i + s1) % 4] >> 16) & 0xFF] ^ (tt >> 16)) & 0xFF,
+                    (self.Si[(t[(i + s2) % 4] >> 8) & 0xFF] ^ (tt >> 8)) & 0xFF,
+                    (self.Si[t[(i + s3) % 4] & 0xFF] ^ tt) & 0xFF,
+                )
+            )
 
         return result
 
@@ -298,7 +304,7 @@ def long_to_bytes(n, blocksize=0):
     n = int(n)
     while n > 0:
         s = struct.pack('>I', n & 0xffffffff) + s
-        n = n >> 32
+        n >>= 32
     for i in xrange(len(s)):
         if s[i] != b'\000'[0]:
             break
@@ -324,7 +330,7 @@ def bytes_to_long(s):
     if length % 4:
         extra = (4 - length % 4)
         s = b'\000' * extra + s
-        length = length + extra
+        length += extra
     for i in xrange(0, length, 4):
         acc = (acc << 32) + struct.unpack('>I', s[i:i+4])[0]
     return acc
@@ -426,7 +432,10 @@ def encrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr
 
     """
     data    = bytes(data.encode('utf-8'))
-    data    = data + (int(block_size) - len(data) % int(block_size)) * bytes(padding.encode('utf-8'))
+    data += (int(block_size) - len(data) % int(block_size)) * bytes(
+        padding.encode('utf-8')
+    )
+
     blocks  = [data[i * block_size:((i + 1) * block_size)] for i in range(len(data) // block_size)]
     vector  = os.urandom(8)
     if len(key) < key_size:
@@ -476,7 +485,7 @@ def decrypt_xor(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr
         k0      = struct.unpack("!4L", key[:key_size])
         delta, mask = 0x9e3779b9, 0xffffffff
         sum     = (delta * num_rounds) & mask
-        for round in range(num_rounds):
+        for _ in range(num_rounds):
             v1  = (v1 - (((v0 << 4 ^ v0 >> 5) + v0) ^ (sum + k0[sum >> 11 & 3]))) & mask
             sum = (sum - delta) & mask
             v0  = (v0 - (((v1 << 4 ^ v1 >> 5) + v1) ^ (sum + k0[sum & 3]))) & mask

