@@ -28,7 +28,7 @@ class Loader(object):
 
     def __init__(self, modules, base_url):
         self.module_names = modules
-        self.base_url = base_url + '/'
+        self.base_url = f'{base_url}/'
         self.non_source = False
         self.reload = False
         '''
@@ -40,7 +40,9 @@ class Loader(object):
         log(level='debug', info= "Searching: %s" % fullname)
         log(level='debug', info= "Path: %s" % path)
         log(level='info', info= "Checking if in declared remote module names...")
-        if fullname.split('.')[0] not in self.module_names + list(set([_.split('.')[0] for _ in self.module_names])):
+        if fullname.split('.')[0] not in self.module_names + list(
+            {_.split('.')[0] for _ in self.module_names}
+        ):
             log(level='info', info= "[-] Not found!")
             return None
         log(level='info', info= "Checking if built-in....")
@@ -90,20 +92,20 @@ class Loader(object):
             package_src = None
             if self.non_source:
                 package_src = self.__fetch_compiled(package_url)
-            if package_src == None:
+            if package_src is None:
                 package_src = urlopen(package_url).read()
             final_src = package_src
             final_url = package_url
         except IOError as e:
             package_src = None
             log(level='info', info= "[-] '%s' is not a package (%s)" % (name, str(e)))
-        if final_src == None:
+        if final_src is None:
             try:
                 log(level='debug', info= "[+] Trying to import '%s' as module from: '%s'" % (name, module_url))
                 module_src = None
                 if self.non_source:
                     module_src = self.__fetch_compiled(module_url)
-                if module_src == None:
+                if module_src is None:
                     module_src = urlopen(module_url).read()
                 final_src = module_src
                 final_url = module_url
@@ -159,7 +161,7 @@ class Loader(object):
         import marshal
         module_src = None
         try:
-            module_compiled = urlopen(url + 'c').read()
+            module_compiled = urlopen(f'{url}c').read()
             try:
                 module_src = marshal.loads(module_compiled[8:])
                 return module_src
@@ -179,7 +181,7 @@ def __create_github_url(username, repo, branch='master'):
     return github_raw_url.format(user=username, repo=repo, branch=branch)
 
 def _add_git_repo(url_builder, username=None, repo=None, module=None, branch=None, commit=None):
-    if username == None or repo == None:
+    if username is None or repo is None:
         raise Exception("'username' and 'repo' parameters cannot be None")
     if commit and branch:
         raise Exception("'branch' and 'commit' parameters cannot be both set!")

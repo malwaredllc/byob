@@ -58,22 +58,20 @@ def session_cmd():
 	# get user sessions
 	owner_sessions = c2.sessions.get(current_user.username, {})
 
-	if session_uid in owner_sessions:
-		session_thread = owner_sessions[session_uid]
-
-		# store issued task in database
-		task = task_dao.handle_task({'task': command, 'session': session_thread.info.get('uid')})
-
-		# send task and get response
-		session_thread.send_task(task)
-		response = session_thread.recv_task()
-
-		# update task record with result in database
-		result = task_dao.handle_task(response)
-		return str(result['result']).encode()
-
-	else:
+	if session_uid not in owner_sessions:
 		return "Bot " + str(session_uid) + " is offline or does not exist."
+	session_thread = owner_sessions[session_uid]
+
+	# store issued task in database
+	task = task_dao.handle_task({'task': command, 'session': session_thread.info.get('uid')})
+
+	# send task and get response
+	session_thread.send_task(task)
+	response = session_thread.recv_task()
+
+	# update task record with result in database
+	result = task_dao.handle_task(response)
+	return str(result['result']).encode()
 
 
 @session.route("/api/session/poll", methods=["GET"])

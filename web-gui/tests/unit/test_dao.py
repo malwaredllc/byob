@@ -244,7 +244,7 @@ def test_update_session_status(app_client, new_session):
     """
     # toggle online/offline status
     prev_status = new_session.online
-    new_status = False if new_session.online else True 
+    new_status = not new_session.online
     session_dao.update_session_status(new_session.uid, new_status)
 
     # check if it was updated correctly

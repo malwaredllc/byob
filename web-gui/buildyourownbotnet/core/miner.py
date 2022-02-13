@@ -106,19 +106,16 @@ class Miner(multiprocessing.Process):
             job_id = job.get('job_id')
             height = job.get('height')
             block_major = int(blob[:2], 16)
-            cnv = 0
-            if block_major >= 7:
-                cnv = block_major - 6
+            cnv = block_major - 6 if block_major >= 7 else 0
             if cnv > 5:
                 seed_hash = binascii.unhexlify(job.get('seed_hash'))
                 if '--debug' in sys.argv:
                     print('New job with target: {}, RandomX, height: {}'.format(target, height))
-            else:
-                if '--debug' in sys.argv:
-                    print('New job with target: {}, CNv{}, height: {}'.format(target, cnv, height))
+            elif '--debug' in sys.argv:
+                print('New job with target: {}, CNv{}, height: {}'.format(target, cnv, height))
             target = struct.unpack('I', binascii.unhexlify(target))[0]
             if target >> 32 == 0:
-                target = int(0xFFFFFFFFFFFFFFFF / int(0xFFFFFFFF / target))
+                target = 0xFFFFFFFFFFFFFFFF // int(0xFFFFFFFF / target)
             nonce = 1
 
             while 1:

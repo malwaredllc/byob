@@ -156,7 +156,15 @@ def variable(length=6):
     Returns variable as a string
 
     """
-    return random.choice([chr(n) for n in range(97,123)]) + ''.join(random.choice([chr(n) for n in range(97,123)] + [chr(i) for i in range(48,58)] + [chr(i) for i in range(48,58)] + [chr(z) for z in range(65,91)]) for x in range(int(length)-1))
+    return random.choice([chr(n) for n in range(97, 123)]) + ''.join(
+        random.choice(
+            [chr(n) for n in range(97, 123)]
+            + [chr(i) for i in range(48, 58)]
+            + [chr(i) for i in range(48, 58)]
+            + [chr(z) for z in range(65, 91)]
+        )
+        for _ in range(int(length) - 1)
+    )
 
 
 def main(function, *args, **kwargs):
@@ -228,18 +236,21 @@ def freeze(filename, icon=None, hidden=None, owner=None, operating_system=None, 
 
     # add user/owner output path if provided
     if owner:
-        path = path + '/output/' + owner + '/src'
+        path = f'{path}/output/{owner}/src'
 
     key = ''.join([random.choice([chr(i) for i in list(range(48,91)) + list(range(97,123))]) for _ in range(16)])
 
     imports = ['imp']
     with open(filename) as import_file:
-        for potental_import in filter(None, (PI.strip().split() for PI in import_file)):
-            if potental_import[0] == 'import':
-                imports.append(potental_import[1].split(';')[0].split(','))
+        imports.extend(
+            potental_import[1].split(';')[0].split(',')
+            for potental_import in filter(
+                None, (PI.strip().split() for PI in import_file)
+            )
+            if potental_import[0] == 'import'
+        )
 
-    bad_imports = set()
-    bad_imports.add('core')
+    bad_imports = {'core'}
     for i in os.listdir('core'):
         i = os.path.splitext(i)[0]
         bad_imports.add(i)
@@ -260,24 +271,32 @@ def freeze(filename, icon=None, hidden=None, owner=None, operating_system=None, 
     imports.append('pkg_resources.py2_warn')
 
     spec = template_spec.substitute(BASENAME=repr(basename), PATH=repr(path), IMPORTS=imports, NAME=repr(name), ICON=repr(icon))
-    fspec = os.path.join(path, name + '.spec')
+    fspec = os.path.join(path, f'{name}.spec')
 
     with open(fspec, 'w') as fp:
         fp.write(spec)
 
-    # copy requirements to 
-    shutil.copy('requirements_client.txt', path + '/requirements.txt')
+    # copy requirements to
+    shutil.copy('requirements_client.txt', f'{path}/requirements.txt')
 
     # cd into user's src directory (limitation of pyinstaller docker)
     os.chdir(path)
 
     # cross-compile executable for the specified os/arch using pyinstaller docker containers
-    process = subprocess.Popen('docker run -v "$(pwd):/src/" {docker_container}'.format(
-                                src_path=os.path.dirname(path), 
-                                docker_container=operating_system + '-' + architecture), 
-                                0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, 
-                                cwd=path, 
-                                shell=True)
+    process = subprocess.Popen(
+        'docker run -v "$(pwd):/src/" {docker_container}'.format(
+            src_path=os.path.dirname(path),
+            docker_container=f'{operating_system}-{architecture}',
+        ),
+        0,
+        None,
+        subprocess.PIPE,
+        subprocess.PIPE,
+        subprocess.PIPE,
+        cwd=path,
+        shell=True,
+    )
+
 
     start_time = time.time()
 
@@ -301,7 +320,7 @@ def freeze(filename, icon=None, hidden=None, owner=None, operating_system=None, 
 
     # remove temporary files (.py, .spec)
     os.remove(basename)
-    os.remove(name + '.spec')
+    os.remove(f'{name}.spec')
 
     # return to original directory
     os.chdir(original_dir)
@@ -331,8 +350,8 @@ def app(filename, icon=None):
     plistPath = os.path.join(rsrcPath, 'Info.plist')
     iconPath = os.path.basename(icon) if icon else ''
     executable = os.path.join(distPath, filename)
-    bundleVersion = bundleName + ' ' + version
-    bundleIdentity = 'com.' + bundleName
+    bundleVersion = f'{bundleName} {version}'
+    bundleIdentity = f'com.{bundleName}'
     infoPlist = template_plist.substitute(BASE_NAME=baseName, BUNDLE_VERSION=bundleVersion, ICON_PATH=iconPath, BUNDLE_ID=bundleIdentity, BUNDLE_NAME=bundleName, VERSION=version)
     os.makedirs(distPath)
     os.mkdir(rsrcPath)

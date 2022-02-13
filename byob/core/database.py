@@ -134,13 +134,17 @@ COMMIT;
                 util.display(str(v).encode(), color=c, style='dim')
 
     def _client_sessions(self, uid):
-        for i in self.execute('select sessions from tbl_sessions where uid=:uid', {"uid": uid}):
-            if isinstance(i, int):
-                s = i + 1
-                break
-        else:
-            s = 1
-        return s
+        return next(
+            (
+                i + 1
+                for i in self.execute(
+                    'select sessions from tbl_sessions where uid=:uid',
+                    {"uid": uid},
+                )
+                if isinstance(i, int)
+            ),
+            1,
+        )
 
     def _count_sessions(self):
         return len(self.get_sessions(verbose=False))
@@ -161,8 +165,15 @@ COMMIT;
         """
         Check if a client exists in the database
         """
-        result = bool(len([_ for _ in self.execute("select * from tbl_sessions where uid=:uid", {"uid": uid})]))
-        return result
+        return bool(
+            len(
+                list(
+                    self.execute(
+                        "select * from tbl_sessions where uid=:uid", {"uid": uid}
+                    )
+                )
+            )
+        )
 
     def update_status(self, session, online):
         """
@@ -174,16 +185,13 @@ COMMIT;
 
         """
         try:
-            if online:
-                if isinstance(session, str):
+            if isinstance(session, str):
+                if online:
                     self.execute_query("UPDATE tbl_sessions SET online=1 WHERE uid=:uid", params={"uid": session}, returns=False)
-                elif isinstance(session, int):
-                    self.execute_query("UPDATE tbl_sessions SET online=1 WHERE id=:uid", params={"uid": session}, returns=False)
-            else:
-                if isinstance(session, str):
+                else:
                     self.execute_query("UPDATE tbl_sessions SET online=0, last_online=:last_online WHERE uid=:uid", params={"uid": session, "last_online": datetime.datetime.now()}, returns=False)
-                elif isinstance(session, int):
-                    self.execute_query("UPDATE tbl_sessions SET online=0, last_online=:last_online WHERE id=:uid", params={"uid": session, "last_online": datetime.datetime.now()}, returns=False)
+            elif isinstance(session, int):
+                self.execute_query("UPDATE tbl_sessions SET online=1 WHERE id=:uid", params={"uid": session}, returns=False)
         except Exception as e:
             self.error("{} error: {}".format(self.update_status.__name__, str(e)))
 
@@ -199,7 +207,7 @@ COMMIT;
         sql = "select * from tbl_sessions" if verbose else "public_ip, uid, platform from tbl_sessions"
         statement = self.execute(sql)
         columns = [_[0] for _ in statement.description]
-        return [{k:v for (k,v) in zip(columns, rows)} for rows in statement.fetchall()]
+        return [dict(zip(columns, rows)) for rows in statement.fetchall()]
 
     def get_tasks(self):
         """
@@ -214,7 +222,7 @@ COMMIT;
         sql = "select * from tbl_tasks"
         statement = self.execute(sql)
         columns = [_[0] for _ in statement.description]
-        return [{k:v for k,v in zip(columns, rows)} for rows in statement.fetchall()]
+        return [dict(zip(columns, rows)) for rows in statement.fetchall()]
 
     def handle_session(self, info):
         """

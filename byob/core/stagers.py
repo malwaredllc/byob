@@ -28,7 +28,7 @@ def decrypt(data, key, block_size=8, key_size=16, num_rounds=32, padding=chr(0))
         k0 = struct.unpack("!4L", key[:key_size])
         delta, mask = 0x9e3779b9, 0xffffffff
         sum = (delta * num_rounds) & mask
-        for round in range(num_rounds):
+        for _ in range(num_rounds):
             v1 = (v1 - (((v0 << 4 ^ v0 >> 5) + v0) ^ (sum + k0[sum >> 11 & 3]))) & mask
             sum = (sum - delta) & mask
             v0 = (v0 - (((v1 << 4 ^ v1 >> 5) + v1) ^ (sum + k0[sum & 3]))) & mask

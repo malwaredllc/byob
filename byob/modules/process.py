@@ -81,7 +81,7 @@ def list(*args, **kwargs):
             exe = i.split()[0 if os.name == 'nt' else -1]
             if exe not in output:
                 if len(json.dumps(output)) < 48000:
-                    output.update({pid: exe})
+                    output[pid] = exe
                 else:
                     break
         return json.dumps(output)
@@ -107,7 +107,7 @@ def search(keyword):
             exe = i.split()[0 if os.name == 'nt' else -1]
             if keyword in exe:
                 if len(json.dumps(output)) < 48000:
-                    output.update({pid: exe})
+                    output[pid] = exe
                 else:
                     break
         return json.dumps(output)
@@ -131,13 +131,13 @@ def kill(process_id):
             if str(process_id).isdigit() and int(process_id) == int(pid):
                 try:
                     _ = os.popen('taskkill /pid %s /f' % pid if os.name == 'nt' else 'kill -9 %s' % pid).read()
-                    output.update({process_id: "killed"})
+                    output[process_id] = "killed"
                 except:
-                    output.update({process_id: "not found"})
+                    output[process_id] = "not found"
             else:
                 try:
                     _ = os.popen('taskkill /im %s /f' % exe if os.name == 'nt' else 'kill -9 %s' % exe).read()
-                    output.update({exe: "killed"})
+                    output[exe] = "killed"
                 except Exception as e:
                     return str(e)
             return json.dumps(output)

