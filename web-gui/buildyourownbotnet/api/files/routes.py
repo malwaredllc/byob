@@ -28,7 +28,7 @@ def file_add():
 		if b64_data.startswith('_b64'):
 			data = base64.b64decode(b64_data[6:]).decode('ascii')
 		else:
-			print('/api/file/add error: invalid data ' + str(data))
+			print('/api/file/add error: invalid data ' + str(b64_data))
 			return
 	try:
 		session = base64.b64decode(session)
