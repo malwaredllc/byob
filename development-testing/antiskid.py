@@ -6,7 +6,7 @@ output = stream.read()
 #string cleaning 
 x = output.replace("Manufacturer","")
 print (x)
-if x == "VMware, Inc." or "": #virtualbox command response needed.
+if x == "VMware, Inc." or x == "": #virtualbox command response needed.
     print ("stager")
     ctypes.windll.user32.MessageBoxW(0, "WARNING BYOB is running on this device this will give an atacker full control of your device if you have no idea what byob is please shutdown your computer.", "BYOB WARNING", 0)
     #rest of stager in here like normal 
