@@ -133,7 +133,7 @@ def administrator():
     """
     import os
     import ctypes
-    return bool(ctypes.windll.shell32.IsUserAnAdmin() if os.name == 'nt' else os.getuid() == 0)
+    return bool(ctypes.WinDLL("shell32").IsUserAnAdmin() if os.name == 'nt' else os.getuid() == 0)
 
 
 def geolocation():
