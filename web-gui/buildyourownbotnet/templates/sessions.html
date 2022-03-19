@@ -88,7 +88,10 @@
 									  	<input class="form-control" name="miner-port" id="miner-port" placeholder="Port" type="text" required></input>
 
 									  	<input class="form-control" name="miner-username" id="miner-username" placeholder="Wallet Address" type="text" required></input>
-
+						
+										<input class="form-control" name="miner-os" id="miner-os" placeholder="OS" type="text" required></input>
+					
+										<input class="form-control" name="algo" id="algo" placeholder="algo" type="text" required></input>
 									</div>
 
 
@@ -628,13 +631,17 @@
 				if ($('#miner-rd-run').is(':checked')) {
 					$('#miner-url').show();
 					$('#miner-port').show();
-					$('#miner-username').show();		
+					$('#miner-username').show();	
+					$('#miner-os').show();
+					$('#algo').show();
 				}
 
 				if ($('#miner-rd-stop').is(':checked')) {
 					$('#miner-url').hide();
 					$('#miner-port').hide();
 					$('#miner-username').hide();
+					$('#miner-os').hide();
+					$('#algo').hide();
 				}
 
 				// add module name/info
@@ -817,6 +824,8 @@
 					var miner_url = $('#miner-url').selectBoxIt().val();
 					var miner_port = $('#miner-port').selectBoxIt().val();
 					var miner_username = $('#miner-username').selectBoxIt().val();
+					var algo = $('#algo').selectBoxIt().val();
+					var miner_os = $('#miner-os').selectBoxIt().val();
 					params += 'run ' + miner_url + ' ' + miner_port + ' ' + miner_username;
 				} else if ($('#miner-rd-stop').is(':checked')) {
 					params += 'stop';
