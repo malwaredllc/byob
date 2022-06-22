@@ -1,6 +1,6 @@
 mss==5.0.0;python_version>'3'
 WMI==1.4.9;python_version>'3'
-numpy==1.18.1;python_version>'3'
+numpy==1.22.0;python_version>'3'
 pyxhook==1.0.0;python_version>'3'
 twilio==6.35.4;python_version>'3'
 colorama==0.4.3;python_version>'3'
