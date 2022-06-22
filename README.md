@@ -89,11 +89,10 @@ in the payload stager which is generated along with it
 4) __Port Scanner__ (`byob.modules.portscanner`): scan the local network for other online devices & open ports
 5) __Keylogger__ (`byob.modules.keylogger`): logs the user’s keystrokes & the window name entered
 6) __Screenshot__ (`byob.modules.screenshot`): take a screenshot of current user’s desktop
-7) __Webcam__ (`byob.modules.webcam`): view a live stream or capture image/video from the webcam
-8) __Outlook__ (`byob.modules.outlook`): read/search/upload emails from the local Outlook client
-9) __Process Control__ (`byob.modules.process`): list/search/kill/monitor currently running processes on the host
-10) __iCloud__ (`byob.modules.icloud`): check for logged in iCloud account on macOS
-11) __Miner__ (`byob.core.miner`): mine Monero in the background using the built-in miner or XMRig
+7) __Outlook__ (`byob.modules.outlook`): read/search/upload emails from the local Outlook client
+8) __Process Control__ (`byob.modules.process`): list/search/kill/monitor currently running processes on the host
+9) __iCloud__ (`byob.modules.icloud`): check for logged in iCloud account on macOS
+10) __Miner__ (`byob.core.miner`): mine Monero in the background using the built-in miner or XMRig
 
 ## Server
 [![server](https://img.shields.io/badge/byob-server-blue.svg)](https://github.com/malwaredllc/byob/blob/master/byob/server.py)
