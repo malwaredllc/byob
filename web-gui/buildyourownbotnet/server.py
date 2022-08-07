@@ -87,7 +87,7 @@ class C2(threading.Thread):
         modules = os.path.abspath('buildyourownbotnet/modules')
 
         # directory containing user intalled Python packages
-        site_packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) if 'mss' in os.listdir(_)]
+        site_packages = [os.path.abspath(_) for _ in sys.path if os.path.isdir(_) ]#if 'mss' in os.listdir(_)]
 
         if len(site_packages):
             n = 0
