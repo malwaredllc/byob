@@ -1,5 +1,5 @@
 # BYOB CLI
-These instructions help you solve some of the most common problems that may arise during the installation and use of BYOB CLI. However, if something does not work despite everything, before opening an issue try to ask on the [Discord support server](https://discord.gg/8FsSrw7)!
+These instructions help you solve some of the most common problems that may arise during the installation and use of BYOB CLI. However, if something does not work despite everything, before opening an issue try to ask on the [Discord support server](https://discord.gg/M3435KFcWa)!
 
 ## How to install
 To install BYOB CLI run the _setup.py_ file through your Python installation (Python3 is recommended): `python3 setup.py`. Done, it's that simple! However, there may be problems with your OS environment, and some cases are covered in the following sections.
