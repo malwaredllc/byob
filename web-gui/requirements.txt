@@ -1,6 +1,6 @@
 Werkzeug==2.0.0
 SQLAlchemy==1.3.23
-flask
+flask==2.2.1
 flask_session
 flask_wtf
 Flask_SQLAlchemy
