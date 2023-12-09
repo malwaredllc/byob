@@ -5,7 +5,7 @@ pyxhook==1.0.0;python_version>'3'
 twilio==6.35.4;python_version>'3'
 colorama==0.4.3;python_version>'3'
 requests==2.22.0;python_version>'3'
-PyInstaller==3.6;python_version>'3'
+PyInstaller==5.13.1;python_version>'3'
 
 mss==3.3.0;python_version<'3'
 WMI==1.4.9;python_version<'3'
