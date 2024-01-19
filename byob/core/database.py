@@ -193,7 +193,13 @@ COMMIT;
 
         `Optional`
         :param bool verbose:    include full session information
-        :param bool display:    display output
+        :param bool display:    display o self.error("{} error: {}".format(self.update_status.__name__, str(e)))
+
+        Fetch sessions from database
+
+        `Optional`
+        :param bool verbose:    include full session information
+        :param bool display:    display ouutput
 
         """
         sql = "select * from tbl_sessions" if verbose else "public_ip, uid, platform from tbl_sessions"
