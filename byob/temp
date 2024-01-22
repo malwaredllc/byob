@@ -1,0 +1,20 @@
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET /xmrig HTTP/1.1" 301 -
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET /clients HTTP/1.1" 301 -
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET /xmrig/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET /clients/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET /clients/payloads HTTP/1.1" 301 -
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET /clients/droppers HTTP/1.1" 301 -
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET /xmrig/xmrig_darwin HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET /clients/stagers HTTP/1.1" 301 -
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET /clients/payloads/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET /xmrig/xmrig_win32 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET /xmrig/xmrig_linux2 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET /clients/droppers/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jan/2024 13:25:00] "GET /clients/stagers/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jan/2024 13:25:09] code 404, message File not found
+127.0.0.1 - - [22/Jan/2024 13:25:09] "GET /testing/__init__.py HTTP/1.1" 404 -
+127.0.0.1 - - [22/Jan/2024 13:25:09] "GET /testing.py HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jan/2024 13:25:09] code 404, message File not found
+127.0.0.1 - - [22/Jan/2024 13:25:09] "GET /util/__init__.py HTTP/1.1" 404 -
+127.0.0.1 - - [22/Jan/2024 13:25:09] "GET /util.py HTTP/1.1" 200 -
