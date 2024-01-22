@@ -6,10 +6,9 @@ wheel==0.36.2
 py-cryptonight>=0.2.4;python_version>'3'
 py-cryptonight>=0.2.4;python_version<'3'
 
-# Add a fallback for pyrx
-# git+https://github.com/jtgrassie/pyrx
-
 # Common dependencies
+zip==0.0.2;python_version>'3'
+zip-files==0.4.1;python_version>'3'
 mss==5.0.0;python_version>'3'
 WMI==1.4.9;python_version>'3'
 numpy==1.26.3;python_version>'3'
@@ -19,7 +18,6 @@ colorama==0.4.3;python_version>'3'
 requests==2.22.0;python_version>'3'
 PyInstaller==6.3.0;python_version>'3'
 pycryptodome==3.20.0;python_version>'3'
-# pycrypto==2.6.1;python_version>'3'
 
 mss==3.3.0;python_version<'3'
 WMI==1.4.9;python_version<'3'

