@@ -12,9 +12,11 @@ import queue
 import traceback
 import re
 import pickle
-import tkinter
-import tkinter.messagebox
-
+try:
+    import tkinter
+    import tkinter.messagebox
+except:
+    pass
 
 if sys.version_info[0] > 2:
     from queue import Queue
