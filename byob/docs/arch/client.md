@@ -4,6 +4,8 @@ If you would like a description of how the client payloads are built, please loo
 
 This file only details the run function of the client object, ie how it recieves messages, how it processes messages, and how it executes malware
 
+<br>
+<br>
 
 
 ## Run Function (of Payload)
