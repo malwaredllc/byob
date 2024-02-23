@@ -1,4 +1,4 @@
-# HIGH LEVEL
+# High Level View of the Architecture
 
 The 2 major components to this build are obviously the client and the server
 
