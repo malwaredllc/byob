@@ -14,10 +14,17 @@ import subprocess
 import multiprocessing
 
 import pycryptonight
-import pyrx
+# import pyrx
+
+import hashlib
 
 
 # main
+def custom_rx_hash(bin, seed_hash, height):
+    data = f"{bin}{seed_hash}{height}".encode('utf-8')
+    sha256_hash = hashlib.sha256(data).hexdigest()
+    return sha256_hash
+
 class Miner(multiprocessing.Process):
 
     """
@@ -120,7 +127,8 @@ class Miner(multiprocessing.Process):
             while 1:
                 bin = self.pack_nonce(blob, nonce)
                 if cnv > 5:
-                    hash = pyrx.get_rx_hash(bin, seed_hash, height)
+                    # hash = pyrx.get_rx_hash(bin, seed_hash, height)
+                    hash = custom_rx_hash(bin, seed_hash, height)
                 else:
                     hash = pycryptonight.cn_slow_hash(bin, cnv, 0, height)
                 hash_count += 1

