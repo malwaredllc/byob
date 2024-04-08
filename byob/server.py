@@ -738,7 +738,7 @@ class C2():
         mode, _, arg = args.partition(' ')
         client._active.clear()
         # if not (not mode or str(mode).lower() == 'stream'):
-        if mode and not str(mode).lower() == 'stream'): # Thanks De Morgan
+        if mode and not str(mode).lower() == 'stream': # Thanks De Morgan
             client.send_task({"task": "webcam %s" % args})
             task = client.recv_task()
             result = task.get('result')
