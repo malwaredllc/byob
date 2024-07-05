@@ -71,20 +71,11 @@ byob.modules
   remotely import them into the currently running process without writing anything
   to the disk, and use them directly without installation.
 
-  byob.modules.miner
-    run a Bitcoin miner in the background
-
   byob.modules.keylogger
     logs the user’s keystrokes & the window name entered
 
   byob.modules.screenshot
     take a screenshot of current user’s desktop
-
-  byob.modules.webcam
-    view a live stream or capture image/video from the webcam
-
-  byob.modules.ransom
-    encrypt files & generate random BTC wallet for ransom payment
 
   byob.modules.icloud
     check for logged in iCloud account on macOS
@@ -114,9 +105,6 @@ byob.modules
 
   byob.modules.process
     list/search/kill/monitor currently running processes on the host
-
-  byob.modules.spreader
-    spread client to other hosts via email disguised as 'Adobe Flash Player Update'
 
   byob.modules.payloads
     package containing the payloads created by client generator that are being

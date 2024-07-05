@@ -71,7 +71,7 @@ COMMIT;
         self.row_factory = sqlite3.Row
         self.text_factory = str
         self._database = database
-        self._tasks = ['escalate','keylogger','outlook','packetsniffer','persistence','phone','portscan','process','ransom','screenshot','webcam']
+        self._tasks = ['escalate','keylogger','outlook','packetsniffer','persistence','phone','portscan','process','screenshot']
         self.execute_file(sql=self._tbl_sessions, returns=False, display=False)
         self.execute_file(sql=self._tbl_tasks, returns=False, display=False)
 

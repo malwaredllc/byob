@@ -111,29 +111,6 @@
 				</div>
 
 
-				<!-- Collapsible 5 -->
-				<div class="panel panel-default">
-					<div class="panel-heading">
-						<h4 class="panel-title">
-							<a data-toggle="collapse" data-parent="#accordion-test-2" href="#collapseFive-2" class="collapsed">
-								I run the miner but it isn't mining.
-							</a>
-						</h4>
-					</div>
-					<div id="collapseFive-2" class="panel-collapse collapse">
-						<div class="panel-body">
-
-
-							<p>There are 3 main reasons this can happen.</p>
-							<p>1) The primary miner, <a href="https://github.com/xmrig/xmrig">XMRig</a>, was blocked by anti-virus. It is well-known and commonly flagged software due to it commonly being abused by malicious software.</p>
-							<p>2) The secondary miner, a custom Python implementation, relies on Python libraries with C extensions, so they cannot be remotely imported at this time. Therefore if the target machine does not have <a href="https://pypi.org/project/py-cryptonight/">py-cryptonight</a> and <a href="https://github.com/jtgrassie/pyrx">pyrx</a> installed, the secondary miner will fail.</p>
-							<p>3) The secondary miner is running, however, at this time it doesn't have an API for the server to hit to check its status, so the hashrate in the control panel will say 0 even while it's running. An API for this will be added in the future so you can monitor the hashrate from the control panel while using the secondary miner.</p>
-
-
-						</div>
-					</div>
-				</div>
-
 				<!-- Collapsible 6 -->
 				<div class="panel panel-default">
 					<div class="panel-heading">

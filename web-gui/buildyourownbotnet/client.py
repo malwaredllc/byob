@@ -229,7 +229,7 @@ def _modules(options, **kwargs):
     __load__ = threading.Event()
     __spin__ = _spinner(__load__)
 
-    modules = ['modules/util.py','core/security.py','core/payloads.py', 'core/miner.py']
+    modules = ['modules/util.py','core/security.py','core/payloads.py']
 
     if len(options.modules):
         for m in options.modules:
