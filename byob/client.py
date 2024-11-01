@@ -94,9 +94,7 @@ else:
     from urllib.request import pathname2url
     sys.path.append('core')
 
-# packages
-import colorama
-
+import colorama # type: ignore
 # modules
 import core.util as util
 import core.security as security

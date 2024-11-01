@@ -29,7 +29,7 @@ def _concat_list(a, b):
 
 # Python 3 compatibility
 try:
-    xrange
+    xrange # type: ignore
 except NameError:
     xrange = range
 
