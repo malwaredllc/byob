@@ -1,4 +1,4 @@
-name: Mark stale issues and pull requests
+name: byob.dev
 
 on:
   schedule:
