@@ -8806,6 +8806,12 @@ function ajaxConvert( s, response, jqXHR, isSuccess ) {
 			} else if ( prev !== "*" && prev !== current ) {
 
 				// Seek a direct converter
+
+				// Mitigate possible XSS vulnerability (gh-2432)
+				if ( s.crossDomain && current === "script" ) {
+					continue;
+				}
+
 				conv = converters[ prev + " " + current ] || converters[ "* " + current ];
 
 				// If none found, seek a pair
