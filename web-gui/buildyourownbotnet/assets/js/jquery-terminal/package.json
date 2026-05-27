@@ -328,7 +328,7 @@
     "coveralls": "^3.0.3",
     "cssnano": "^4.1.10",
     "emoji-datasource-twitter": "^4.1.0",
-    "eslint": "^5.16.0",
+    "eslint": "^10.4.0",
     "gm": "^1.23.1",
     "iconv-lite": "^0.5.0",
     "jest": "^24.8.0",
